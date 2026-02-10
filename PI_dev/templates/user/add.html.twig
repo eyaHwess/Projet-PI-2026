@@ -1,0 +1,43 @@
+<h1>Ajouter un utilisateur</h1>
+
+{{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+    <div>
+        {{ form_label(form.firstName) }}
+        {{ form_widget(form.firstName) }}
+        {{ form_errors(form.firstName) }}
+    </div>
+
+    <div>
+        {{ form_label(form.lastName) }}
+        {{ form_widget(form.lastName) }}
+        {{ form_errors(form.lastName) }}
+    </div>
+
+    <div>
+        {{ form_label(form.email) }}
+        {{ form_widget(form.email) }}
+        {{ form_errors(form.email) }}
+    </div>
+
+    <div>
+        {{ form_label(form.password) }}
+        {{ form_widget(form.password) }}
+        {{ form_errors(form.password) }}
+    </div>
+
+    <div>
+        {{ form_label(form.phoneNumber) }}
+        {{ form_widget(form.phoneNumber) }}
+        {{ form_errors(form.phoneNumber) }}
+    </div>
+
+    <div>
+        {{ form_label(form.age) }}
+        {{ form_widget(form.age) }}
+        {{ form_errors(form.age) }}
+    </div>
+
+    {{ form_widget(form.save) }}
+
+{{ form_end(form) }}
