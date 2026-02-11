@@ -4,12 +4,16 @@ namespace App\Entity;
 use Symfony\Component\Validator\Constraints as Assert;
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
-
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use App\Enums\UserRole;
+use App\Enums\UserStatus;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`', uniqueConstraints: [
         new ORM\UniqueConstraint(name: 'UNIQ_USER_EMAIL', columns: ['email'])
     ])]
-class User
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -70,11 +74,12 @@ class User
     private ?\DateTimeImmutable $updatedAt = null;
 
     public function __construct()
-    {
-        $this->roles = ['ROLE_USER'];
-        $this->status = 'ACTIVE';
-        $this->createdAt = new \DateTimeImmutable();
-    }
+{
+    $this->roles = [UserRole::USER->value];
+    $this->status = UserStatus::ACTIVE->value;
+    $this->createdAt = new \DateTimeImmutable();
+}
+
     public function getId(): ?int
     {
         return $this->id;
@@ -127,18 +132,27 @@ class User
 
         return $this;
     }
-
     public function getRoles(): array
     {
-        return $this->roles;
+        return array_unique($this->roles);
     }
 
-    public function setRoles(array $roles): static
+    public function setRole(UserRole $role): self
     {
-        $this->roles = $roles;
-
+        $this->roles = [$role->value];
         return $this;
     }
+
+    public function hasRole(UserRole $role): bool
+    {
+        return in_array($role->value, $this->roles, true);
+    }
+
+    public function getStatusEnum(): UserStatus
+    {
+        return UserStatus::from($this->status);
+    }
+
 
     public function getPhoneNumber(): ?string
     {
@@ -231,6 +245,19 @@ public function setUpdatedAt(?\DateTimeImmutable $updatedAt): self
 {
     $this->updatedAt = $updatedAt;
     return $this;
+}
+public function getUserIdentifier(): string
+{
+    return (string) $this->email;
+}
+
+public function eraseCredentials(): void
+{
+    // Clear temporary sensitive data if needed baad nzidha!!!!!!
+}
+public function isEnabled(): bool
+{
+    return $this->status === UserStatus::ACTIVE->value;
 }
 
 }
