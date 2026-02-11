@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Entity;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Validator\Constraints as Assert;
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
@@ -73,11 +75,32 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
+    /**
+     * @var Collection<int, Post>
+     */
+    #[ORM\OneToMany(targetEntity: Post::class, mappedBy: 'createdBy')]
+    private Collection $posts;
+
+    /**
+     * @var Collection<int, Comment>
+     */
+    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'commenter')]
+    private Collection $comments;
+
+    /**
+     * @var Collection<int, PostLike>
+     */
+    #[ORM\OneToMany(targetEntity: PostLike::class, mappedBy: 'Liker')]
+    private Collection $postLikes;
+
     public function __construct()
 {
     $this->roles = [UserRole::USER->value];
     $this->status = UserStatus::ACTIVE->value;
     $this->createdAt = new \DateTimeImmutable();
+    $this->posts = new ArrayCollection();
+    $this->comments = new ArrayCollection();
+    $this->postLikes = new ArrayCollection();
 }
 
     public function getId(): ?int
@@ -258,6 +281,96 @@ public function eraseCredentials(): void
 public function isEnabled(): bool
 {
     return $this->status === UserStatus::ACTIVE->value;
+}
+
+/**
+ * @return Collection<int, Post>
+ */
+public function getPosts(): Collection
+{
+    return $this->posts;
+}
+
+public function addPost(Post $post): static
+{
+    if (!$this->posts->contains($post)) {
+        $this->posts->add($post);
+        $post->setCreatedBy($this);
+    }
+
+    return $this;
+}
+
+public function removePost(Post $post): static
+{
+    if ($this->posts->removeElement($post)) {
+        // set the owning side to null (unless already changed)
+        if ($post->getCreatedBy() === $this) {
+            $post->setCreatedBy(null);
+        }
+    }
+
+    return $this;
+}
+
+/**
+ * @return Collection<int, Comment>
+ */
+public function getComments(): Collection
+{
+    return $this->comments;
+}
+
+public function addComment(Comment $comment): static
+{
+    if (!$this->comments->contains($comment)) {
+        $this->comments->add($comment);
+        $comment->setCommenter($this);
+    }
+
+    return $this;
+}
+
+public function removeComment(Comment $comment): static
+{
+    if ($this->comments->removeElement($comment)) {
+        // set the owning side to null (unless already changed)
+        if ($comment->getCommenter() === $this) {
+            $comment->setCommenter(null);
+        }
+    }
+
+    return $this;
+}
+
+/**
+ * @return Collection<int, PostLike>
+ */
+public function getPostLikes(): Collection
+{
+    return $this->postLikes;
+}
+
+public function addPostLike(PostLike $postLike): static
+{
+    if (!$this->postLikes->contains($postLike)) {
+        $this->postLikes->add($postLike);
+        $postLike->setLiker($this);
+    }
+
+    return $this;
+}
+
+public function removePostLike(PostLike $postLike): static
+{
+    if ($this->postLikes->removeElement($postLike)) {
+        // set the owning side to null (unless already changed)
+        if ($postLike->getLiker() === $this) {
+            $postLike->setLiker(null);
+        }
+    }
+
+    return $this;
 }
 
 }
