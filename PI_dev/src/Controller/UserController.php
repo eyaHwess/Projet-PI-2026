@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+
 class UserController extends AbstractController
 {
     #[Route('/user/add', name: 'user_add')]
@@ -25,7 +26,6 @@ class UserController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
 
-            // 🔐 HASH DU MOT DE PASSE
             $hashedPassword = $passwordHasher->hashPassword(
                 $user,
                 $user->getPassword()

@@ -1,0 +1,719 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ routine.title }}{% endblock %}
+
+{% block stylesheets %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #9333ea;
+            --primary-hover: #7e22ce;
+            --primary-light: #7e22ce;
+            --gray-light: #7e22ce;
+            --gray-text: #6c757d;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #ffffff;
+        }
+        .navbar-custom {
+            background-color: #ffffff !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 1rem 0;
+        }
+        .navbar-brand img {
+            height: 36px;
+        }
+        .btn-orange {
+            background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
+            border: none;
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(147, 51, 234, 0.3);
+        }
+        .btn-orange:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(147, 51, 234, 0.4);
+            color: white;
+        }
+        .content-section {
+            background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+            padding-top: 120px;
+            padding-bottom: 60px;
+            min-height: 100vh;
+        }
+        .routine-header-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        .activity-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 20px;
+            padding: 2rem;
+            height: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .activity-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-color);
+            box-shadow: 0 10px 30px rgba(147, 51, 234, 0.15);
+        }
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .status-pending { background-color: #fef3c7; color: #92400e; }
+        .status-in-progress { background-color: #dbeafe; color: #1e40af; }
+        .status-completed { background-color: #d1fae5; color: #065f46; }
+        .status-cancelled { background-color: #f3f4f6; color: #374151; }
+        .visibility-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .visibility-public { background-color: #d1fae5; color: #065f46; }
+        .visibility-private { background-color: #fef3c7; color: #92400e; }
+        .empty-state {
+            padding: 80px 20px;
+            text-align: center;
+        }
+        .empty-state-icon {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%);
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            box-shadow: 0 10px 40px rgba(147, 51, 234, 0.2);
+        }
+        .empty-state-icon i {
+            font-size: 60px;
+            color: var(--primary-color);
+        }
+        .modal-content {
+            border-radius: 20px;
+            border: none;
+            overflow: hidden;
+        }
+        .modal-header {
+            background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
+            color: white;
+            border: none;
+            padding: 1.5rem;
+        }
+        .modal-title {
+            font-weight: 700;
+        }
+        .btn-close-white {
+            filter: brightness(0) invert(1);
+        }
+        .text-orange { color: var(--primary-color) !important; }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(147, 51, 234, 0.25);
+        }
+        .btn-outline-primary {
+            border-color: #0d6efd;
+            color: #0d6efd;
+        }
+        .btn-outline-primary:hover {
+            background-color: #0d6efd;
+            color: white;
+        }
+        .btn-outline-danger {
+            border-color: #dc3545;
+            color: #dc3545;
+        }
+        .btn-outline-danger:hover {
+            background-color: #dc3545;
+            color: white;
+        }
+        .toast-container {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            z-index: 9999;
+        }
+        .toast-custom {
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            min-width: 300px;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+        <div class="container-fluid px-4 px-md-5">
+            <a class="navbar-brand" href="{{ path('app_home') }}">
+                
+            </a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_home') }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active fw-bold" style="color: var(--orange-primary);" href="{{ path('app_goal_index') }}">Mes Objectifs</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="content-section">
+        <div class="container py-5">
+            <a href="{{ path('app_routine_index', {goalId: routine.goal.id}) }}" class="btn btn-link text-decoration-none mb-4 text-orange fw-semibold">
+                <i class="bi bi-arrow-left me-2"></i>Retour aux routines
+            </a>
+
+            <div class="routine-header-card">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="flex-grow-1">
+                        <h1 class="display-5 fw-bold mb-3">{{ routine.title }}</h1>
+                        {% if routine.description %}
+                            <p class="lead text-muted mb-0">{{ routine.description }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="d-flex gap-2 align-items-start">
+                        <span class="visibility-badge visibility-{{ routine.visibility }}">{{ routine.visibility|upper }}</span>
+                        <button id="editRoutineBtn" class="btn btn-outline-primary" title="Modifier la routine">
+                            <i class="bi bi-pencil me-1"></i>Modifier
+                        </button>
+                        <button id="deleteRoutineBtn" class="btn btn-outline-danger" title="Supprimer la routine">
+                            <i class="bi bi-trash me-1"></i>Supprimer
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="h3 fw-bold">Activités <span class="text-orange">({{ activities|length }})</span></h2>
+                <button id="newActivityBtn" class="btn btn-orange">
+                    <i class="bi bi-plus-circle me-2"></i>Nouvelle Activité
+                </button>
+            </div>
+
+            <!-- Filters and Sort for Activities -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="d-flex gap-2 align-items-center">
+                        <label class="text-muted fw-semibold me-2">Trier par:</label>
+                        <select id="sortSelect" class="form-select form-select-sm" style="width: auto;">
+                            <option value="startTime-ASC" {{ currentSort == 'startTime' and currentOrder == 'ASC' ? 'selected' : '' }}>Date début (ancien)</option>
+                            <option value="startTime-DESC" {{ currentSort == 'startTime' and currentOrder == 'DESC' ? 'selected' : '' }}>Date début (récent)</option>
+                            <option value="title-ASC" {{ currentSort == 'title' and currentOrder == 'ASC' ? 'selected' : '' }}>Titre (A-Z)</option>
+                            <option value="title-DESC" {{ currentSort == 'title' and currentOrder == 'DESC' ? 'selected' : '' }}>Titre (Z-A)</option>
+                            <option value="duration-ASC" {{ currentSort == 'duration' and currentOrder == 'ASC' ? 'selected' : '' }}>Durée (courte)</option>
+                            <option value="duration-DESC" {{ currentSort == 'duration' and currentOrder == 'DESC' ? 'selected' : '' }}>Durée (longue)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex gap-2 align-items-center justify-content-md-end">
+                        <label class="text-muted fw-semibold me-2">Filtrer par statut:</label>
+                        <select id="statusFilter" class="form-select form-select-sm" style="width: auto;">
+                            <option value="all" {{ currentStatus == 'all' ? 'selected' : '' }}>Tous</option>
+                            <option value="pending" {{ currentStatus == 'pending' ? 'selected' : '' }}>En attente</option>
+                            <option value="in_progress" {{ currentStatus == 'in_progress' ? 'selected' : '' }}>En cours</option>
+                            <option value="completed" {{ currentStatus == 'completed' ? 'selected' : '' }}>Terminé</option>
+                            <option value="skipped" {{ currentStatus == 'skipped' ? 'selected' : '' }}>Ignoré</option>
+                            <option value="cancelled" {{ currentStatus == 'cancelled' ? 'selected' : '' }}>Annulé</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            {% if activities|length > 0 %}
+                <div class="row g-4">
+                    {% for activity in activities %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="activity-card">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <h5 class="fw-bold mb-0">{{ activity.title }}</h5>
+                                    {% if activity.hasReminder %}
+                                        <i class="bi bi-bell-fill text-warning fs-5"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="mb-3">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="bi bi-clock me-2" style="color: var(--primary-color);"></i>
+                                        <small class="text-muted">Début: {{ activity.startTime|date('d/m/Y H:i') }}</small>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="bi bi-hourglass-split me-2" style="color: var(--primary-color);"></i>
+                                        <small class="text-muted">Durée: {{ activity.duration|date('H:i') }}</small>
+                                    </div>
+                                </div>
+                                <div class="pt-3 border-top">
+                                    <span class="status-badge status-{{ activity.status|lower|replace({'_': '-'}) }} mb-3 d-inline-block">{{ activity.status|upper }}</span>
+                                    <div class="d-flex gap-2 mt-2">
+                                        <button class="btn btn-outline-primary btn-sm flex-fill edit-activity-btn" data-activity-id="{{ activity.id }}" title="Modifier">
+                                            <i class="bi bi-pencil me-1"></i>Modifier
+                                        </button>
+                                        <button class="btn btn-outline-danger btn-sm delete-activity-btn" data-activity-id="{{ activity.id }}" data-activity-title="{{ activity.title }}" title="Supprimer">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                        <input type="hidden" name="csrf_token_activity_{{ activity.id }}" value="{{ csrf_token('delete' ~ activity.id) }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="bi bi-list-check"></i>
+                    </div>
+                    <h3 class="fw-bold mb-3">Aucune activité</h3>
+                    <p class="text-muted fs-5 mb-4">Créez votre première activité pour cette routine</p>
+                    <button id="newActivityBtnEmpty" class="btn btn-orange btn-lg">
+                        <i class="bi bi-plus-circle me-2"></i>Créer une activité
+                    </button>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container">
+        <div id="toast" class="toast toast-custom" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header d-flex align-items-center">
+                <div id="toastIcon" class="rounded me-2" style="width: 20px; height: 20px;"></div>
+                <strong class="me-auto">Notification</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body" id="toastMessage"></div>
+        </div>
+    </div>
+
+    <!-- Modal for Activities -->
+    <div class="modal fade" id="activityModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="activityModalTitle">Nouvelle Activité</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="activityModalContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Routine Edit -->
+    <div class="modal fade" id="routineModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="routineModalTitle">Modifier la Routine</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="routineModalContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const activityModal = new bootstrap.Modal(document.getElementById('activityModal'));
+            const modalContent = document.getElementById('activityModalContent');
+            const modalTitle = document.getElementById('activityModalTitle');
+            const newActivityBtn = document.getElementById('newActivityBtn');
+            const newActivityBtnEmpty = document.getElementById('newActivityBtnEmpty');
+
+            function openModal(title, url) {
+                modalTitle.textContent = title;
+                modalContent.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-orange" role="status"><span class="visually-hidden">Chargement...</span></div></div>';
+                activityModal.show();
+                document.body.style.overflow = 'hidden';
+                fetch(url)
+                    .then(r => r.text())
+                    .then(html => {
+                        modalContent.innerHTML = html;
+                        initForm();
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        modalContent.innerHTML = '<div class="alert alert-danger"><h6>Erreur lors du chargement</h6><p>Veuillez réessayer.</p><button class="btn btn-orange" onclick="activityModal.hide(); document.body.style.overflow = \'\';">Fermer</button></div>';
+                    });
+            }
+
+            function closeModal() {
+                activityModal.hide();
+                modalContent.innerHTML = '';
+                document.body.style.overflow = '';
+            }
+
+            function initForm() {
+                const form = modalContent.querySelector('form');
+                if (!form) return;
+
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // S'assurer que tous les champs du formulaire sont inclus, y compris le token CSRF
+                    const formData = new FormData(form);
+                    
+                    // Vérifier que le token CSRF est présent
+                    const csrfToken = formData.get('activity[_token]') || form.querySelector('input[name*="_token"]')?.value;
+                    if (!csrfToken) {
+                        console.error('Token CSRF manquant dans le formulaire');
+                        showToast('Erreur: Token CSRF manquant. Veuillez recharger la page.', 'error');
+                        return;
+                    }
+                    
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    const originalText = submitBtn ? submitBtn.innerHTML : '';
+                    
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Enregistrement...';
+                    }
+
+                    try {
+                        const formAction = form.action || form.getAttribute('action') || '{{ path('app_activity_new', {routineId: routine.id}) }}';
+                        const formMethod = form.method || form.getAttribute('method') || 'POST';
+                        
+                        console.log('Envoi vers:', formAction, 'Méthode:', formMethod);
+                        console.log('Token CSRF présent:', !!csrfToken);
+                        
+                        const response = await fetch(formAction, {
+                            method: formMethod,
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json'
+                            },
+                            body: formData
+                        });
+
+                        const contentType = response.headers.get('content-type') || '';
+                        let data;
+                        
+                        if (contentType.includes('application/json')) {
+                            data = await response.json();
+                        } else {
+                            const text = await response.text();
+                            console.error('Réponse HTML reçue:', text.substring(0, 500));
+                            throw new Error('Le serveur a renvoyé du HTML au lieu de JSON.');
+                        }
+
+                        if (data.success) {
+                            showToast(data.message, 'success');
+                            closeModal();
+                            setTimeout(() => location.reload(), 1000);
+                        } else {
+                            if (submitBtn) {
+                                submitBtn.disabled = false;
+                                submitBtn.innerHTML = originalText;
+                            }
+                            let errorMessage = data.message || 'Erreur de validation';
+                            if (data.errors && data.errors.length > 0) {
+                                errorMessage += ': ' + data.errors.join(', ');
+                            }
+                            showToast(errorMessage, 'error');
+                            if (data.errors) displayFormErrors(form, data.errors);
+                        }
+                    } catch (error) {
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = originalText;
+                        }
+                        console.error('Erreur:', error);
+                        showToast('Erreur lors de l\'envoi: ' + (error.message || 'Erreur inconnue'), 'error');
+                    }
+                });
+            }
+
+            function displayFormErrors(form, errors) {
+                form.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
+                form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+                form.querySelectorAll('.alert-danger').forEach(el => el.remove());
+
+                if (!errors || errors.length === 0) return;
+
+                // Afficher les erreurs générales en haut du formulaire
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-danger mb-3';
+                alertDiv.innerHTML = '<strong>Erreurs de validation:</strong><ul class="mb-0 mt-2"><li>' + errors.join('</li><li>') + '</li></ul>';
+                form.insertBefore(alertDiv, form.firstChild);
+
+                // Essayer d'associer les erreurs aux champs spécifiques
+                errors.forEach(error => {
+                    const inputs = form.querySelectorAll('input, textarea, select');
+                    inputs.forEach(input => {
+                        const fieldName = input.name ? input.name.replace(/\[|\]/g, '').split('_').pop() : '';
+                        if (fieldName && error.toLowerCase().includes(fieldName.toLowerCase())) {
+                            input.classList.add('is-invalid');
+                            const errorDiv = document.createElement('div');
+                            errorDiv.className = 'invalid-feedback';
+                            errorDiv.textContent = error.replace(fieldName + ': ', '').replace(/^.*?: /, '');
+                            input.parentElement.appendChild(errorDiv);
+                        }
+                    });
+                });
+            }
+
+            function showToast(message, type = 'success') {
+                const toastMessage = document.getElementById('toastMessage');
+                const toastIcon = document.getElementById('toastIcon');
+                const toastElement = document.getElementById('toast');
+                const toast = new bootstrap.Toast(toastElement);
+                
+                toastMessage.textContent = message;
+                
+                if (type === 'success') {
+                    toastIcon.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i>';
+                    toastIcon.className = 'rounded me-2 bg-success';
+                } else {
+                    toastIcon.innerHTML = '<i class="bi bi-x-circle-fill text-danger"></i>';
+                    toastIcon.className = 'rounded me-2 bg-danger';
+                }
+                
+                toast.show();
+            }
+
+            // Gérer la fermeture de la modal
+            document.getElementById('activityModal').addEventListener('hidden.bs.modal', function () {
+                document.body.style.overflow = '';
+            });
+
+            if (newActivityBtn) newActivityBtn.addEventListener('click', () => openModal('Nouvelle Activité', '{{ path('app_activity_new', {routineId: routine.id}) }}'));
+            if (newActivityBtnEmpty) newActivityBtnEmpty.addEventListener('click', () => openModal('Nouvelle Activité', '{{ path('app_activity_new', {routineId: routine.id}) }}'));
+
+            // Sort and Filter handlers for Activities
+            const sortSelect = document.getElementById('sortSelect');
+            const statusFilter = document.getElementById('statusFilter');
+
+            if (sortSelect) {
+                sortSelect.addEventListener('change', function() {
+                    applyFilters();
+                });
+            }
+
+            if (statusFilter) {
+                statusFilter.addEventListener('change', function() {
+                    applyFilters();
+                });
+            }
+
+            function applyFilters() {
+                const sortValue = sortSelect ? sortSelect.value : 'startTime-ASC';
+                const statusValue = statusFilter ? statusFilter.value : 'all';
+                
+                const [sort, order] = sortValue.split('-');
+                
+                const url = new URL(window.location.href);
+                url.searchParams.set('sort', sort);
+                url.searchParams.set('order', order);
+                url.searchParams.set('status', statusValue);
+                
+                window.location.href = url.toString();
+            }
+
+            // Edit activity buttons
+            document.querySelectorAll('.edit-activity-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const activityId = btn.dataset.activityId;
+                    openModal('Modifier l\'Activité', `/routines/{{ routine.id }}/activities/${activityId}/edit`);
+                });
+            });
+
+            // Delete activity buttons
+            document.querySelectorAll('.delete-activity-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    const activityId = btn.dataset.activityId;
+                    const activityTitle = btn.dataset.activityTitle;
+                    
+                    if (!confirm(`Êtes-vous sûr de vouloir supprimer l'activité "${activityTitle}" ?`)) {
+                        return;
+                    }
+
+                    try {
+                        // Get CSRF token
+                        const csrfTokenElement = document.querySelector(`input[name="csrf_token_activity_${activityId}"]`);
+                        const csrfToken = csrfTokenElement ? csrfTokenElement.value : '';
+
+                        const response = await fetch(`/routines/{{ routine.id }}/activities/${activityId}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: `_token=${encodeURIComponent(csrfToken)}`
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            showToast(data.message, 'success');
+                            setTimeout(() => location.reload(), 1000);
+                        } else {
+                            showToast('Erreur: ' + (data.message || 'Impossible de supprimer l\'activité'), 'error');
+                        }
+                    } catch (error) {
+                        console.error('Erreur:', error);
+                        showToast('Erreur lors de la suppression: ' + error.message, 'error');
+                    }
+                });
+            });
+
+            // Edit routine button
+            const editRoutineBtn = document.getElementById('editRoutineBtn');
+            if (editRoutineBtn) {
+                editRoutineBtn.addEventListener('click', () => {
+                    openRoutineModal('Modifier la Routine', '{{ path('app_routine_edit', {goalId: routine.goal.id, id: routine.id}) }}');
+                });
+            }
+
+            // Delete routine button
+            const deleteRoutineBtn = document.getElementById('deleteRoutineBtn');
+            if (deleteRoutineBtn) {
+                deleteRoutineBtn.addEventListener('click', async () => {
+                    if (!confirm('Êtes-vous sûr de vouloir supprimer cette routine ?')) {
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('{{ path('app_routine_delete', {goalId: routine.goal.id, id: routine.id}) }}', {
+                            method: 'DELETE',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: '_token=' + encodeURIComponent('{{ csrf_token('delete' ~ routine.id) }}')
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            showToast(data.message, 'success');
+                            setTimeout(() => {
+                                window.location.href = '{{ path('app_routine_index', {goalId: routine.goal.id}) }}';
+                            }, 1000);
+                        } else {
+                            showToast('Erreur: ' + (data.message || 'Impossible de supprimer la routine'), 'error');
+                        }
+                    } catch (error) {
+                        console.error('Erreur:', error);
+                        showToast('Erreur lors de la suppression: ' + error.message, 'error');
+                    }
+                });
+            }
+
+            // Routine modal functions
+            const routineModal = new bootstrap.Modal(document.getElementById('routineModal'));
+            const routineModalContent = document.getElementById('routineModalContent');
+            const routineModalTitle = document.getElementById('routineModalTitle');
+
+            function openRoutineModal(title, url) {
+                routineModalTitle.textContent = title;
+                routineModalContent.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-orange" role="status"><span class="visually-hidden">Chargement...</span></div></div>';
+                routineModal.show();
+                document.body.style.overflow = 'hidden';
+                fetch(url)
+                    .then(r => r.text())
+                    .then(html => {
+                        routineModalContent.innerHTML = html;
+                        initRoutineForm();
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        routineModalContent.innerHTML = '<div class="alert alert-danger"><h6>Erreur lors du chargement</h6><p>Veuillez réessayer.</p><button class="btn btn-orange" onclick="routineModal.hide(); document.body.style.overflow = \'\';">Fermer</button></div>';
+                    });
+            }
+
+            function closeRoutineModal() {
+                routineModal.hide();
+                routineModalContent.innerHTML = '';
+                document.body.style.overflow = '';
+            }
+
+            function initRoutineForm() {
+                const form = routineModalContent.querySelector('form');
+                if (!form) return;
+
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(form);
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    const originalText = submitBtn ? submitBtn.innerHTML : '';
+                    
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Enregistrement...';
+                    }
+
+                    try {
+                        const response = await fetch(form.action, {
+                            method: form.method || 'POST',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json'
+                            },
+                            body: formData
+                        });
+
+                        const contentType = response.headers.get('content-type') || '';
+                        let data;
+                        
+                        if (contentType.includes('application/json')) {
+                            data = await response.json();
+                        } else {
+                            const text = await response.text();
+                            console.error('Réponse HTML reçue:', text.substring(0, 500));
+                            throw new Error('Le serveur a renvoyé du HTML au lieu de JSON.');
+                        }
+
+                        if (data.success) {
+                            showToast(data.message, 'success');
+                            closeRoutineModal();
+                            setTimeout(() => location.reload(), 1000);
+                        } else {
+                            if (submitBtn) {
+                                submitBtn.disabled = false;
+                                submitBtn.innerHTML = originalText;
+                            }
+                            showToast('Erreur: ' + (data.message || 'Erreur de validation'), 'error');
+                        }
+                    } catch (error) {
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = originalText;
+                        }
+                        console.error('Erreur:', error);
+                        showToast('Erreur lors de l\'envoi: ' + error.message, 'error');
+                    }
+                });
+            }
+
+            // Gérer la fermeture de la modal routine
+            document.getElementById('routineModal').addEventListener('hidden.bs.modal', function () {
+                document.body.style.overflow = '';
+            });
+        });
+    </script>
+{% endblock %}

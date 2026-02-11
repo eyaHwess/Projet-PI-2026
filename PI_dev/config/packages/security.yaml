@@ -34,7 +34,11 @@ security:
         - { path: ^/$, roles: PUBLIC_ACCESS }
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/register, roles: PUBLIC_ACCESS }
-        - { path: ^/, roles: ROLE_USER }
+        - { path: ^/goals, roles: ROLE_USER }
+        - { path: ^/routines, roles: ROLE_USER }
+
+        - { path: ^/, roles: IS_AUTHENTICATED_FULLY }
+
 
 when@test:
     security:

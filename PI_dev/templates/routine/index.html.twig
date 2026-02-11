@@ -1,0 +1,432 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Routines - {{ goal.title }}{% endblock %}
+
+{% block stylesheets %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #9333ea;
+            --primary-hover: #7e22ce;
+            --primary-light: #e9d5ff;
+            --gray-light: #f8f9fa;
+            --gray-text: #6c757d;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #ffffff;
+        }
+        .navbar-custom {
+            background-color: #ffffff !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 1rem 0;
+        }
+        .navbar-brand img {
+            height: 36px;
+        }
+        .btn-orange {
+            background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
+            border: none;
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(147, 51, 234, 0.3);
+        }
+        .btn-orange:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(147, 51, 234, 0.4);
+            color: white;
+        }
+        .content-section {
+            background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+            padding-top: 120px;
+            padding-bottom: 60px;
+            min-height: 100vh;
+        }
+        .routine-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 20px;
+            padding: 2rem;
+            height: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .routine-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-color);
+            box-shadow: 0 10px 30px rgba(147, 51, 234, 0.15);
+        }
+        .visibility-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .visibility-public { background-color: #d1fae5; color: #065f46; }
+        .visibility-private { background-color: #fef3c7; color: #92400e; }
+        .empty-state {
+            padding: 80px 20px;
+            text-align: center;
+        }
+        .empty-state-icon {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%);
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            box-shadow: 0 10px 40px rgba(147, 51, 234, 0.2);
+        }
+        .empty-state-icon i {
+            font-size: 60px;
+            color: var(--primary-color);
+        }
+        .modal-content {
+            border-radius: 20px;
+            border: none;
+            overflow: hidden;
+        }
+        .modal-header {
+            background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
+            color: white;
+            border: none;
+            padding: 1.5rem;
+        }
+        .modal-title {
+            font-weight: 700;
+        }
+        .btn-close-white {
+            filter: brightness(0) invert(1);
+        }
+        .text-orange { color: var(--primary-color) !important; }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(147, 51, 234, 0.25);
+        }
+        .btn-outline-primary {
+            border-color: #0d6efd;
+            color: #0d6efd;
+        }
+        .btn-outline-primary:hover {
+            background-color: #0d6efd;
+            color: white;
+        }
+        .btn-outline-danger {
+            border-color: #dc3545;
+            color: #dc3545;
+        }
+        .btn-outline-danger:hover {
+            background-color: #dc3545;
+            color: white;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+        <div class="container-fluid px-4 px-md-5">
+            <a class="navbar-brand" href="{{ path('app_home') }}">
+                
+            </a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_home') }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active fw-bold" style="color: var(--orange-primary);" href="{{ path('app_goal_index') }}">Mes Objectifs</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="content-section">
+        <div class="container py-5">
+            <a href="{{ path('app_goal_show', {id: goal.id}) }}" class="btn btn-link text-decoration-none mb-4 text-orange fw-semibold">
+                <i class="bi bi-arrow-left me-2"></i>Retour à l'objectif
+            </a>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="display-5 fw-bold mb-2">Routines</h1>
+                    <p class="text-muted fs-5">Objectif: <span class="text-orange fw-semibold">{{ goal.title }}</span></p>
+                </div>
+                <button id="newRoutineBtn" class="btn btn-orange btn-lg">
+                    <i class="bi bi-plus-circle me-2"></i>Nouvelle Routine
+                </button>
+            </div>
+
+            <!-- Filters and Sort -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="d-flex gap-2 align-items-center">
+                        <label class="text-muted fw-semibold me-2">Trier par:</label>
+                        <select id="sortSelect" class="form-select form-select-sm" style="width: auto;">
+                            <option value="createdAt-DESC" {{ currentSort == 'createdAt' and currentOrder == 'DESC' ? 'selected' : '' }}>Plus récent</option>
+                            <option value="createdAt-ASC" {{ currentSort == 'createdAt' and currentOrder == 'ASC' ? 'selected' : '' }}>Plus ancien</option>
+                            <option value="title-ASC" {{ currentSort == 'title' and currentOrder == 'ASC' ? 'selected' : '' }}>Titre (A-Z)</option>
+                            <option value="title-DESC" {{ currentSort == 'title' and currentOrder == 'DESC' ? 'selected' : '' }}>Titre (Z-A)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex gap-2 align-items-center justify-content-md-end">
+                        <label class="text-muted fw-semibold me-2">Filtrer par visibilité:</label>
+                        <select id="visibilityFilter" class="form-select form-select-sm" style="width: auto;">
+                            <option value="all" {{ currentVisibility == 'all' ? 'selected' : '' }}>Tous</option>
+                            <option value="public" {{ currentVisibility == 'public' ? 'selected' : '' }}>Public</option>
+                            <option value="private" {{ currentVisibility == 'private' ? 'selected' : '' }}>Privé</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            {% if routines|length > 0 %}
+                <div class="row g-4">
+                    {% for routine in routines %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="routine-card">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <h5 class="fw-bold mb-0">{{ routine.title }}</h5>
+                                    <span class="visibility-badge visibility-{{ routine.visibility }}">{{ routine.visibility|upper }}</span>
+                                </div>
+                                {% if routine.description %}
+                                    <p class="text-muted mb-3" style="min-height: 60px;">{{ routine.description|slice(0, 100) }}{% if routine.description|length > 100 %}...{% endif %}</p>
+                                {% else %}
+                                    <p class="text-muted mb-3" style="min-height: 60px;">Aucune description</p>
+                                {% endif %}
+                                <div class="d-flex justify-content-between align-items-center mb-3 pt-3 border-top">
+                                    <span class="text-muted">
+                                        <i class="bi bi-list-task me-1"></i>{{ routine.activities|length }} Activité(s)
+                                    </span>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <a href="{{ path('app_routine_show', {goalId: goal.id, id: routine.id}) }}" class="btn btn-orange flex-fill">
+                                        <i class="bi bi-eye me-2"></i>Voir détails
+                                    </a>
+                                    <button class="btn btn-outline-primary edit-routine-btn" data-routine-id="{{ routine.id }}" title="Modifier">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger delete-routine-btn" data-routine-id="{{ routine.id }}" data-routine-title="{{ routine.title }}" title="Supprimer">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    <input type="hidden" name="csrf_token_{{ routine.id }}" value="{{ csrf_token('delete' ~ routine.id) }}">
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="bi bi-calendar-check"></i>
+                    </div>
+                    <h3 class="fw-bold mb-3">Aucune routine</h3>
+                    <p class="text-muted fs-5 mb-4">Créez votre première routine pour cet objectif</p>
+                    <button id="newRoutineBtnEmpty" class="btn btn-orange btn-lg">
+                        <i class="bi bi-plus-circle me-2"></i>Créer une routine
+                    </button>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="routineModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="routineModalTitle">Nouvelle Routine</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="routineModalContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const routineModal = new bootstrap.Modal(document.getElementById('routineModal'));
+            const modalContent = document.getElementById('routineModalContent');
+            const modalTitle = document.getElementById('routineModalTitle');
+            const newRoutineBtn = document.getElementById('newRoutineBtn');
+            const newRoutineBtnEmpty = document.getElementById('newRoutineBtnEmpty');
+
+            function openModal(title, url) {
+                modalTitle.textContent = title;
+                modalContent.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-orange" role="status"><span class="visually-hidden">Chargement...</span></div></div>';
+                routineModal.show();
+                document.body.style.overflow = 'hidden';
+                fetch(url)
+                    .then(r => r.text())
+                    .then(html => {
+                        modalContent.innerHTML = html;
+                        initForm();
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        modalContent.innerHTML = '<div class="alert alert-danger"><h6>Erreur lors du chargement</h6><p>Veuillez réessayer.</p><button class="btn btn-orange" onclick="routineModal.hide(); document.body.style.overflow = \'\';">Fermer</button></div>';
+                    });
+            }
+
+            function closeModal() {
+                routineModal.hide();
+                modalContent.innerHTML = '';
+                document.body.style.overflow = '';
+            }
+
+            function initForm() {
+                const form = modalContent.querySelector('form');
+                if (!form) return;
+
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(form);
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    const originalText = submitBtn ? submitBtn.innerHTML : '';
+                    
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Enregistrement...';
+                    }
+
+                    try {
+                        const response = await fetch(form.action, {
+                            method: form.method || 'POST',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json'
+                            },
+                            body: formData
+                        });
+
+                        const contentType = response.headers.get('content-type') || '';
+                        let data;
+                        
+                        if (contentType.includes('application/json')) {
+                            data = await response.json();
+                        } else {
+                            const text = await response.text();
+                            console.error('Réponse HTML reçue:', text.substring(0, 500));
+                            throw new Error('Le serveur a renvoyé du HTML au lieu de JSON.');
+                        }
+
+                        if (data.success) {
+                            closeModal();
+                            setTimeout(() => location.reload(), 1000);
+                        } else {
+                            if (submitBtn) {
+                                submitBtn.disabled = false;
+                                submitBtn.innerHTML = originalText;
+                            }
+                            alert('Erreur: ' + (data.message || 'Erreur de validation'));
+                        }
+                    } catch (error) {
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = originalText;
+                        }
+                        console.error('Erreur:', error);
+                        alert('Erreur lors de l\'envoi: ' + error.message);
+                    }
+                });
+            }
+
+            // Gérer la fermeture de la modal
+            document.getElementById('routineModal').addEventListener('hidden.bs.modal', function () {
+                document.body.style.overflow = '';
+            });
+
+            if (newRoutineBtn) newRoutineBtn.addEventListener('click', () => openModal('Nouvelle Routine', '{{ path('app_routine_new', {goalId: goal.id}) }}'));
+            if (newRoutineBtnEmpty) newRoutineBtnEmpty.addEventListener('click', () => openModal('Nouvelle Routine', '{{ path('app_routine_new', {goalId: goal.id}) }}'));
+
+            // Sort and Filter handlers
+            const sortSelect = document.getElementById('sortSelect');
+            const visibilityFilter = document.getElementById('visibilityFilter');
+
+            if (sortSelect) {
+                sortSelect.addEventListener('change', function() {
+                    applyFilters();
+                });
+            }
+
+            if (visibilityFilter) {
+                visibilityFilter.addEventListener('change', function() {
+                    applyFilters();
+                });
+            }
+
+            function applyFilters() {
+                const sortValue = sortSelect ? sortSelect.value : 'createdAt-DESC';
+                const visibilityValue = visibilityFilter ? visibilityFilter.value : 'all';
+                
+                const [sort, order] = sortValue.split('-');
+                
+                const url = new URL(window.location.href);
+                url.searchParams.set('sort', sort);
+                url.searchParams.set('order', order);
+                url.searchParams.set('visibility', visibilityValue);
+                
+                window.location.href = url.toString();
+            }
+
+            // Edit routine buttons
+            document.querySelectorAll('.edit-routine-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const routineId = btn.dataset.routineId;
+                    openModal('Modifier la Routine', `/goals/{{ goal.id }}/routines/${routineId}/edit`);
+                });
+            });
+
+            // Delete routine buttons
+            document.querySelectorAll('.delete-routine-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    const routineId = btn.dataset.routineId;
+                    const routineTitle = btn.dataset.routineTitle;
+                    
+                    if (!confirm(`Êtes-vous sûr de vouloir supprimer la routine "${routineTitle}" ?`)) {
+                        return;
+                    }
+
+                    try {
+                        // Generate CSRF token dynamically
+                        const csrfTokenElement = document.querySelector(`input[name="csrf_token_${routineId}"]`);
+                        const csrfToken = csrfTokenElement ? csrfTokenElement.value : '';
+
+                        const response = await fetch(`/goals/{{ goal.id }}/routines/${routineId}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: `_token=${encodeURIComponent(csrfToken)}`
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            location.reload();
+                        } else {
+                            alert('Erreur: ' + (data.message || 'Impossible de supprimer la routine'));
+                        }
+                    } catch (error) {
+                        console.error('Erreur:', error);
+                        alert('Erreur lors de la suppression: ' + error.message);
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}

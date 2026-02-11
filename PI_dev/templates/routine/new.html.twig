@@ -1,0 +1,139 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvelle Routine - {{ goal.title }}{% endblock %}
+
+{% block stylesheets %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --orange-primary: #f97316;
+            --orange-hover: #ea580c;
+            --gray-light: #f8f9fa;
+            --gray-text: #6c757d;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #ffffff;
+        }
+        .navbar-custom {
+            background-color: #ffffff !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 1rem 0;
+        }
+        .navbar-brand img {
+            height: 36px;
+        }
+        .btn-orange {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            border: none;
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
+        }
+        .btn-orange:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4);
+            color: white;
+        }
+        .content-section {
+            background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+            padding-top: 120px;
+            padding-bottom: 60px;
+            min-height: 100vh;
+        }
+        .form-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--orange-primary);
+            box-shadow: 0 0 0 0.25rem rgba(249, 115, 22, 0.25);
+        }
+        .form-label {
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 0.5rem;
+        }
+        .text-orange { color: var(--orange-primary) !important; }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+        <div class="container-fluid px-4 px-md-5">
+            <a class="navbar-brand" href="{{ path('app_home') }}">
+            </a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_home') }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active fw-bold text-orange" href="{{ path('app_goal_index') }}">Mes Objectifs</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="content-section">
+        <div class="container py-5">
+            <a href="{{ path('app_goal_show', {id: goal.id}) }}" class="btn btn-link text-decoration-none mb-4 text-orange fw-semibold">
+                <i class="bi bi-arrow-left me-2"></i>Retour à l'objectif
+            </a>
+
+            <div class="form-card">
+                <h1 class="display-5 fw-bold mb-4 text-center">
+                    <i class="bi bi-plus-circle me-2 text-orange"></i>Nouvelle Routine
+                </h1>
+                <p class="text-muted text-center mb-4">Objectif: <span class="text-orange fw-semibold">{{ goal.title }}</span></p>
+
+                {{ form_start(form, {
+                    'action': path('app_routine_new', {goalId: goal.id}),
+                    'method': 'POST',
+                    'attr': {'class': 'needs-validation', 'novalidate': ''}
+                }) }}
+                    <div class="row g-3">
+                        <div class="col-12">
+                            {{ form_label(form.title, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.title, {'attr': {'class': 'form-control form-control-lg', 'placeholder': 'Ex: Entraînement matinal'}}) }}
+                            {{ form_errors(form.title) }}
+                        </div>
+
+                        <div class="col-12">
+                            {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 4, 'placeholder': 'Décrivez votre routine...'}}) }}
+                            {{ form_errors(form.description) }}
+                        </div>
+
+                        <div class="col-12">
+                            {{ form_label(form.visibility, null, {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.visibility, {'attr': {'class': 'form-select form-select-lg'}}) }}
+                            {{ form_errors(form.visibility) }}
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-3 mt-4 pt-4 border-top">
+                        <button type="submit" class="btn btn-orange flex-grow-1">
+                            <i class="bi bi-check-circle me-2"></i>Enregistrer
+                        </button>
+                        <a href="{{ path('app_goal_show', {id: goal.id}) }}" class="btn btn-outline-secondary">
+                            Annuler
+                        </a>
+                    </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

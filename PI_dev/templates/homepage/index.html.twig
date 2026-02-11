@@ -1,299 +1,429 @@
 <!doctype html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <title>{% block title %}Buildify{% endblock %}</title>
-
-    <meta name="description" content="Buildify is a modern AI agents template by PrebuiltUI.">
+    <title>Buildify – PrebuiltUI</title>
+    <meta name="description"
+        content="Buildify is a modern AI agents template by PrebuiltUI. Build, launch and scale intelligent AI agents with production-ready components and workflows.">
+    <meta name="application-name" content="Buildify">
     <meta name="author" content="PrebuiltUI">
-
-    {# Favicon #}
-    <link rel="icon" href="{{ asset('assets/favicon.ico') }}">
-
-    {# ✅ MAIN CSS (THIS IS THE IMPORTANT LINE) #}
-<link rel="stylesheet" href="{{ asset('styles/home/output.css') }}">
-
-    {% block stylesheets %}{% endblock %}
+    <link rel="manifest" href="{{ asset('images/manifest.json') }}">
+    <meta name="keywords"
+        content="AI agents,AI agent builder,AI SaaS template,PrebuiltUI,Next.js AI template,Tailwind CSS UI,AI workflow automation">
+    <meta name="creator" content="PrebuiltUI">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Buildify">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta property="og:title" content="Buildify – Build, Launch &amp; Scale with AI Agents">
+    <meta property="og:description"
+        content="A production-ready AI agents template built with PrebuiltUI. Launch faster with scalable workflows and modern UI.">
+    <meta property="og:image" content="{{ asset('images/opengraph-image.png') }}">
+    <meta property="og:image:width" content="1280">
+    <meta property="og:image:height" content="640">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Buildify – Build, Launch &amp; Scale with AI Agents">
+    <meta name="twitter:description"
+        content="A modern AI agents template by PrebuiltUI to build, launch and scale faster.">
+    <meta name="twitter:image" content="{{ asset('images/opengraph-image.png') }}">
+    <meta name="twitter:image:width" content="1280">
+    <meta name="twitter:image:height" content="640">
+    <meta name="twitter:image:type" content="image/png">
+    <link rel="icon" href="{{ asset('images/favicon.ico') }}" sizes="48x48" type="image/x-icon">
+    <link rel="icon" href="{{ asset('images/icon0.svg') }}" sizes="any" type="image/svg+xml">
+    <link rel="icon" href="{{ asset('images/icon1.png') }}" sizes="96x96" type="image/png">
+    <link rel="apple-touch-icon" href="{{ asset('images/apple-icon.png') }}" sizes="180x180" type="image/png">
+    <link rel="stylesheet" href="{{ asset('styles/home/output.css') }}">
 </head>
+
 <body>
 
-
-
-
-
-{# JS #}
-<script src="{{ asset('assets/home/script.js') }}"></script>
-{% block javascripts %}{% endblock %}
-
-
-
-{%block body%}
-{# ===== NAVBAR ===== #}
-<div class="invisible" style="translate: none; rotate: none; scale: none; visibility: visible; opacity: 1; transform: translate(0px, 0px);">
-    <nav class="fixed w-full top-0 z-50 px-4 md:px-16 lg:px-24 xl:px-32 py-4 border-b transition-all duration-300 border-neutral-300">
-        <div class="max-w-7xl mx-auto flex items-center justify-between">
-
-            <a href="#!">
-                <img
-                    alt="Buildify Logo"
-                    width="135"
-                    height="36"
-                    src="{{ asset('assets/logo.svg') }}"
-                >
-            </a>
-
-            <div class="hidden md:flex gap-3">
-                <a href="#!" class="py-1 px-3 hover:text-zinc-500">Home</a>
-                <a href="#features" class="py-1 px-3 hover:text-zinc-500">Features</a>
-                <a href="#testimonials" class="py-1 px-3 hover:text-zinc-500">Testimonials</a>
-                <a href="#pricing" class="py-1 px-3 hover:text-zinc-500">Pricing</a>
-            </div>
-
-            <button id="openMenu" class="md:hidden">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                     class="lucide lucide-menu size-6.5" aria-hidden="true">
-                    <path d="M4 5h16"></path>
-                    <path d="M4 12h16"></path>
-                    <path d="M4 19h16"></path>
-                </svg>
-            </button>
-
-            <a href="#!"
-               class="hidden md:inline-block py-2.5 px-6 shadow-[inset_0_2px_4px_rgba(255,255,255,0.6)]
-                      bg-orange-500 text-white rounded-full">
-                Get Started
-            </a>
-        </div>
-    </nav>
-</div>
-
-{# ===== MOBILE MENU ===== #}
-<div id="mobileMenu"
-     class="fixed top-0 right-0 z-50 w-full bg-white shadow-xl shadow-black/5
-            transition-all duration-300 ease-in-out h-0 overflow-hidden">
-
-    <div class="flex items-center justify-between p-4">
-        <img
-            alt="Buildify Logo"
-            width="135"
-            height="36"
-            src="{{ asset('assets/logo.svg') }}"
-        >
-
-        <svg id="closeMenu" xmlns="http://www.w3.org/2000/svg"
-             width="24" height="24" viewBox="0 0 24 24"
-             fill="none" stroke="currentColor"
-             stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-             class="lucide lucide-x size-6.5" aria-hidden="true">
-            <path d="M18 6 6 18"></path>
-            <path d="m6 6 12 12"></path>
-        </svg>
-    </div>
-
-    <div class="flex flex-col gap-4 p-4 text-base">
-        <a href="#!" class="py-1 px-3">Home</a>
-        <a href="#features" class="py-1 px-3">Features</a>
-        <a href="#testimonials" class="py-1 px-3">Testimonials</a>
-        <a href="#pricing" class="py-1 px-3">Pricing</a>
-
-        <a href="#!"
-           class="py-2.5 px-6 w-max text-sm
-                  shadow-[inset_0_2px_4px_rgba(255,255,255,0.6)]
-                  bg-linear-to-tl from-orange-600 to-orange-500
-                  text-white rounded-full">
-            Get Started
-        </a>
-    </div>
-</div>
-
-{# ===== HERO SECTION ===== #}
-<section class="bg-[url('/assets/hero-gradient-bg.png')] bg-cover bg-center bg-no-repeat px-4 md:px-16 lg:px-24 xl:px-32">
-    <div class="max-w-7xl mx-auto flex flex-col items-center justify-center h-screen">
-
-        <div class="flex items-center gap-2 bg-white/50 backdrop-blur p-1 rounded-full"
-             style="translate: none; rotate: none; scale: none; visibility: visible; opacity: 1; transform: translate(0px, 0px);">
-
-            <div class="flex items-center -space-x-3">
-                <img class="size-7 rounded-full border-2 border-white"
-                     alt="userImage1"
-                     src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?q=80&amp;w=50">
-                <img class="size-7 rounded-full border-2 border-white"
-                     alt="userImage2"
-                     src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&amp;w=50">
-            </div>
-
-            <span>60K+</span>
-            <div class="h-5 w-px mx-1 bg-white rounded-full"></div>
-            <span>Happy users worldwide</span>
-            <div class="h-5 w-px mx-1 bg-white rounded-full"></div>
-
-            <div class="flex items-center gap-1 pr-3">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                     class="lucide lucide-star size-4.5 fill-orange-500 stroke-orange-500"
-                     aria-hidden="true">
-                    <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
-                </svg>
-                <span>4.9</span>
-            </div>
-        </div>
-
-        <div class="relative">
-            <h1 class="text-center font-urbanist text-5xl/15 md:text-6xl/18 mt-4 font-bold max-w-2xl">
-                Build, Launch &amp; Scale with AI agents.
-            </h1>
-        </div>
-
-        <p class="text-center text-base/7 text-zinc-500 max-w-lg mt-4">
-            Design, automate and deploy intelligent AI agents to power your products,
-            workflows and business growth.
-        </p>
-
-        <div class="flex flex-col md:flex-row items-center gap-4 mt-6 w-full md:w-auto">
-            <a href="#!"
-               class="py-3 md:py-2.5 w-full md:w-auto px-8 border border-orange-200
-                      bg-linear-to-tl from-orange-600 to-orange-500 text-white
-                      text-center rounded-full">
-                Get Started
-            </a>
-
-            <a href="#!"
-               class="relative py-3 md:py-2.5 w-full md:w-auto px-8
-                      bg-white/50 text-gray-600 font-medium text-center
-                      border border-white rounded-full">
-                Watch Demo
-
-                <div class="absolute size-8 pointer-events-none right-0 top-full -translate-y-1/2">
-                    <img alt="mouse-arrow" width="24" height="24"
-                         src="{{ asset('assets/mouse-arrow.svg') }}">
+    <div class="invisible" style="translate: none; rotate: none; scale: none; visibility: visible; opacity: 1; transform: translate(0px, 0px);">
+        <nav class="fixed w-full top-0 z-50 px-4 md:px-16 lg:px-24 xl:px-32 py-4 border-b transition-all duration-300 border-neutral-300">
+            <div class="max-w-7xl mx-auto flex items-center justify-between">
+                <a href="{{ path('app_home') }}">
+                    <img alt="Buildify Logo" width="135" height="36" src="{{ asset('images/logo.svg') }}">
+                </a>
+                <div class="hidden md:flex gap-3">
+                    <a href="{{ path('app_home') }}" class="py-1 px-3 hover:text-zinc-500">Home</a>
+                    <a href="{{ path('app_goal_index') }}" class="py-1 px-3 hover:text-zinc-500">Mes Objectifs</a>
+                    <a href="#features" class="py-1 px-3 hover:text-zinc-500">Features</a>
+                    <a href="#testimonials" class="py-1 px-3 hover:text-zinc-500">Testimonials</a>
                 </div>
-            </a>
-        </div>
-    </div>
-</section>
-{# ===== STATS SECTION ===== #}
-<section class="border-y border-gray-200 py-10 px-4 md:px-16 lg:px-24 xl:px-32">
-    <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div class="flex flex-col items-center gap-4 text-center">
-            <h3 class="text-4xl font-semibold font-urbanist">3x</h3>
-            <p class="text-gray-500">Faster AI agent development</p>
-        </div>
-        <div class="flex flex-col items-center gap-4 text-center">
-            <h3 class="text-4xl font-semibold font-urbanist">60%</h3>
-            <p class="text-gray-500">Reduction in manual workflows</p>
-        </div>
-        <div class="flex flex-col items-center gap-4 text-center">
-            <h3 class="text-4xl font-semibold font-urbanist">99.9%</h3>
-            <p class="text-gray-500">Reliable agent execution uptime</p>
-        </div>
-    </div>
-</section>
-
-{# ===== FAQ SECTION ===== #}
-<section class="border-y border-gray-200">
-
-    <div class="px-4 md:px-16 lg:px-24 xl:px-32">
-        <div class="p-4 pt-20 md:p-20 flex flex-col items-center max-w-7xl mx-auto justify-center border-x border-gray-200">
-            <div class="flex flex-col gap-6 items-center">
-                <div class="bg-orange-500 shadow-[inset_0_4px_4px_rgba(255,255,255,0.25),0_4px_10px_rgba(0,0,0,0.15)]
-                            p-2 aspect-square rounded-lg text-white -rotate-15">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                         class="lucide lucide-circle-question-mark" aria-hidden="true">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                        <path d="M12 17h.01"></path>
+                <button id="openMenu" class="md:hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu size-6.5" aria-hidden="true">
+                        <path d="M4 5h16"></path>
+                        <path d="M4 12h16"></path>
+                        <path d="M4 19h16"></path>
                     </svg>
-                </div>
-
-                <h2 class="text-4xl font-semibold font-urbanist">Got questions?</h2>
-                <p class="text-zinc-500 text-base/7 text-center max-w-lg">
-                    Everything you need to know about Buildify, AI agents and how to get started.
-                </p>
+                </button>
+                <a href="{{ path('app_goal_index') }}" class="hidden md:inline-block py-2.5 px-6 shadow-[inset_0_2px_4px_rgba(255,255,255,0.6)] bg-purple-600 text-white rounded-full">
+                    Mes Objectifs
+                </a>
             </div>
+        </nav>
+    </div>
+    <div id="mobileMenu" class="fixed top-0 right-0 z-50 w-full bg-white shadow-xl shadow-black/5 transition-all duration-300 ease-in-out h-0 overflow-hidden">
+        <div class="flex items-center justify-between p-4">
+            <img alt="Buildify Logo" width="135" height="36" src="{{ asset('images/logo.svg') }}">
+            <svg id="closeMenu" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x size-6.5" aria-hidden="true">
+                <path d="M18 6 6 18"></path>
+                <path d="m6 6 12 12"></path>
+            </svg>
+        </div>
+        <div class="flex flex-col gap-4 p-4 text-base">
+            <a href="{{ path('app_home') }}" class="py-1 px-3">Home</a>
+            <a href="{{ path('app_goal_index') }}" class="py-1 px-3">Mes Objectifs</a>
+            <a href="#features" class="py-1 px-3">Features</a>
+            <a href="#testimonials" class="py-1 px-3">Testimonials</a>
+            <a href="{{ path('app_goal_index') }}" class="py-2.5 px-6 w-max text-sm shadow-[inset_0_2px_4px_rgba(255,255,255,0.6)] bg-linear-to-tl from-purple-700 to-purple-600 text-white rounded-full">
+                Mes Objectifs
+            </a>
         </div>
     </div>
 
+    <!-- Hero Section -->
+    <section class="bg-[url('{{ asset('images/hero-gradient-bg.png') }}')] bg-cover bg-center bg-no-repeat px-4 md:px-16 lg:px-24 xl:px-32">
+        <div class="max-w-7xl mx-auto flex flex-col items-center justify-center h-screen">
+            <div class="flex items-center gap-2 bg-white/50 backdrop-blur p-1 rounded-full" style="translate: none; rotate: none; scale: none; visibility: visible; opacity: 1; transform: translate(0px, 0px);">
+                <div class="flex items-center -space-x-3">
+                    <img class="size-7 rounded-full border-2 border-white" alt="userImage1" src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?q=80&amp;w=50">
+                    <img class="size-7 rounded-full border-2 border-white" alt="userImage2" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&amp;w=50">
+                </div>
+                <span>60K+</span>
+                <div class="h-5 w-px mx-1 bg-white rounded-full"></div>
+                <span>Happy users worldwide</span>
+                <div class="h-5 w-px mx-1 bg-white rounded-full"></div>
+                <div class="flex items-center gap-1 pr-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-4.5 fill-purple-600 stroke-purple-600" aria-hidden="true">
+                        <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z">
+                        </path>
+                    </svg>
+                    <span>4.9</span>
+                </div>
+            </div>
+            <div class="relative">
+                <h1 class="text-center font-urbanist text-5xl/15 md:text-6xl/18 mt-4 font-bold max-w-2xl">
+                    Build, Launch &amp; Scale with AI agents.
+                </h1>
+                <div class="absolute -top-5 right-13 hidden md:block">
+                    <div class="bg-purple-600 shadow-[inset_0_4px_4px_rgba(255,255,255,0.25),0_4px_10px_rgba(0,0,0,0.15)] p-2 aspect-square rounded-lg text-white rotate-15">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkle" aria-hidden="true">
+                            <path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            <p class="text-center text-base/7 text-zinc-500 max-w-lg mt-4">Design, automate and deploy intelligent
+                AI agents to power your products, workflows and business growth.</p>
+            <div class="flex flex-col md:flex-row items-center gap-4 mt-6 w-full md:w-auto">
+                <a href="{{ path('app_goal_index') }}" class="py-3 md:py-2.5 w-full md:w-auto px-8 border border-purple-300 bg-linear-to-tl from-purple-700 to-purple-600 text-white text-center rounded-full">
+                    Mes Objectifs</a>
+                <a href="#features" class="relative py-3 md:py-2.5 w-full md:w-auto px-8 bg-white/50 text-gray-600 font-medium text-center border border-white rounded-full">
+                    Découvrir
+                    <div class="absolute size-8 pointer-events-none right-0 top-full -translate-y-1/2">
+                        <img alt="mouse-arrow" width="24" height="24" src="{{ asset('images/mouse-arrow.svg') }}">
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="border-y border-gray-200 py-10 px-4 md:px-16 lg:px-24 xl:px-32">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="flex flex-col items-center gap-4 text-center">
+                <h3 class="text-4xl font-semibold font-urbanist"><span class="">3</span>x</h3>
+                <p class="text-gray-500">Faster AI agent development</p>
+            </div>
+            <div class="flex flex-col items-center gap-4 text-center">
+                <h3 class="text-4xl font-semibold font-urbanist"><span class="">60</span>%</h3>
+                <p class="text-gray-500">Reduction in manual workflows</p>
+            </div>
+            <div class="flex flex-col items-center gap-4 text-center">
+                <h3 class="text-4xl font-semibold font-urbanist"><span class="">99.9</span>%</h3>
+                <p class="text-gray-500">Reliable agent execution uptime</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="px-4 md:px-16 lg:px-24 xl:px-32">
+        <div class="grid grid-cols-1 md:grid-cols-2 border-x md:divide-x border-gray-200 divide-gray-200 max-w-7xl mx-auto">
+            <div>
+                <div class="p-4 pt-16 md:p-16 flex flex-col items-start md:sticky md:top-26">
+                    <div class="flex flex-col gap-6 md:items-start items-center">
+                        <div class="flex flex-col md:flex-row items-center gap-4">
+                            <div class="bg-purple-600 shadow-[inset_0_4px_4px_rgba(255,255,255,0.25),0_4px_10px_rgba(0,0,0,0.15)] p-2 aspect-square rounded-lg text-white -rotate-15">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkle" aria-hidden="true">
+                                    <path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"></path>
+                                </svg>
+                            </div>
+                            <h2 class="text-4xl font-semibold font-urbanist">Core features</h2>
+                        </div>
+                        <p class="text-zinc-500 text-base/7 md:text-left text-center max-w-sm">Everything you need
+                            to build, deploy and scale AI agents - designed for speed, reliability and real-world
+                            production use.
+                        </p>
+                    </div>
+                    <div class="p-4 md:p-6 bg-purple-600 w-full rounded-xl mt-12">
+                        <p class="text-lg text-white">Trusted by teams building intelligent products with AI agents.</p>
+                        <a href="#" class="bg-white w-max hover:bg-gray-100 px-5 py-2 rounded-full mt-6 flex items-center gap-1">
+                            Explore use cases
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-up-right" aria-hidden="true">
+                                <path d="M7 7h10v10"></path>
+                                <path d="M7 17 17 7"></path>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 pt-16 md:p-16 space-y-6">
+                <div class="bg-purple-200 flex flex-col items-start p-6 rounded-xl w-full md:sticky md:top-26">
+                    <div class="bg-purple-600 p-2 text-white rounded-md">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bot" aria-hidden="true">
+                            <path d="M12 8V4H8"></path>
+                            <rect width="16" height="12" x="4" y="8" rx="2"></rect>
+                            <path d="M2 14h2"></path>
+                            <path d="M20 14h2"></path>
+                            <path d="M15 13v2"></path>
+                            <path d="M9 13v2"></path>
+                        </svg>
+                    </div>
+                    <p class="text-base font-medium mt-4">AI Agent Builder</p>
+                    <p class="text-sm text-gray-600 mt-2">
+                        Design intelligent agents with modular logic, memory and tools - no complex setup required.
+                    </p>
+                </div>
+                <div class="bg-green-100 flex flex-col items-start p-6 rounded-xl w-full md:sticky md:top-26">
+                    <div class="bg-green-500 p-2 text-white rounded-md">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-workflow" aria-hidden="true">
+                            <rect width="8" height="8" x="3" y="3" rx="2"></rect>
+                            <path d="M7 11v4a2 2 0 0 0 2 2h4"></path>
+                            <rect width="8" height="8" x="13" y="13" rx="2"></rect>
+                        </svg>
+                    </div>
+                    <p class="text-base font-medium mt-4">Workflow Orchestration</p>
+                    <p class="text-sm text-gray-600 mt-2">
+                        Chain actions, triggers and decisions to automate multi-step workflows reliably.
+                    </p>
+                </div>
+                <div class="bg-indigo-100 flex flex-col items-start p-6 rounded-xl w-full md:sticky md:top-26">
+                    <div class="bg-indigo-500 p-2 text-white rounded-md">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plug" aria-hidden="true">
+                            <path d="M12 22v-5"></path>
+                            <path d="M15 8V2"></path>
+                            <path d="M17 8a1 1 0 0 1 1 1v4a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1z"></path>
+                            <path d="M9 8V2"></path>
+                        </svg>
+                    </div>
+                    <p class="text-base font-medium mt-4">Plug &amp; Play Integrations</p>
+                    <p class="text-sm text-gray-600 mt-2">
+                        Connect APIs, databases and third-party tools seamlessly with built-in connectors.
+                    </p>
+                </div>
+                <div class="bg-pink-100 flex flex-col items-start p-6 rounded-xl w-full md:sticky md:top-26">
+                    <div class="bg-pink-500 p-2 text-white rounded-md">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-check" aria-hidden="true">
+                            <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z">
+                            </path>
+                            <path d="m9 12 2 2 4-4"></path>
+                        </svg>
+                    </div>
+                    <p class="text-base font-medium mt-4">Production-Ready Security</p>
+                    <p class="text-sm text-gray-600 mt-2">
+                        Built-in safeguards, rate limits and isolation to run agents safely at scale and protect your data.
+                    </p>
+                </div>
+                <div class="bg-lime-100 flex flex-col items-start p-6 rounded-xl w-full md:sticky md:top-26">
+                    <div class="bg-lime-500 p-2 text-white rounded-md">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chart-no-axes-column-increasing" aria-hidden="true">
+                            <path d="M5 21v-6"></path>
+                            <path d="M12 21V9"></path>
+                            <path d="M19 21V3"></path>
+                        </svg>
+                    </div>
+                    <p class="text-base font-medium mt-4">Real-Time Monitoring</p>
+                    <p class="text-sm text-gray-600 mt-2">
+                        Track executions, logs and performance metrics in real time and get insights into your agent's behavior.
+                    </p>
+                </div>
+                <div class="bg-gray-50 flex flex-col items-start p-6 rounded-xl w-full md:sticky md:top-26">
+                    <div class="bg-purple-600 p-2 text-white rounded-md">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cpu" aria-hidden="true">
+                            <path d="M12 20v2"></path><path d="M12 2v2"></path><path d="M17 20v2"></path><path d="M17 2v2"></path><path d="M2 12h2"></path><path d="M2 17h2"></path><path d="M2 7h2"></path><path d="M20 12h2"></path><path d="M20 17h2"></path><path d="M20 7h2"></path><path d="M7 20v2"></path><path d="M7 2v2"></path><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="8" y="8" width="8" height="8" rx="1"></rect>
+                        </svg>
+                    </div>
+                    <p class="text-base font-medium mt-4">Scalable Infrastructure</p>
+                    <p class="text-sm text-gray-600 mt-2">
+                        Run agents efficiently across workloads with automatic scaling and optimization.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Faq Section -->
+    <section class="border-y border-gray-200">
+        <div class="px-4 md:px-16 lg:px-24 xl:px-32">
+            <div class="p-4 pt-20 md:p-20 flex flex-col items-center max-w-7xl mx-auto justify-center border-x border-gray-200">
+                <div class="flex flex-col gap-6 items-center">
+                    <div class="bg-purple-600 shadow-[inset_0_4px_4px_rgba(255,255,255,0.25),0_4px_10px_rgba(0,0,0,0.15)] p-2 aspect-square rounded-lg text-white -rotate-15">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-question-mark" aria-hidden="true">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                            <path d="M12 17h.01"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-4xl font-semibold font-urbanist">Got questions?</h2>
+                    <p class="text-zinc-500 text-base/7 text-center max-w-lg">
+                        Everything you need to know about Buildify, AI agents and how to get started.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="px-4 md:px-16 lg:px-24 xl:px-32 border-t border-gray-200">
         <div class="grid grid-cols-1 md:grid-cols-2 divide-x divide-gray-200 border-x border-gray-200 max-w-7xl mx-auto">
-
             <div class="p-4 pt-20 md:p-20 space-y-6">
-
-                <details class="group bg-gray-50 border border-gray-200 rounded-xl" open>
+                <details class="group bg-gray-50 border border-gray-200 rounded-xl" open="">
                     <summary class="flex items-center justify-between p-6 select-none">
                         <h3 class="font-medium text-base">What is Buildify?</h3>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                             viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                             class="lucide lucide-chevron-down group-open:rotate-180">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down group-open:rotate-180" aria-hidden="true">
                             <path d="m6 9 6 6 6-6"></path>
                         </svg>
                     </summary>
                     <p class="text-sm/6 text-zinc-500 max-w-md p-6 pt-0">
-                        Buildify is a platform designed to help teams build, deploy and scale AI agents efficiently.
+                        Buildify is a platform designed to help
+                        teams build, deploy and scale AI agents efficiently. It provides tools for agent
+                        creation, workflow orchestration and production-ready execution.
                     </p>
                 </details>
-
-                {# other <details> blocks stay exactly the same #}
-
-            </div>
-
-            <div class="p-4 pt-20 md:p-20">
-                <div class="sticky top-30 flex items-center justify-between gap-5 p-6 bg-violet-500 w-full rounded-xl mt-12">
-                    <h3 class="text-lg text-white">
-                        Still have questions? Our team help you get started.
-                    </h3>
-                    <a href="#!" class="bg-white w-max hover:bg-gray-100 px-5 py-2 rounded-full">
-                        Contact support
-                    </a>
+                <details class="group bg-gray-50 border border-gray-200 rounded-xl">
+                    <summary class="flex items-center justify-between p-6 select-none">
+                        <h3 class="font-medium text-base">
+                            Do I need prior AI or ML experience to use Buildify?
+                        </h3>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down group-open:rotate-180" aria-hidden="true">
+                            <path d="m6 9 6 6 6-6"></path>
+                        </svg>
+                    </summary>
+                    <p class="text-sm/6 text-zinc-500 max-w-md p-6 pt-0">No. Buildify is designed for both
+                        developers and non-experts, offering simple abstractions while still allowing advanced
+                        customization when needed.
+                    </p>
+                </details>
+                <details class="group bg-gray-50 border border-gray-200 rounded-xl">
+                    <summary class="flex items-center justify-between p-6 select-none">
+                        <h3 class="font-medium text-base">Can I integrate Buildify with my existing tools?</h3>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down group-open:rotate-180" aria-hidden="true">
+                            <path d="m6 9 6 6 6-6"></path>
+                        </svg>
+                    </summary>
+                    <p class="text-sm/6 text-zinc-500 max-w-md p-6 pt-0">Yes. Buildify supports plug-and-play
+                        integrations with APIs, databases and third-party services to fit seamlessly into your
+                        existing stack.
+                    </p>
+                </details>
+                    <details class="group bg-gray-50 border border-gray-200 rounded-xl">
+                        <summary class="flex items-center justify-between p-6 select-none">
+                            <h3 class="font-medium text-base">Is Buildify suitable for production use?</h3>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down group-open:rotate-180" aria-hidden="true">
+                                <path d="m6 9 6 6 6-6"></path>
+                            </svg>
+                        </summary>
+                        <p class="text-sm/6 text-zinc-500 max-w-md p-6 pt-0">Absolutely. Buildify includes
+                            monitoring, security controls and scalable infrastructure to ensure reliable
+                            performance in real-world production environments.
+                        </p>
+                    </details>
+                    <details class="group bg-gray-50 border border-gray-200 rounded-xl">
+                        <summary class="flex items-center justify-between p-6 select-none">
+                            <h3 class="font-medium text-base">Can I customize or extend AI agents?</h3>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down group-open:rotate-180" aria-hidden="true">
+                                <path d="m6 9 6 6 6-6"></path>
+                            </svg>
+                        </summary>
+                        <p class="text-sm/6 text-zinc-500 max-w-md p-6 pt-0">Yes. You can customize agent logic,
+                            workflows and integrations or extend functionality using your own services and APIs.
+                        </p>
+                    </details>
+                </div>
+                <div class="p-4 pt-20 md:p-20">
+                    <div class="sticky top-30 flex items-center justify-between gap-5 p-6 bg-purple-1000 w-full rounded-xl mt-12">
+                        <h3 class="text-lg text-white text-balance">
+                            Still have questions? Our team help you get started.
+                        </h3>
+                        <a href="#!" class="bg-white w-max shrink-0 hover:bg-gray-100 px-5 py-2 rounded-full">
+                            Contact support
+                        </a>
+                    </div>
                 </div>
             </div>
-
         </div>
-    </div>
-</section>
-{# ===== TEAM SECTION ===== #}
-<section class="border-b border-gray-200 px-4 md:px-16 lg:px-24 xl:px-32">
-    <div class="pt-20 pb-32 flex flex-col items-center max-w-7xl mx-auto justify-center border-x border-gray-200">
-        <div class="flex flex-col gap-6 items-center">
-            <div class="flex flex-col md:flex-row items-center gap-4">
-                <div class="bg-orange-500 shadow-[inset_0_4px_4px_rgba(255,255,255,0.25),0_4px_10px_rgba(0,0,0,0.15)] p-2 aspect-square rounded-lg text-white -rotate-15">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-handshake" aria-hidden="true">
-                        <path d="m11 17 2 2a1 1 0 1 0 3-3"></path>
-                        <path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4"></path>
-                        <path d="m21 3 1 11h-2"></path>
-                        <path d="M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3"></path>
-                        <path d="M3 4h8"></path>
-                    </svg>
+    </section>
+
+    <!-- Team Section -->
+    <section class="border-b border-gray-200 px-4 md:px-16 lg:px-24 xl:px-32">
+        <div class="pt-20 pb-32 flex flex-col items-center max-w-7xl mx-auto justify-center border-x border-gray-200">
+            <div class="flex flex-col gap-6 items-center">
+                <div class="flex flex-col md:flex-row items-center gap-4">
+                    <div class="bg-purple-600 shadow-[inset_0_4px_4px_rgba(255,255,255,0.25),0_4px_10px_rgba(0,0,0,0.15)] p-2 aspect-square rounded-lg text-white -rotate-15">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-handshake" aria-hidden="true">
+                            <path d="m11 17 2 2a1 1 0 1 0 3-3"></path>
+                            <path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4"></path>
+                            <path d="m21 3 1 11h-2"></path>
+                            <path d="M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3"></path>
+                            <path d="M3 4h8"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-4xl font-semibold font-urbanist">Meet Our Team</h2>
                 </div>
-                <h2 class="text-4xl font-semibold font-urbanist">Meet Our Team</h2>
+                <p class="text-zinc-500 text-base/7 text-center max-w-lg">
+                    A passionate team of builders, designers,
+                    and engineers shaping the future of AI-powered products.
+                </p>
             </div>
-            <p class="text-zinc-500 text-base/7 text-center max-w-lg">
-                A passionate team of builders, designers,
-                and engineers shaping the future of AI-powered products.
-            </p>
+            <div class="flex flex-wrap items-center justify-center gap-10 md:gap-6 mt-24">
+                <div class="flex flex-col">
+                    <img alt="Donald Jackman" class="w-52 h-64 object-cover rounded-lg" src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?q=80&amp;w=600">
+                    <h3 class="text-lg font-medium mt-2">Donald Jackman</h3>
+                    <p class="text-zinc-500">Founder &amp; CEO</p>
+                </div>
+                <div class="flex flex-col">
+                    <img alt="Michael Brown" class="w-52 h-64 object-cover rounded-lg" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&amp;w=600">
+                    <h3 class="text-lg font-medium mt-2">Michael Brown</h3>
+                    <p class="text-zinc-500">Head of Engineering</p>
+                </div>
+                <div class="flex flex-col">
+                    <img alt="Olivia Martinez" class="w-52 h-64 object-cover rounded-lg" src="https://images.unsplash.com/flagged/photo-1573740144655-bbb6e88fb18a?q=80&amp;w=735&amp;auto=format&amp;fit=crop">
+                    <h3 class="text-lg font-medium mt-2">Olivia Martinez</h3>
+                    <p class="text-zinc-500">Product Designer</p>
+                </div>
+                <div class="flex flex-col">
+                    <img alt="Ethan Walker" class="w-52 h-64 object-cover rounded-lg" src="https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&amp;w=687&amp;auto=format&amp;fit=crop">
+                    <h3 class="text-lg font-medium mt-2">Ethan Walker</h3>
+                    <p class="text-zinc-500">AI Systems Engineer</p>
+                </div>
+                <div class="flex flex-col">
+                    <img alt="Sophia Lee" class="w-52 h-64 object-cover rounded-lg" src="https://images.unsplash.com/photo-1546961329-78bef0414d7c?q=80&amp;w=687&amp;auto=format&amp;fit=crop">
+                    <h3 class="text-lg font-medium mt-2">Sophia Lee</h3>
+                    <p class="text-zinc-500">UX Researcher</p>
+                </div>
+            </div>
         </div>
+    </section>
 
-        <div class="flex flex-wrap items-center justify-center gap-10 md:gap-6 mt-24">
-            <!-- team members (unchanged) -->
-        </div>
-    </div>
-</section>
-
-
-    
     <!-- Pricing Section -->
     <section id="pricing" class="border-b border-gray-200 px-4 md:px-16 lg:px-24 xl:px-32">
         <div class="p-4 pt-20 flex flex-col items-center max-w-7xl mx-auto justify-center border-x border-gray-200">
             <div class="flex flex-col gap-6 items-center">
                 <div class="flex flex-col md:flex-row items-center gap-4">
-                    <div class="bg-orange-500 shadow-[inset_0_4px_4px_rgba(255,255,255,0.25),0_4px_10px_rgba(0,0,0,0.15)] p-2 aspect-square rounded-lg text-white -rotate-15">
+                    <div class="bg-purple-600 shadow-[inset_0_4px_4px_rgba(255,255,255,0.25),0_4px_10px_rgba(0,0,0,0.15)] p-2 aspect-square rounded-lg text-white -rotate-15">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-dollar-sign" aria-hidden="true">
                             <circle cx="12" cy="12" r="10"></circle>
                             <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path>
@@ -306,11 +436,11 @@
                     as you build, launch and grow with AI agents.
                 </p>
             </div>
-            <div class="p-1 mt-10 border border-orange-200 bg-orange-50 rounded-full">
-                <button class="px-6 py-2 rounded-full cursor-pointer bg-orange-500 text-white">
+            <div class="p-1 mt-10 border border-purple-300 bg-purple-100 rounded-full">
+                <button class="px-6 py-2 rounded-full cursor-pointer bg-purple-600 text-white">
                     Monthly
                 </button>
-                <button class="relative px-6 py-2 rounded-full cursor-pointer text-orange-500">
+                <button class="relative px-6 py-2 rounded-full cursor-pointer text-purple-600">
                     Yearly
                     <span class="absolute -top-8 -right-8 rotate-15 bg-green-100 rounded-full px-2 py-1 text-xs text-green-500">
                         20% OFF
@@ -319,7 +449,7 @@
             </div>
             <div class="flex flex-wrap items-start justify-center gap-10 md:gap-4 px-4 mt-12">
                 <div class="p-5 pb-8 w-full sm:max-w-64 rounded-xl border border-gray-200 bg-white">
-                    <div class="w-max border border-gray-200 p-2 aspect-square rounded-lg text-orange-500 bg-white">
+                    <div class="w-max border border-gray-200 p-2 aspect-square rounded-lg text-purple-600 bg-white">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rocket" aria-hidden="true">
                             <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path>
                             <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path>
@@ -335,31 +465,31 @@
                     </a>
                     <div class="space-y-2 mt-6">
                         <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-orange-500" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-purple-600" aria-hidden="true">
                                 <path d="M20 6 9 17l-5-5"></path>
                             </svg>
                             <p class="text-zinc-500">Up to 3 AI agents</p>
                         </div>
                         <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-orange-500" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-purple-600" aria-hidden="true">
                                 <path d="M20 6 9 17l-5-5"></path>
                             </svg>
                             <p class="text-zinc-500">Basic workflow builder</p>
                         </div>
                         <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-orange-500" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-purple-600" aria-hidden="true">
                                 <path d="M20 6 9 17l-5-5"></path>
                             </svg>
                             <p class="text-zinc-500">Community support</p>
                         </div>
                         <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-orange-500" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-purple-600" aria-hidden="true">
                                 <path d="M20 6 9 17l-5-5"></path>
                             </svg>
                             <p class="text-zinc-500">Limited execution runs</p>
                         </div>
                         <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-orange-500" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-purple-600" aria-hidden="true">
                                 <path d="M20 6 9 17l-5-5"></path>
                             </svg>
                             <p class="text-zinc-500">Starter integrations</p>
@@ -367,7 +497,7 @@
                     </div>
                 </div>
                 <div class="p-5 pb-8 w-full sm:max-w-64 rounded-xl border border-gray-200 bg-white">
-                    <div class="w-max border border-gray-200 p-2 aspect-square rounded-lg text-orange-500 bg-white">
+                    <div class="w-max border border-gray-200 p-2 aspect-square rounded-lg text-purple-600 bg-white">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user" aria-hidden="true">
                             <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
                             <circle cx="12" cy="7" r="4"></circle>
@@ -376,44 +506,44 @@
                     <h3 class="text-lg font-medium mt-6">Starter</h3>
                     <p class="text-zinc-500">For individuals building and testing AI-powered ideas.</p>
                     <p class="text-3xl font-semibold mt-4">$19/mo</p>
-                    <a href="#" class="block text-center py-2.5 rounded-full mt-6 text-zinc-600 bg-gray-50 border border-gray-200">
-                        Get Started
+                    <a href="{{ path('app_goal_index') }}" class="block text-center py-2.5 rounded-full mt-6 text-zinc-600 bg-gray-50 border border-gray-200 hover:bg-gray-100 transition-colors">
+                        Commencer
                     </a>
                     <div class="space-y-2 mt-6">
                         <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-orange-500" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-purple-600" aria-hidden="true">
                                 <path d="M20 6 9 17l-5-5"></path>
                             </svg>
                             <p class="text-zinc-500">Up to 10 AI agents</p>
                         </div>
                         <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-orange-500" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-purple-600" aria-hidden="true">
                                 <path d="M20 6 9 17l-5-5"></path>
                             </svg>
                             <p class="text-zinc-500">Advanced workflows</p>
                         </div>
                         <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-orange-500" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-purple-600" aria-hidden="true">
                                 <path d="M20 6 9 17l-5-5"></path>
                             </svg>
                             <p class="text-zinc-500">API &amp; webhook access</p>
                         </div>
                         <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-orange-500" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-purple-600" aria-hidden="true">
                                 <path d="M20 6 9 17l-5-5"></path>
                             </svg>
                             <p class="text-zinc-500">Execution logs</p>
                         </div>
                         <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-orange-500" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-purple-600" aria-hidden="true">
                                 <path d="M20 6 9 17l-5-5"></path>
                             </svg>
                             <p class="text-zinc-500">Email support</p>
                         </div>
                     </div>
                 </div>
-                <div class="p-5 pb-8 w-full sm:max-w-64 rounded-xl border border-gray-200 bg-linear-to-br from-orange-50 to-orange-100">
-                    <div class="w-max border border-gray-200 p-2 aspect-square rounded-lg text-orange-500 bg-white">
+                <div class="p-5 pb-8 w-full sm:max-w-64 rounded-xl border border-gray-200 bg-linear-to-br from-violet-50 to-violet-100">
+                    <div class="w-max border border-gray-200 p-2 aspect-square rounded-lg text-purple-600 bg-white">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users" aria-hidden="true">
                             <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
                             <path d="M16 3.128a4 4 0 0 1 0 7.744"></path>
@@ -429,38 +559,38 @@
                     </a>
                     <div class="space-y-2 mt-6">
                         <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-orange-500" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-purple-600" aria-hidden="true">
                                 <path d="M20 6 9 17l-5-5"></path>
                             </svg>
                             <p class="text-zinc-500">Unlimited AI agents</p>
                         </div>
                         <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-orange-500" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-purple-600" aria-hidden="true">
                                 <path d="M20 6 9 17l-5-5"></path>
                             </svg>
                             <p class="text-zinc-500">Priority execution</p>
                         </div>
                         <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-orange-500" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-purple-600" aria-hidden="true">
                                 <path d="M20 6 9 17l-5-5"></path>
                             </svg>
                             <p class="text-zinc-500">Real-time monitoring</p>
                         </div>
                         <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-orange-500" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-purple-600" aria-hidden="true">
                                 <path d="M20 6 9 17l-5-5"></path>
                             </svg>
                             <p class="text-zinc-500">Team collaboration</p>
                         </div>
                         <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-orange-500" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-purple-600" aria-hidden="true">
                                 <path d="M20 6 9 17l-5-5"></path>
                             </svg>
                             <p class="text-zinc-500">Priority support</p>
                         </div>
                     </div>
                 </div>
-                <div class="p-5 pb-8 w-full sm:max-w-64 rounded-xl border border-gray-200 bg-orange-500 text-white">
+                <div class="p-5 pb-8 w-full sm:max-w-64 rounded-xl border border-gray-200 bg-purple-600 text-white">
                     <div class="w-max border border-gray-200 p-2 aspect-square rounded-lg text-white">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user" aria-hidden="true">
                             <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
@@ -515,7 +645,7 @@
         <div class="p-4 pt-20 md:p-20 flex flex-col items-center max-w-7xl mx-auto justify-center border-x border-gray-200">
             <div class="flex flex-col gap-6 items-center">
                 <div class="flex flex-col md:flex-row items-center gap-4">
-                    <div class="bg-orange-500 shadow-[inset_0_4px_4px_rgba(255,255,255,0.25),0_4px_10px_rgba(0,0,0,0.15)] p-2 aspect-square rounded-lg text-white -rotate-15">
+                    <div class="bg-purple-600 shadow-[inset_0_4px_4px_rgba(255,255,255,0.25),0_4px_10px_rgba(0,0,0,0.15)] p-2 aspect-square rounded-lg text-white -rotate-15">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-check" aria-hidden="true">
                             <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path>
                             <path d="m9 12 2 2 4-4"></path>
@@ -531,19 +661,19 @@
             <div class="flex flex-wrap gap-8 items-center justify-center mt-24">
                 <div class="p-6 rounded-xl max-w-80 shadow-[0_4px_20px_rgba(0,0,0,0.10)] bg-white">
                     <div class="flex items-center gap-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 fill-orange-500 text-orange-500" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 fill-purple-600 text-purple-600" aria-hidden="true">
                             <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
                         </svg>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 fill-orange-500 text-orange-500" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 fill-purple-600 text-purple-600" aria-hidden="true">
                             <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
                         </svg>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 fill-orange-500 text-orange-500" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 fill-purple-600 text-purple-600" aria-hidden="true">
                             <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
                         </svg>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 fill-orange-500 text-orange-500" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 fill-purple-600 text-purple-600" aria-hidden="true">
                             <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
                         </svg>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 fill-orange-500 text-orange-500" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 fill-purple-600 text-purple-600" aria-hidden="true">
                             <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
                         </svg>
                     </div>
@@ -559,7 +689,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="p-6 rounded-xl max-w-80 shadow-[0_4px_20px_rgba(0,0,0,0.10)] bg-orange-500">
+                <div class="p-6 rounded-xl max-w-80 shadow-[0_4px_20px_rgba(0,0,0,0.10)] bg-purple-600">
                     <div class="flex items-center gap-1">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 text-white fill-white" aria-hidden="true">
                             <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
@@ -591,18 +721,18 @@
                 </div>
                 <div class="p-6 rounded-xl max-w-80 shadow-[0_4px_20px_rgba(0,0,0,0.10)] bg-white">
                     <div class="flex items-center gap-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 fill-orange-500 text-orange-500" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 fill-purple-600 text-purple-600" aria-hidden="true">
                             <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
-                        </svg><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 fill-orange-500 text-orange-500" aria-hidden="true">
-                            <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
-                        </svg>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 fill-orange-500 text-orange-500" aria-hidden="true">
+                        </svg><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 fill-purple-600 text-purple-600" aria-hidden="true">
                             <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
                         </svg>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 fill-orange-500 text-orange-500" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 fill-purple-600 text-purple-600" aria-hidden="true">
                             <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
                         </svg>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 fill-orange-500 text-orange-500" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 fill-purple-600 text-purple-600" aria-hidden="true">
+                            <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
+                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 fill-purple-600 text-purple-600" aria-hidden="true">
                             <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
                         </svg>
                     </div>
@@ -618,92 +748,58 @@
                     </div>
                 </div>
             </div>
-            <a href="#" class="mt-20 px-8 py-2.5 rounded-full bg-orange-50  border border-orange-200 text-orange-500">
+            <a href="#" class="mt-20 px-8 py-2.5 rounded-full bg-purple-100  border border-purple-300 text-purple-600">
                 See more
             </a>
         </div>
     </section>
-{# ===== FOOTER ===== #}
-<footer class="px-4 md:px-16 lg:px-24 xl:px-32">
-    <div class="border-x border-gray-200 px-4 md:px-12 max-w-7xl mx-auto pt-40">
-        <div class="flex flex-col md:flex-row items-start justify-between relative p-8 md:p-12 overflow-hidden pb-32 md:pb-42 bg-linear-to-t from-orange-50 to-orange-100 rounded-t-2xl">
 
-            <div class="max-w-72">
-                <img
-                    alt="Logo"
-                    width="135"
-                    height="35"
-                    class="h-62 w-auto absolute -bottom-18 opacity-7 select-none pointer-events-none"
-                    src="{{ asset('assets/logo-colored.svg') }}"
-                >
-
-                <img
-                    alt="Logo"
-                    width="135"
-                    height="35"
-                    class="h-9"
-                    src="{{ asset('assets/logo-colored.svg') }}"
-                >
-
-                <p class="text-zinc-500 mt-4 pb-6">
-                    For further assistance or additional inquiries, feel free to contact us
-                </p>
-
-                <p class="text-zinc-500 mt-4 pb-6">
-                    Copyright 2026 ©
-                    <a href="https://prebuiltui.com/" target="_blank">PrebuiltUI</a>.
-                    Distributed by
-                    <a href="https://themewagon.com" target="_blank">ThemeWagon</a>
-                </p>
-            </div>
-
-            <div>
-                <p class="uppercase font-semibold text-orange-600 text-base">Social</p>
-                <div class="flex flex-col mt-6 gap-3">
-
-                    <a href="#!" class="flex items-center gap-2 text-orange-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                             viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                             class="lucide lucide-twitter">
-                            <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6
-                                     2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5
-                                     c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8
-                                     1.1 0 3-1.2 3-1.2z"></path>
-                        </svg>
-                        <p>Twitter</p>
-                    </a>
-
-                    <a href="#!" class="flex items-center gap-2 text-orange-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                             viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                             class="lucide lucide-linkedin">
-                            <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2
-                                     2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
-                            <rect width="4" height="12" x="2" y="9"></rect>
-                            <circle cx="4" cy="4" r="2"></circle>
-                        </svg>
-                        <p>Linkedin</p>
-                    </a>
-
-                    <a href="#!" class="flex items-center gap-2 text-orange-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                             viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                             class="lucide lucide-instagram">
-                            <rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect>
-                            <path d="M16 11.37A4 4 0 1 1 12.63 8
-                                     4 4 0 0 1 16 11.37z"></path>
-                            <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line>
-                        </svg>
-                        <p>Instagram</p>
-                    </a>
-
+    <!-- Footer -->
+    <footer class="px-4 md:px-16 lg:px-24 xl:px-32">
+        <div class="border-x border-gray-200 px-4 md:px-12 max-w-7xl mx-auto pt-40">
+            <div class="flex flex-col md:flex-row items-start justify-between relative p-8 md:p-12 overflow-hidden pb-32 md:pb-42 bg-linear-to-t from-orange-50 to-orange-100 rounded-t-2xl">
+                <div class="max-w-72">
+                    <img alt="Logo" width="135" height="35" class="h-62 w-auto absolute -bottom-18 opacity-7 select-none pointer-events-none" src="{{ asset('assets/logo-colored.svg') }}">
+                    <img alt="Logo" width="135" height="35" class="h-9" src="{{ asset('assets/logo-colored.svg') }}">
+                    <p class="text-zinc-500 mt-4 pb-6">
+                        For further assistance or additional inquiries, feel free to contact us
+                    </p>
+                    <p class="text-zinc-500 mt-4 pb-6">Copyright 2026 ©<a href="https://prebuiltui.com/" target="_blank">PrebuiltUI.</a>
+Distributed by <a href="https://themewagon.com" target="_blank">ThemeWagon</a></p>
+                </div>
+                <div>
+                    <p class="uppercase font-semibold text-orange-600 text-base">Social</p>
+                    <div class="flex flex-col mt-6 gap-3">
+                        <a href="#!" class="flex items-center gap-2 text-purple-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-twitter" aria-hidden="true">
+                                <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path>
+                            </svg>
+                            <p>Twitter</p>
+                        </a>
+                        <a href="#!" class="flex items-center gap-2 text-purple-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-linkedin" aria-hidden="true">
+                                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                                <rect width="4" height="12" x="2" y="9"></rect>
+                                <circle cx="4" cy="4" r="2"></circle>
+                            </svg>
+                            <p>Linkedin</p>
+                        </a>
+                        <a href="#!" class="flex items-center gap-2 text-purple-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-instagram" aria-hidden="true">
+                                <rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect>
+                                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                                <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line>
+                            </svg>
+                            <p>Instagram</p>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</footer>
+    </footer>
+    <script src="{{ asset('assets/script.js') }}"></script>
+</body>
 
-{% endblock %}
+</html>
+
+
