@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class UserController extends AbstractController
 {
@@ -30,6 +31,7 @@ class UserController extends AbstractController
                 $user,
                 $user->getPassword()
             );
+
             $user->setPassword($hashedPassword);
 
             $entityManager->persist($user);
@@ -41,5 +43,12 @@ class UserController extends AbstractController
         return $this->render('user/add.html.twig', [
             'form' => $form->createView(),
         ]);
+    }
+
+    #[IsGranted('ROLE_USER')]
+    #[Route('/user/dashboard', name: 'user_dashboard')]
+    public function dashboard(): Response
+    {
+return $this->render('user/dashuser.html.twig');
     }
 }
