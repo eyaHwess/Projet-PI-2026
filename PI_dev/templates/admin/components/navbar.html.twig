@@ -1,0 +1,250 @@
+	<!-- Top bar START -->
+	<nav class="navbar top-bar navbar-light border-bottom py-0 py-xl-3">
+		<div class="container-fluid p-0">
+			<div class="d-flex align-items-center w-100">
+
+				<!-- Logo START -->
+                <div class="d-flex align-items-center d-xl-none">
+                    <a class="navbar-brand" href="#">
+                        <img class="light-mode-item navbar-brand-item h-30px"
+                            src="{{ asset('adminDashboard/assets/images/logo-mobile.svg') }}"
+                            alt="Logo">
+                        <img class="dark-mode-item navbar-brand-item h-30px"
+                            src="{{ asset('adminDashboard/assets/images/logo-mobile-light.svg') }}"
+                            alt="Logo">
+                    </a>
+                </div>
+                <!-- Logo END -->
+
+                <!-- Toggler for sidebar START -->
+                <div class="navbar-expand-xl sidebar-offcanvas-menu">
+                    <button class="navbar-toggler me-auto"
+                            type="button"
+                            data-bs-toggle="offcanvas"
+                            data-bs-target="#offcanvasSidebar"
+                            aria-controls="offcanvasSidebar"
+                            aria-expanded="false"
+                            aria-label="Toggle navigation"
+                            data-bs-auto-close="outside">
+                        <i class="bi bi-text-right fa-fw h2 lh-0 mb-0 rtl-flip"></i>
+                    </button>
+                </div>
+                <!-- Toggler for sidebar END -->
+
+				<!-- Top bar left -->
+                <div class="navbar-expand-lg ms-auto ms-xl-0">
+
+                    <!-- Toggler for menubar START -->
+                    <button class="navbar-toggler ms-auto"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#navbarTopContent"
+                            aria-controls="navbarTopContent"
+                            aria-expanded="false"
+                            aria-label="Toggle navigation">
+                        <span class="navbar-toggler-animation">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </span>
+                    </button>
+                    <!-- Toggler for menubar END -->
+
+                    <!-- Topbar menu START -->
+                    <div class="collapse navbar-collapse w-100" id="navbarTopContent">
+
+                        <!-- Top search START -->
+                        <div class="nav my-3 my-xl-0 flex-nowrap align-items-center">
+                            <div class="nav-item w-100">
+
+                                {# Search form (can be wired later to a real route) #}
+                                <form class="position-relative" method="get" action="#">
+                                    <input class="form-control pe-5 bg-secondary bg-opacity-10 border-0"
+                                        type="search"
+                                        name="q"
+                                        placeholder="Search"
+                                        aria-label="Search">
+                                    <button class="bg-transparent px-2 py-0 border-0 position-absolute top-50 end-0 translate-middle-y"
+                                            type="submit">
+                                        <i class="fas fa-search fs-6 text-primary"></i>
+                                    </button>
+                                </form>
+
+                            </div>
+                        </div>
+                        <!-- Top search END -->
+
+                    </div>
+                    <!-- Topbar menu END -->
+
+                </div>
+                <!-- Top bar left END -->
+
+				<!-- Top bar right START -->
+                <div class="ms-xl-auto">
+                    <ul class="navbar-nav flex-row align-items-center">
+
+                        <!-- Notification dropdown START -->
+                        {% embed 'admin/components/notification/notification_dropdown.html.twig' with {
+                            notifications_count: 2
+                        } %}
+
+                            {% block notifications %}
+
+                                {% include 'admin/components/notification/notification_item.html.twig' with {
+                                    avatar: asset('adminDashboard/assets/images/avatar/08.jpg'),
+                                    name: 'Joan Wallace',
+                                    message: 'Congratulate <b>Joan Wallace</b> for graduating from <b>Microverse university</b>',
+                                    actionText: 'Say congrats'
+                                } %}
+
+                                {% include 'admin/components/notification/notification_item.html.twig' with {
+                                    avatar: asset('adminDashboard/assets/images/avatar/02.jpg'),
+                                    title: 'Larry Lawson added a new course',
+                                    message: "What's new! Find out about new features",
+                                    actionText: 'View detail'
+                                } %}
+
+                                {% include 'admin/components/notification/notification_item.html.twig' with {
+                                    avatar: asset('adminDashboard/assets/images/avatar/05.jpg'),
+                                    title: 'New request to apply for Instructor',
+                                    actionText: 'View detail'
+                                } %}
+
+                                {% include 'admin/components/notification/notification_item.html.twig' with {
+                                    avatar: asset('adminDashboard/assets/images/avatar/03.jpg'),
+                                    title: 'Update v2.3 completed successfully',
+                                    message: "What's new! Find out about new features",
+                                    time: '5 min ago'
+                                } %}
+
+                            {% endblock %}
+
+                        {% endembed %}
+
+                        <!-- Notification dropdown END -->
+
+                        <!-- Profile dropdown START -->
+                        <li class="nav-item ms-2 ms-md-3 dropdown">
+
+                            <!-- Avatar (top bar) -->
+                            <a class="avatar avatar-sm p-0"
+                            href="#"
+                            id="profileDropdown"
+                            role="button"
+                            data-bs-auto-close="outside"
+                            data-bs-display="static"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
+
+                                <img class="avatar-img rounded-circle"
+                                    src="{{ asset(user_avatar|default('adminDashboard/assets/images/avatar/01.jpg')) }}"
+                                    alt="avatar">
+                            </a>
+
+                            <!-- Profile dropdown START -->
+                            <ul class="dropdown-menu dropdown-animation dropdown-menu-end shadow pt-3"
+                                aria-labelledby="profileDropdown">
+
+                                <!-- Profile info -->
+                                <li class="px-3">
+                                    <div class="d-flex align-items-center">
+
+                                        <!-- Avatar -->
+                                        <div class="avatar me-3 mb-3">
+                                            <img class="avatar-img rounded-circle shadow"
+                                                src="{{ asset(user_avatar|default('adminDashboard/assets/images/avatar/01.jpg')) }}"
+                                                alt="avatar">
+                                        </div>
+
+                                        <!-- User info -->
+                                        <div>
+                                            <a class="h6 mt-2 mt-sm-0" href="#">
+                                                {{ app.user.fullName|default('Lori Ferguson') }}
+                                            </a>
+                                            <p class="small m-0">
+                                                {{ app.user.email|default('example@gmail.com') }}
+                                            </p>
+                                        </div>
+
+                                    </div>
+                                </li>
+
+                                <li><hr class="dropdown-divider"></li>
+
+                                <!-- Links -->
+                                <li>
+                                    <a class="dropdown-item" href="#">
+                                        <i class="bi bi-person fa-fw me-2"></i> Edit Profile
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a class="dropdown-item" href="#">
+                                        <i class="bi bi-gear fa-fw me-2"></i> Account Settings
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a class="dropdown-item" href="#">
+                                        <i class="bi bi-info-circle fa-fw me-2"></i> Help
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a class="dropdown-item bg-danger-soft-hover" href="#">
+                                        <i class="bi bi-power fa-fw me-2"></i> Sign Out
+                                    </a>
+                                </li>
+
+                                <li><hr class="dropdown-divider"></li>
+
+                                <!-- Dark mode options START -->
+                                <li>
+                                    <div class="bg-light dark-mode-switch theme-icon-active d-flex align-items-center p-1 rounded mt-2">
+
+                                        <button type="button" class="btn btn-sm mb-0" data-bs-theme-value="light">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                fill="currentColor" class="bi bi-sun fa-fw mode-switch"
+                                                viewBox="0 0 16 16">
+                                                <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+                                                <path d="M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0z"/>
+                                            </svg>
+                                            Light
+                                        </button>
+
+                                        <button type="button" class="btn btn-sm mb-0" data-bs-theme-value="dark">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                fill="currentColor" class="bi bi-moon-stars fa-fw mode-switch"
+                                                viewBox="0 0 16 16">
+                                                <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46"/>
+                                            </svg>
+                                            Dark
+                                        </button>
+
+                                        <button type="button" class="btn btn-sm mb-0 active" data-bs-theme-value="auto">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                fill="currentColor" class="bi bi-circle-half fa-fw mode-switch"
+                                                viewBox="0 0 16 16">
+                                                <path d="M8 15A7 7 0 1 0 8 1v14z"/>
+                                            </svg>
+                                            Auto
+                                        </button>
+
+                                    </div>
+                                </li>
+                                <!-- Dark mode options END -->
+
+                            </ul>
+                            <!-- Profile dropdown END -->
+
+                        </li>
+                        <!-- Profile dropdown END -->
+
+					</ul>
+				</div>
+				<!-- Top bar right END -->
+			</div>
+		</div>
+	</nav>
+	<!-- Top bar END -->

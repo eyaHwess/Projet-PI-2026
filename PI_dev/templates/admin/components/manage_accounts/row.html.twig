@@ -1,0 +1,59 @@
+<tr>
+    <!-- Instructor name -->
+    <td>
+        <div class="d-flex align-items-center position-relative">
+            <!-- Avatar -->
+            <div class="avatar avatar-md">
+                {% if user.avatar %}
+                    <img src="{{ user.avatar }}" class="rounded-circle" alt="avatar">
+                {% else %}
+                    <div class="avatar-img rounded-circle bg-secondary bg-opacity-10
+                                d-flex align-items-center justify-content-center">
+                        {% set initials = user.name|split(' ')|map(v => v|first)|join|upper %}
+                        <span class="fw-bold text-secondary">{{ initials }}</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="mb-0 ms-2">
+                <h6 class="mb-0">
+                    <a href="#" class="stretched-link">{{ user.name }}</a>
+                </h6>
+            </div>
+        </div>
+    </td>
+
+    <!-- Detail -->
+    <td class="text-center text-sm-start">
+        <h6 class="mb-0">{{ user.role }}</h6>
+    </td>
+
+    <!-- Courses -->
+    <td>{{ user.courses }}</td>
+
+    <!-- Total students -->
+    <td>{{ user.students }}</td>
+
+    <!-- Actions -->
+    <td>
+        <a href="#"
+           class="btn btn-info-soft btn-round me-1 mb-1 mb-md-0"
+           data-bs-toggle="tooltip"
+           title="Message">
+            <i class="bi bi-envelope"></i>
+        </a>
+
+        <a href="#"
+           class="btn btn-success-soft btn-round me-1 mb-1 mb-md-0"
+           data-bs-toggle="tooltip"
+           title="Edit">
+            <i class="bi bi-pencil-square"></i>
+        </a>
+
+        <button class="btn btn-danger-soft btn-round mb-0"
+                data-bs-toggle="tooltip"
+                title="Delete">
+            <i class="bi bi-trash"></i>
+        </button>
+    </td>
+</tr>

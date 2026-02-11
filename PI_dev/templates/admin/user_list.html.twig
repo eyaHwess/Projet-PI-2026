@@ -1,0 +1,139 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Users{% endblock %}
+
+{% block content %}
+
+<div class="row g-4 pt-4">
+
+    <!-- Title -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <h1 class="h3 mb-0">Users</h1>
+        </div>
+    </div>
+
+    <!-- Card START -->
+    <div class="card bg-transparent">
+
+        <!-- Card header START -->
+        <div class="card-header bg-transparent border-bottom px-0">
+            <div class="row g-3 align-items-center justify-content-between">
+
+                <!-- Search bar -->
+                <div class="col-md-8">
+                    <form class="rounded position-relative">
+                        <input class="form-control bg-transparent"
+                               type="search"
+                               placeholder="Search"
+                               aria-label="Search">
+                        <button class="bg-transparent p-2 position-absolute top-50 end-0
+                                       translate-middle-y border-0 text-primary-hover text-reset"
+                                type="submit">
+                            <i class="fas fa-search fs-6"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Tabs -->
+                <div class="col-md-3">
+                    <ul class="list-inline mb-0 nav nav-pills nav-pill-dark-soft
+                               border-0 justify-content-end"
+                        role="tablist">
+
+                        <li class="nav-item">
+                            <a href="#grid-view"
+                               class="nav-link mb-0 me-2 active"
+                               data-bs-toggle="tab">
+                                <i class="fas fa-fw fa-th-large"></i>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="#list-view"
+                               class="nav-link mb-0"
+                               data-bs-toggle="tab">
+                                <i class="fas fa-fw fa-list-ul"></i>
+                            </a>
+                        </li>
+
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+        <!-- Card header END -->
+
+        <!-- Card body START -->
+        <div class="card-body px-0">
+
+            <div class="tab-content">
+
+                <!-- GRID VIEW -->
+                <div class="tab-pane fade show active" id="grid-view">
+                    <div class="row g-4">
+
+                        {% set users = [
+                            {
+                                name: 'Lamjed Stevens',
+                                role : 'user',
+                                status: 'Active',
+                                streakDays: '220',
+                                routines: 15,
+                                rating: 4,
+                                avatar: asset('adminDashboard/assets/images/avatar/09.jpg')
+                            },
+                            {
+                                name: 'Leila Mansour',
+                                role: 'coach',
+                                speciality: 'Fitness',
+                                totalSessions: 18,
+                                totalDemandes: 9,
+                                rating: 4,
+                                avatar: asset('adminDashboard/assets/images/avatar/03.jpg')
+                            },
+                            {
+                                name: 'Jacqueline Miller',
+                                role : 'user',
+                                status: 'Active',
+                                streakDays: '5',
+                                routines: 1,
+                                rating: 5,
+                                avatar: asset('adminDashboard/assets/images/avatar/01.jpg')
+                            },
+                             {
+                                name: 'Sara Johnson',
+                                role: 'coach',
+                                speciality: 'Mental Health',
+                                totalSessions: 25,
+                                totalDemandes: 14,
+                                rating: 4,
+                                avatar: asset('adminDashboard/assets/images/avatar/02.jpg')
+                            }
+                        ] %}
+
+                        {% for user in users %}
+                            {% include 'admin/components/user_card/user_card.html.twig' with { user: user } %}
+                        {% endfor %}
+
+                    </div>
+                </div>
+
+                <!-- LIST VIEW (placeholder) -->
+                <div class="tab-pane fade" id="list-view">
+                    <div class="alert alert-info mt-4">
+                        List view coming soon
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+        <!-- Card body END -->
+
+    </div>
+    <!-- Card END -->
+
+</div>
+
+{% endblock %}

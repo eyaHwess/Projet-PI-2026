@@ -1,0 +1,93 @@
+<!-- Personal information START -->
+<div class="col-xxl-7">
+    <div class="card bg-transparent border rounded-3 h-100">
+
+        <!-- Card header -->
+        <div class="card-header bg-light border-bottom">
+            <h5 class="card-header-title mb-0">Personal Information</h5>
+        </div>
+
+        <!-- Card body START -->
+        <div class="card-body">
+
+            <!-- Profile picture -->
+            <div class="avatar avatar-xl mb-3">
+                <img class="avatar-img rounded-circle border border-white border-3 shadow"
+                     src="{{ user.avatar ?? asset('assets/images/avatar/default.jpg') }}"
+                     alt="avatar">
+            </div>
+
+            <!-- Information START -->
+            <div class="row">
+
+                <!-- Left Column -->
+                <div class="col-md-6">
+                    <ul class="list-group list-group-borderless">
+
+                        <li class="list-group-item">
+                            <span>Full Name:</span>
+                            <span class="h6 mb-0">{{ user.name }}</span>
+                        </li>
+
+                        <li class="list-group-item">
+                            <span>Role:</span>
+                            <span class="h6 mb-0">
+                                {{ user.role is defined ? user.role|capitalize : 'User' }}
+                            </span>
+                        </li>
+
+                        {% if user.role is defined and user.role == 'coach' %}
+                            <li class="list-group-item">
+                                <span>Speciality:</span>
+                                <span class="h6 mb-0">{{ user.speciality }}</span>
+                            </li>
+                        {% else %}
+                            <li class="list-group-item">
+                                <span>Status:</span>
+                                <span class="h6 mb-0">{{ user.status }}</span>
+                            </li>
+                        {% endif %}
+
+                    </ul>
+                </div>
+
+                <!-- Right Column -->
+                <div class="col-md-6">
+                    <ul class="list-group list-group-borderless">
+
+                        <li class="list-group-item">
+                            <span>Email:</span>
+                            <span class="h6 mb-0">{{ user.email ?? 'example@gmail.com' }}</span>
+                        </li>
+
+                        <li class="list-group-item">
+                            <span>Joining Date:</span>
+                            <span class="h6 mb-0">
+                                {{ user.createdAt ?? "29 Aug 2019" }}
+                            </span>
+                        </li>
+
+                    </ul>
+                </div>
+
+                <!-- Description -->
+                <div class="col-12">
+                    <ul class="list-group list-group-borderless">
+                        <li class="list-group-item d-flex">
+                            <span class="me-2">Description:</span>
+                            <p class="h6 mb-0">
+                                {{ user.description ?? 'No description available.' }}
+                            </p>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+            <!-- Information END -->
+
+        </div>
+        <!-- Card body END -->
+
+    </div>
+</div>
+<!-- Personal information END -->

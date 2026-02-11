@@ -1,0 +1,56 @@
+<div class="d-sm-flex justify-content-between align-items-center">
+
+    <!-- Avatar and info -->
+    <div class="d-sm-flex align-items-center mb-1 mb-sm-0">
+
+        <!-- Avatar -->
+        <div class="avatar avatar-md flex-shrink-0">
+            {% if avatar is defined and avatar %}
+                <img class="avatar-img rounded-circle" src="{{ avatar }}" alt="avatar">
+            {% else %}
+                <div class="avatar-img rounded-circle
+                            {{ bgClass|default('bg-secondary bg-opacity-10') }}
+                            d-flex align-items-center justify-content-center">
+                    {% set computedInitials =
+                        name|default('')
+                        |split(' ')
+                        |map(v => v|first)
+                        |join
+                        |upper
+                    %}
+                    <span class="{{ textClass|default('text-secondary') }} fw-bold">
+                        {{ computedInitials ?: '?' }}
+                    </span>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Info -->
+        <div class="ms-0 ms-sm-2 mt-2 mt-sm-0">
+            <h6 class="mb-1">
+                {{ name }}
+                {% if verified|default(false) %}
+                    <i class="bi bi-patch-check-fill text-info small ms-1"></i>
+                {% endif %}
+            </h6>
+
+            <ul class="list-inline mb-0 small">
+                <li class="list-inline-item fw-light me-2 mb-1 mb-sm-0">
+                    <i class="fas fa-book text-purple me-1"></i>
+                    {{ courses }} Courses
+                </li>
+                <li class="list-inline-item fw-light me-2 mb-1 mb-sm-0">
+                    <i class="fas fa-star text-warning me-1"></i>
+                    {{ rating }}/5.0
+                </li>
+            </ul>
+        </div>
+
+    </div>
+
+    <!-- Button -->
+    <a href="{{ link|default('#') }}" class="btn btn-sm btn-light mb-0">
+        View
+    </a>
+
+</div>
