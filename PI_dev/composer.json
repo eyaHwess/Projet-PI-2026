@@ -9,16 +9,13 @@
         "ext-iconv": "*",
         "doctrine/doctrine-bundle": "^2.18.2",
         "doctrine/doctrine-migrations-bundle": "^3.7",
-<<<<<<< Updated upstream
+
         "doctrine/orm": "^3.6.2",
         "google/apiclient": ">=2.19",
         "phpdocumentor/reflection-docblock": "^5.6.6",
         "phpstan/phpdoc-parser": "^2.3.2",
-=======
-        "doctrine/orm": "*",
-        "phpdocumentor/reflection-docblock": "^5.6",
-        "phpstan/phpdoc-parser": "^2.3",
->>>>>>> Stashed changes
+
+       
         "symfony/asset": "7.4.*",
         "symfony/asset-mapper": "7.4.*",
         "symfony/console": "7.4.*",
