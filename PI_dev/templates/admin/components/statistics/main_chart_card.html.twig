@@ -1,0 +1,186 @@
+<!-- Main Chart Card with Tabs -->
+<div class="card bg-transparent border">
+    <div class="card-header bg-transparent border-bottom">
+        <div class="d-sm-flex justify-content-between align-items-center">
+            <h5 class="card-header-title mb-2 mb-sm-0">Analytics Overview</h5>
+            
+            <!-- Tab Buttons -->
+            <ul class="nav nav-pills nav-pills-dark-soft" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active" 
+                            id="engagement-tab" 
+                            data-bs-toggle="tab" 
+                            data-bs-target="#engagement" 
+                            type="button" 
+                            role="tab">
+                        User Engagement
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" 
+                            id="coach-tab" 
+                            data-bs-toggle="tab" 
+                            data-bs-target="#coach" 
+                            type="button" 
+                            role="tab">
+                        Coach Performance
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" 
+                            id="routines-tab" 
+                            data-bs-toggle="tab" 
+                            data-bs-target="#routines" 
+                            type="button" 
+                            role="tab">
+                        Popular Routines
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="card-body">
+        <div class="tab-content">
+            <!-- User Engagement Tab -->
+            <div class="tab-pane fade show active" id="engagement" role="tabpanel">
+                <div id="engagementChart"></div>
+            </div>
+            
+            <!-- Coach Performance Tab -->
+            <div class="tab-pane fade" id="coach" role="tabpanel">
+                <div id="coachChart"></div>
+            </div>
+            
+            <!-- Popular Routines Tab -->
+            <div class="tab-pane fade" id="routines" role="tabpanel">
+                <div id="routinesChart"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // User Engagement Chart
+    var engagementOptions = {
+        series: [{
+            name: 'Daily Active Users',
+            data: {{ engagementData.activeUsers|json_encode|raw }}
+        }, {
+            name: 'Routine Completions',
+            data: {{ engagementData.completions|json_encode|raw }}
+        }, {
+            name: 'Streak Maintenance',
+            data: {{ engagementData.streaks|json_encode|raw }}
+        }],
+        chart: {
+            height: 350,
+            type: 'area',
+            toolbar: {
+                show: false
+            }
+        },
+        dataLabels: {
+            enabled: false
+        },
+        stroke: {
+            curve: 'smooth',
+            width: 2
+        },
+        xaxis: {
+            categories: {{ engagementData.dates|json_encode|raw }}
+        },
+        colors: ['#0cbc87', '#066ac9', '#f7c32e'],
+        fill: {
+            type: 'gradient',
+            gradient: {
+                opacityFrom: 0.6,
+                opacityTo: 0.1,
+            }
+        },
+        legend: {
+            position: 'top'
+        }
+    };
+    var engagementChart = new ApexCharts(document.querySelector("#engagementChart"), engagementOptions);
+    engagementChart.render();
+
+    // Coach Performance Chart
+    var coachOptions = {
+        series: [{
+            name: 'Sessions Completed',
+            data: {{ coachData.sessions|json_encode|raw }}
+        }, {
+            name: 'Average Rating',
+            data: {{ coachData.ratings|json_encode|raw }}
+        }],
+        chart: {
+            height: 350,
+            type: 'bar',
+            toolbar: {
+                show: false
+            }
+        },
+        plotOptions: {
+            bar: {
+                horizontal: false,
+                columnWidth: '55%',
+            },
+        },
+        dataLabels: {
+            enabled: false
+        },
+        xaxis: {
+            categories: {{ coachData.coaches|json_encode|raw }}
+        },
+        colors: ['#066ac9', '#0cbc87'],
+        legend: {
+            position: 'top'
+        }
+    };
+    
+    // Lazy load coach chart when tab is shown
+    document.getElementById('coach-tab').addEventListener('shown.bs.tab', function() {
+        if (!window.coachChartRendered) {
+            var coachChart = new ApexCharts(document.querySelector("#coachChart"), coachOptions);
+            coachChart.render();
+            window.coachChartRendered = true;
+        }
+    });
+
+    // Popular Routines Chart
+    var routinesOptions = {
+        series: {{ routinesData.values|json_encode|raw }},
+        chart: {
+            height: 350,
+            type: 'donut',
+        },
+        labels: {{ routinesData.categories|json_encode|raw }},
+        colors: ['#066ac9', '#0cbc87', '#f7c32e', '#d6293e', '#8b75d7'],
+        legend: {
+            position: 'bottom'
+        },
+        responsive: [{
+            breakpoint: 480,
+            options: {
+                chart: {
+                    width: 200
+                },
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }]
+    };
+    
+    // Lazy load routines chart when tab is shown
+    document.getElementById('routines-tab').addEventListener('shown.bs.tab', function() {
+        if (!window.routinesChartRendered) {
+            var routinesChart = new ApexCharts(document.querySelector("#routinesChart"), routinesOptions);
+            routinesChart.render();
+            window.routinesChartRendered = true;
+        }
+    });
+});
+</script>

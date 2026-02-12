@@ -1,0 +1,53 @@
+<!-- Create Post Button -->
+<div class="d-flex justify-content-end mb-4">
+    <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#createPostCard">
+        <i class="bi bi-plus-circle me-1"></i> Create Post
+    </button>
+</div>
+
+<!-- Create Post Card (Collapsible) -->
+<div class="collapse mb-4" id="createPostCard">
+    <div class="card border shadow-sm">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">Create New Post</h5>
+        </div>
+        <div class="card-body">
+            <form id="createPostForm" method="POST" action="{{ path('post_create_ajax') }}">
+                <!-- Title Input -->
+                <div class="mb-3">
+                    <label for="postTitle" class="form-label">Title</label>
+                    <input type="text" 
+                           class="form-control" 
+                           id="postTitle" 
+                           name="title"
+                           placeholder="Enter post title" 
+                           required>
+                </div>
+                
+                <!-- Content Input -->
+                <div class="mb-3">
+                    <label for="postContent" class="form-label">Content</label>
+                    <textarea class="form-control" 
+                              id="postContent" 
+                              name="content"
+                              rows="4" 
+                              placeholder="What's on your mind?" 
+                              required></textarea>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="d-flex gap-2 justify-content-end">
+                    <button type="button" 
+                            class="btn btn-secondary" 
+                            data-bs-toggle="collapse" 
+                            data-bs-target="#createPostCard">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-send me-1"></i> Post
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

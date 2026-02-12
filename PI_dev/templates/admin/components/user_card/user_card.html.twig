@@ -19,6 +19,10 @@
                     <small class="text-muted">
                         Coach : {{ user.speciality }}
                     </small>
+                {% elseif user.role is defined and user.role == 'admin' %}
+                    <small class="text-muted">
+                        Admin : {{ user.status }}
+                    </small>
                 {% else %}
                     <small class="text-muted">
                         User : {{ user.status }}
@@ -46,6 +50,17 @@
                     <strong>{{ user.totalDemandes }}</strong>
                 </div>
 
+            {% elseif user.role is defined and user.role == 'admin' %}
+             <!-- Admin Info (only personal info) -->
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Email</span>
+                    <strong>{{ user.email }}</strong>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <span>Role Level</span>
+                    <strong>{{ user.roleLevel }}</strong>
+                </div>
             {% else %}
 
                 <!-- Normal User Stats -->
@@ -66,7 +81,6 @@
         <!-- Card footer -->
         <div class="card-footer bg-transparent border-top">
             <div class="d-flex justify-content-between align-items-center">
-
                 <!-- Rating star (only if rating exists) -->
                 {% if user.rating is defined %}
                     <ul class="list-inline mb-0">

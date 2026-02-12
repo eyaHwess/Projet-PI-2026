@@ -1,6 +1,6 @@
 {% extends 'admin/base_admin.html.twig' %}
 
-{% block title %}Users{% endblock %}
+{% block title %}Coaches{% endblock %}
 
 {% block content %}
 
@@ -9,7 +9,7 @@
     <!-- Title -->
     <div class="row mb-3">
         <div class="col-12">
-            <h1 class="h3 mb-0">Users</h1>
+            <h1 class="h3 mb-0">Coaches</h1>
         </div>
     </div>
 
@@ -75,12 +75,13 @@
 
                         {% set users = [
                             {
-                                name: 'Lamjed Stevens',
-                                role : 'user',
-                                status: 'Active',
-                                streakDays: '220',
-                                routines: 15,
-                                avatar: asset('adminDashboard/assets/images/avatar/09.jpg')
+                                name: 'Leila Mansour',
+                                role: 'coach',
+                                speciality: 'Fitness',
+                                totalSessions: 18,
+                                totalDemandes: 9,
+                                rating: 4,
+                                avatar: asset('adminDashboard/assets/images/avatar/03.jpg')
                             },
                             {
                                 name: 'Leila Mansour',
@@ -92,20 +93,13 @@
                                 avatar: asset('adminDashboard/assets/images/avatar/03.jpg')
                             },
                             {
-                                name: 'Jacqueline Miller',
-                                role : 'user',
-                                status: 'Active',
-                                streakDays: '5',
-                                routines: 1,
-                                avatar: asset('adminDashboard/assets/images/avatar/01.jpg')
-                            },
-                            {
-                                name: 'admin Miller',
-                                role : 'admin',
-                                roleLevel : 5,
-                                status: 'Active',
-                                email : 'admin.1111@gmail.com',
-                                avatar: asset('adminDashboard/assets/images/avatar/01.jpg')
+                                name: 'Leila Mansour',
+                                role: 'coach',
+                                speciality: 'Fitness',
+                                totalSessions: 18,
+                                totalDemandes: 9,
+                                rating: 4,
+                                avatar: asset('adminDashboard/assets/images/avatar/03.jpg')
                             },
                              {
                                 name: 'Sara Johnson',
