@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Sessions - CRUD</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+    <style>
+        :root { --orange-primary: #f97316; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8f9fa; }
+        .navbar-custom { background-color: #fff !important; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .btn-orange { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); border: none; color: white; border-radius: 50px; font-weight: 600; padding: 0.75rem 2rem; }
+        .btn-orange:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(249, 115, 22, 0.3); }
+        .table-custom { border-radius: 15px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); background: white; }
+        .badge-scheduling { background: #fef3c7; color: #92400e; padding: 0.5rem 1rem; }
+        .badge-confirmed { background: #d1fae5; color: #065f46; padding: 0.5rem 1rem; }
+        .badge-completed { background: #dbeafe; color: #1e40af; padding: 0.5rem 1rem; }
+        .badge-cancelled { background: #fee2e2; color: #991b1b; padding: 0.5rem 1rem; }
+        .badge-proposed { background: #e0e7ff; color: #3730a3; padding: 0.5rem 1rem; }
+        .form-card { border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); background: white; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand" href="#">
+                <strong style="color: var(--orange-primary); font-size: 1.5rem;">
+                    <i class="bi bi-heart-pulse-fill me-2"></i>FitCoach
+                </strong>
+            </a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="/demo/coaches">Accueil</a></li>
+                    <li class="nav-item"><a class="nav-link active fw-bold" style="color: var(--orange-primary)" href="#">Sessions</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <section style="padding-top: 120px; padding-bottom: 60px;">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="mb-0">
+                    <i class="bi bi-calendar-event me-2" style="color: var(--orange-primary);"></i>
+                    Gestion des Sessions
+                </h1>
+                <button class="btn btn-orange" data-bs-toggle="modal" data-bs-target="#addSessionModal">
+                    <i class="bi bi-plus-circle me-2"></i>Ajouter une session
+                </button>
+            </div>
+
+            <div class="card border-0 table-custom">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Date et Heure</th>
+                                    <th>Durée</th>
+                                    <th>Coach</th>
+                                    <th>Utilisateur</th>
+                                    <th>Statut</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for session in sessions %}
+                                    <tr>
+                                        <td><strong>#{{ session.id }}</strong></td>
+                                        <td>
+                                            {% if session.scheduledAt %}
+                                                <i class="bi bi-calendar3 me-1"></i>
+                                                {{ session.scheduledAt|date('d/m/Y à H:i') }}
+                                            {% else %}
+                                                <span class="text-muted">Non planifiée</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <i class="bi bi-clock me-1"></i>{{ session.duration }} min
+                                        </td>
+                                        <td>
+                                            <i class="bi bi-person-badge me-1"></i>
+                                            {{ session.coach.firstName }} {{ session.coach.lastName }}
+                                        </td>
+                                        <td>
+                                            <i class="bi bi-person me-1"></i>
+                                            {{ session.user.firstName }} {{ session.user.lastName }}
+                                        </td>
+                                        <td>
+                                            <span class="badge 
+                                                {% if session.status == 'scheduling' %}badge-scheduling
+                                                {% elseif session.status == 'confirmed' %}badge-confirmed
+                                                {% elseif session.status == 'completed' %}badge-completed
+                                                {% elseif session.status == 'cancelled' %}badge-cancelled
+                                                {% else %}badge-proposed{% endif %} rounded-pill">
+                                                {% if session.status == 'scheduling' %}En planification
+                                                {% elseif session.status == 'proposed_by_user' %}Proposé par utilisateur
+                                                {% elseif session.status == 'proposed_by_coach' %}Proposé par coach
+                                                {% elseif session.status == 'confirmed' %}Confirmée
+                                                {% elseif session.status == 'completed' %}Terminée
+                                                {% elseif session.status == 'cancelled' %}Annulée
+                                                {% endif %}
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group" role="group">
+                                                <button class="btn btn-sm btn-outline-primary edit-btn" 
+                                                        data-id="{{ session.id }}"
+                                                        data-date="{{ session.scheduledAt ? session.scheduledAt|date('Y-m-d\\TH:i') : '' }}"
+                                                        data-duration="{{ session.duration }}"
+                                                        data-status="{{ session.status }}"
+                                                        data-coach="{{ session.coach.firstName }} {{ session.coach.lastName }}"
+                                                        data-user="{{ session.user.firstName }} {{ session.user.lastName }}"
+                                                        title="Modifier">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-danger delete-btn" 
+                                                        data-id="{{ session.id }}"
+                                                        data-coach="{{ session.coach.firstName }} {{ session.coach.lastName }}"
+                                                        title="Supprimer">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal Ajouter Session -->
+    <div class="modal fade" id="addSessionModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-plus-circle me-2" style="color: var(--orange-primary);"></i>
+                        Ajouter une Session
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addSessionForm">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Coach</label>
+                            <select class="form-select" required>
+                                <option value="">Sélectionnez un coach</option>
+                                <option value="1">Sarah Martin - Fitness</option>
+                                <option value="2">Thomas Dubois - Yoga</option>
+                                <option value="3">Marie Laurent - Musculation</option>
+                                <option value="4">Pierre Moreau - Nutrition</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Utilisateur</label>
+                            <select class="form-select" required>
+                                <option value="">Sélectionnez un utilisateur</option>
+                                <option value="1">Jean Dupont</option>
+                                <option value="2">Sophie Martin</option>
+                                <option value="3">Claire Dubois</option>
+                                <option value="4">Marc Lefebvre</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Date et Heure</label>
+                            <input type="datetime-local" class="form-control" required>
+                            <small class="text-muted">Sélectionnez la date et l'heure de la session</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Durée (en minutes)</label>
+                            <input type="number" class="form-control" min="15" max="240" placeholder="Ex: 60" required>
+                            <small class="text-muted">Durée en minutes (ex: 60 pour 1 heure)</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Statut</label>
+                            <select class="form-select" required>
+                                <option value="scheduling">En planification</option>
+                                <option value="proposed_by_user">Proposé par l'utilisateur</option>
+                                <option value="proposed_by_coach">Proposé par le coach</option>
+                                <option value="confirmed">Confirmée</option>
+                                <option value="completed">Terminée</option>
+                                <option value="cancelled">Annulée</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-orange" id="saveAddBtn">
+                        <i class="bi bi-check-circle me-2"></i>Créer la session
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Modifier Session -->
+    <div class="modal fade" id="editSessionModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-pencil me-2" style="color: var(--orange-primary);"></i>
+                        Modifier Session <span id="editSessionId"></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info mb-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Coach:</strong> <span id="editCoach"></span><br>
+                        <strong>Utilisateur:</strong> <span id="editUser"></span>
+                    </div>
+                    <form id="editSessionForm">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Date et Heure</label>
+                            <input type="datetime-local" id="editDate" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Durée (en minutes)</label>
+                            <input type="number" id="editDuration" class="form-control" min="15" max="240" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Statut</label>
+                            <select id="editStatus" class="form-select" required>
+                                <option value="scheduling">En planification</option>
+                                <option value="proposed_by_user">Proposé par l'utilisateur</option>
+                                <option value="proposed_by_coach">Proposé par le coach</option>
+                                <option value="confirmed">Confirmée</option>
+                                <option value="completed">Terminée</option>
+                                <option value="cancelled">Annulée</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-orange" id="saveEditBtn">
+                        <i class="bi bi-check-circle me-2"></i>Enregistrer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container text-center">
+            <p class="mb-0">© 2026 FitCoach - Gestion des Sessions</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Bouton Ajouter
+        document.getElementById('saveAddBtn').addEventListener('click', function() {
+            alert('✅ Session créée avec succès!\n\nLa nouvelle session a été ajoutée à la liste.');
+            bootstrap.Modal.getInstance(document.getElementById('addSessionModal')).hide();
+            location.reload();
+        });
+
+        // Boutons Modifier
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                const date = this.getAttribute('data-date');
+                const duration = this.getAttribute('data-duration');
+                const status = this.getAttribute('data-status');
+                const coach = this.getAttribute('data-coach');
+                const user = this.getAttribute('data-user');
+
+                document.getElementById('editSessionId').textContent = '#' + id;
+                document.getElementById('editCoach').textContent = coach;
+                document.getElementById('editUser').textContent = user;
+                document.getElementById('editDate').value = date;
+                document.getElementById('editDuration').value = duration;
+                document.getElementById('editStatus').value = status;
+
+                new bootstrap.Modal(document.getElementById('editSessionModal')).show();
+            });
+        });
+
+        // Sauvegarder modification
+        document.getElementById('saveEditBtn').addEventListener('click', function() {
+            alert('✅ Session modifiée avec succès!\n\nLes modifications ont été enregistrées.');
+            bootstrap.Modal.getInstance(document.getElementById('editSessionModal')).hide();
+            location.reload();
+        });
+
+        // Boutons Supprimer
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                const coach = this.getAttribute('data-coach');
+                
+                if (confirm('Êtes-vous sûr de vouloir supprimer cette session?\n\nCoach: ' + coach)) {
+                    alert('✅ Session supprimée avec succès!');
+                    location.reload();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

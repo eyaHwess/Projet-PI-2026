@@ -39,6 +39,9 @@ security:
 
         - { path: ^/, roles: IS_AUTHENTICATED_FULLY }
 
+        - { path: ^/demo, roles: PUBLIC_ACCESS }
+        - { path: ^/sessions/manage, roles: PUBLIC_ACCESS }
+        - { path: ^/, roles: ROLE_USER }
 
 when@test:
     security:

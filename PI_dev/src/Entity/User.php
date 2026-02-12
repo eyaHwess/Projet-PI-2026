@@ -283,6 +283,11 @@ public function isEnabled(): bool
     return $this->status === UserStatus::ACTIVE->value;
 }
 
+public function isCoach(): bool
+{
+    return in_array('ROLE_COACH', $this->roles, true);
+}
+
 /**
  * @return Collection<int, Post>
  */

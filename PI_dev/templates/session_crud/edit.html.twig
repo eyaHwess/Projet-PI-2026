@@ -1,0 +1,87 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier Session{% endblock %}
+
+{% block stylesheets %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+    <style>
+        :root { --orange-primary: #f97316; }
+        .navbar-custom { background-color: #fff !important; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .btn-orange { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); border: none; color: white; border-radius: 50px; font-weight: 600; }
+        .form-card { border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand" href="{{ path('app_home') }}">
+                <strong style="color: var(--orange-primary);">FitCoach</strong>
+            </a>
+        </div>
+    </nav>
+
+    <section style="padding-top: 120px; padding-bottom: 60px;">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="mb-4">
+                        <a href="{{ path('app_session_crud_index') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Retour à la liste
+                        </a>
+                    </div>
+
+                    <div class="card border-0 form-card">
+                        <div class="card-body p-4">
+                            <h2 class="mb-4">
+                                <i class="bi bi-pencil me-2" style="color: var(--orange-primary);"></i>
+                                Modifier Session #{{ session.id }}
+                            </h2>
+
+                            <div class="alert alert-info mb-4">
+                                <i class="bi bi-info-circle me-2"></i>
+                                <strong>Coach:</strong> {{ session.coachingRequest.coach.firstName }} {{ session.coachingRequest.coach.lastName }}
+                                <br>
+                                <strong>Utilisateur:</strong> {{ session.coachingRequest.user.firstName }} {{ session.coachingRequest.user.lastName }}
+                            </div>
+
+                            {{ form_start(form) }}
+                                <div class="mb-3">
+                                    {{ form_label(form.scheduledAt, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                                    {{ form_widget(form.scheduledAt) }}
+                                    {{ form_errors(form.scheduledAt) }}
+                                    <small class="text-muted">Sélectionnez la date et l'heure de la session</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    {{ form_label(form.duration, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                                    {{ form_widget(form.duration) }}
+                                    {{ form_errors(form.duration) }}
+                                    <small class="text-muted">Durée en minutes (ex: 60 pour 1 heure)</small>
+                                </div>
+
+                                <div class="mb-4">
+                                    {{ form_label(form.status, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                                    {{ form_widget(form.status) }}
+                                    {{ form_errors(form.status) }}
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-orange">
+                                        <i class="bi bi-check-circle me-2"></i>Enregistrer les modifications
+                                    </button>
+                                    <a href="{{ path('app_session_crud_index') }}" class="btn btn-outline-secondary">
+                                        Annuler
+                                    </a>
+                                </div>
+                            {{ form_end(form) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}
