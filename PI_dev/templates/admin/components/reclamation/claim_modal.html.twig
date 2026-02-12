@@ -1,0 +1,68 @@
+<!-- Claim Details Modal -->
+<div class="modal fade" id="claimModal{{ claim.id }}" tabindex="-1" aria-labelledby="claimModalLabel{{ claim.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-white shadow-lg">
+            <!-- Modal Header -->
+            <div class="modal-header bg-dark text-white border-0">
+                <h5 class="modal-title" id="claimModalLabel{{ claim.id }}">Claim Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="modal-body p-4 bg-white">
+                <!-- User Information -->
+                <div class="mb-4">
+                    <h6 class="mb-3 fw-bold text-dark">User Information</h6>
+                    
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="avatar avatar-lg">
+                            <img src="{{ asset(claim.user.avatar) }}" class="rounded-circle" alt="avatar">
+                        </div>
+                        <div class="ms-3">
+                            <h6 class="mb-0 text-dark">{{ claim.user.name }}</h6>
+                            <p class="mb-0 text-muted small">{{ claim.user.email }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <p class="mb-1 text-dark"><strong>Phone Number:</strong></p>
+                            <p class="text-muted mb-0">{{ claim.user.phoneNumber ?? 'N/A' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1 text-dark"><strong>Age:</strong></p>
+                            <p class="text-muted mb-0">{{ claim.user.age ?? 'N/A' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1 text-dark"><strong>Status:</strong></p>
+                            <p class="mb-0">
+                                <span class="badge bg-{{ claim.user.status == 'active' ? 'success' : 'secondary' }} bg-opacity-10 text-{{ claim.user.status == 'active' ? 'success' : 'secondary' }}">
+                                    {{ claim.user.status|capitalize }}
+                                </span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1 text-dark"><strong>Claim Date:</strong></p>
+                            <p class="text-muted mb-0">{{ claim.createdAt|date('d M Y, H:i') }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr class="my-4">
+                
+                <!-- Claim Content -->
+                <div class="mb-3">
+                    <h6 class="mb-3 fw-bold text-dark">Claim Content</h6>
+                    <div class="bg-light p-3 rounded border">
+                        <p class="mb-0 text-dark">{{ claim.content }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Modal Footer -->
+            <div class="modal-footer bg-white border-0">
+                <button type="button" class="btn btn-danger-soft px-4" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

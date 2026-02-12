@@ -1,0 +1,54 @@
+<!-- Platform Growth Over Time Card -->
+<div class="card bg-transparent border">
+    <div class="card-header bg-transparent border-bottom">
+        <h5 class="card-header-title mb-0">Platform Growth Over Time</h5>
+        <p class="mb-0 small text-muted">Last 12 months</p>
+    </div>
+    <div class="card-body">
+        <div id="platformGrowthChart"></div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var options = {
+        series: [{
+            name: 'New Users',
+            data: {{ growthData.users|json_encode|raw }}
+        }, {
+            name: 'New Coaches',
+            data: {{ growthData.coaches|json_encode|raw }}
+        }, {
+            name: 'New Routines',
+            data: {{ growthData.routines|json_encode|raw }}
+        }],
+        chart: {
+            height: 350,
+            type: 'line',
+            toolbar: {
+                show: false
+            }
+        },
+        dataLabels: {
+            enabled: false
+        },
+        stroke: {
+            curve: 'smooth',
+            width: 3
+        },
+        xaxis: {
+            categories: {{ growthData.months|json_encode|raw }}
+        },
+        colors: ['#066ac9', '#0cbc87', '#f7c32e'],
+        legend: {
+            position: 'top'
+        },
+        grid: {
+            borderColor: '#e7e7e7',
+        }
+    };
+
+    var chart = new ApexCharts(document.querySelector("#platformGrowthChart"), options);
+    chart.render();
+});
+</script>
