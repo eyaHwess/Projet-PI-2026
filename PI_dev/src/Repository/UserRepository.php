@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -11,9 +12,20 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class UserRepository extends ServiceEntityRepository
 {
+    private const ROLE_COACH = 'ROLE_COACH';
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, User::class);
+    }
+
+    /**
+     * Indique si la base est PostgreSQL (colonnes json → LIKE impossible).
+     */
+    private function isPostgreSQL(): bool
+    {
+        $platform = $this->getEntityManager()->getConnection()->getDatabasePlatform();
+        return $platform instanceof PostgreSQLPlatform;
     }
 
     /**
@@ -22,9 +34,38 @@ class UserRepository extends ServiceEntityRepository
      */
     public function findCoaches(): array
     {
+        if ($this->isPostgreSQL()) {
+            return $this->findCoachesPostgreSQL();
+        }
         return $this->createQueryBuilder('u')
             ->where('u.roles LIKE :role')
-            ->setParameter('role', '%ROLE_COACH%')
+            ->setParameter('role', '%' . self::ROLE_COACH . '%')
+            ->orderBy('u.lastName', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Requête coaches pour PostgreSQL (colonnes roles en json).
+     * @return User[]
+     */
+    private function findCoachesPostgreSQL(?string $speciality = null): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        $sql = 'SELECT id FROM "user" WHERE (roles::text LIKE :role)';
+        $params = ['role' => '%' . self::ROLE_COACH . '%'];
+        if ($speciality !== null) {
+            $sql .= ' AND speciality = :speciality';
+            $params['speciality'] = $speciality;
+        }
+        $sql .= ' ORDER BY last_name ASC';
+        $ids = $conn->executeQuery($sql, $params)->fetchFirstColumn();
+        if ($ids === []) {
+            return [];
+        }
+        return $this->createQueryBuilder('u')
+            ->where('u.id IN (:ids)')
+            ->setParameter('ids', $ids)
             ->orderBy('u.lastName', 'ASC')
             ->getQuery()
             ->getResult();
@@ -36,10 +77,13 @@ class UserRepository extends ServiceEntityRepository
      */
     public function findCoachesBySpeciality(string $speciality): array
     {
+        if ($this->isPostgreSQL()) {
+            return $this->findCoachesPostgreSQL($speciality);
+        }
         return $this->createQueryBuilder('u')
             ->where('u.roles LIKE :role')
             ->andWhere('u.speciality = :speciality')
-            ->setParameter('role', '%ROLE_COACH%')
+            ->setParameter('role', '%' . self::ROLE_COACH . '%')
             ->setParameter('speciality', $speciality)
             ->orderBy('u.lastName', 'ASC')
             ->getQuery()
@@ -52,15 +96,20 @@ class UserRepository extends ServiceEntityRepository
      */
     public function findAllCoachSpecialities(): array
     {
+        if ($this->isPostgreSQL()) {
+            $conn = $this->getEntityManager()->getConnection();
+            $sql = 'SELECT DISTINCT speciality FROM "user" WHERE (roles::text LIKE :role) AND speciality IS NOT NULL ORDER BY speciality ASC';
+            $result = $conn->executeQuery($sql, ['role' => '%' . self::ROLE_COACH . '%'])->fetchAllAssociative();
+            return array_column($result, 'speciality');
+        }
         $result = $this->createQueryBuilder('u')
             ->select('DISTINCT u.speciality')
             ->where('u.roles LIKE :role')
             ->andWhere('u.speciality IS NOT NULL')
-            ->setParameter('role', '%ROLE_COACH%')
+            ->setParameter('role', '%' . self::ROLE_COACH . '%')
             ->orderBy('u.speciality', 'ASC')
             ->getQuery()
             ->getResult();
-
         return array_column($result, 'speciality');
     }
 

@@ -26,20 +26,14 @@ class CoachingRequestType extends AbstractType
             ])
             ->add('coach', EntityType::class, [
                 'class' => User::class,
-                'choice_label' => function(User $user) {
-                    return $user->getFirstName() . ' ' . $user->getLastName() . 
-                           ($user->getSpeciality() ? ' - ' . $user->getSpeciality() : '');
+                'choice_label' => function (User $user) {
+                    return $user->getFirstName() . ' ' . $user->getLastName() .
+                        ($user->getSpeciality() ? ' - ' . $user->getSpeciality() : '');
                 },
                 'label' => 'Choisir un coach',
                 'placeholder' => 'Sélectionnez un coach',
                 'attr' => ['class' => 'form-select'],
-                'query_builder' => function($repository) {
-                    return $repository->createQueryBuilder('u')
-                        ->where('u.roles LIKE :role')
-                        ->setParameter('role', '%ROLE_COACH%')
-                        ->orderBy('u.speciality', 'ASC')
-                        ->addOrderBy('u.lastName', 'ASC');
-                }
+                'choices' => $options['coaches'],
             ]);
     }
 
@@ -47,6 +41,8 @@ class CoachingRequestType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => CoachingRequest::class,
+            'coaches' => [],
         ]);
+        $resolver->setAllowedTypes('coaches', 'array');
     }
 }

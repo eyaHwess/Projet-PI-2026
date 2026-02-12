@@ -2,6 +2,7 @@
 <html>
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <script src="https://cdn.tailwindcss.com"></script>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
 
@@ -10,8 +11,40 @@
         {% block stylesheets %}
         {% endblock %}
     </head>
-    <body>
-        {% block body %}{% endblock %}
+    <body class="min-h-screen bg-gray-50">
+        <nav class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-14 items-center">
+                    <a href="{{ path('app_home') }}" class="flex items-center gap-2 text-gray-800 font-semibold hover:text-orange-500 transition">
+                        <img src="{{ asset('images/logo.svg') }}" alt="Logo" class="h-8 w-auto" onerror="this.style.display='none'">
+                        <span>Buildify</span>
+                    </a>
+                    <div class="flex items-center flex-wrap gap-3 sm:gap-5">
+                        {% if app.user %}
+                            {% if is_granted('ROLE_COACH') %}
+                                {# Navbar coach : uniquement demandes + gérer sessions #}
+                                <a href="{{ path('app_coaching_request_index') }}" class="text-gray-600 hover:text-orange-500 text-sm font-medium">Mes demandes</a>
+                                <a href="{{ path('app_session_crud_index') }}" class="text-gray-600 hover:text-orange-500 text-sm font-medium">Gérer sessions</a>
+                            {% else %}
+                                {# Navbar utilisateur (demande de coaching) : uniquement demander + voir coaching #}
+                                <a href="{{ path('app_coach_index') }}" class="text-gray-600 hover:text-orange-500 text-sm font-medium">Demander coaching</a>
+                                <a href="{{ path('app_session_index') }}" class="text-gray-600 hover:text-orange-500 text-sm font-medium">Mes sessions</a>
+                            {% endif %}
+                            <span class="text-sm text-gray-500 border-l border-gray-200 pl-3">{{ app.user.firstName }} {{ app.user.lastName }}</span>
+                            <a href="{{ path('app_logout') }}" class="text-sm text-red-600 hover:text-red-700 font-medium">Déconnexion</a>
+                        {% else %}
+                            <a href="{{ path('app_home') }}" class="text-gray-600 hover:text-orange-500 text-sm font-medium">Accueil</a>
+                            <a href="{{ path('app_login') }}" class="text-gray-600 hover:text-orange-500 text-sm font-medium">Connexion</a>
+                            <a href="{{ path('app_register') }}" class="text-sm font-medium px-3 py-1.5 rounded-md bg-orange-500 text-white hover:bg-orange-600">Inscription</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <main class="pt-2 min-h-[calc(100vh-3.5rem)]">
+            {% block body %}{% endblock %}
+        </main>
 
         {% block javascripts %}
         {% endblock %}

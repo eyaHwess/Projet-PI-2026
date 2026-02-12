@@ -37,6 +37,12 @@
     <link rel="icon" href="{{ asset('images/icon1.png') }}" sizes="96x96" type="image/png">
     <link rel="apple-touch-icon" href="{{ asset('images/apple-icon.png') }}" sizes="180x180" type="image/png">
     <link rel="stylesheet" href="{{ asset('styles/home/output.css') }}">
+    <style>
+        /* Navbar: liens et boutons visibles sur fond blanc */
+        nav a:not([style*="background"]) { color: #27272a !important; }
+        nav a:not([style*="background"]):hover { color: #7c3aed !important; }
+        nav button { color: #27272a !important; }
+    </style>
 </head>
 
 <body>
@@ -47,20 +53,20 @@
                 <a href="{{ path('app_home') }}">
                     <img alt="Buildify Logo" width="135" height="36" src="{{ asset('images/logo.svg') }}">
                 </a>
-                <div class="hidden md:flex gap-3">
-                    <a href="{{ path('app_home') }}" class="py-1 px-3 hover:text-zinc-500">Home</a>
-                    <a href="{{ path('app_goal_index') }}" class="py-1 px-3 hover:text-zinc-500">Mes Objectifs</a>
-                    <a href="#features" class="py-1 px-3 hover:text-zinc-500">Features</a>
-                    <a href="#testimonials" class="py-1 px-3 hover:text-zinc-500">Testimonials</a>
+                <div class="hidden md:flex gap-3 items-center">
+                    <a href="{{ path('app_home') }}" class="py-1 px-3 text-zinc-800 hover:text-purple-600">Home</a>
+                    <a href="{{ path('app_goal_index') }}" class="py-1 px-3 text-zinc-800 hover:text-purple-600">Mes Objectifs</a>
+                    <a href="#features" class="py-1 px-3 text-zinc-800 hover:text-purple-600">Features</a>
+                    <a href="#testimonials" class="py-1 px-3 text-zinc-800 hover:text-purple-600">Testimonials</a>
                 </div>
-                <button id="openMenu" class="md:hidden">
+                <button id="openMenu" class="md:hidden p-2 text-zinc-800 hover:text-purple-600" aria-label="Menu">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu size-6.5" aria-hidden="true">
                         <path d="M4 5h16"></path>
                         <path d="M4 12h16"></path>
                         <path d="M4 19h16"></path>
                     </svg>
                 </button>
-                <a href="{{ path('app_goal_index') }}" class="hidden md:inline-block py-2.5 px-6 shadow-[inset_0_2px_4px_rgba(255,255,255,0.6)] bg-purple-600 text-white rounded-full">
+                <a href="{{ path('app_goal_index') }}" class="hidden md:inline-block py-2.5 px-6 rounded-full font-medium text-white hover:opacity-90" style="background-color: #7c3aed;">
                     Mes Objectifs
                 </a>
             </div>
@@ -75,11 +81,11 @@
             </svg>
         </div>
         <div class="flex flex-col gap-4 p-4 text-base">
-            <a href="{{ path('app_home') }}" class="py-1 px-3">Home</a>
-            <a href="{{ path('app_goal_index') }}" class="py-1 px-3">Mes Objectifs</a>
-            <a href="#features" class="py-1 px-3">Features</a>
-            <a href="#testimonials" class="py-1 px-3">Testimonials</a>
-            <a href="{{ path('app_goal_index') }}" class="py-2.5 px-6 w-max text-sm shadow-[inset_0_2px_4px_rgba(255,255,255,0.6)] bg-linear-to-tl from-purple-700 to-purple-600 text-white rounded-full">
+            <a href="{{ path('app_home') }}" class="py-1 px-3 text-zinc-800">Home</a>
+            <a href="{{ path('app_goal_index') }}" class="py-1 px-3 text-zinc-800">Mes Objectifs</a>
+            <a href="#features" class="py-1 px-3 text-zinc-800">Features</a>
+            <a href="#testimonials" class="py-1 px-3 text-zinc-800">Testimonials</a>
+            <a href="{{ path('app_goal_index') }}" class="py-2.5 px-6 w-max text-sm font-medium text-white rounded-full hover:opacity-90" style="background-color: #7c3aed;">
                 Mes Objectifs
             </a>
         </div>

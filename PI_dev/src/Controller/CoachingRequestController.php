@@ -15,14 +15,20 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+/**
+ * Espace coach : voir et gérer les demandes de coaching.
+ * Réservé aux utilisateurs avec le rôle ROLE_COACH.
+ */
 #[Route('/coach', name: 'app_coaching_request_')]
+#[IsGranted('ROLE_COACH')]
 class CoachingRequestController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
         private UserRepository $userRepository,
-        private CoachingRequestRepository $CoachingRequestRepository,
+        private CoachingRequestRepository $coachingRequestRepository,
         private UserPasswordHasherInterface $passwordHasher,
         private DemoUserContext $demoUserContext
     ) {
@@ -48,19 +54,21 @@ class CoachingRequestController extends AbstractController
 
     private function getCurrentUser(): User
     {
-        $user = $this->demoUserContext->getCurrentUser($this->getUser());
-        return $user ?? $this->getOrCreateDefaultUser();
+        $authenticated = $this->getUser();
+        if ($authenticated instanceof User) {
+            $user = $this->demoUserContext->getCurrentUser($authenticated);
+            return $user ?? $authenticated;
+        }
+        return $this->getOrCreateDefaultUser();
     }
 
+    /**
+     * Liste des demandes de coaching reçues par le coach connecté.
+     */
     #[Route('/requests', name: 'index', methods: ['GET'])]
     public function index(): Response
     {
         $currentUser = $this->getCurrentUser();
-
-        if (!$currentUser->isCoach()) {
-            return $this->redirectToRoute('app_coach_index');
-        }
-
         $pendingRequests = $this->coachingRequestRepository->findPendingForCoach($currentUser);
         $allRequests = $this->coachingRequestRepository->findAllForCoach($currentUser);
 

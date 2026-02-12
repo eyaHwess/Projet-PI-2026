@@ -45,10 +45,4 @@ class UserController extends AbstractController
         ]);
     }
 
-    #[IsGranted('ROLE_USER')]
-    #[Route('/user/dashboard', name: 'user_dashboard')]
-    public function dashboard(): Response
-    {
-return $this->render('user/dashuser.html.twig');
-    }
 }

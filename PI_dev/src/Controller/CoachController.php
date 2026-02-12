@@ -79,43 +79,42 @@ class CoachController extends AbstractController
     public function index(Request $request): Response
     {
         $currentUser = $this->getCurrentUser();
-        
-        // Créer le formulaire de demande
+
+        $speciality = $request->query->get('speciality');
+        $coaches = $speciality
+            ? $this->userRepository->findCoachesBySpeciality($speciality)
+            : $this->userRepository->findCoaches();
+        $allCoachesForForm = $this->userRepository->findCoaches();
+
         $coachingRequest = new CoachingRequest();
         $coachingRequest->setUser($currentUser);
-        $form = $this->createForm(CoachingRequestType::class, $coachingRequest);
-        
+        $form = $this->createForm(CoachingRequestType::class, $coachingRequest, [
+            'coaches' => $allCoachesForForm,
+        ]);
+
         $form->handleRequest($request);
         
         if ($form->isSubmitted() && $form->isValid()) {
             $coach = $coachingRequest->getCoach();
-            
-            // Vérifier si l'utilisateur ne s'envoie pas une demande à lui-même
+
             if ($currentUser->getId() === $coach->getId()) {
                 $this->addFlash('error', 'Vous ne pouvez pas vous envoyer une demande à vous-même.');
                 return $this->redirectToRoute('app_coach_index');
             }
-            
-            // Vérifier s'il n'y a pas déjà une demande en attente
+
             if ($this->coachingRequestRepository->hasPendingRequest($currentUser, $coach)) {
                 $this->addFlash('warning', 'Vous avez déjà une demande en attente auprès de ce coach.');
                 return $this->redirectToRoute('app_coach_index');
             }
-            
+
             $this->entityManager->persist($coachingRequest);
             $this->entityManager->flush();
-            
+
             $this->addFlash('success', 'Votre demande a été envoyée avec succès ! Le coach vous contactera bientôt.');
             return $this->redirectToRoute('app_coach_index');
         }
-        
-        // Filtrer par spécialité si demandé
-        $speciality = $request->query->get('speciality');
-        $coaches = $speciality 
-            ? $this->userRepository->findCoachesBySpeciality($speciality)
-            : $this->userRepository->findCoaches();
-        
-        // Récupérer toutes les spécialités disponibles
+
+        // Spécialités pour les filtres
         $specialities = $this->userRepository->findAllCoachSpecialities();
 
         return $this->render('coach/index.html.twig', [
@@ -169,7 +168,82 @@ class CoachController extends AbstractController
     }
 
     /**
-     * Envoyer une demande de coaching
+     * Créer une demande de coaching (AJAX) avec validation serveur
+     */
+    #[Route('/request/create', name: 'request_create_ajax', methods: ['POST'])]
+    public function requestCreateAjax(Request $request): JsonResponse
+    {
+        $currentUser = $this->getCurrentUser();
+
+        $coachingRequest = new CoachingRequest();
+        $coachingRequest->setUser($currentUser);
+        $form = $this->createForm(CoachingRequestType::class, $coachingRequest, [
+            'coaches' => $this->userRepository->findCoaches(),
+        ]);
+        $form->handleRequest($request);
+
+        if (!$form->isSubmitted()) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Données invalides.',
+                'errors' => ['form' => ['Le formulaire n\'a pas été soumis.']],
+            ], 400);
+        }
+
+        if (!$form->isValid()) {
+            $errors = [];
+            foreach ($form->getErrors(true) as $error) {
+                $origin = $error->getOrigin();
+                $name = $origin ? $origin->getName() : 'form';
+                if (!isset($errors[$name])) {
+                    $errors[$name] = [];
+                }
+                $errors[$name][] = $error->getMessage();
+            }
+            return $this->json([
+                'success' => false,
+                'message' => 'Veuillez corriger les erreurs.',
+                'errors' => $errors,
+            ], 422);
+        }
+
+        $coach = $coachingRequest->getCoach();
+
+        if ($currentUser->getId() === $coach->getId()) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Vous ne pouvez pas vous envoyer une demande à vous-même.',
+                'errors' => ['coach' => ['Choix invalide.']],
+            ], 400);
+        }
+
+        if (!$coach->isCoach()) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Cet utilisateur n\'est pas coach.',
+                'errors' => ['coach' => ['Utilisateur invalide.']],
+            ], 400);
+        }
+
+        if ($this->coachingRequestRepository->hasPendingRequest($currentUser, $coach)) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Vous avez déjà une demande en attente auprès de ce coach.',
+                'errors' => ['coach' => ['Demande déjà en attente.']],
+            ], 400);
+        }
+
+        $this->entityManager->persist($coachingRequest);
+        $this->entityManager->flush();
+
+        return $this->json([
+            'success' => true,
+            'message' => 'Votre demande a été envoyée avec succès ! Le coach vous contactera bientôt.',
+        ]);
+    }
+
+    /**
+     * Envoyer une demande de coaching (legacy, par ID coach)
      */
     #[Route('/{id}/request', name: 'request', methods: ['POST'])]
     public function request(User $coach, Request $request): JsonResponse

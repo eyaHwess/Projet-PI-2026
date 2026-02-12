@@ -8,6 +8,9 @@
     <style>
         :root { --orange-primary: #f97316; --orange-hover: #ea580c; }
         .navbar-custom { background-color: #fff !important; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .navbar-custom .nav-link { color: #212529 !important; }
+        .navbar-custom .nav-link:hover { color: var(--orange-primary) !important; }
+        .navbar-custom .navbar-brand { color: #212529 !important; }
         .btn-orange { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); border: none; color: white; padding: 0.75rem 2rem; border-radius: 50px; font-weight: 600; }
         .btn-orange:hover { transform: translateY(-2px); color: white; }
         .schedule-card { border: 2px solid #e9ecef; border-radius: 20px; padding: 2rem; transition: all 0.3s ease; margin-bottom: 1.5rem; }
@@ -21,23 +24,7 @@
 {% endblock %}
 
 {% block body %}
-    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
-        <div class="container-fluid px-4 px-md-5">
-            <a class="navbar-brand" href="{{ path('app_home') }}"><img src="{{ asset('assets/logo.svg') }}" alt="Logo" height="36"></a>
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="{{ path('app_home') }}">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ path('app_goal_index') }}">Mes Objectifs</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ path('app_coach_index') }}">Coachs</a></li>
-                    <li class="nav-item"><a class="nav-link active fw-bold" style="color: var(--orange-primary)" href="{{ path('app_coach_schedule') }}">Planifier</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ path('app_session_index') }}">Sessions</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ path('app_coaching_request_index') }}">Espace coach</a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <section class="py-5" style="padding-top: 120px !important;">
+    <section class="py-5">
         <div class="container">
             <div class="mb-5">
                 <span class="badge bg-light px-4 py-2 rounded-pill mb-3" style="color: var(--orange-primary);">

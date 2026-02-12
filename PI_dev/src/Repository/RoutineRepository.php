@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Routine;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -14,6 +15,20 @@ class RoutineRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Routine::class);
+    }
+
+    /**
+     * Nombre de routines dont l'objectif (goal) appartient à l'utilisateur.
+     */
+    public function countByUser(User $user): int
+    {
+        return (int) $this->createQueryBuilder('r')
+            ->select('COUNT(r.id)')
+            ->join('r.goal', 'g')
+            ->where('g.user = :user')
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 
     /**

@@ -90,4 +90,23 @@ class CoachingRequestRepository extends ServiceEntityRepository
 
         return $count > 0;
     }
+
+    /**
+     * Demandes acceptées sans session pour un coach (pour créer une session).
+     *
+     * @return CoachingRequest[]
+     */
+    public function findAcceptedWithoutSessionForCoach(User $coach): array
+    {
+        return $this->createQueryBuilder('cr')
+            ->leftJoin('cr.session', 's')
+            ->where('cr.coach = :coach')
+            ->andWhere('cr.status = :status')
+            ->andWhere('s.id IS NULL')
+            ->setParameter('coach', $coach)
+            ->setParameter('status', CoachingRequest::STATUS_ACCEPTED)
+            ->orderBy('cr.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

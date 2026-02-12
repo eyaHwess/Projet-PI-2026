@@ -8,21 +8,16 @@
     <style>
         :root { --orange-primary: #f97316; }
         .navbar-custom { background-color: #fff !important; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .navbar-custom .nav-link { color: #212529 !important; }
+        .navbar-custom .nav-link:hover { color: var(--orange-primary) !important; }
+        .navbar-custom .navbar-brand { color: #212529 !important; }
         .btn-orange { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); border: none; color: white; border-radius: 50px; font-weight: 600; }
         .form-card { border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
     </style>
 {% endblock %}
 
 {% block body %}
-    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
-        <div class="container-fluid px-4">
-            <a class="navbar-brand" href="{{ path('app_home') }}">
-                <strong style="color: var(--orange-primary);">FitCoach</strong>
-            </a>
-        </div>
-    </nav>
-
-    <section style="padding-top: 120px; padding-bottom: 60px;">
+    <section class="pt-5 pb-5">
         <div class="container">
             <div class="row">
                 <div class="col-lg-8 mx-auto">
@@ -39,6 +34,22 @@
                                 Nouvelle Session
                             </h2>
 
+                            {% if acceptedWithoutSession|length > 1 %}
+                                <div class="alert alert-light border mb-4">
+                                    <strong>Créer une session pour :</strong>
+                                    <ul class="mb-0 mt-2">
+                                        {% for req in acceptedWithoutSession %}
+                                            <li>
+                                                {% if req.id == coachingRequest.id %}
+                                                    <strong>{{ req.user.firstName }} {{ req.user.lastName }}</strong> (cette demande)
+                                                {% else %}
+                                                    <a href="{{ path('app_session_crud_new', { request: req.id }) }}">{{ req.user.firstName }} {{ req.user.lastName }}</a>
+                                                {% endif %}
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            {% endif %}
                             <div class="alert alert-info mb-4">
                                 <i class="bi bi-info-circle me-2"></i>
                                 <strong>Coach:</strong> {{ coachingRequest.coach.firstName }} {{ coachingRequest.coach.lastName }}
@@ -46,7 +57,8 @@
                                 <strong>Utilisateur:</strong> {{ coachingRequest.user.firstName }} {{ coachingRequest.user.lastName }}
                             </div>
 
-                            {{ form_start(form) }}
+                            <div id="session-form-alert" class="alert d-none mb-3"></div>
+                            {{ form_start(form, { attr: { id: 'session-new-form' } }) }}
                                 <div class="mb-3">
                                     {{ form_label(form.scheduledAt, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
                                     {{ form_widget(form.scheduledAt) }}
@@ -68,7 +80,7 @@
                                 </div>
 
                                 <div class="d-flex gap-2">
-                                    <button type="submit" class="btn btn-orange">
+                                    <button type="submit" id="btn-session-submit" class="btn btn-orange">
                                         <i class="bi bi-check-circle me-2"></i>Créer la session
                                     </button>
                                     <a href="{{ path('app_session_crud_index') }}" class="btn btn-outline-secondary">
@@ -84,4 +96,35 @@
     </section>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('session-new-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            var btn = document.getElementById('btn-session-submit');
+            var alertBox = document.getElementById('session-form-alert');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Création...';
+            alertBox.classList.add('d-none');
+            var formData = new FormData(this);
+            try {
+                var res = await fetch(this.action, { method: 'POST', body: formData, headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                var data = await res.json();
+                if (data.success) {
+                    alertBox.className = 'alert alert-success';
+                    alertBox.textContent = data.message;
+                    alertBox.classList.remove('d-none');
+                    if (data.redirect) window.location.href = data.redirect;
+                } else {
+                    alertBox.className = 'alert alert-danger';
+                    alertBox.textContent = data.message || 'Erreur.';
+                    alertBox.classList.remove('d-none');
+                }
+            } catch (err) {
+                alertBox.className = 'alert alert-danger';
+                alertBox.textContent = 'Erreur réseau.';
+                alertBox.classList.remove('d-none');
+            }
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Créer la session';
+        });
+    </script>
 {% endblock %}

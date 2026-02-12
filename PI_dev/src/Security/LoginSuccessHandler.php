@@ -21,7 +21,7 @@ class LoginSuccessHandler implements AuthenticationSuccessHandlerInterface
     }
 
     if (in_array('ROLE_COACH', $roles)) {
-        return new RedirectResponse($this->router->generate('coach_dashboard'));
+        return new RedirectResponse($this->router->generate('app_coaching_request_index'));
     }
 
     return new RedirectResponse($this->router->generate('user_dashboard'));

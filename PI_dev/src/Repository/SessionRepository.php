@@ -75,4 +75,20 @@ class SessionRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Sessions du coach (pour CRUD coach).
+     *
+     * @return Session[]
+     */
+    public function findForCoach(User $coach): array
+    {
+        return $this->createQueryBuilder('s')
+            ->join('s.coachingRequest', 'cr')
+            ->where('cr.coach = :coach')
+            ->setParameter('coach', $coach)
+            ->orderBy('s.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

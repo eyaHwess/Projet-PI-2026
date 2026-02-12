@@ -36,18 +36,26 @@ class RegistrationController extends AbstractController
 
             $user->setPassword($hashedPassword);
 
-            // Set role from form
-            $selectedRole = $form->get('role')->getData();
+            // Rôle : valeur par défaut si vide
+            $selectedRole = $form->get('role')->getData() ?? 'ROLE_USER';
+            $user->setRole(UserRole::from($selectedRole));
 
-$user->setRole(UserRole::from($selectedRole));
+            if ($selectedRole === 'ROLE_COACH') {
+                $user->setSpeciality($form->get('speciality')->getData());
+                $user->setAvailability($form->get('availability')->getData());
+            }
 
-if ($selectedRole === 'ROLE_COACH') {
-    $user->setSpeciality($form->get('speciality')->getData());
-}
+            try {
+                $entityManager->persist($user);
+                $entityManager->flush();
+            } catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e) {
+                $this->addFlash('error', 'Cet email est déjà utilisé. Utilisez un autre email ou connectez-vous.');
+                return $this->render('security/register.html.twig', [
+                    'registrationForm' => $form->createView(),
+                ]);
+            }
 
-            $entityManager->persist($user);
-            $entityManager->flush();
-
+            $this->addFlash('success', 'Inscription réussie ! Vous pouvez maintenant vous connecter avec votre email et mot de passe.');
             return $this->redirectToRoute('app_login');
         }
 

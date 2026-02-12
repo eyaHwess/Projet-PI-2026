@@ -16,13 +16,22 @@
         <div class="w-full md:w-1/2 p-10">
 
             <h2 class="text-3xl font-bold text-indigo-600 mb-8 text-center">
-                Create Account 🌸
+                Créer un compte
             </h2>
+
+            {% for message in app.flashes('error') %}
+                <div class="mb-4 rounded-xl bg-red-100 p-3 text-sm text-red-800">
+                    {{ message }}
+                </div>
+            {% endfor %}
+
+            {{ form_errors(registrationForm) }}
 
             {{ form_start(registrationForm) }}
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
+                {{ form_errors(registrationForm.firstName) }}
                 {{ form_widget(registrationForm.firstName, {
                     'attr': {
                         'placeholder': 'First Name',
@@ -30,6 +39,7 @@
                     }
                 }) }}
 
+                {{ form_errors(registrationForm.lastName) }}
                 {{ form_widget(registrationForm.lastName, {
                     'attr': {
                         'placeholder': 'Last Name',
@@ -37,6 +47,7 @@
                     }
                 }) }}
 
+                {{ form_errors(registrationForm.email) }}
                 {{ form_widget(registrationForm.email, {
                     'attr': {
                         'placeholder': 'Email Address',
@@ -44,6 +55,7 @@
                     }
                 }) }}
 
+                {{ form_errors(registrationForm.password) }}
                 {{ form_widget(registrationForm.password, {
                     'attr': {
                         'placeholder': 'Password',
@@ -95,8 +107,12 @@
 
             <button type="submit"
                 class="w-full mt-6 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition duration-300">
-                Sign up
+                S'inscrire
             </button>
+
+            <p class="mt-4 text-center text-sm text-gray-600">
+                Déjà inscrit ? <a href="{{ path('app_login') }}" class="text-indigo-600 font-medium hover:underline">Se connecter</a>
+            </p>
 
             {{ form_end(registrationForm) }}
 

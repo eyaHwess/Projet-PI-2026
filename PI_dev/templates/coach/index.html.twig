@@ -7,84 +7,89 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
     <style>
         :root { --orange-primary: #f97316; --orange-hover: #ea580c; }
-        .navbar-custom { background-color: #fff !important; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .btn-orange { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); border: none; color: white; padding: 0.75rem 2rem; border-radius: 50px; font-weight: 600; }
-        .btn-orange:hover { transform: translateY(-2px); color: white; }
-        .coach-card { border: 2px solid #e9ecef; border-radius: 20px; padding: 2rem; transition: all 0.3s ease; height: 100%; }
-        .coach-card:hover { border-color: var(--orange-primary); box-shadow: 0 10px 30px rgba(249, 115, 22, 0.15); }
-        .coach-avatar { width: 80px; height: 80px; background: linear-gradient(135deg, #fff5f0, #ffe4d6); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: var(--orange-primary); }
+        .navbar-custom { background-color: #fff !important; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
+        .navbar-custom .nav-link { color: #212529 !important; }
+        .navbar-custom .nav-link:hover { color: var(--orange-primary) !important; }
+        .navbar-custom .navbar-brand { color: #212529 !important; }
+        .btn-orange { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); border: none; color: white; padding: 0.625rem 1.5rem; border-radius: 0.5rem; font-weight: 600; transition: transform 0.2s, box-shadow 0.2s; }
+        .btn-orange:hover { color: #fff; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4); }
+        .btn-filter { border-radius: 50px; padding: 0.5rem 1.25rem; font-weight: 500; transition: all 0.2s; }
+        .btn-filter.active { background-color: var(--orange-primary); border-color: var(--orange-primary); color: #fff; }
+        .btn-filter:not(.active) { background: #fff; border: 1px solid #dee2e6; color: #495057; }
+        .btn-filter:not(.active):hover { border-color: var(--orange-primary); color: var(--orange-primary); background: #fff5f0; }
+        .hero-badge { border: 1px solid rgba(249, 115, 22, 0.4); background: rgba(249, 115, 22, 0.06); color: var(--orange-primary); font-weight: 500; padding: 0.5rem 1rem; border-radius: 50px; }
+        .coach-card { border: 1px solid #e9ecef; border-radius: 1rem; transition: border-color 0.2s, box-shadow 0.2s; height: 100%; background: #fff; }
+        .coach-card:hover { border-color: var(--orange-primary); box-shadow: 0 8px 24px rgba(249, 115, 22, 0.12); }
+        .coach-avatar { width: 72px; height: 72px; background: linear-gradient(135deg, #fff5f0, #ffe4d6); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; color: var(--orange-primary); flex-shrink: 0; }
         .badge-pending { background: #fef3c7; color: #92400e; }
         .badge-accepted { background: #d1fae5; color: #065f46; }
         .badge-declined { background: #fee2e2; color: #991b1b; }
-        .filter-btn { border: 2px solid #e9ecef; border-radius: 50px; padding: 0.5rem 1.5rem; transition: all 0.3s; }
-        .filter-btn:hover, .filter-btn.active { border-color: var(--orange-primary); background: var(--orange-primary); color: white; }
     </style>
 {% endblock %}
 
 {% block body %}
-    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
-        <div class="container-fluid px-4 px-md-5">
-            <a class="navbar-brand" href="{{ path('app_home') }}"><img src="{{ asset('assets/logo.svg') }}" alt="Logo" height="36"></a>
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav ms-auto align-items-center">
-                    <li class="nav-item"><a class="nav-link" href="{{ path('app_home') }}">Home</a></li>
-                    <li class="nav-item"><a class="nav-link active fw-bold" style="color: var(--orange-primary)" href="{{ path('app_coach_index') }}">Coachs</a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <section class="hero-section" style="padding-top: 120px; padding-bottom: 60px; background: linear-gradient(180deg, #fff 0%, #f8f9fa 100%);">
-        <div class="container">
-            <div class="row mb-5">
-                <div class="col-lg-8">
-                    <span class="badge bg-light px-4 py-2 rounded-pill mb-3" style="color: var(--orange-primary);">
-                        <i class="bi bi-person-badge me-2"></i>Coaching fitness & bien-être
+    <section class="hero-section pt-5 pb-4" style="background: linear-gradient(180deg, #fff 0%, #f8f9fa 100%);">
+        <div class="container container-lg">
+            <div class="row align-items-end mb-4">
+                <div class="col-12">
+                    <span class="hero-badge d-inline-flex align-items-center mb-3">
+                        <i class="bi bi-person-badge-fill me-2"></i>Coaching fitness & bien-être
                     </span>
-                    <h1 class="display-4 fw-bold mb-4">Trouvez votre coach</h1>
+                    <h1 class="display-5 fw-bold mb-2 text-dark">Trouvez votre coach</h1>
                     <p class="lead text-muted mb-0">
-                        Connectez-vous avec un coach professionnel pour atteindre vos objectifs
+                        Connectez-vous avec un coach professionnel pour atteindre vos objectifs.
                     </p>
                 </div>
             </div>
-
-            {# Filtres par spécialité #}
             {% if specialities|length > 0 %}
-                <div class="mb-4">
-                    <h5 class="mb-3">Filtrer par spécialité</h5>
-                    <div class="d-flex flex-wrap gap-2">
-                        <a href="{{ path('app_coach_index') }}" class="btn filter-btn {% if not selectedSpeciality %}active{% endif %}">
-                            Toutes
-                        </a>
-                        {% for speciality in specialities %}
-                            <a href="{{ path('app_coach_index', {speciality: speciality}) }}" 
-                               class="btn filter-btn {% if selectedSpeciality == speciality %}active{% endif %}">
-                                {{ speciality }}
+                <div class="row">
+                    <div class="col-12">
+                        <label class="form-label text-muted small text-uppercase fw-semibold mb-2">Filtrer par spécialité</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="{{ path('app_coach_index') }}" class="btn btn-filter {% if not selectedSpeciality %}active{% endif %}">
+                                Toutes
                             </a>
-                        {% endfor %}
+                            {% for speciality in specialities %}
+                                <a href="{{ path('app_coach_index', {speciality: speciality}) }}" 
+                                   class="btn btn-filter {% if selectedSpeciality == speciality %}active{% endif %}">
+                                    {{ speciality }}
+                                </a>
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
             {% endif %}
         </div>
     </section>
 
-    <section class="py-5">
-        <div class="container">
-            {# Formulaire de demande de coaching #}
-            <div class="row mb-5">
-                <div class="col-lg-8 mx-auto">
-                    <div class="card border-0 shadow-sm" style="border-radius: 20px;">
-                        <div class="card-body p-4">
-                            <h4 class="mb-4"><i class="bi bi-send-fill me-2" style="color: var(--orange-primary);"></i>Faire une demande de coaching</h4>
-                            {{ form_start(form) }}
-                                <div class="mb-3">
-                                    {{ form_row(form.coach) }}
+    <section class="py-5 bg-white">
+        <div class="container container-lg">
+            {# Formulaire de demande de coaching (AJAX) #}
+            <div class="row mb-5 justify-content-center">
+                <div class="col-12 col-lg-8 col-xl-7">
+                    <div id="request-form-alert" class="alert d-none" role="alert"></div>
+                    <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+                        <div class="card-body p-4 p-md-5">
+                            <h2 class="h4 mb-2 fw-bold text-dark">
+                                <i class="bi bi-send-fill me-2" style="color: var(--orange-primary);"></i>Faire une demande de coaching
+                            </h2>
+                            <p class="text-muted small mb-4">Choisissez un coach selon sa <strong>spécialité</strong> et décrivez vos objectifs.</p>
+                            {{ form_start(form, { attr: { id: 'coaching-request-form' } }) }}
+                                <div class="mb-4">
+                                    {{ form_label(form.coach, null, { label_attr: { class: 'form-label fw-semibold' } }) }}
+                                    {{ form_widget(form.coach, { attr: { class: 'form-select form-select-lg' } }) }}
+                                    <div id="error-coach" class="invalid-feedback d-block"></div>
+                                    {{ form_errors(form.coach) }}
                                 </div>
-                                <div class="mb-3">
-                                    {{ form_row(form.message) }}
+                                <div class="mb-4">
+                                    {{ form_label(form.message, null, { label_attr: { class: 'form-label fw-semibold' } }) }}
+                                    {{ form_widget(form.message, { attr: { class: 'form-control', rows: 5, placeholder: 'Décrivez vos besoins et objectifs de coaching...' } }) }}
+                                    <div class="form-text">Minimum 10 caractères, maximum 1000.</div>
+                                    <div id="error-message" class="invalid-feedback d-block"></div>
+                                    {{ form_errors(form.message) }}
                                 </div>
-                                <button type="submit" class="btn btn-orange w-100">
-                                    <i class="bi bi-send me-2"></i>Envoyer la demande
+                                <button type="submit" id="btn-submit-request" class="btn btn-orange w-100 py-3">
+                                    <i class="bi bi-send-fill me-2"></i>Envoyer la demande
                                 </button>
                             {{ form_end(form) }}
                         </div>
@@ -93,69 +98,69 @@
             </div>
 
             {# Liste des coaches #}
-            <h3 class="mb-4">Nos coaches disponibles</h3>
+            <h2 class="h3 fw-bold text-dark mb-4">Nos coaches disponibles</h2>
             {% if coaches|length > 0 %}
                 <div class="row g-4">
                     {% for coach in coaches %}
-                        <div class="col-md-6 col-lg-4">
-                            <div class="coach-card">
-                                <div class="d-flex align-items-center mb-3">
-                                    <div class="coach-avatar me-3">
-                                        <i class="bi bi-person-fill"></i>
+                        <div class="col-sm-6 col-lg-4">
+                            <div class="coach-card card h-100">
+                                <div class="card-body d-flex flex-column">
+                                    <div class="d-flex align-items-start mb-3">
+                                        <div class="coach-avatar me-3">
+                                            <i class="bi bi-person-fill"></i>
+                                        </div>
+                                        <div class="min-w-0 flex-grow-1">
+                                            <h3 class="h5 card-title fw-bold mb-1 text-dark">{{ coach.firstName }} {{ coach.lastName }}</h3>
+                                            <p class="card-text text-muted small mb-0 text-break">{{ coach.email }}</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h5 class="mb-1 fw-bold">{{ coach.firstName }} {{ coach.lastName }}</h5>
-                                        <p class="text-muted small mb-0">{{ coach.email }}</p>
+                                    {% if coach.speciality %}
+                                        <p class="mb-2">
+                                            <span class="badge bg-light text-dark border border-1 border-secondary border-opacity-25 px-3 py-2">
+                                                <i class="bi bi-star-fill me-1" style="color: var(--orange-primary);"></i>
+                                                {{ coach.speciality }}
+                                            </span>
+                                        </p>
+                                    {% endif %}
+                                    {% if coach.rating is defined and coach.rating %}
+                                        <p class="text-muted small mb-3">
+                                            <i class="bi bi-star-fill" style="color: #fbbf24;"></i>
+                                            {{ coach.rating }}/5
+                                        </p>
+                                    {% endif %}
+                                    {% set pendingRequest = myRequests|filter(r => r.coach.id == coach.id and r.status == 'pending')|first %}
+                                    {% set acceptedRequest = myRequests|filter(r => r.coach.id == coach.id and r.status == 'accepted')|first %}
+                                    {% set declinedRequest = myRequests|filter(r => r.coach.id == coach.id and r.status == 'declined')|first %}
+                                    <div class="mt-auto pt-2">
+                                        {% if pendingRequest %}
+                                            <span class="badge badge-pending rounded-pill px-3 py-2 w-100 text-center d-inline-block">
+                                                <i class="bi bi-clock me-1"></i>Demande en attente
+                                            </span>
+                                        {% elseif acceptedRequest %}
+                                            <span class="badge badge-accepted rounded-pill px-3 py-2 w-100 text-center d-inline-block">
+                                                <i class="bi bi-check-circle me-1"></i>Demande acceptée
+                                            </span>
+                                        {% elseif declinedRequest %}
+                                            <span class="badge badge-declined rounded-pill px-3 py-2 w-100 text-center d-inline-block">
+                                                <i class="bi bi-x-circle me-1"></i>Demande refusée
+                                            </span>
+                                        {% endif %}
                                     </div>
                                 </div>
-                                
-                                {% if coach.speciality %}
-                                    <p class="mb-2">
-                                        <span class="badge bg-light text-dark">
-                                            <i class="bi bi-star-fill me-1" style="color: var(--orange-primary);"></i>
-                                            {{ coach.speciality }}
-                                        </span>
-                                    </p>
-                                {% endif %}
-                                
-                                {% if coach.rating %}
-                                    <p class="text-muted small mb-3">
-                                        <i class="bi bi-star-fill" style="color: #fbbf24;"></i>
-                                        {{ coach.rating }}/5
-                                    </p>
-                                {% endif %}
-
-                                {% set pendingRequest = myRequests|filter(r => r.coach.id == coach.id and r.status == 'pending')|first %}
-                                {% set acceptedRequest = myRequests|filter(r => r.coach.id == coach.id and r.status == 'accepted')|first %}
-                                {% set declinedRequest = myRequests|filter(r => r.coach.id == coach.id and r.status == 'declined')|first %}
-
-                                {% if pendingRequest %}
-                                    <span class="badge badge-pending rounded-pill px-3 py-2 w-100 text-center">
-                                        <i class="bi bi-clock me-1"></i>Demande en attente
-                                    </span>
-                                {% elseif acceptedRequest %}
-                                    <span class="badge badge-accepted rounded-pill px-3 py-2 w-100 text-center">
-                                        <i class="bi bi-check-circle me-1"></i>Demande acceptée
-                                    </span>
-                                {% elseif declinedRequest %}
-                                    <span class="badge badge-declined rounded-pill px-3 py-2 w-100 text-center">
-                                        <i class="bi bi-x-circle me-1"></i>Demande refusée
-                                    </span>
-                                {% endif %}
                             </div>
                         </div>
                     {% endfor %}
                 </div>
             {% else %}
-                <div class="text-center py-5">
-                    <div class="coach-avatar mx-auto mb-4" style="width: 120px; height: 120px; font-size: 3rem;">
+                <div class="text-center py-5 px-3">
+                    <div class="coach-avatar mx-auto mb-4" style="width: 6rem; height: 6rem; font-size: 3rem;">
                         <i class="bi bi-person-x-fill"></i>
                     </div>
-                    <h3 class="mb-3">Aucun coach disponible</h3>
-                    <p class="text-muted">
+                    <h3 class="h4 fw-bold mb-3">Aucun coach disponible</h3>
+                    <p class="text-muted mb-0">
                         {% if selectedSpeciality %}
-                            Aucun coach trouvé pour la spécialité "{{ selectedSpeciality }}".
-                            <a href="{{ path('app_coach_index') }}">Voir tous les coaches</a>
+                            Aucun coach trouvé pour la spécialité « {{ selectedSpeciality }} ».
+                            <a href="{{ path('app_coach_index') }}" class="text-decoration-none" style="color: var(--orange-primary);">Voir tous les coaches</a>
                         {% else %}
                             Les coachs seront bientôt disponibles. Revenez plus tard !
                         {% endif %}
@@ -165,23 +170,23 @@
 
             {# Mes demandes en cours #}
             {% if myRequests|length > 0 %}
-                <div class="mt-5">
-                    <h3 class="mb-4">Mes demandes de coaching</h3>
+                <div class="mt-5 pt-4 border-top">
+                    <h2 class="h3 fw-bold text-dark mb-4">Mes demandes de coaching</h2>
                     <div class="row g-3">
                         {% for request in myRequests %}
                             <div class="col-12">
-                                <div class="card border-0 shadow-sm">
+                                <div class="card border shadow-sm rounded-3">
                                     <div class="card-body">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div>
-                                                <h6 class="mb-1">Coach: {{ request.coach.firstName }} {{ request.coach.lastName }}</h6>
+                                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-2">
+                                            <div class="flex-grow-1">
+                                                <h3 class="h6 fw-bold mb-1">Coach : {{ request.coach.firstName }} {{ request.coach.lastName }}</h3>
                                                 <p class="text-muted small mb-2">{{ request.createdAt|date('d/m/Y à H:i') }}</p>
-                                                <p class="mb-0"><strong>Message:</strong> {{ request.message }}</p>
+                                                <p class="mb-0 small"><strong>Message :</strong> {{ request.message }}</p>
                                             </div>
-                                            <span class="badge {% if request.status == 'pending' %}badge-pending{% elseif request.status == 'accepted' %}badge-accepted{% else %}badge-declined{% endif %} rounded-pill px-3 py-2">
-                                                {% if request.status == 'pending' %}EN ATTENTE
-                                                {% elseif request.status == 'accepted' %}ACCEPTÉE
-                                                {% else %}REFUSÉE{% endif %}
+                                            <span class="badge {% if request.status == 'pending' %}badge-pending{% elseif request.status == 'accepted' %}badge-accepted{% else %}badge-declined{% endif %} rounded-pill px-3 py-2 align-self-md-center">
+                                                {% if request.status == 'pending' %}En attente
+                                                {% elseif request.status == 'accepted' %}Acceptée
+                                                {% else %}Refusée{% endif %}
                                             </span>
                                         </div>
                                     </div>
@@ -195,4 +200,71 @@
     </section>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function() {
+            const form = document.getElementById('coaching-request-form');
+            const btn = document.getElementById('btn-submit-request');
+            const alertBox = document.getElementById('request-form-alert');
+
+            function showAlert(message, type) {
+                alertBox.textContent = message;
+                alertBox.className = 'alert alert-' + type + ' show';
+                alertBox.classList.remove('d-none');
+            }
+
+            function clearErrors() {
+                ['coach', 'message'].forEach(function(name) {
+                    const el = form.querySelector('[name*="[' + name + ']"]');
+                    const errEl = document.getElementById('error-' + name);
+                    if (el) el.classList.remove('is-invalid');
+                    if (errEl) errEl.textContent = '';
+                });
+            }
+
+            function setFieldError(fieldName, message) {
+                const widget = form.querySelector('[name*="[' + fieldName + ']"]');
+                const errEl = document.getElementById('error-' + fieldName);
+                if (widget) {
+                    widget.classList.add('is-invalid');
+                }
+                if (errEl) errEl.textContent = message || '';
+            }
+
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                clearErrors();
+                alertBox.classList.add('d-none');
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Envoi...';
+
+                const formData = new FormData(form);
+
+                try {
+                    const res = await fetch('{{ path('app_coach_request_create_ajax') }}', {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+                    const data = await res.json();
+
+                    if (data.success) {
+                        showAlert(data.message, 'success');
+                        form.reset();
+                        window.setTimeout(function() { location.reload(); }, 1500);
+                    } else {
+                        showAlert(data.message || 'Erreur lors de l\'envoi.', 'danger');
+                        if (data.errors) {
+                            if (data.errors.coach) setFieldError('coach', data.errors.coach[0]);
+                            if (data.errors.message) setFieldError('message', data.errors.message[0]);
+                        }
+                    }
+                } catch (err) {
+                    showAlert('Erreur réseau. Réessayez.', 'danger');
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-send me-2"></i>Envoyer la demande';
+                }
+            });
+        })();
+    </script>
 {% endblock %}

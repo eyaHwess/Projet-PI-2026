@@ -66,7 +66,7 @@ class SessionController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/schedule', name: 'schedule', methods: ['GET', 'POST'])]
+    #[Route('/{id}/schedule', name: 'schedule', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function schedule(Session $session, Request $request): Response
     {
         $currentUser = $this->getCurrentUser();
@@ -118,7 +118,7 @@ class SessionController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/confirm-time', name: 'confirm_time', methods: ['POST'])]
+    #[Route('/{id}/confirm-time', name: 'confirm_time', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function confirmTime(Session $session, Request $request): JsonResponse|Response
     {
         $currentUser = $this->getCurrentUser();
@@ -163,7 +163,57 @@ class SessionController extends AbstractController
         return $this->redirectToRoute('app_session_show', ['id' => $session->getId()]);
     }
 
-    #[Route('/{id}', name: 'show', methods: ['GET'])]
+    /**
+     * Supprimer le créneau proposé (par le coach ou l'utilisateur) pour pouvoir en proposer un autre.
+     */
+    #[Route('/{id}/clear-slot', name: 'clear_slot', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function clearSlot(Session $session, Request $request): JsonResponse|Response
+    {
+        $currentUser = $this->getCurrentUser();
+        $cr = $session->getCoachingRequest();
+
+        if (!$cr) {
+            throw $this->createNotFoundException('Session invalide.');
+        }
+
+        $isCoach = $currentUser->getId() === $cr->getCoach()?->getId();
+        $isUser = $currentUser->getId() === $cr->getUser()?->getId();
+
+        if (!$isCoach && !$isUser) {
+            throw $this->createAccessDeniedException('Vous n\'avez pas accès à cette session.');
+        }
+
+        if (!in_array($session->getStatus(), [Session::STATUS_PROPOSED_BY_COACH, Session::STATUS_PROPOSED_BY_USER], true)) {
+            $this->addFlash('info', 'Aucun créneau à supprimer.');
+            return $this->redirectToRoute('app_session_show', ['id' => $session->getId()]);
+        }
+
+        $canClear = ($isCoach && $session->getStatus() === Session::STATUS_PROPOSED_BY_COACH)
+            || ($isUser && $session->getStatus() === Session::STATUS_PROPOSED_BY_USER);
+        if (!$canClear) {
+            $this->addFlash('warning', 'Seul celui qui a proposé le créneau peut le supprimer.');
+            return $this->redirectToRoute('app_session_show', ['id' => $session->getId()]);
+        }
+
+        if (!$this->isCsrfTokenValid('clear-slot' . $session->getId(), $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token de sécurité invalide.');
+            return $this->redirectToRoute('app_session_show', ['id' => $session->getId()]);
+        }
+
+        if ($isCoach) {
+            $session->setProposedTimeByCoach(null);
+        } else {
+            $session->setProposedTimeByUser(null);
+        }
+        $session->setStatus(Session::STATUS_SCHEDULING);
+        $session->setUpdatedAt(new \DateTimeImmutable());
+        $this->entityManager->flush();
+
+        $this->addFlash('success', 'Créneau supprimé. Vous pouvez en proposer un autre.');
+        return $this->redirectToRoute('app_session_schedule', ['id' => $session->getId()]);
+    }
+
+    #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(Session $session): Response
     {
         $currentUser = $this->getCurrentUser();
@@ -186,7 +236,10 @@ class SessionController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
+    /**
+     * Édition d'une session. Réservée au coach qui gère cette session.
+     */
+    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Session $session, Request $request): Response
     {
         $currentUser = $this->getCurrentUser();
@@ -197,10 +250,8 @@ class SessionController extends AbstractController
         }
 
         $isCoach = $currentUser->getId() === $cr->getCoach()?->getId();
-        $isUser = $currentUser->getId() === $cr->getUser()?->getId();
-
-        if (!$isCoach && !$isUser) {
-            throw $this->createAccessDeniedException('Vous n\'avez pas accès à cette session.');
+        if (!$isCoach) {
+            throw $this->createAccessDeniedException('Seul le coach peut modifier la session.');
         }
 
         $form = $this->createForm(SessionType::class, $session);
@@ -217,11 +268,14 @@ class SessionController extends AbstractController
         return $this->render('session/edit.html.twig', [
             'session' => $session,
             'form' => $form,
-            'isCoach' => $isCoach,
+            'isCoach' => true,
         ]);
     }
 
-    #[Route('/{id}/delete', name: 'delete', methods: ['POST'])]
+    /**
+     * Annulation/suppression d'une session. Réservée au coach qui gère cette session.
+     */
+    #[Route('/{id}/delete', name: 'delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(Session $session, Request $request): Response
     {
         $currentUser = $this->getCurrentUser();
@@ -232,10 +286,8 @@ class SessionController extends AbstractController
         }
 
         $isCoach = $currentUser->getId() === $cr->getCoach()?->getId();
-        $isUser = $currentUser->getId() === $cr->getUser()?->getId();
-
-        if (!$isCoach && !$isUser) {
-            throw $this->createAccessDeniedException('Vous n\'avez pas accès à cette session.');
+        if (!$isCoach) {
+            throw $this->createAccessDeniedException('Seul le coach peut annuler la session.');
         }
 
         if (!$this->isCsrfTokenValid('delete-session' . $session->getId(), $request->request->get('_token'))) {
