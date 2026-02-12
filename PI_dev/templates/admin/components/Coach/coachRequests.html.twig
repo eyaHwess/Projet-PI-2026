@@ -38,14 +38,16 @@
                             <!-- User who requested -->
                             <td>
                                 <div class="d-flex align-items-center position-relative">
-                                    <!-- Avatar -->
                                     <div class="avatar avatar-md">
-                                        <img src="{{ asset(request.user.avatar) }}" class="rounded-circle" alt="avatar">
+                                        {% set userName = (request.user.firstName ~ ' ' ~ request.user.lastName)|trim ?: request.user.email %}
+                                        <div class="avatar-img rounded-circle bg-secondary bg-opacity-10 d-flex align-items-center justify-content-center">
+                                            <span class="fw-bold text-secondary small">{{ userName|slice(0, 2)|upper }}</span>
+                                        </div>
                                     </div>
-
                                     <div class="mb-0 ms-2">
                                         <h6 class="mb-0">
-                                            <a href="#" class="stretched-link">{{ request.user.name }}</a>
+                                            <a href="{{ path('admin_user_detail', {id: request.user.id}) }}">{{ userName }}</a>
+                                            <a href="{{ path('admin_coach_request_view', {id: request.id}) }}" class="btn btn-sm btn-outline-primary ms-2">Voir</a>
                                         </h6>
                                     </div>
                                 </div>
@@ -54,14 +56,14 @@
                             <!-- Coach requested -->
                             <td>
                                 <div class="d-flex align-items-center">
-                                    <!-- Avatar -->
                                     <div class="avatar avatar-md">
-                                        <img src="{{ asset(request.coach.avatar) }}" class="rounded-circle" alt="avatar">
+                                        <div class="avatar-img rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center">
+                                            <span class="fw-bold text-primary small">{{ (request.coach.firstName ~ ' ' ~ request.coach.lastName)|trim|slice(0, 2)|upper }}</span>
+                                        </div>
                                     </div>
-
                                     <div class="mb-0 ms-2">
-                                        <h6 class="mb-0">{{ request.coach.name }}</h6>
-                                        <span class="text-muted small">{{ request.coach.specialty }}</span>
+                                        <h6 class="mb-0">{{ (request.coach.firstName ~ ' ' ~ request.coach.lastName)|trim ?: request.coach.email }}</h6>
+                                        <span class="text-muted small">{{ request.coach.speciality ?? '-' }}</span>
                                     </div>
                                 </div>
                             </td>
@@ -84,10 +86,10 @@
                                             style="background-color: #d4f4e8; color: #10b981; border: none; border-radius: 8px; font-weight: 500;">
                                         Accepted
                                     </button>
-                                {% elseif request.status == 'rejected' %}
+                                {% elseif request.status == 'declined' %}
                                     <button class="btn btn-lg px-4 py-2 disabled"
                                             style="background-color: #e5e7eb; color: #9ca3af; border: none; border-radius: 8px; font-weight: 500;">
-                                        Rejected
+                                        Declined
                                     </button>
                                 {% endif %}
                             </td>

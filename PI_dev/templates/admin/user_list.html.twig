@@ -20,18 +20,34 @@
         <div class="card-header bg-transparent border-bottom px-0">
             <div class="row g-3 align-items-center justify-content-between">
 
-                <!-- Search bar -->
+                <!-- Advanced search: by name & email -->
                 <div class="col-md-8">
-                    <form class="rounded position-relative">
-                        <input class="form-control bg-transparent"
-                               type="search"
-                               placeholder="Search"
-                               aria-label="Search">
-                        <button class="bg-transparent p-2 position-absolute top-50 end-0
-                                       translate-middle-y border-0 text-primary-hover text-reset"
-                                type="submit">
-                            <i class="fas fa-search fs-6"></i>
-                        </button>
+                    <form class="rounded position-relative"
+                          method="get"
+                          action="{{ path('admin_user_list') }}">
+                        <div class="row g-2">
+                            <div class="col-md-5">
+                                <input class="form-control bg-transparent"
+                                       type="search"
+                                       name="name"
+                                       placeholder="Rechercher par nom"
+                                       aria-label="Rechercher par nom"
+                                       value="{{ filter_name|default('') }}">
+                            </div>
+                            <div class="col-md-5">
+                                <input class="form-control bg-transparent"
+                                       type="search"
+                                       name="email"
+                                       placeholder="Rechercher par email"
+                                       aria-label="Rechercher par email"
+                                       value="{{ filter_email|default('') }}">
+                            </div>
+                            <div class="col-md-2 d-flex justify-content-end">
+                                <button class="btn btn-primary-soft w-100" type="submit">
+                                    <i class="fas fa-search me-1"></i> Filtrer
+                                </button>
+                            </div>
+                        </div>
                     </form>
                 </div>
 
@@ -72,51 +88,6 @@
                 <!-- GRID VIEW -->
                 <div class="tab-pane fade show active" id="grid-view">
                     <div class="row g-4">
-
-                        {% set users = [
-                            {
-                                name: 'Lamjed Stevens',
-                                role : 'user',
-                                status: 'Active',
-                                streakDays: '220',
-                                routines: 15,
-                                avatar: asset('adminDashboard/assets/images/avatar/09.jpg')
-                            },
-                            {
-                                name: 'Leila Mansour',
-                                role: 'coach',
-                                speciality: 'Fitness',
-                                totalSessions: 18,
-                                totalDemandes: 9,
-                                rating: 4,
-                                avatar: asset('adminDashboard/assets/images/avatar/03.jpg')
-                            },
-                            {
-                                name: 'Jacqueline Miller',
-                                role : 'user',
-                                status: 'Active',
-                                streakDays: '5',
-                                routines: 1,
-                                avatar: asset('adminDashboard/assets/images/avatar/01.jpg')
-                            },
-                            {
-                                name: 'admin Miller',
-                                role : 'admin',
-                                roleLevel : 5,
-                                status: 'Active',
-                                email : 'admin.1111@gmail.com',
-                                avatar: asset('adminDashboard/assets/images/avatar/01.jpg')
-                            },
-                             {
-                                name: 'Sara Johnson',
-                                role: 'coach',
-                                speciality: 'Mental Health',
-                                totalSessions: 25,
-                                totalDemandes: 14,
-                                rating: 4,
-                                avatar: asset('adminDashboard/assets/images/avatar/02.jpg')
-                            }
-                        ] %}
 
                         {% for user in users %}
                             {% include 'admin/components/user_card/user_card.html.twig' with { user: user } %}

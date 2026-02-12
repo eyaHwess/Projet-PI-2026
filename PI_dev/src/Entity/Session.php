@@ -25,17 +25,21 @@ class Session
 
     #[ORM\OneToOne(inversedBy: 'session', cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotNull(message: "La session doit être liée à une demande de coaching.")]
     private ?CoachingRequest $coachingRequest = null;
 
     #[ORM\Column(length: 30)]
-    #[Assert\Choice(choices: [
-        self::STATUS_SCHEDULING,
-        self::STATUS_PROPOSED_BY_USER,
-        self::STATUS_PROPOSED_BY_COACH,
-        self::STATUS_CONFIRMED,
-        self::STATUS_COMPLETED,
-        self::STATUS_CANCELLED,
-    ])]
+    #[Assert\Choice(
+        choices: [
+            self::STATUS_SCHEDULING,
+            self::STATUS_PROPOSED_BY_USER,
+            self::STATUS_PROPOSED_BY_COACH,
+            self::STATUS_CONFIRMED,
+            self::STATUS_COMPLETED,
+            self::STATUS_CANCELLED,
+        ],
+        message: "Le statut de la session est invalide."
+    )]
     private string $status = self::STATUS_SCHEDULING;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
@@ -52,6 +56,7 @@ class Session
     private ?int $duration = null; // Durée en minutes
 
     #[ORM\Column]
+    #[Assert\NotNull(message: "La date de création de la session est obligatoire.")]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(nullable: true)]

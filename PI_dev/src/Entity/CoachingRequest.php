@@ -21,10 +21,12 @@ class CoachingRequest
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotNull(message: "L'utilisateur qui fait la demande est obligatoire.")]
     private ?User $user = null;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotNull(message: "Le coach demandé est obligatoire.")]
     private ?User $coach = null;
 
     #[ORM\Column(type: 'text')]
@@ -38,10 +40,14 @@ class CoachingRequest
     private ?string $message = null;
 
     #[ORM\Column(length: 20)]
-    #[Assert\Choice(choices: [self::STATUS_PENDING, self::STATUS_ACCEPTED, self::STATUS_DECLINED])]
+    #[Assert\Choice(
+        choices: [self::STATUS_PENDING, self::STATUS_ACCEPTED, self::STATUS_DECLINED],
+        message: "Le statut de la demande est invalide."
+    )]
     private string $status = self::STATUS_PENDING;
 
     #[ORM\Column]
+    #[Assert\NotNull(message: "La date de création de la demande est obligatoire.")]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(nullable: true)]

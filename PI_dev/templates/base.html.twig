@@ -7,11 +7,9 @@
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
 
         <title>{% block title %}Welcome!{% endblock %}</title>
-
-        {% block javascripts %}
-        {% endblock %}
+        {% block stylesheets %}{% endblock %}
     </head>
-    <body class="min-h-screen bg-gray-50">
+    <body class="min-h-screen bg-gray-50 antialiased">
         <nav class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between h-14 items-center">
@@ -29,6 +27,9 @@
                                 {# Navbar utilisateur (demande de coaching) : uniquement demander + voir coaching #}
                                 <a href="{{ path('app_coach_index') }}" class="text-gray-600 hover:text-orange-500 text-sm font-medium">Demander coaching</a>
                                 <a href="{{ path('app_session_index') }}" class="text-gray-600 hover:text-orange-500 text-sm font-medium">Mes sessions</a>
+                            {% endif %}
+                            {% if is_granted('ROLE_ADMIN') %}
+                                <a href="{{ path('admin_dashboard') }}" class="text-gray-600 hover:text-orange-500 text-sm font-medium">Admin</a>
                             {% endif %}
                             <span class="text-sm text-gray-500 border-l border-gray-200 pl-3">{{ app.user.firstName }} {{ app.user.lastName }}</span>
                             <a href="{{ path('app_logout') }}" class="text-sm text-red-600 hover:text-red-700 font-medium">Déconnexion</a>

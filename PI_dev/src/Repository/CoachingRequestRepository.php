@@ -75,6 +75,45 @@ class CoachingRequestRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * Toutes les demandes (admin), ordonnées par date, avec pagination.
+     *
+     * @return CoachingRequest[]
+     */
+    public function findAllOrdered(int $limit = 10, int $offset = 0): array
+    {
+        return $this->createQueryBuilder('cr')
+            ->orderBy('cr.createdAt', 'DESC')
+            ->setMaxResults($limit)
+            ->setFirstResult($offset)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Nombre total de demandes (admin).
+     */
+    public function countAll(): int
+    {
+        return (int) $this->createQueryBuilder('cr')
+            ->select('COUNT(cr.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Nombre de demandes pour un coach (admin).
+     */
+    public function countByCoach(User $coach): int
+    {
+        return (int) $this->createQueryBuilder('cr')
+            ->select('COUNT(cr.id)')
+            ->where('cr.coach = :coach')
+            ->setParameter('coach', $coach)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     public function hasPendingRequest(User $user, User $coach): bool
     {
         $count = $this->createQueryBuilder('cr')

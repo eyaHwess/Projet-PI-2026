@@ -91,4 +91,18 @@ class SessionRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Nombre de sessions pour un coach (admin).
+     */
+    public function countByCoach(User $coach): int
+    {
+        return (int) $this->createQueryBuilder('s')
+            ->select('COUNT(s.id)')
+            ->join('s.coachingRequest', 'cr')
+            ->where('cr.coach = :coach')
+            ->setParameter('coach', $coach)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

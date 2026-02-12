@@ -2,648 +2,326 @@
 
 namespace App\Controller;
 
+use App\Repository\CoachingRequestRepository;
+use App\Repository\GoalRepository;
+use App\Repository\RoutineRepository;
+use App\Repository\SessionRepository;
+use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+#[IsGranted('ROLE_ADMIN')]
 final class AdminController extends AbstractController
 {
+    public function __construct(
+        private UserRepository $userRepository,
+        private CoachingRequestRepository $coachingRequestRepository,
+        private SessionRepository $sessionRepository,
+        private GoalRepository $goalRepository,
+        private RoutineRepository $routineRepository
+    ) {
+    }
+
     #[Route('/admin', name: 'admin_dashboard')]
     public function index(): Response
     {
-        return $this->render('admin/dashboard/dashboard.html.twig');
+        // Statistiques générales
+        $totalUsers = $this->userRepository->count([]);
+        $totalCoaches = count($this->userRepository->findCoaches());
+        $totalRequests = $this->coachingRequestRepository->count([]);
+        $totalSessions = $this->sessionRepository->count([]);
+        $totalGoals = $this->goalRepository->count([]);
+        $totalRoutines = $this->routineRepository->count([]);
+
+        // Demandes par statut
+        $pendingRequests = $this->coachingRequestRepository->count(['status' => 'pending']);
+        $acceptedRequests = $this->coachingRequestRepository->count(['status' => 'accepted']);
+        $declinedRequests = $this->coachingRequestRepository->count(['status' => 'declined']);
+
+        // Sessions par statut
+        $schedulingSessions = $this->sessionRepository->count(['status' => 'scheduling']);
+        $confirmedSessions = $this->sessionRepository->count(['status' => 'confirmed']);
+        $completedSessions = $this->sessionRepository->count(['status' => 'completed']);
+        $cancelledSessions = $this->sessionRepository->count(['status' => 'cancelled']);
+
+        // Utilisateurs récents (7 derniers jours)
+        $recentUsers = $this->userRepository->createQueryBuilder('u')
+            ->where('u.createdAt >= :date')
+            ->setParameter('date', new \DateTime('-7 days'))
+            ->orderBy('u.createdAt', 'DESC')
+            ->setMaxResults(10)
+            ->getQuery()
+            ->getResult();
+
+        // Demandes récentes
+        $recentRequests = $this->coachingRequestRepository->createQueryBuilder('cr')
+            ->orderBy('cr.createdAt', 'DESC')
+            ->setMaxResults(5)
+            ->getQuery()
+            ->getResult();
+
+        // Sessions récentes
+        $recentSessions = $this->sessionRepository->createQueryBuilder('s')
+            ->orderBy('s.createdAt', 'DESC')
+            ->setMaxResults(5)
+            ->getQuery()
+            ->getResult();
+
+        // Données pour graphiques (7 derniers jours)
+        $chartData = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = new \DateTime("-{$i} days");
+            $dateStart = clone $date;
+            $dateStart->setTime(0, 0, 0);
+            $dateEnd = clone $date;
+            $dateEnd->setTime(23, 59, 59);
+
+            $chartData['labels'][] = $date->format('d/m');
+            $chartData['users'][] = $this->userRepository->createQueryBuilder('u')
+                ->select('COUNT(u.id)')
+                ->where('u.createdAt >= :start AND u.createdAt <= :end')
+                ->setParameter('start', $dateStart)
+                ->setParameter('end', $dateEnd)
+                ->getQuery()
+                ->getSingleScalarResult();
+            $chartData['sessions'][] = $this->sessionRepository->createQueryBuilder('s')
+                ->select('COUNT(s.id)')
+                ->where('s.createdAt >= :start AND s.createdAt <= :end')
+                ->setParameter('start', $dateStart)
+                ->setParameter('end', $dateEnd)
+                ->getQuery()
+                ->getSingleScalarResult();
+            $chartData['requests'][] = $this->coachingRequestRepository->createQueryBuilder('cr')
+                ->select('COUNT(cr.id)')
+                ->where('cr.createdAt >= :start AND cr.createdAt <= :end')
+                ->setParameter('start', $dateStart)
+                ->setParameter('end', $dateEnd)
+                ->getQuery()
+                ->getSingleScalarResult();
+        }
+
+        return $this->render('admin/dashboard/dashboard.html.twig', [
+            'totalUsers' => $totalUsers,
+            'totalCoaches' => $totalCoaches,
+            'totalRequests' => $totalRequests,
+            'totalSessions' => $totalSessions,
+            'totalGoals' => $totalGoals,
+            'totalRoutines' => $totalRoutines,
+            'pendingRequests' => $pendingRequests,
+            'acceptedRequests' => $acceptedRequests,
+            'declinedRequests' => $declinedRequests,
+            'schedulingSessions' => $schedulingSessions,
+            'confirmedSessions' => $confirmedSessions,
+            'completedSessions' => $completedSessions,
+            'cancelledSessions' => $cancelledSessions,
+            'recentUsers' => $recentUsers,
+            'recentRequests' => $recentRequests,
+            'recentSessions' => $recentSessions,
+            'chartData' => $chartData,
+        ]);
     }
-     #[Route('/admin/users', name: 'admin_user_list')]
-    public function userList(): Response
+    #[Route('/admin/users', name: 'admin_user_list')]
+    public function userList(Request $request): Response
     {
-        return $this->render('admin/user_list.html.twig');
+        $name  = trim((string) $request->query->get('name', ''));
+        $email = trim((string) $request->query->get('email', ''));
+
+        $qb = $this->userRepository->createQueryBuilder('u')
+            ->orderBy('u.lastName', 'ASC')
+            ->addOrderBy('u.firstName', 'ASC');
+
+        if ($name !== '') {
+            $qb
+                ->andWhere('LOWER(u.firstName) LIKE :name OR LOWER(u.lastName) LIKE :name')
+                ->setParameter('name', '%' . mb_strtolower($name) . '%');
+        }
+
+        if ($email !== '') {
+            $qb
+                ->andWhere('LOWER(u.email) LIKE :email')
+                ->setParameter('email', '%' . mb_strtolower($email) . '%');
+        }
+
+        $allUsers = $qb->getQuery()->getResult();
+        $users = [];
+        foreach ($allUsers as $u) {
+            $roles = $u->getRoles();
+            $role = in_array('ROLE_ADMIN', $roles, true) ? 'admin' : (in_array('ROLE_COACH', $roles, true) ? 'coach' : 'user');
+            $users[] = [
+                'name' => trim($u->getFirstName() . ' ' . $u->getLastName()) ?: $u->getEmail(),
+                'role' => $role,
+                'status' => 'Active',
+                'streakDays' => '0',
+                'routines' => $this->routineRepository->countByUser($u),
+                'avatar' => null,
+                'email' => $u->getEmail(),
+            ];
+            if ($role === 'admin') {
+                $users[array_key_last($users)]['roleLevel'] = 5;
+            }
+            if ($role === 'coach') {
+                $users[array_key_last($users)]['speciality'] = $u->getSpeciality() ?? '-';
+                $users[array_key_last($users)]['totalSessions'] = $this->sessionRepository->countByCoach($u);
+                $users[array_key_last($users)]['totalDemandes'] = $this->coachingRequestRepository->countByCoach($u);
+                $users[array_key_last($users)]['rating'] = 4;
+            }
+        }
+        return $this->render('admin/user_list.html.twig', [
+            'users' => $users,
+            'filter_name' => $name,
+            'filter_email' => $email,
+        ]);
     }
-     #[Route('/admin/coaches', name: 'coaches_list')]
-    public function coachList(): Response
+
+    #[Route('/admin/coaches', name: 'coaches_list')]
+    public function coachList(Request $request): Response
     {
-        return $this->render('admin/coaches_list.html.twig');
+        $search = trim((string) $request->query->get('q', ''));
+
+        $coaches = $this->userRepository->findCoaches();
+
+        if ($search !== '') {
+            $coaches = array_filter($coaches, static function ($coach) use ($search) {
+                $fullName = trim($coach->getFirstName() . ' ' . $coach->getLastName());
+                $haystack = mb_strtolower($fullName . ' ' . $coach->getEmail() . ' ' . (string) $coach->getSpeciality());
+                return str_contains($haystack, mb_strtolower($search));
+            });
+        }
+
+        $users = [];
+        foreach ($coaches as $u) {
+            $users[] = [
+                'name' => trim($u->getFirstName() . ' ' . $u->getLastName()) ?: $u->getEmail(),
+                'role' => 'coach',
+                'speciality' => $u->getSpeciality() ?? '-',
+                'totalSessions' => $this->sessionRepository->countByCoach($u),
+                'totalDemandes' => $this->coachingRequestRepository->countByCoach($u),
+                'rating' => 4,
+                'avatar' => null,
+            ];
+        }
+        return $this->render('admin/coaches_list.html.twig', [
+            'users' => $users,
+            'search' => $search,
+        ]);
     }
     #[Route('/admin/manageUsers', name: 'admin_manage_accounts')]
     public function manageAccounts(Request $request): Response
     {
-        // Get current page from query parameter, default to 1
         $currentPage = max(1, $request->query->getInt('page', 1));
-        $itemsPerPage = 4;
-        
-        // All static users data
-        $allUsers = [
-            [
-                'name' => 'Lori Stevens',
-                'goal' => 'Model body in 15 days',
-                'routines' => 15,
-                'streakDays' => '0',
-                'avatar' => '/adminDashboard/assets/images/avatar/09.jpg'
-            ],
-            [
-                'name' => 'Carolyn Ortiz',
-                'goal' => 'discipline',
-                'routines' => 10,
-                'streakDays' => '23',
-                'avatar' => '/adminDashboard/assets/images/avatar/01.jpg'
-            ],
-            [
-                'name' => 'Dennis Barrett',
-                'goal' => 'health',
-                'routines' => 9,
-                'streakDays' => '246',
-                'avatar' => '/adminDashboard/assets/images/avatar/04.jpg'
-            ],
-            [
-                'name' => 'Amanda Reed',
-                'goal' => 'great diet',
-                'routines' => 29,
-                'streakDays' => '46',
-                'avatar' => '/adminDashboard/assets/images/avatar/05.jpg'
-            ],
-            [
-                'name' => 'Michael Johnson',
-                'goal' => 'fitness journey',
-                'routines' => 12,
-                'streakDays' => '89',
-                'avatar' => '/adminDashboard/assets/images/avatar/06.jpg'
-            ],
-            [
-                'name' => 'Sarah Williams',
-                'goal' => 'weight loss',
-                'routines' => 18,
-                'streakDays' => '134',
-                'avatar' => '/adminDashboard/assets/images/avatar/07.jpg'
-            ],
-            [
-                'name' => 'David Brown',
-                'goal' => 'muscle gain',
-                'routines' => 22,
-                'streakDays' => '67',
-                'avatar' => '/adminDashboard/assets/images/avatar/08.jpg'
-            ],
-            [
-                'name' => 'Emily Davis',
-                'goal' => 'healthy lifestyle',
-                'routines' => 14,
-                'streakDays' => '178',
-                'avatar' => '/adminDashboard/assets/images/avatar/02.jpg'
-            ],
-            [
-                'name' => 'James Wilson',
-                'goal' => 'strength training',
-                'routines' => 20,
-                'streakDays' => '92',
-                'avatar' => '/adminDashboard/assets/images/avatar/03.jpg'
-            ],
-            [
-                'name' => 'Jessica Martinez',
-                'goal' => 'cardio improvement',
-                'routines' => 16,
-                'streakDays' => '45',
-                'avatar' => '/adminDashboard/assets/images/avatar/10.jpg'
-            ],
-            [
-                'name' => 'Robert Taylor',
-                'goal' => 'flexibility',
-                'routines' => 11,
-                'streakDays' => '156',
-                'avatar' => '/adminDashboard/assets/images/avatar/11.jpg'
-            ],
-            [
-                'name' => 'Linda Anderson',
-                'goal' => 'stress relief',
-                'routines' => 13,
-                'streakDays' => '201',
-                'avatar' => '/adminDashboard/assets/images/avatar/12.jpg'
-            ],
-        ];
-        
-        // Calculate pagination
-        $totalItems = count($allUsers);
-        $totalPages = ceil($totalItems / $itemsPerPage);
+        $itemsPerPage = 10;
+        $totalItems = $this->userRepository->count([]);
+        $totalPages = $totalItems > 0 ? (int) ceil($totalItems / $itemsPerPage) : 1;
         $offset = ($currentPage - 1) * $itemsPerPage;
-        
-        // Get items for current page
-        $users = array_slice($allUsers, $offset, $itemsPerPage);
-        
+
+        $userEntities = $this->userRepository->createQueryBuilder('u')
+            ->orderBy('u.lastName', 'ASC')
+            ->addOrderBy('u.firstName', 'ASC')
+            ->setFirstResult($offset)
+            ->setMaxResults($itemsPerPage)
+            ->getQuery()
+            ->getResult();
+
+        $users = [];
+        foreach ($userEntities as $u) {
+            $firstGoal = $this->goalRepository->findFirstByUser($u);
+            $users[] = [
+                'name' => trim($u->getFirstName() . ' ' . $u->getLastName()) ?: $u->getEmail(),
+                'goal' => $firstGoal ? $firstGoal->getTitle() : 'Aucun objectif',
+                'routines' => $this->routineRepository->countByUser($u),
+                'streakDays' => '0',
+                'avatar' => null,
+                'id' => $u->getId(),
+            ];
+        }
+
         return $this->render('admin/manage_accounts.html.twig', [
             'users' => $users,
             'currentPage' => $currentPage,
             'totalPages' => $totalPages,
             'totalItems' => $totalItems,
             'itemsPerPage' => $itemsPerPage,
-            'startItem' => $offset + 1,
-            'endItem' => min($offset + $itemsPerPage, $totalItems)
+            'startItem' => $totalItems === 0 ? 0 : $offset + 1,
+            'endItem' => min($offset + $itemsPerPage, $totalItems),
         ]);
     }
-    #[Route('/admin/userDetail', name: 'admin_user_detail')]
-    public function detail(): Response
+    #[Route('/admin/userDetail/{id}', name: 'admin_user_detail', requirements: ['id' => '\d+'])]
+    public function detail(int $id): Response
     {
-        // Static example user (for now)
-        return $this->render('admin/user_detail.html.twig');
+        $userEntity = $this->userRepository->find($id);
+        if ($userEntity === null) {
+            throw $this->createNotFoundException('Utilisateur introuvable.');
+        }
+        $roles = $userEntity->getRoles();
+        $role = in_array('ROLE_ADMIN', $roles, true) ? 'admin' : (in_array('ROLE_COACH', $roles, true) ? 'coach' : 'user');
+        $user = [
+            'name' => trim($userEntity->getFirstName() . ' ' . $userEntity->getLastName()) ?: $userEntity->getEmail(),
+            'role' => $role,
+            'status' => 'Active',
+            'email' => $userEntity->getEmail(),
+            'createdAt' => $userEntity->getCreatedAt() ? $userEntity->getCreatedAt()->format('d M Y') : '-',
+            'description' => 'Utilisateur de la plateforme.',
+            'avatar' => null,
+        ];
+        if ($role === 'coach') {
+            $user['speciality'] = $userEntity->getSpeciality() ?? '-';
+        }
+        return $this->render('admin/user_detail.html.twig', ['user' => $user]);
     }
 
     #[Route('/admin/coach/requests', name: 'admin_coach_requests')]
     public function coachRequests(Request $request): Response
     {
-        // Get current page from query parameter, default to 1
         $currentPage = max(1, $request->query->getInt('page', 1));
-        $itemsPerPage = 4;
-        
-        // All static data for testing
-        $allRequests = [
-            [
-                'id' => 1,
-                'user' => [
-                    'name' => 'Lori Stevens',
-                    'avatar' => '/adminDashboard/assets/images/avatar/01.jpg'
-                ],
-                'coach' => [
-                    'name' => 'John Smith',
-                    'specialty' => 'Nutrition & Diet',
-                    'avatar' => '/adminDashboard/assets/images/avatar/07.jpg'
-                ],
-                'createdAt' => new \DateTime('2021-10-22'),
-                'status' => 'pending'
-            ],
-            [
-                'id' => 2,
-                'user' => [
-                    'name' => 'Carolyn Ortiz',
-                    'avatar' => '/adminDashboard/assets/images/avatar/02.jpg'
-                ],
-                'coach' => [
-                    'name' => 'Sarah Johnson',
-                    'specialty' => 'Study & Productivity',
-                    'avatar' => '/adminDashboard/assets/images/avatar/08.jpg'
-                ],
-                'createdAt' => new \DateTime('2021-09-06'),
-                'status' => 'pending'
-            ],
-            [
-                'id' => 3,
-                'user' => [
-                    'name' => 'Dennis Barrett',
-                    'avatar' => '/adminDashboard/assets/images/avatar/03.jpg'
-                ],
-                'coach' => [
-                    'name' => 'Mike Wilson',
-                    'specialty' => 'Time Management',
-                    'avatar' => '/adminDashboard/assets/images/avatar/09.jpg'
-                ],
-                'createdAt' => new \DateTime('2021-01-21'),
-                'status' => 'accepted'
-            ],
-            [
-                'id' => 4,
-                'user' => [
-                    'name' => 'Billy Vasquez',
-                    'avatar' => '/adminDashboard/assets/images/avatar/04.jpg'
-                ],
-                'coach' => [
-                    'name' => 'Emma Davis',
-                    'specialty' => 'Fitness & Wellness',
-                    'avatar' => '/adminDashboard/assets/images/avatar/10.jpg'
-                ],
-                'createdAt' => new \DateTime('2020-12-25'),
-                'status' => 'rejected'
-            ],
-            [
-                'id' => 5,
-                'user' => [
-                    'name' => 'Jacqueline Miller',
-                    'avatar' => '/adminDashboard/assets/images/avatar/05.jpg'
-                ],
-                'coach' => [
-                    'name' => 'David Brown',
-                    'specialty' => 'Mental Health & Mindfulness',
-                    'avatar' => '/adminDashboard/assets/images/avatar/11.jpg'
-                ],
-                'createdAt' => new \DateTime('2020-06-05'),
-                'status' => 'accepted'
-            ],
-            [
-                'id' => 6,
-                'user' => [
-                    'name' => 'Amanda Reed',
-                    'avatar' => '/adminDashboard/assets/images/avatar/06.jpg'
-                ],
-                'coach' => [
-                    'name' => 'Lisa Anderson',
-                    'specialty' => 'Career & Goal Setting',
-                    'avatar' => '/adminDashboard/assets/images/avatar/12.jpg'
-                ],
-                'createdAt' => new \DateTime('2020-02-14'),
-                'status' => 'accepted'
-            ],
-            [
-                'id' => 7,
-                'user' => [
-                    'name' => 'Robert Taylor',
-                    'avatar' => '/adminDashboard/assets/images/avatar/09.jpg'
-                ],
-                'coach' => [
-                    'name' => 'Jennifer White',
-                    'specialty' => 'Sleep & Recovery',
-                    'avatar' => '/adminDashboard/assets/images/avatar/01.jpg'
-                ],
-                'createdAt' => new \DateTime('2020-01-10'),
-                'status' => 'pending'
-            ],
-            [
-                'id' => 8,
-                'user' => [
-                    'name' => 'Maria Garcia',
-                    'avatar' => '/adminDashboard/assets/images/avatar/10.jpg'
-                ],
-                'coach' => [
-                    'name' => 'Thomas Moore',
-                    'specialty' => 'Habit Building',
-                    'avatar' => '/adminDashboard/assets/images/avatar/02.jpg'
-                ],
-                'createdAt' => new \DateTime('2019-12-15'),
-                'status' => 'accepted'
-            ],
-            [
-                'id' => 9,
-                'user' => [
-                    'name' => 'James Wilson',
-                    'avatar' => '/adminDashboard/assets/images/avatar/11.jpg'
-                ],
-                'coach' => [
-                    'name' => 'Patricia Martinez',
-                    'specialty' => 'Work-Life Balance',
-                    'avatar' => '/adminDashboard/assets/images/avatar/03.jpg'
-                ],
-                'createdAt' => new \DateTime('2019-11-20'),
-                'status' => 'pending'
-            ],
-            [
-                'id' => 10,
-                'user' => [
-                    'name' => 'Linda Anderson',
-                    'avatar' => '/adminDashboard/assets/images/avatar/12.jpg'
-                ],
-                'coach' => [
-                    'name' => 'Michael Jackson',
-                    'specialty' => 'Stress Management',
-                    'avatar' => '/adminDashboard/assets/images/avatar/04.jpg'
-                ],
-                'createdAt' => new \DateTime('2019-10-05'),
-                'status' => 'rejected'
-            ],
-            [
-                'id' => 11,
-                'user' => [
-                    'name' => 'Barbara Thomas',
-                    'avatar' => '/adminDashboard/assets/images/avatar/01.jpg'
-                ],
-                'coach' => [
-                    'name' => 'Christopher Lee',
-                    'specialty' => 'Morning Routines',
-                    'avatar' => '/adminDashboard/assets/images/avatar/05.jpg'
-                ],
-                'createdAt' => new \DateTime('2019-09-12'),
-                'status' => 'accepted'
-            ],
-            [
-                'id' => 12,
-                'user' => [
-                    'name' => 'Susan Harris',
-                    'avatar' => '/adminDashboard/assets/images/avatar/02.jpg'
-                ],
-                'coach' => [
-                    'name' => 'Daniel Clark',
-                    'specialty' => 'Evening Routines',
-                    'avatar' => '/adminDashboard/assets/images/avatar/06.jpg'
-                ],
-                'createdAt' => new \DateTime('2019-08-25'),
-                'status' => 'pending'
-            ],
-            [
-                'id' => 13,
-                'user' => [
-                    'name' => 'Jessica Lewis',
-                    'avatar' => '/adminDashboard/assets/images/avatar/03.jpg'
-                ],
-                'coach' => [
-                    'name' => 'Matthew Walker',
-                    'specialty' => 'Meditation & Yoga',
-                    'avatar' => '/adminDashboard/assets/images/avatar/07.jpg'
-                ],
-                'createdAt' => new \DateTime('2019-07-18'),
-                'status' => 'accepted'
-            ],
-            [
-                'id' => 14,
-                'user' => [
-                    'name' => 'Sarah Robinson',
-                    'avatar' => '/adminDashboard/assets/images/avatar/04.jpg'
-                ],
-                'coach' => [
-                    'name' => 'Anthony Hall',
-                    'specialty' => 'Personal Development',
-                    'avatar' => '/adminDashboard/assets/images/avatar/08.jpg'
-                ],
-                'createdAt' => new \DateTime('2019-06-30'),
-                'status' => 'rejected'
-            ],
-            [
-                'id' => 15,
-                'user' => [
-                    'name' => 'Karen Young',
-                    'avatar' => '/adminDashboard/assets/images/avatar/05.jpg'
-                ],
-                'coach' => [
-                    'name' => 'Mark Allen',
-                    'specialty' => 'Financial Planning',
-                    'avatar' => '/adminDashboard/assets/images/avatar/09.jpg'
-                ],
-                'createdAt' => new \DateTime('2019-05-22'),
-                'status' => 'pending'
-            ],
-            [
-                'id' => 16,
-                'user' => [
-                    'name' => 'Nancy King',
-                    'avatar' => '/adminDashboard/assets/images/avatar/06.jpg'
-                ],
-                'coach' => [
-                    'name' => 'Steven Wright',
-                    'specialty' => 'Reading & Learning',
-                    'avatar' => '/adminDashboard/assets/images/avatar/10.jpg'
-                ],
-                'createdAt' => new \DateTime('2019-04-14'),
-                'status' => 'accepted'
-            ],
-            [
-                'id' => 17,
-                'user' => [
-                    'name' => 'Betty Scott',
-                    'avatar' => '/adminDashboard/assets/images/avatar/07.jpg'
-                ],
-                'coach' => [
-                    'name' => 'Paul Lopez',
-                    'specialty' => 'Exercise & Movement',
-                    'avatar' => '/adminDashboard/assets/images/avatar/11.jpg'
-                ],
-                'createdAt' => new \DateTime('2019-03-08'),
-                'status' => 'pending'
-            ],
-            [
-                'id' => 18,
-                'user' => [
-                    'name' => 'Helen Green',
-                    'avatar' => '/adminDashboard/assets/images/avatar/08.jpg'
-                ],
-                'coach' => [
-                    'name' => 'Andrew Hill',
-                    'specialty' => 'Journaling & Reflection',
-                    'avatar' => '/adminDashboard/assets/images/avatar/12.jpg'
-                ],
-                'createdAt' => new \DateTime('2019-02-19'),
-                'status' => 'accepted'
-            ],
-            [
-                'id' => 19,
-                'user' => [
-                    'name' => 'Dorothy Adams',
-                    'avatar' => '/adminDashboard/assets/images/avatar/09.jpg'
-                ],
-                'coach' => [
-                    'name' => 'Joshua Baker',
-                    'specialty' => 'Social Connection',
-                    'avatar' => '/adminDashboard/assets/images/avatar/01.jpg'
-                ],
-                'createdAt' => new \DateTime('2019-01-11'),
-                'status' => 'rejected'
-            ],
-            [
-                'id' => 20,
-                'user' => [
-                    'name' => 'Sandra Nelson',
-                    'avatar' => '/adminDashboard/assets/images/avatar/10.jpg'
-                ],
-                'coach' => [
-                    'name' => 'Ryan Carter',
-                    'specialty' => 'Creative Pursuits',
-                    'avatar' => '/adminDashboard/assets/images/avatar/02.jpg'
-                ],
-                'createdAt' => new \DateTime('2018-12-28'),
-                'status' => 'pending'
-            ],
-        ];
-        
-        // Calculate pagination
-        $totalItems = count($allRequests);
-        $totalPages = ceil($totalItems / $itemsPerPage);
+        $itemsPerPage = 10;
+        $totalItems = $this->coachingRequestRepository->countAll();
+        $totalPages = $totalItems > 0 ? (int) ceil($totalItems / $itemsPerPage) : 1;
         $offset = ($currentPage - 1) * $itemsPerPage;
-        
-        // Get items for current page
-        $coachRequests = array_slice($allRequests, $offset, $itemsPerPage);
-        
+
+        $coachRequests = $this->coachingRequestRepository->findAllOrdered($itemsPerPage, $offset);
+
         return $this->render('admin/components/Coach/coachRequests.html.twig', [
             'coachRequests' => $coachRequests,
             'currentPage' => $currentPage,
             'totalPages' => $totalPages,
             'totalItems' => $totalItems,
             'itemsPerPage' => $itemsPerPage,
-            'startItem' => $offset + 1,
-            'endItem' => min($offset + $itemsPerPage, $totalItems)
+            'startItem' => $totalItems === 0 ? 0 : $offset + 1,
+            'endItem' => min($offset + $itemsPerPage, $totalItems),
         ]);
     }
 
-    #[Route('/admin/coach/request/{id}', name: 'admin_coach_request_view')]
+    #[Route('/admin/coach/request/{id}', name: 'admin_coach_request_view', requirements: ['id' => '\d+'])]
     public function viewCoachRequest(int $id): Response
     {
-        // Placeholder for viewing individual request
-        return new Response('View request #' . $id);
+        $requestEntity = $this->coachingRequestRepository->find($id);
+        if ($requestEntity === null) {
+            throw $this->createNotFoundException('Demande introuvable.');
+        }
+        return $this->render('admin/components/Coach/coach_request_detail.html.twig', [
+            'request' => $requestEntity,
+        ]);
     }
 
     #[Route('/admin/claims', name: 'admin_claims')]
     public function claims(Request $request): Response
     {
-        // Get current page from query parameter, default to 1
-        $currentPage = max(1, $request->query->getInt('page', 1));
-        $itemsPerPage = 4;
-        
-        // All static claims data for testing
-        $allClaims = [
-            [
-                'id' => 1,
-                'user' => [
-                    'name' => 'John Doe',
-                    'email' => 'john.doe@example.com',
-                    'avatar' => '/adminDashboard/assets/images/avatar/01.jpg',
-                    'phoneNumber' => '+1 234 567 8901',
-                    'age' => 28,
-                    'status' => 'active'
-                ],
-                'content' => 'I have been experiencing issues with my routine tracking. The app crashes every time I try to mark a task as complete. This has been happening for the past 3 days and it\'s affecting my productivity.',
-                'createdAt' => new \DateTime('2024-02-10 14:30:00')
-            ],
-            [
-                'id' => 2,
-                'user' => [
-                    'name' => 'Sarah Williams',
-                    'email' => 'sarah.williams@example.com',
-                    'avatar' => '/adminDashboard/assets/images/avatar/02.jpg',
-                    'phoneNumber' => '+1 234 567 8902',
-                    'age' => 32,
-                    'status' => 'active'
-                ],
-                'content' => 'My coach hasn\'t responded to my messages for over a week. I need guidance on my nutrition routine but I can\'t get any support. Please help me resolve this issue.',
-                'createdAt' => new \DateTime('2024-02-09 10:15:00')
-            ],
-            [
-                'id' => 3,
-                'user' => [
-                    'name' => 'Michael Brown',
-                    'email' => 'michael.brown@example.com',
-                    'avatar' => '/adminDashboard/assets/images/avatar/03.jpg',
-                    'phoneNumber' => '+1 234 567 8903',
-                    'age' => 25,
-                    'status' => 'active'
-                ],
-                'content' => 'The payment system charged me twice for my monthly subscription. I have contacted support but haven\'t received a refund yet. My bank statement shows two transactions on the same day.',
-                'createdAt' => new \DateTime('2024-02-08 16:45:00')
-            ],
-            [
-                'id' => 4,
-                'user' => [
-                    'name' => 'Emily Davis',
-                    'email' => 'emily.davis@example.com',
-                    'avatar' => '/adminDashboard/assets/images/avatar/04.jpg',
-                    'phoneNumber' => '+1 234 567 8904',
-                    'age' => 30,
-                    'status' => 'active'
-                ],
-                'content' => 'I cannot access my workout routines. Every time I try to open the fitness section, I get an error message saying "Content not available". This is very frustrating.',
-                'createdAt' => new \DateTime('2024-02-07 09:20:00')
-            ],
-            [
-                'id' => 5,
-                'user' => [
-                    'name' => 'David Wilson',
-                    'email' => 'david.wilson@example.com',
-                    'avatar' => '/adminDashboard/assets/images/avatar/05.jpg',
-                    'phoneNumber' => '+1 234 567 8905',
-                    'age' => 35,
-                    'status' => 'active'
-                ],
-                'content' => 'My progress data has been lost after the last app update. All my streak days and completed routines are showing as zero. I had over 200 days of streak!',
-                'createdAt' => new \DateTime('2024-02-06 13:00:00')
-            ],
-            [
-                'id' => 6,
-                'user' => [
-                    'name' => 'Jessica Martinez',
-                    'email' => 'jessica.martinez@example.com',
-                    'avatar' => '/adminDashboard/assets/images/avatar/06.jpg',
-                    'phoneNumber' => '+1 234 567 8906',
-                    'age' => 27,
-                    'status' => 'active'
-                ],
-                'content' => 'The notification system is not working properly. I\'m not receiving reminders for my scheduled routines, which defeats the purpose of having a routine management app.',
-                'createdAt' => new \DateTime('2024-02-05 11:30:00')
-            ],
-            [
-                'id' => 7,
-                'user' => [
-                    'name' => 'Robert Taylor',
-                    'email' => 'robert.taylor@example.com',
-                    'avatar' => '/adminDashboard/assets/images/avatar/07.jpg',
-                    'phoneNumber' => '+1 234 567 8907',
-                    'age' => 40,
-                    'status' => 'active'
-                ],
-                'content' => 'I requested a coach change two weeks ago but my request is still pending. I need a coach who specializes in time management, not fitness.',
-                'createdAt' => new \DateTime('2024-02-04 15:45:00')
-            ],
-            [
-                'id' => 8,
-                'user' => [
-                    'name' => 'Amanda Garcia',
-                    'email' => 'amanda.garcia@example.com',
-                    'avatar' => '/adminDashboard/assets/images/avatar/08.jpg',
-                    'phoneNumber' => '+1 234 567 8908',
-                    'age' => 29,
-                    'status' => 'active'
-                ],
-                'content' => 'The app interface is very confusing. I can\'t find where to add new routines or edit existing ones. Better user guidance is needed.',
-                'createdAt' => new \DateTime('2024-02-03 08:15:00')
-            ],
-            [
-                'id' => 9,
-                'user' => [
-                    'name' => 'Christopher Lee',
-                    'email' => 'christopher.lee@example.com',
-                    'avatar' => '/adminDashboard/assets/images/avatar/09.jpg',
-                    'phoneNumber' => '+1 234 567 8909',
-                    'age' => 33,
-                    'status' => 'inactive'
-                ],
-                'content' => 'My account was suspended without any explanation. I haven\'t violated any terms of service. Please review my case and reactivate my account.',
-                'createdAt' => new \DateTime('2024-02-02 12:00:00')
-            ],
-            [
-                'id' => 10,
-                'user' => [
-                    'name' => 'Lisa Anderson',
-                    'email' => 'lisa.anderson@example.com',
-                    'avatar' => '/adminDashboard/assets/images/avatar/10.jpg',
-                    'phoneNumber' => '+1 234 567 8910',
-                    'age' => 26,
-                    'status' => 'active'
-                ],
-                'content' => 'The sync feature between mobile and web is not working. Changes I make on my phone don\'t appear on the web version and vice versa.',
-                'createdAt' => new \DateTime('2024-02-01 17:30:00')
-            ],
-            [
-                'id' => 11,
-                'user' => [
-                    'name' => 'Daniel White',
-                    'email' => 'daniel.white@example.com',
-                    'avatar' => '/adminDashboard/assets/images/avatar/11.jpg',
-                    'phoneNumber' => '+1 234 567 8911',
-                    'age' => 31,
-                    'status' => 'active'
-                ],
-                'content' => 'I\'m having trouble canceling my subscription. The cancel button doesn\'t work and I keep getting charged monthly.',
-                'createdAt' => new \DateTime('2024-01-31 14:20:00')
-            ],
-            [
-                'id' => 12,
-                'user' => [
-                    'name' => 'Michelle Harris',
-                    'email' => 'michelle.harris@example.com',
-                    'avatar' => '/adminDashboard/assets/images/avatar/12.jpg',
-                    'phoneNumber' => '+1 234 567 8912',
-                    'age' => 34,
-                    'status' => 'active'
-                ],
-                'content' => 'The meditation timer feature is broken. It stops randomly in the middle of sessions and doesn\'t save my progress.',
-                'createdAt' => new \DateTime('2024-01-30 10:45:00')
-            ],
-        ];
-        
-        // Calculate pagination
-        $totalItems = count($allClaims);
-        $totalPages = ceil($totalItems / $itemsPerPage);
-        $offset = ($currentPage - 1) * $itemsPerPage;
-        
-        // Get items for current page
-        $claims = array_slice($allClaims, $offset, $itemsPerPage);
-        
+        // Pas d'entité Réclamation en BDD : liste vide (à brancher quand l'entité existera)
+        $currentPage = 1;
+        $totalItems = 0;
+        $totalPages = 1;
+        $itemsPerPage = 10;
         return $this->render('admin/components/reclamation/claims.html.twig', [
-            'claims' => $claims,
+            'claims' => [],
             'currentPage' => $currentPage,
             'totalPages' => $totalPages,
             'totalItems' => $totalItems,
             'itemsPerPage' => $itemsPerPage,
-            'startItem' => $offset + 1,
-            'endItem' => min($offset + $itemsPerPage, $totalItems)
+            'startItem' => 0,
+            'endItem' => 0,
         ]);
     }
 
@@ -651,51 +329,92 @@ final class AdminController extends AbstractController
     #[Route('/admin/statistics/users', name: 'admin_user_stats')]
     public function userStats(): Response
     {
-        // Sample data for statistics
-        $data = [
-            // User Growth Card
-            'totalUsers' => 1247,
-            'weekGrowth' => 13,
-            'monthGrowth' => 28,
-            'newUsersWeek' => 156,
-            
-            // Active Routines Card
-            'totalRoutines' => 3842,
+        $totalUsers = $this->userRepository->count([]);
+        $totalRoutines = $this->routineRepository->count([]);
+        $coaches = $this->userRepository->findCoaches();
+
+        $now = new \DateTimeImmutable();
+        $weekAgo = $now->modify('-7 days');
+        $twoWeeksAgo = $now->modify('-14 days');
+        $monthAgo = $now->modify('-30 days');
+        $twoMonthsAgo = $now->modify('-60 days');
+
+        $newUsersWeek = (int) $this->userRepository->createQueryBuilder('u')
+            ->select('COUNT(u.id)')
+            ->where('u.createdAt >= :since')
+            ->setParameter('since', $weekAgo)
+            ->getQuery()->getSingleScalarResult();
+        $usersPreviousWeek = (int) $this->userRepository->createQueryBuilder('u')
+            ->select('COUNT(u.id)')
+            ->where('u.createdAt >= :since')->andWhere('u.createdAt < :until')
+            ->setParameter('since', $twoWeeksAgo)->setParameter('until', $weekAgo)
+            ->getQuery()->getSingleScalarResult();
+        $newUsersMonth = (int) $this->userRepository->createQueryBuilder('u')
+            ->select('COUNT(u.id)')
+            ->where('u.createdAt >= :since')
+            ->setParameter('since', $monthAgo)
+            ->getQuery()->getSingleScalarResult();
+        $usersPreviousMonth = (int) $this->userRepository->createQueryBuilder('u')
+            ->select('COUNT(u.id)')
+            ->where('u.createdAt >= :since')->andWhere('u.createdAt < :until')
+            ->setParameter('since', $twoMonthsAgo)->setParameter('until', $monthAgo)
+            ->getQuery()->getSingleScalarResult();
+
+        $weekGrowth = $usersPreviousWeek > 0 ? (int) round(($newUsersWeek - $usersPreviousWeek) / $usersPreviousWeek * 100) : ($newUsersWeek > 0 ? 100 : 0);
+        $monthGrowth = $usersPreviousMonth > 0 ? (int) round(($newUsersMonth - $usersPreviousMonth) / $usersPreviousMonth * 100) : ($newUsersMonth > 0 ? 100 : 0);
+
+        $coachNames = [];
+        $coachSessions = [];
+        foreach (array_slice($coaches, 0, 5) as $c) {
+            $coachNames[] = trim($c->getFirstName() . ' ' . $c->getLastName()) ?: $c->getEmail();
+            $coachSessions[] = $this->sessionRepository->countByCoach($c);
+        }
+
+        $engagementLabels = [];
+        $engagementUsers = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $d = $now->modify("-{$i} days");
+            $start = $d->setTime(0, 0, 0);
+            $end = $d->setTime(23, 59, 59);
+            $engagementLabels[] = $start->format('D');
+            $engagementUsers[] = (int) $this->userRepository->createQueryBuilder('u')
+                ->select('COUNT(u.id)')
+                ->where('u.createdAt >= :start AND u.createdAt <= :end')
+                ->setParameter('start', $start)->setParameter('end', $end)
+                ->getQuery()->getSingleScalarResult();
+        }
+
+        return $this->render('admin/statistics/user_stats.html.twig', [
+            'totalUsers' => $totalUsers,
+            'weekGrowth' => $weekGrowth,
+            'monthGrowth' => $monthGrowth,
+            'newUsersWeek' => $newUsersWeek,
+            'totalRoutines' => $totalRoutines,
             'routinesByGoal' => [
-                'fitness' => 1523,
-                'education' => 892,
-                'productivity' => 745,
-                'wellness' => 682
+                'fitness' => $totalRoutines,
+                'education' => 0,
+                'productivity' => 0,
+                'wellness' => 0,
             ],
-            
-            // Completion Rate Card
-            'completionRate' => 76,
-            'dailyCompleted' => 2847,
-            'activeStreaks' => 892,
-            
-            // User Engagement Chart Data
+            'completionRate' => 0,
+            'dailyCompleted' => 0,
+            'activeStreaks' => 0,
             'engagementData' => [
-                'dates' => ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                'activeUsers' => [820, 932, 901, 934, 1290, 1330, 1320],
-                'completions' => [650, 780, 720, 810, 950, 1020, 980],
-                'streaks' => [520, 580, 590, 620, 680, 720, 750]
+                'dates' => $engagementLabels,
+                'activeUsers' => $engagementUsers,
+                'completions' => $engagementUsers,
+                'streaks' => $engagementUsers,
             ],
-            
-            // Coach Performance Chart Data
             'coachData' => [
-                'coaches' => ['John Smith', 'Sarah Johnson', 'Mike Wilson', 'Emma Davis', 'David Brown'],
-                'sessions' => [45, 38, 52, 41, 36],
-                'ratings' => [4.8, 4.9, 4.7, 4.6, 4.8]
+                'coaches' => $coachNames ?: ['-'],
+                'sessions' => $coachSessions ?: [0],
+                'ratings' => array_fill(0, count($coachNames) ?: 1, 4),
             ],
-            
-            // Popular Routines Chart Data
             'routinesData' => [
-                'categories' => ['Fitness', 'Study', 'Meditation', 'Diet', 'Productivity'],
-                'values' => [1523, 892, 682, 456, 289]
-            ]
-        ];
-        
-        return $this->render('admin/statistics/user_stats.html.twig', $data);
+                'categories' => ['Routines'],
+                'values' => [$totalRoutines],
+            ],
+        ]);
     }
 
 
@@ -703,66 +422,101 @@ final class AdminController extends AbstractController
     #[Route('/admin/statistics/global', name: 'admin_global_stats')]
     public function globalStats(): Response
     {
-        // Sample data for global statistics
-        $data = [
-            // Top 4 Cards
-            'totalUsers' => 5247,
-            'monthGrowth' => 18,
-            'yearGrowth' => 145,
-            'newUsersMonth' => 892,
-            
-            'totalCoaches' => 156,
+        $totalUsers = $this->userRepository->count([]);
+        $totalCoaches = count($this->userRepository->findCoaches());
+        $totalSessions = $this->sessionRepository->count([]);
+        $totalRoutines = $this->routineRepository->count([]);
+
+        $now = new \DateTimeImmutable();
+        $monthAgo = $now->modify('-30 days');
+        $twoMonthsAgo = $now->modify('-60 days');
+        $yearAgo = $now->modify('-1 year');
+
+        $newUsersMonth = (int) $this->userRepository->createQueryBuilder('u')
+            ->select('COUNT(u.id)')
+            ->where('u.createdAt >= :since')
+            ->setParameter('since', $monthAgo)
+            ->getQuery()->getSingleScalarResult();
+        $usersPreviousMonth = (int) $this->userRepository->createQueryBuilder('u')
+            ->select('COUNT(u.id)')
+            ->where('u.createdAt >= :since')->andWhere('u.createdAt < :until')
+            ->setParameter('since', $twoMonthsAgo)->setParameter('until', $monthAgo)
+            ->getQuery()->getSingleScalarResult();
+        $usersLastYear = (int) $this->userRepository->createQueryBuilder('u')
+            ->select('COUNT(u.id)')
+            ->where('u.createdAt < :since')
+            ->setParameter('since', $yearAgo)
+            ->getQuery()->getSingleScalarResult();
+
+        $monthGrowth = $usersPreviousMonth > 0 ? (int) round(($newUsersMonth - $usersPreviousMonth) / $usersPreviousMonth * 100) : ($newUsersMonth > 0 ? 100 : 0);
+        $yearGrowth = $usersLastYear > 0 ? (int) round(($totalUsers - $usersLastYear) / $usersLastYear * 100) : ($totalUsers > 0 ? 100 : 0);
+
+        $growthData = ['months' => [], 'users' => [], 'coaches' => [], 'routines' => []];
+        $coaches = $this->userRepository->findCoaches();
+        for ($i = 11; $i >= 0; $i--) {
+            $monthStart = (clone $now)->modify("first day of -{$i} months")->setTime(0, 0, 0);
+            $monthEnd = (clone $monthStart)->modify('last day of this month')->setTime(23, 59, 59);
+            $growthData['months'][] = $monthStart->format('M');
+            $growthData['users'][] = (int) $this->userRepository->createQueryBuilder('u')
+                ->select('COUNT(u.id)')
+                ->where('u.createdAt >= :start AND u.createdAt <= :end')
+                ->setParameter('start', $monthStart)->setParameter('end', $monthEnd)
+                ->getQuery()->getSingleScalarResult();
+            $coachCount = 0;
+            foreach ($coaches as $c) {
+                $ca = $c->getCreatedAt();
+                if ($ca && $ca >= $monthStart && $ca <= $monthEnd) {
+                    $coachCount++;
+                }
+            }
+            $growthData['coaches'][] = $coachCount;
+            $growthData['routines'][] = (int) $this->routineRepository->createQueryBuilder('r')
+                ->select('COUNT(r.id)')
+                ->where('r.createdAt >= :start AND r.createdAt <= :end')
+                ->setParameter('start', $monthStart)->setParameter('end', $monthEnd)
+                ->getQuery()->getSingleScalarResult();
+        }
+
+        return $this->render('admin/statistics/global_stats.html.twig', [
+            'totalUsers' => $totalUsers,
+            'monthGrowth' => $monthGrowth,
+            'yearGrowth' => $yearGrowth,
+            'newUsersMonth' => $newUsersMonth,
+            'totalCoaches' => $totalCoaches,
             'averageRating' => 4.7,
-            'totalSessions' => 3842,
-            
-            'totalRoutines' => 12847,
-            'activeRoutines' => 8234,
-            'completedRoutines' => 4613,
-            'newRoutinesWeek' => 234,
-            
-            'activeSessions' => 47,
-            'scheduledToday' => 89,
-            'completedToday' => 42,
-            
-            // Content Statistics
+            'totalSessions' => $totalSessions,
+            'totalRoutines' => $totalRoutines,
+            'activeRoutines' => $totalRoutines,
+            'completedRoutines' => 0,
+            'newRoutinesWeek' => 0,
+            'activeSessions' => $totalSessions,
+            'scheduledToday' => 0,
+            'completedToday' => 0,
             'contentStats' => [
-                'posts' => 3456,
-                'comments' => 8923,
-                'chatrooms' => 234,
-                'claims' => 156
+                'posts' => 0,
+                'comments' => 0,
+                'chatrooms' => 0,
+                'claims' => 0,
             ],
-            
-            // Platform Growth (12 months)
-            'growthData' => [
-                'months' => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                'users' => [320, 412, 389, 456, 523, 598, 645, 712, 789, 856, 923, 892],
-                'coaches' => [8, 12, 15, 18, 22, 25, 28, 32, 35, 38, 42, 45],
-                'routines' => [450, 523, 612, 698, 756, 834, 912, 1023, 1145, 1234, 1312, 1289]
-            ],
-            
-            // User Growth Forecast (AI Prediction)
+            'growthData' => $growthData,
             'forecastData' => [
-                'labels' => ['Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'],
-                'historical' => [789, 856, 923, 892, null, null, null],
-                'predicted' => [null, null, null, 892, 945, 1012, 1089],
-                'predictedGrowth' => 22,
-                'confidence' => 87,
-                'expectedUsers' => 6336,
-                'currentMonthIndex' => 3
+                'labels' => array_slice($growthData['months'], -7),
+                'historical' => array_slice($growthData['users'], -7),
+                'predicted' => [],
+                'predictedGrowth' => 0,
+                'confidence' => 0,
+                'expectedUsers' => $totalUsers,
+                'currentMonthIndex' => 6,
             ],
-            
-            // Churn Risk Prediction (AI)
             'churnData' => [
-                'riskPercentage' => 28,
-                'usersAtRisk' => 1469,
+                'riskPercentage' => 0,
+                'usersAtRisk' => 0,
                 'factors' => [
-                    'lowEngagement' => 75,
-                    'inactiveRoutines' => 45,
-                    'noCoachInteraction' => 25
-                ]
-            ]
-        ];
-        
-        return $this->render('admin/statistics/global_stats.html.twig', $data);
+                    'lowEngagement' => 0,
+                    'inactiveRoutines' => 0,
+                    'noCoachInteraction' => 0,
+                ],
+            ],
+        ]);
     }
 }

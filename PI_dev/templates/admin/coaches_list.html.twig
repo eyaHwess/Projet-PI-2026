@@ -22,11 +22,15 @@
 
                 <!-- Search bar -->
                 <div class="col-md-8">
-                    <form class="rounded position-relative">
+                    <form class="rounded position-relative"
+                          method="get"
+                          action="{{ path('coaches_list') }}">
                         <input class="form-control bg-transparent"
                                type="search"
-                               placeholder="Search"
-                               aria-label="Search">
+                               name="q"
+                               placeholder="Search by name, email or speciality"
+                               aria-label="Search"
+                               value="{{ search|default('') }}">
                         <button class="bg-transparent p-2 position-absolute top-50 end-0
                                        translate-middle-y border-0 text-primary-hover text-reset"
                                 type="submit">
@@ -72,45 +76,6 @@
                 <!-- GRID VIEW -->
                 <div class="tab-pane fade show active" id="grid-view">
                     <div class="row g-4">
-
-                        {% set users = [
-                            {
-                                name: 'Leila Mansour',
-                                role: 'coach',
-                                speciality: 'Fitness',
-                                totalSessions: 18,
-                                totalDemandes: 9,
-                                rating: 4,
-                                avatar: asset('adminDashboard/assets/images/avatar/03.jpg')
-                            },
-                            {
-                                name: 'Leila Mansour',
-                                role: 'coach',
-                                speciality: 'Fitness',
-                                totalSessions: 18,
-                                totalDemandes: 9,
-                                rating: 4,
-                                avatar: asset('adminDashboard/assets/images/avatar/03.jpg')
-                            },
-                            {
-                                name: 'Leila Mansour',
-                                role: 'coach',
-                                speciality: 'Fitness',
-                                totalSessions: 18,
-                                totalDemandes: 9,
-                                rating: 4,
-                                avatar: asset('adminDashboard/assets/images/avatar/03.jpg')
-                            },
-                             {
-                                name: 'Sara Johnson',
-                                role: 'coach',
-                                speciality: 'Mental Health',
-                                totalSessions: 25,
-                                totalDemandes: 14,
-                                rating: 4,
-                                avatar: asset('adminDashboard/assets/images/avatar/02.jpg')
-                            }
-                        ] %}
 
                         {% for user in users %}
                             {% include 'admin/components/user_card/user_card.html.twig' with { user: user } %}
