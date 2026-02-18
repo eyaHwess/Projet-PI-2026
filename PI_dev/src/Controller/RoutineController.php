@@ -34,11 +34,18 @@ class RoutineController extends AbstractController
         $sortBy = $request->query->get('sort', 'createdAt');
         $sortOrder = $request->query->get('order', 'DESC');
         $filterVisibility = $request->query->get('visibility', 'all');
+        $searchQuery = $request->query->get('search', '');
 
         // Build query
         $queryBuilder = $this->routineRepository->createQueryBuilder('r')
             ->where('r.goal = :goal')
             ->setParameter('goal', $goal);
+
+        // Apply search filter
+        if (!empty($searchQuery)) {
+            $queryBuilder->andWhere('r.title LIKE :search OR r.description LIKE :search')
+                        ->setParameter('search', '%' . $searchQuery . '%');
+        }
 
         // Apply visibility filter
         if ($filterVisibility !== 'all') {
@@ -62,6 +69,7 @@ class RoutineController extends AbstractController
             'currentSort' => $sortBy,
             'currentOrder' => $sortOrder,
             'currentVisibility' => $filterVisibility,
+            'searchQuery' => $searchQuery,
         ]);
     }
 
@@ -167,6 +175,7 @@ class RoutineController extends AbstractController
         $sortBy = $request->query->get('sort', 'startTime');
         $sortOrder = $request->query->get('order', 'ASC');
         $filterStatus = $request->query->get('status', 'all');
+        $searchQuery = $request->query->get('search', '');
 
         // Build query for activities
         $queryBuilder = $this->entityManager->createQueryBuilder()
@@ -174,6 +183,12 @@ class RoutineController extends AbstractController
             ->from('App\Entity\Activity', 'a')
             ->where('a.routine = :routine')
             ->setParameter('routine', $routine);
+
+        // Apply search filter
+        if (!empty($searchQuery)) {
+            $queryBuilder->andWhere('a.title LIKE :search')
+                        ->setParameter('search', '%' . $searchQuery . '%');
+        }
 
         // Apply status filter
         if ($filterStatus !== 'all') {
@@ -197,6 +212,7 @@ class RoutineController extends AbstractController
             'currentSort' => $sortBy,
             'currentOrder' => $sortOrder,
             'currentStatus' => $filterStatus,
+            'searchQuery' => $searchQuery,
         ]);
     }
 
@@ -292,6 +308,59 @@ class RoutineController extends AbstractController
             return new JsonResponse([
                 'success' => true,
                 'message' => 'Routine supprimée avec succès !'
+            ]);
+        }
+
+        return new JsonResponse([
+            'success' => false,
+            'message' => 'Token CSRF invalide'
+        ], 403);
+    }
+
+    #[Route('/{id}/duplicate', name: 'duplicate', methods: ['POST'])]
+    public function duplicate(Request $request, int $goalId, Routine $routine): JsonResponse
+    {
+        if ($this->isCsrfTokenValid('duplicate' . $routine->getId(), $request->request->get('_token'))) {
+            // Create a new routine with the same properties
+            $duplicatedRoutine = new Routine();
+            $duplicatedRoutine->setTitle($routine->getTitle() . ' (Copie)');
+            $duplicatedRoutine->setDescription($routine->getDescription());
+            $duplicatedRoutine->setVisibility($routine->getVisibility());
+            $duplicatedRoutine->setGoal($routine->getGoal());
+            $duplicatedRoutine->setPriority($routine->getPriority());
+            if ($routine->getDeadline()) {
+                $duplicatedRoutine->setDeadline(clone $routine->getDeadline());
+            }
+
+            // Optionally duplicate activities as well
+            foreach ($routine->getActivities() as $activity) {
+                $duplicatedActivity = new \App\Entity\Activity();
+                $duplicatedActivity->setTitle($activity->getTitle());
+                $duplicatedActivity->setStartTime(clone $activity->getStartTime());
+                $duplicatedActivity->setDuration(clone $activity->getDuration());
+                $duplicatedActivity->setStatus('pending'); // Reset to pending
+                $duplicatedActivity->setHasReminder($activity->isHasReminder());
+                if ($activity->getReminderAt()) {
+                    $duplicatedActivity->setReminderAt(clone $activity->getReminderAt());
+                }
+                $duplicatedActivity->setPriority($activity->getPriority());
+                if ($activity->getDeadline()) {
+                    $duplicatedActivity->setDeadline(clone $activity->getDeadline());
+                }
+                $duplicatedActivity->setRoutine($duplicatedRoutine);
+                $this->entityManager->persist($duplicatedActivity);
+            }
+
+            $this->entityManager->persist($duplicatedRoutine);
+            $this->entityManager->flush();
+
+            return new JsonResponse([
+                'success' => true,
+                'message' => 'Routine dupliquée avec succès (avec toutes ses activités) !',
+                'routine' => [
+                    'id' => $duplicatedRoutine->getId(),
+                    'title' => $duplicatedRoutine->getTitle(),
+                ]
             ]);
         }
 

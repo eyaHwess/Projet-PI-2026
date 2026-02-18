@@ -36,8 +36,17 @@ security:
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/user/add, roles: PUBLIC_ACCESS }
         - { path: ^/register, roles: PUBLIC_ACCESS }
-        - { path: ^/goals, roles: ROLE_USER }
-        - { path: ^/routines, roles: ROLE_USER }
+        - { path: ^/goals, roles: PUBLIC_ACCESS }
+        - { path: ^/goal, roles: PUBLIC_ACCESS }
+        - { path: ^/routines, roles: PUBLIC_ACCESS }
+        - { path: ^/routine, roles: PUBLIC_ACCESS }
+        - { path: ^/activity, roles: PUBLIC_ACCESS }
+        - { path: ^/activities, roles: PUBLIC_ACCESS }
+        - { path: ^/favorites, roles: PUBLIC_ACCESS }
+        - { path: ^/calendar, roles: PUBLIC_ACCESS }
+        - { path: ^/consistency, roles: PUBLIC_ACCESS }
+        - { path: ^/time-investment, roles: PUBLIC_ACCESS }
+        - { path: ^/admin, roles: ROLE_ADMIN }
 
         - { path: ^/, roles: IS_AUTHENTICATED_FULLY }
 

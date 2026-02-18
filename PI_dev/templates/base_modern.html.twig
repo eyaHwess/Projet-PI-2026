@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Goal Tracker{% endblock %}</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+    
+    <!-- Modern Design System -->
+    <link rel="stylesheet" href="/styles/modern-design-system.css">
+    
+    {% block stylesheets %}{% endblock %}
+    
+    <style>
+        /* Page Layout */
+        .page-wrapper {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .page-content {
+            flex: 1;
+            padding: var(--space-xl) var(--space-md);
+        }
+        
+        /* Navbar Enhancement */
+        .navbar-modern {
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .navbar-modern-actions {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+        
+        /* Breadcrumb */
+        .breadcrumb-modern {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            font-size: var(--font-size-sm);
+            color: var(--gray-600);
+            margin-bottom: var(--space-lg);
+        }
+        
+        .breadcrumb-modern a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        
+        .breadcrumb-modern a:hover {
+            text-decoration: underline;
+        }
+        
+        .breadcrumb-modern-separator {
+            color: var(--gray-400);
+        }
+        
+        /* Page Header */
+        .page-header-modern {
+            margin-bottom: var(--space-2xl);
+        }
+        
+        .page-header-modern-title {
+            font-size: var(--font-size-4xl);
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: var(--space-sm);
+        }
+        
+        .page-header-modern-subtitle {
+            font-size: var(--font-size-lg);
+            color: var(--gray-600);
+        }
+        
+        .page-header-modern-actions {
+            display: flex;
+            gap: var(--space-md);
+            margin-top: var(--space-lg);
+        }
+        
+        /* Footer */
+        .footer-modern {
+            background: var(--white);
+            border-top: 1px solid var(--gray-200);
+            padding: var(--space-xl) 0;
+            margin-top: var(--space-2xl);
+        }
+        
+        .footer-modern-content {
+            text-align: center;
+            color: var(--gray-600);
+            font-size: var(--font-size-sm);
+        }
+        
+        /* Loading Spinner */
+        .spinner-modern {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--primary-lighter);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Toast Notifications */
+        .toast-container-modern {
+            position: fixed;
+            top: var(--space-xl);
+            right: var(--space-xl);
+            z-index: 3000;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+        }
+        
+        .toast-modern {
+            background: var(--white);
+            border-radius: var(--radius-md);
+            padding: var(--space-lg);
+            box-shadow: var(--shadow-lg);
+            min-width: 300px;
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-md);
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .toast-modern-success {
+            border-left: 4px solid var(--accent-teal);
+        }
+        
+        .toast-modern-error {
+            border-left: 4px solid var(--danger);
+        }
+        
+        .toast-modern-warning {
+            border-left: 4px solid var(--accent-orange);
+        }
+        
+        .toast-modern-info {
+            border-left: 4px solid var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- Navbar -->
+        <nav class="navbar-modern">
+            <div class="container-modern">
+                <div class="navbar-modern-content">
+                    <a href="{{ path('app_home') }}" class="navbar-modern-brand">
+                        <i class="bi bi-bullseye"></i> Goal Tracker
+                    </a>
+                    
+                    <ul class="navbar-modern-nav">
+                        <li>
+                            <a href="{{ path('app_home') }}" class="navbar-modern-link {% if app.request.get('_route') == 'app_home' %}active{% endif %}">
+                                <i class="bi bi-house-door"></i> Accueil
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ path('app_goal_index') }}" class="navbar-modern-link {% if 'goal' in app.request.get('_route') %}active{% endif %}">
+                                <i class="bi bi-bullseye"></i> Mes Objectifs
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ path('app_calendar') }}" class="navbar-modern-link {% if 'calendar' in app.request.get('_route') %}active{% endif %}">
+                                <i class="bi bi-calendar3"></i> Calendrier
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ path('app_favorites') }}" class="navbar-modern-link {% if 'favorite' in app.request.get('_route') %}active{% endif %}">
+                                <i class="bi bi-heart"></i> Favoris
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ path('app_consistency_heatmap') }}" class="navbar-modern-link {% if 'consistency' in app.request.get('_route') %}active{% endif %}">
+                                <i class="bi bi-graph-up"></i> Consistency
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ path('app_time_investment_analytics') }}" class="navbar-modern-link {% if 'time_investment' in app.request.get('_route') %}active{% endif %}">
+                                <i class="bi bi-clock-history"></i> Time Analytics
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <div class="navbar-modern-actions">
+                        {% block navbar_actions %}{% endblock %}
+                    </div>
+                </div>
+            </div>
+        </nav>
+        
+        <!-- Main Content -->
+        <main class="page-content">
+            <div class="container-modern">
+                {% block breadcrumb %}{% endblock %}
+                {% block body %}{% endblock %}
+            </div>
+        </main>
+        
+        <!-- Footer -->
+        <footer class="footer-modern">
+            <div class="container-modern">
+                <div class="footer-modern-content">
+                    <p>&copy; {{ 'now'|date('Y') }} Goal Tracker. Tous droits réservés.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- Toast Container -->
+    <div class="toast-container-modern" id="toastContainer"></div>
+    
+    {% block javascripts %}
+    <script>
+        // Toast Notification System
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast-modern toast-modern-${type}`;
+            
+            const icon = {
+                success: 'bi-check-circle-fill',
+                error: 'bi-x-circle-fill',
+                warning: 'bi-exclamation-triangle-fill',
+                info: 'bi-info-circle-fill'
+            }[type] || 'bi-info-circle-fill';
+            
+            toast.innerHTML = `
+                <i class="bi ${icon}" style="font-size: 1.5rem; color: var(--${type === 'error' ? 'danger' : type === 'success' ? 'accent-teal' : type === 'warning' ? 'accent-orange' : 'primary-color'});"></i>
+                <div style="flex: 1;">
+                    <div style="font-weight: 600; margin-bottom: 0.25rem;">${type.charAt(0).toUpperCase() + type.slice(1)}</div>
+                    <div style="font-size: 0.875rem; color: var(--gray-700);">${message}</div>
+                </div>
+                <button onclick="this.parentElement.remove()" style="background: none; border: none; cursor: pointer; color: var(--gray-500); font-size: 1.25rem;">
+                    <i class="bi bi-x"></i>
+                </button>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+        
+        // Global error handler
+        window.addEventListener('error', function(e) {
+            console.error('Error:', e.error);
+        });
+    </script>
+    {% endblock %}
+</body>
+</html>

@@ -1,0 +1,409 @@
+{% extends 'base_modern.html.twig' %}
+
+{% block title %}Mes Objectifs{% endblock %}
+
+{% block breadcrumb %}
+    <nav class="breadcrumb-modern">
+        <a href="{{ path('app_home') }}">Accueil</a>
+        <span class="breadcrumb-modern-separator">/</span>
+        <span>Mes Objectifs</span>
+    </nav>
+{% endblock %}
+
+{% block navbar_actions %}
+    <button class="btn-modern btn-modern-primary" onclick="openGoalModal('new')">
+        <i class="bi bi-plus-circle"></i> Nouvel Objectif
+    </button>
+{% endblock %}
+
+{% block body %}
+    <!-- Page Header -->
+    <div class="page-header-modern">
+        <h1 class="page-header-modern-title">
+            <i class="bi bi-bullseye" style="color: var(--primary-color);"></i>
+            Mes Objectifs
+        </h1>
+        <p class="page-header-modern-subtitle">
+            Gérez vos objectifs de fitness et bien-être avec un suivi détaillé de vos progrès
+        </p>
+        
+        <div class="page-header-modern-actions">
+            <a href="{{ path('app_calendar') }}" class="btn-modern btn-modern-secondary">
+                <i class="bi bi-calendar3"></i> Calendrier
+            </a>
+            <a href="{{ path('app_favorites') }}" class="btn-modern btn-modern-secondary">
+                <i class="bi bi-heart"></i> Favoris
+            </a>
+            <a href="{{ path('app_consistency_heatmap') }}" class="btn-modern btn-modern-secondary">
+                <i class="bi bi-graph-up"></i> Consistency
+            </a>
+            <a href="{{ path('app_time_investment_analytics') }}" class="btn-modern btn-modern-secondary">
+                <i class="bi bi-clock-history"></i> Time Analytics
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters and Search -->
+    <div class="card-modern mb-xl">
+        <div class="d-flex align-items-center gap-md" style="flex-wrap: wrap;">
+            <!-- Search -->
+            <div class="search-input-modern" style="flex: 1; min-width: 250px;">
+                <input type="text" 
+                       id="searchInput" 
+                       class="form-control-modern" 
+                       placeholder="Rechercher un objectif..."
+                       value="{{ searchQuery }}">
+            </div>
+            
+            <!-- Status Filter -->
+            <div class="form-group-modern" style="margin: 0; min-width: 200px;">
+                <select id="statusFilter" class="form-control-modern form-select-modern">
+                    <option value="all" {{ currentStatus == 'all' ? 'selected' : '' }}>Tous les statuts</option>
+                    <option value="draft" {{ currentStatus == 'draft' ? 'selected' : '' }}>Brouillon</option>
+                    <option value="active" {{ currentStatus == 'active' ? 'selected' : '' }}>Actif</option>
+                    <option value="paused" {{ currentStatus == 'paused' ? 'selected' : '' }}>En pause</option>
+                    <option value="completed" {{ currentStatus == 'completed' ? 'selected' : '' }}>Terminé</option>
+                    <option value="failed" {{ currentStatus == 'failed' ? 'selected' : '' }}>Échoué</option>
+                    <option value="archived" {{ currentStatus == 'archived' ? 'selected' : '' }}>Archivé</option>
+                </select>
+            </div>
+            
+            <!-- Sort -->
+            <div class="form-group-modern" style="margin: 0; min-width: 200px;">
+                <select id="sortSelect" class="form-control-modern form-select-modern">
+                    <option value="urgency-DESC" {{ currentSort == 'urgency' and currentOrder == 'DESC' ? 'selected' : '' }}>⚡ Plus urgent</option>
+                    <option value="createdAt-DESC" {{ currentSort == 'createdAt' and currentOrder == 'DESC' ? 'selected' : '' }}>Plus récent</option>
+                    <option value="createdAt-ASC" {{ currentSort == 'createdAt' and currentOrder == 'ASC' ? 'selected' : '' }}>Plus ancien</option>
+                    <option value="deadline-ASC" {{ currentSort == 'deadline' and currentOrder == 'ASC' ? 'selected' : '' }}>Deadline (proche)</option>
+                    <option value="title-ASC" {{ currentSort == 'title' and currentOrder == 'ASC' ? 'selected' : '' }}>Titre (A-Z)</option>
+                </select>
+            </div>
+            
+            <!-- View Toggle -->
+            <div class="btn-group" style="border: 2px solid var(--gray-300); border-radius: var(--radius-full); overflow: hidden;">
+                <button class="btn-modern btn-modern-sm layout-toggle" data-layout="grid" style="border-radius: 0;">
+                    <i class="bi bi-grid-3x3-gap"></i>
+                </button>
+                <button class="btn-modern btn-modern-sm layout-toggle active" data-layout="list" style="border-radius: 0;">
+                    <i class="bi bi-list-ul"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Goals List -->
+    {% if goals|length > 0 %}
+        <div class="grid-modern grid-modern-1" id="goalsContainer">
+            {% for goal in goals %}
+                <div class="card-modern goal-card" data-goal-id="{{ goal.id }}" style="cursor: pointer;" onclick="window.location.href='{{ path('app_goal_show', {id: goal.id}) }}'">
+                    <div class="d-flex align-items-start gap-lg">
+                        <!-- Goal Icon -->
+                        <div class="avatar-modern avatar-modern-lg" style="flex-shrink: 0;">
+                            <i class="bi bi-bullseye"></i>
+                        </div>
+                        
+                        <!-- Goal Content -->
+                        <div style="flex: 1; min-width: 0;">
+                            <!-- Header -->
+                            <div class="d-flex align-items-start justify-content-between gap-md mb-md">
+                                <div style="flex: 1; min-width: 0;">
+                                    <h3 style="font-size: var(--font-size-xl); margin-bottom: var(--space-xs);">
+                                        {{ goal.title }}
+                                    </h3>
+                                    {% if goal.description %}
+                                        <p style="color: var(--gray-600); margin-bottom: 0;">
+                                            {{ goal.description|slice(0, 120) }}{% if goal.description|length > 120 %}...{% endif %}
+                                        </p>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Favorite Button -->
+                                <button class="btn-modern btn-modern-sm favorite-btn" 
+                                        data-goal-id="{{ goal.id }}"
+                                        data-is-favorite="{{ goal.isFavorite ? 'true' : 'false' }}"
+                                        onclick="event.stopPropagation(); toggleFavorite({{ goal.id }}, this)"
+                                        style="background: transparent; border: none; font-size: 1.5rem; color: {{ goal.isFavorite ? 'var(--danger)' : 'var(--gray-400)' }};">
+                                    <i class="bi bi-heart{{ goal.isFavorite ? '-fill' : '' }}"></i>
+                                </button>
+                            </div>
+                            
+                            <!-- Badges -->
+                            <div class="d-flex align-items-center gap-sm mb-md" style="flex-wrap: wrap;">
+                                <span class="badge-modern badge-modern-{{ goal.status == 'active' ? 'success' : (goal.status == 'completed' ? 'info' : (goal.status == 'failed' ? 'danger' : 'warning')) }}">
+                                    {{ goal.status|upper }}
+                                </span>
+                                
+                                {% if goal.getPriority() %}
+                                    <span class="badge-modern badge-modern-{{ goal.getPriority() == 'high' ? 'danger' : (goal.getPriority() == 'medium' ? 'warning' : 'success') }}">
+                                        {% if goal.getPriority() == 'high' %}🔴 HAUTE
+                                        {% elseif goal.getPriority() == 'medium' %}🟡 MOYENNE
+                                        {% else %}🟢 BASSE{% endif %}
+                                    </span>
+                                {% endif %}
+                                
+                                {% if goal.isAtRisk() %}
+                                    <span class="badge-modern badge-modern-danger">
+                                        <i class="bi bi-exclamation-triangle-fill"></i> AT RISK
+                                    </span>
+                                {% elseif goal.isDeadlineNear() %}
+                                    <span class="badge-modern badge-modern-warning">
+                                        <i class="bi bi-alarm"></i> Deadline proche
+                                    </span>
+                                {% endif %}
+                                
+                                {% if goal.getTimeRemaining() %}
+                                    <span class="badge-modern badge-modern-info">
+                                        <i class="bi bi-clock"></i> {{ goal.getTimeRemaining() }}
+                                    </span>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Progress -->
+                            <div class="mb-md">
+                                <div class="d-flex justify-content-between align-items-center mb-sm">
+                                    <span style="font-size: var(--font-size-sm); color: var(--gray-600); font-weight: 600;">Progression</span>
+                                    <span style="font-size: var(--font-size-lg); font-weight: 700; color: var(--primary-color);">{{ goal.progressPercentage }}%</span>
+                                </div>
+                                <div class="progress-modern">
+                                    <div class="progress-modern-bar" style="width: {{ goal.progressPercentage }}%;"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Meta Info -->
+                            <div class="d-flex align-items-center gap-lg" style="flex-wrap: wrap;">
+                                <div class="d-flex align-items-center gap-sm">
+                                    <i class="bi bi-calendar-event" style="color: var(--gray-500);"></i>
+                                    <span style="font-size: var(--font-size-sm); color: var(--gray-600);">
+                                        {{ goal.startDate|date('d/m/Y') }} - {{ goal.deadline ? goal.deadline|date('d/m/Y') : goal.endDate|date('d/m/Y') }}
+                                    </span>
+                                </div>
+                                
+                                <div class="d-flex align-items-center gap-sm">
+                                    <i class="bi bi-list-ul" style="color: var(--gray-500);"></i>
+                                    <span style="font-size: var(--font-size-sm); color: var(--gray-600);">
+                                        {{ goal.routines|length }} Routine(s)
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <!-- Actions -->
+                            <div class="d-flex gap-sm mt-md">
+                                <button class="btn-modern btn-modern-sm btn-modern-secondary" 
+                                        onclick="event.stopPropagation(); openGoalModal('edit', {{ goal.id }})">
+                                    <i class="bi bi-pencil"></i> Modifier
+                                </button>
+                                <button class="btn-modern btn-modern-sm btn-modern-outline" 
+                                        onclick="event.stopPropagation(); duplicateGoal({{ goal.id }}, '{{ goal.title }}', '{{ csrf_token('duplicate' ~ goal.id) }}')">
+                                    <i class="bi bi-files"></i> Dupliquer
+                                </button>
+                                <button class="btn-modern btn-modern-sm" 
+                                        style="background: var(--danger); color: white;"
+                                        onclick="event.stopPropagation(); deleteGoal({{ goal.id }}, '{{ goal.title }}', '{{ csrf_token('delete' ~ goal.id) }}')">
+                                    <i class="bi bi-trash"></i> Supprimer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="card-modern text-center" style="padding: var(--space-2xl);">
+            <div class="avatar-modern avatar-modern-lg" style="width: 120px; height: 120px; margin: 0 auto var(--space-xl); font-size: 3rem;">
+                <i class="bi bi-inbox"></i>
+            </div>
+            <h2 style="font-size: var(--font-size-3xl); margin-bottom: var(--space-md);">Commencez votre parcours</h2>
+            <p style="font-size: var(--font-size-lg); color: var(--gray-600); margin-bottom: var(--space-xl);">
+                Créez votre premier objectif pour suivre vos progrès et atteindre vos objectifs de fitness et bien-être
+            </p>
+            <button class="btn-modern btn-modern-primary btn-modern-lg" onclick="openGoalModal('new')">
+                <i class="bi bi-plus-circle"></i> Créer mon premier objectif
+            </button>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Modal functions
+        function openGoalModal(action, goalId = null) {
+            const url = action === 'new' 
+                ? '{{ path('app_goal_new') }}'
+                : '{{ path('app_goal_edit', {id: '__ID__'}) }}'.replace('__ID__', goalId);
+            
+            // For now, redirect to the page
+            window.location.href = url;
+        }
+        
+        // Favorite toggle
+        async function toggleFavorite(goalId, button) {
+            try {
+                const response = await fetch(`/goal/${goalId}/toggle-favorite`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const icon = button.querySelector('i');
+                    if (data.isFavorite) {
+                        icon.classList.remove('bi-heart');
+                        icon.classList.add('bi-heart-fill');
+                        button.style.color = 'var(--danger)';
+                    } else {
+                        icon.classList.remove('bi-heart-fill');
+                        icon.classList.add('bi-heart');
+                        button.style.color = 'var(--gray-400)';
+                    }
+                    button.dataset.isFavorite = data.isFavorite ? 'true' : 'false';
+                    showToast(data.message, 'success');
+                } else {
+                    showToast('Erreur lors de la mise à jour', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Erreur lors de la mise à jour', 'error');
+            }
+        }
+        
+        // Duplicate goal
+        async function duplicateGoal(goalId, title, csrfToken) {
+            if (!confirm(`Voulez-vous dupliquer l'objectif "${title}" ?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/goals/${goalId}/duplicate`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `_token=${encodeURIComponent(csrfToken)}`
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast(data.message || 'Erreur lors de la duplication', 'error');
+                }
+            } catch (error) {
+                showToast('Erreur lors de la duplication', 'error');
+            }
+        }
+        
+        // Delete goal
+        async function deleteGoal(goalId, title, csrfToken) {
+            if (!confirm(`Êtes-vous sûr de vouloir supprimer "${title}" ?\n\nCette action supprimera également toutes les routines et activités associées.`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/goals/${goalId}`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `_token=${encodeURIComponent(csrfToken)}`
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast(data.message || 'Erreur lors de la suppression', 'error');
+                }
+            } catch (error) {
+                showToast('Erreur lors de la suppression', 'error');
+            }
+        }
+        
+        // Filters
+        const sortSelect = document.getElementById('sortSelect');
+        const statusFilter = document.getElementById('statusFilter');
+        const searchInput = document.getElementById('searchInput');
+        let searchTimeout;
+        
+        if (sortSelect) {
+            sortSelect.addEventListener('change', applyFilters);
+        }
+        
+        if (statusFilter) {
+            statusFilter.addEventListener('change', applyFilters);
+        }
+        
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(applyFilters, 500);
+            });
+        }
+        
+        function applyFilters() {
+            const sortValue = sortSelect ? sortSelect.value : 'createdAt-DESC';
+            const statusValue = statusFilter ? statusFilter.value : 'all';
+            const searchValue = searchInput ? searchInput.value : '';
+            
+            const [sort, order] = sortValue.split('-');
+            
+            const url = new URL(window.location.href);
+            url.searchParams.set('sort', sort);
+            url.searchParams.set('order', order);
+            url.searchParams.set('status', statusValue);
+            
+            if (searchValue) {
+                url.searchParams.set('search', searchValue);
+            } else {
+                url.searchParams.delete('search');
+            }
+            
+            window.location.href = url.toString();
+        }
+        
+        // Layout toggle
+        const layoutToggles = document.querySelectorAll('.layout-toggle');
+        const goalsContainer = document.getElementById('goalsContainer');
+        
+        layoutToggles.forEach(button => {
+            button.addEventListener('click', function() {
+                layoutToggles.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                
+                const layout = this.dataset.layout;
+                if (layout === 'grid') {
+                    goalsContainer.classList.remove('grid-modern-1');
+                    goalsContainer.classList.add('grid-modern-3');
+                } else {
+                    goalsContainer.classList.remove('grid-modern-3');
+                    goalsContainer.classList.add('grid-modern-1');
+                }
+                
+                localStorage.setItem('goalsLayout', layout);
+            });
+        });
+        
+        // Load saved layout
+        const savedLayout = localStorage.getItem('goalsLayout') || 'list';
+        if (savedLayout === 'grid') {
+            goalsContainer.classList.remove('grid-modern-1');
+            goalsContainer.classList.add('grid-modern-3');
+            layoutToggles.forEach(btn => {
+                if (btn.dataset.layout === 'grid') {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+    </script>
+{% endblock %}

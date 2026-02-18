@@ -1,0 +1,1030 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Objectifs{% endblock %}
+
+{% block stylesheets %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #5b4cdb;
+            --primary-hover: #4a3cb8;
+            --primary-light: #e8e6f9;
+            --gray-light: #f8f9fa;
+            --gray-text: #6c757d;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #ffffff;
+        }
+        .navbar-custom {
+            background-color: #ffffff !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 1rem 0;
+        }
+        .navbar-brand img {
+            height: 36px;
+        }
+        .btn-orange {
+            background: linear-gradient(135deg, #5b4cdb 0%, #4a3cb8 100%);
+            border: none;
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(91, 76, 219, 0.3);
+        }
+        .btn-orange:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(91, 76, 219, 0.4);
+            color: white;
+        }
+        .hero-section {
+            background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+            padding-top: 120px;
+            padding-bottom: 60px;
+        }
+        .goal-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 20px;
+            padding: 2rem;
+            height: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .goal-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-color);
+            box-shadow: 0 10px 30px rgba(91, 76, 219, 0.15);
+        }
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .status-draft { background-color: #f3f4f6; color: #6b7280; }
+        .status-active { background-color: #d1fae5; color: #065f46; }
+        .status-paused { background-color: #fef3c7; color: #92400e; }
+        .status-completed { background-color: #dbeafe; color: #1e40af; }
+        .status-failed { background-color: #fee2e2; color: #991b1b; }
+        .status-archived { background-color: #e5e7eb; color: #374151; }
+        .status-cancelled { background-color: #f3f4f6; color: #374151; }
+        .status-skipped { background-color: #fce7f3; color: #831843; }
+        .priority-high { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; }
+        .priority-medium { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
+        .priority-low { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; }
+        .progress-bar-custom {
+            height: 10px;
+            border-radius: 10px;
+            background: linear-gradient(90deg, #5b4cdb 0%, #4a3cb8 100%);
+        }
+        .empty-state {
+            padding: 80px 20px;
+            text-align: center;
+        }
+        .empty-state-icon {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #e8e6f9 0%, #d4d1f5 100%);
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            box-shadow: 0 10px 40px rgba(91, 76, 219, 0.2);
+        }
+        .empty-state-icon i {
+            font-size: 60px;
+            color: var(--primary-color);
+        }
+        .modal-content {
+            border-radius: 20px;
+            border: none;
+            overflow: hidden;
+        }
+        .modal-header-custom {
+            background: linear-gradient(135deg, #5b4cdb 0%, #4a3cb8 100%);
+            color: white;
+            border: none;
+            padding: 2rem;
+        }
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(91, 76, 219, 0.25);
+        }
+        .form-label {
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 0.5rem;
+        }
+        .toast-custom {
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+        /* List view styles */
+        .list-view .goal-card {
+            border-radius: 15px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 2rem;
+            min-height: 100px;
+        }
+        .list-view .row {
+            display: block;
+        }
+        .list-view .col-md-6,
+        .list-view .col-lg-4 {
+            width: 100%;
+            max-width: 100%;
+        }
+        .list-view .goal-card .goal-header {
+            flex: 0 0 300px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .list-view .goal-card .goal-icon {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%);
+            border-radius: 12px;
+            flex-shrink: 0;
+        }
+        .list-view .goal-card .goal-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            padding: 0 1rem;
+        }
+        .list-view .goal-card .goal-progress {
+            flex: 0 0 200px;
+        }
+        .list-view .goal-card .goal-dates {
+            flex: 0 0 250px;
+            display: flex;
+            gap: 1rem;
+        }
+        .list-view .goal-card .goal-dates > div {
+            flex: 1;
+            text-align: center;
+            padding: 0.75rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        .list-view .goal-card .goal-actions {
+            flex: 0 0 auto;
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        .list-view .goal-card .status-badge,
+        .list-view .goal-card .badge {
+            margin: 0;
+        }
+        .list-view .goal-card h5 {
+            margin-bottom: 0.25rem;
+            font-size: 1.1rem;
+        }
+        .list-view .goal-card p {
+            margin: 0;
+            font-size: 0.85rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .list-view .goal-card .bg-light {
+            background: transparent !important;
+            padding: 0 !important;
+        }
+        .list-view .goal-card .d-flex.justify-content-between.align-items-start {
+            display: contents !important;
+        }
+        .list-view .goal-card .d-flex.flex-column.gap-2 {
+            display: flex !important;
+            flex-direction: row !important;
+            gap: 0.5rem !important;
+        }
+        .list-view .goal-card .border-top {
+            border: none !important;
+            padding: 0 !important;
+        }
+        .layout-toggle {
+            transition: all 0.3s ease;
+        }
+        .layout-toggle.active {
+            background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%) !important;
+            color: #6b21a8 !important;
+        }
+        .layout-toggle:not(.active):hover {
+            background: #f3f4f6 !important;
+        }
+        .favorite-btn {
+            border: none;
+            background: transparent;
+            color: #9ca3af;
+            font-size: 1.25rem;
+            padding: 0.25rem 0.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .favorite-btn:hover {
+            color: #ef4444;
+            transform: scale(1.1);
+        }
+        .favorite-btn.favorited {
+            color: #ef4444;
+        }
+        .favorite-btn.favorited:hover {
+            color: #9ca3af;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+        <div class="container-fluid px-4 px-md-5">
+            <a class="navbar-brand" href="{{ path('app_home') }}">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_home') }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active fw-bold text-orange" href="{{ path('app_goal_index') }}">Mes Objectifs</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_calendar') }}">
+                            <i class="bi bi-calendar3 me-1"></i>Calendrier
+                        </a>
+                    </li>
+                    <li class="nav-item ms-3">
+                        <button id="newGoalBtn" class="btn btn-orange">
+                            <i class="bi bi-plus-circle me-2"></i>Nouvel Objectif
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center mb-5">
+                <div class="col-lg-8">
+                    <span class="badge bg-light text-orange px-4 py-2 rounded-pill mb-3 d-inline-flex align-items-center">
+                        <i class="bi bi-check-circle-fill me-2"></i>Suivi d'objectifs
+                    </span>
+                    <h1 class="display-4 fw-bold mb-4">Mes Objectifs</h1>
+                    <p class="lead text-muted mb-0">
+                        Gérez vos objectifs de fitness et bien-être avec un suivi détaillé de vos progrès
+                    </p>
+                </div>
+                <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
+                    <div class="d-flex gap-2 justify-content-lg-end">
+                        <a href="{{ path('app_calendar') }}" class="btn btn-outline-orange">
+                            <i class="bi bi-calendar3 me-2"></i>Calendrier
+                        </a>
+                        <a href="{{ path('app_favorites') }}" class="btn btn-outline-orange">
+                            <i class="bi bi-heart-fill me-2"></i>Favoris
+                        </a>
+                        <a href="{{ path('app_consistency_heatmap') }}" class="btn btn-outline-orange">
+                            <i class="bi bi-graph-up me-2"></i>Consistency
+                        </a>
+                        <a href="{{ path('app_time_investment_analytics') }}" class="btn btn-outline-orange">
+                            <i class="bi bi-clock-history me-2"></i>Time Analytics
+                        </a>
+                        <button id="newGoalBtnHero" class="btn btn-orange btn-lg">
+                            <i class="bi bi-plus-circle me-2"></i>Nouvel Objectif
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters and Sort -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text" style="background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%); border: 1px solid #9333ea; color: #6b21a8;">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" id="searchInput" class="form-control" placeholder="Rechercher un objectif..." value="{{ searchQuery }}" style="border-left: none;">
+                    </div>
+                </div>
+                <div class="col-md-1">
+                    <div class="btn-group w-100" role="group" style="border-radius: 50px; overflow: hidden; border: 2px solid #e9ecef;">
+                        <button type="button" class="btn btn-outline-secondary layout-toggle" data-layout="list" title="Vue liste" style="border: none; background: white;">
+                            <i class="bi bi-list-ul"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary layout-toggle active" data-layout="grid" title="Vue grille" style="border: none; background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%); color: #6b21a8;">
+                            <i class="bi bi-grid-3x3-gap"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="d-flex gap-2 align-items-center">
+                        <label class="text-muted fw-semibold me-2">Trier par:</label>
+                        <select id="sortSelect" class="form-select form-select-sm" style="width: auto;">
+                            <option value="urgency-DESC" {{ currentSort == 'urgency' and currentOrder == 'DESC' ? 'selected' : '' }}>⚡ Plus urgent</option>
+                            <option value="createdAt-DESC" {{ currentSort == 'createdAt' and currentOrder == 'DESC' ? 'selected' : '' }}>Plus récent</option>
+                            <option value="createdAt-ASC" {{ currentSort == 'createdAt' and currentOrder == 'ASC' ? 'selected' : '' }}>Plus ancien</option>
+                            <option value="deadline-ASC" {{ currentSort == 'deadline' and currentOrder == 'ASC' ? 'selected' : '' }}>Deadline (proche)</option>
+                            <option value="deadline-DESC" {{ currentSort == 'deadline' and currentOrder == 'DESC' ? 'selected' : '' }}>Deadline (lointaine)</option>
+                            <option value="priority-DESC" {{ currentSort == 'priority' and currentOrder == 'DESC' ? 'selected' : '' }}>Priorité (haute)</option>
+                            <option value="priority-ASC" {{ currentSort == 'priority' and currentOrder == 'ASC' ? 'selected' : '' }}>Priorité (basse)</option>
+                            <option value="startDate-DESC" {{ currentSort == 'startDate' and currentOrder == 'DESC' ? 'selected' : '' }}>Date début (récent)</option>
+                            <option value="startDate-ASC" {{ currentSort == 'startDate' and currentOrder == 'ASC' ? 'selected' : '' }}>Date début (ancien)</option>
+                            <option value="endDate-DESC" {{ currentSort == 'endDate' and currentOrder == 'DESC' ? 'selected' : '' }}>Date fin (récent)</option>
+                            <option value="endDate-ASC" {{ currentSort == 'endDate' and currentOrder == 'ASC' ? 'selected' : '' }}>Date fin (ancien)</option>
+                            <option value="title-ASC" {{ currentSort == 'title' and currentOrder == 'ASC' ? 'selected' : '' }}>Titre (A-Z)</option>
+                            <option value="title-DESC" {{ currentSort == 'title' and currentOrder == 'DESC' ? 'selected' : '' }}>Titre (Z-A)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex gap-2 align-items-center justify-content-md-end">
+                        <label class="text-muted fw-semibold me-2">Filtrer par statut:</label>
+                        <select id="statusFilter" class="form-select form-select-sm" style="width: auto;">
+                            <option value="all" {{ currentStatus == 'all' ? 'selected' : '' }}>Tous</option>
+                            <option value="draft" {{ currentStatus == 'draft' ? 'selected' : '' }}>Brouillon</option>
+                            <option value="active" {{ currentStatus == 'active' ? 'selected' : '' }}>Actif</option>
+                            <option value="paused" {{ currentStatus == 'paused' ? 'selected' : '' }}>En pause</option>
+                            <option value="completed" {{ currentStatus == 'completed' ? 'selected' : '' }}>Terminé</option>
+                            <option value="failed" {{ currentStatus == 'failed' ? 'selected' : '' }}>Échoué</option>
+                            <option value="archived" {{ currentStatus == 'archived' ? 'selected' : '' }}>Archivé</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Goals Section -->
+    <section class="py-5">
+        <div class="container">
+            {% if goals|length > 0 %}
+                <div class="row g-4" id="goalsContainer">
+                    {% for goal in goals %}
+                        <div class="col-md-6 col-lg-4">
+                            <a href="{{ path('app_goal_show', {id: goal.id}) }}" class="text-decoration-none">
+                                <div class="goal-card" style="cursor: pointer;">
+                                    <!-- Goal Header with Icon and Title -->
+                                    <div class="goal-header">
+                                        <div class="goal-icon">
+                                            <i class="bi bi-bullseye" style="font-size: 1.5rem; color: var(--primary-color);"></i>
+                                        </div>
+                                        <div style="flex: 1; min-width: 0;">
+                                            <h5 class="mb-1 fw-bold text-truncate text-dark">{{ goal.title }}</h5>
+                                            {% if goal.description %}
+                                                <p class="text-muted small mb-0">{{ goal.description|slice(0, 80) }}{% if goal.description|length > 80 %}...{% endif %}</p>
+                                            {% endif %}
+                                        </div>
+                                        <button class="btn btn-sm favorite-btn {{ goal.isFavorite ? 'favorited' : '' }}" 
+                                                data-goal-id="{{ goal.id }}" 
+                                                data-is-favorite="{{ goal.isFavorite ? 'true' : 'false' }}"
+                                                onclick="event.preventDefault(); event.stopPropagation();"
+                                                title="{{ goal.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris' }}">
+                                            <i class="bi bi-heart{{ goal.isFavorite ? '-fill' : '' }}"></i>
+                                        </button>
+                                    </div>
+
+                                    <!-- Badges Section -->
+                                    <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+                                        <span class="status-badge status-{{ goal.status }}">
+                                            {{ goal.status|upper }}
+                                        </span>
+                                        {% if goal.getPriority() %}
+                                            <span class="badge priority-{{ goal.getPriority() }}" style="font-size: 0.7rem;">
+                                                {% if goal.getPriority() == 'high' %}🔴 HAUTE
+                                                {% elseif goal.getPriority() == 'medium' %}🟡 MOYENNE
+                                                {% else %}🟢 BASSE{% endif %}
+                                            </span>
+                                        {% endif %}
+                                        {% if goal.isAtRisk() %}
+                                            <span class="badge bg-danger text-white" style="font-size: 0.7rem;">
+                                                <i class="bi bi-exclamation-triangle-fill me-1"></i>AT RISK
+                                            </span>
+                                        {% elseif goal.isDeadlineNear() %}
+                                            <span class="badge bg-warning text-dark" style="font-size: 0.7rem;">
+                                                <i class="bi bi-alarm me-1"></i>Deadline proche!
+                                            </span>
+                                        {% endif %}
+                                        {% if goal.getTimeRemaining() %}
+                                            <span class="badge bg-{{ goal.getTimeRemainingColor() }} text-white" style="font-size: 0.7rem;">
+                                                <i class="bi bi-clock me-1"></i>{{ goal.getTimeRemaining() }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Progress Section -->
+                                    <div class="goal-progress mb-4">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="text-muted small">Progression</span>
+                                            <span class="fw-bold text-dark">{{ goal.progressPercentage }}%</span>
+                                        </div>
+                                        <div class="progress" style="height: 10px;">
+                                            <div class="progress-bar progress-bar-custom" role="progressbar" 
+                                                 style="width: {{ goal.progressPercentage }}%" 
+                                                 aria-valuenow="{{ goal.progressPercentage }}" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100"></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Dates Section -->
+                                    <div class="goal-dates mb-4">
+                                        <div class="bg-light rounded p-3 text-center">
+                                            <div class="text-muted small mb-1">Début</div>
+                                            <div class="fw-bold small text-dark">{{ goal.startDate|date('d/m/Y') }}</div>
+                                        </div>
+                                        <div class="bg-light rounded p-3 text-center">
+                                            <div class="text-muted small mb-1">{% if goal.deadline %}Deadline{% else %}Fin{% endif %}</div>
+                                            <div class="fw-bold small text-dark">{{ goal.deadline ? goal.deadline|date('d/m/Y') : goal.endDate|date('d/m/Y') }}</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Actions Section -->
+                                    <div class="goal-actions">
+                                        <div class="d-flex justify-content-between align-items-center pt-3 border-top w-100">
+                                            <span class="text-muted small">
+                                                <i class="bi bi-list-ul me-1"></i>{{ goal.routines|length }} Routine(s)
+                                            </span>
+                                            <div class="btn-group" onclick="event.preventDefault(); event.stopPropagation();">
+                                                <button class="btn btn-sm btn-outline-secondary edit-goal-btn" data-goal-id="{{ goal.id }}" title="Modifier">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-info duplicate-goal-btn" 
+                                                        data-goal-id="{{ goal.id }}" 
+                                                        data-goal-title="{{ goal.title }}"
+                                                        data-csrf-token="{{ csrf_token('duplicate' ~ goal.id) }}"
+                                                        title="Dupliquer">
+                                                    <i class="bi bi-files"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-danger delete-goal-btn" 
+                                                        data-goal-id="{{ goal.id }}" 
+                                                        data-goal-title="{{ goal.title }}"
+                                                        data-csrf-token="{{ csrf_token('delete' ~ goal.id) }}"
+                                                        title="Supprimer">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <!-- Empty State -->
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                    <h2 class="display-5 fw-bold mb-3">Commencez votre parcours</h2>
+                    <p class="lead text-muted mb-5">
+                        Créez votre premier objectif pour suivre vos progrès et atteindre vos objectifs de fitness et bien-être
+                    </p>
+                    <button id="newGoalBtnEmpty" class="btn btn-orange btn-lg">
+                        <i class="bi bi-plus-circle me-2"></i>Créer mon premier objectif
+                    </button>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Modal -->
+    <div class="modal fade" id="goalModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header modal-header-custom">
+                    <h5 class="modal-title fw-bold" id="modalTitle">Nouvel Objectif</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4" id="modalContent">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-orange" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Goal Confirmation Modal -->
+    <div class="modal fade" id="deleteGoalModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 20px; border: none; overflow: hidden;">
+                <div class="modal-header" style="background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%); color: white; border: none; padding: 1.5rem;">
+                    <h5 class="modal-title" style="font-weight: 700;">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Confirmer la suppression
+                    </h5>
+                    <button type="button" class="btn-close" style="filter: brightness(0) invert(1);" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" style="padding: 2rem;">
+                    <p class="mb-3" style="font-size: 1.1rem; color: #374151;">Êtes-vous sûr de vouloir supprimer cet objectif ?</p>
+                    <div class="alert" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b; border-radius: 15px; padding: 1.25rem;">
+                        <i class="bi bi-info-circle me-2" style="color: #d97706; font-size: 1.2rem;"></i>
+                        <strong id="deleteGoalName" style="color: #92400e; font-size: 1.05rem;"></strong>
+                        <p class="mb-0 mt-2 small" style="color: #78350f;">Cette action est irréversible et supprimera également toutes les routines et activités associées.</p>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid #e5e7eb; padding: 1.25rem;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="background: #6b7280; border: none; padding: 0.75rem 1.5rem; border-radius: 10px; font-weight: 600;">
+                        <i class="bi bi-x-circle me-1"></i>Annuler
+                    </button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteGoalBtn" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); border: none; padding: 0.75rem 1.5rem; border-radius: 10px; font-weight: 600; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);">
+                        <i class="bi bi-trash me-1"></i>Supprimer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="toast" class="toast toast-custom" role="alert">
+            <div class="toast-header">
+                <div id="toastIcon" class="rounded me-2"></div>
+                <strong class="me-auto" id="toastMessage"></strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const goalModal = new bootstrap.Modal(document.getElementById('goalModal'));
+            const toastEl = document.getElementById('toast');
+            const toast = new bootstrap.Toast(toastEl);
+            const modalContent = document.getElementById('modalContent');
+            const modalTitle = document.getElementById('modalTitle');
+            const newGoalBtn = document.getElementById('newGoalBtn');
+            const newGoalBtnHero = document.getElementById('newGoalBtnHero');
+            const newGoalBtnEmpty = document.getElementById('newGoalBtnEmpty');
+
+            function openModal(title, url) {
+                modalTitle.textContent = title;
+                modalContent.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-orange" role="status"><span class="visually-hidden">Chargement...</span></div></div>';
+                goalModal.show();
+                document.body.style.overflow = 'hidden';
+
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) throw new Error('Erreur HTTP: ' + response.status);
+                        return response.text();
+                    })
+                    .then(html => {
+                        modalContent.innerHTML = html;
+                        initForm();
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        modalContent.innerHTML = '<div class="alert alert-danger"><h6>Erreur lors du chargement</h6><p>Veuillez réessayer.</p><button class="btn btn-orange" onclick="goalModal.hide()">Fermer</button></div>';
+                        showToast('Erreur lors du chargement', 'error');
+                    });
+            }
+
+            function closeModal() {
+                goalModal.hide();
+                modalContent.innerHTML = '';
+                document.body.style.overflow = '';
+            }
+
+            function initForm() {
+                const form = modalContent.querySelector('form');
+                if (!form) return;
+
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(form);
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    const originalText = submitBtn ? submitBtn.innerHTML : '';
+                    
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Enregistrement...';
+                    }
+
+                    try {
+                        const formAction = form.action || form.getAttribute('action') || '{{ path('app_goal_new') }}';
+                        const formMethod = form.method || form.getAttribute('method') || 'POST';
+                        
+                        console.log('Envoi vers:', formAction, 'Méthode:', formMethod);
+                        
+                        const response = await fetch(formAction, {
+                            method: formMethod,
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json'
+                            },
+                            body: formData
+                        });
+
+                        console.log('Statut réponse:', response.status, 'Content-Type:', response.headers.get('content-type'));
+
+                        // Vérifier si la réponse est bien du JSON
+                        const contentType = response.headers.get('content-type') || '';
+                        let data;
+                        
+                        if (contentType.includes('application/json')) {
+                            data = await response.json();
+                        } else {
+                            const text = await response.text();
+                            console.error('Réponse HTML reçue au lieu de JSON:', text.substring(0, 500));
+                            
+                            // Essayer de parser comme JSON quand même (au cas où)
+                            try {
+                                data = JSON.parse(text);
+                            } catch (e) {
+                                throw new Error('Le serveur a renvoyé du HTML au lieu de JSON. Vérifiez la console pour voir la réponse complète.');
+                            }
+                        }
+
+                        if (data.success) {
+                            showToast(data.message, 'success');
+                            closeModal();
+                            setTimeout(() => location.reload(), 1000);
+                        } else {
+                            if (submitBtn) {
+                                submitBtn.disabled = false;
+                                submitBtn.innerHTML = originalText;
+                            }
+                            let errorMessage = data.message || 'Erreur de validation';
+                            if (data.errors && data.errors.length > 0) {
+                                errorMessage += ': ' + data.errors.join(', ');
+                            }
+                            showToast(errorMessage, 'error');
+                            if (data.errors) displayFormErrors(form, data.errors);
+                        }
+                    } catch (error) {
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = originalText;
+                        }
+                        console.error('Erreur complète:', error);
+                        showToast('Erreur lors de l\'envoi: ' + (error.message || 'Erreur inconnue'), 'error');
+                    }
+                });
+            }
+
+            function displayFormErrors(form, errors) {
+                form.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
+                form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+                form.querySelectorAll('.alert-danger').forEach(el => el.remove());
+
+                if (!errors || errors.length === 0) return;
+
+                // Afficher les erreurs générales en haut du formulaire
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-danger mb-3';
+                alertDiv.innerHTML = '<strong>Erreurs de validation:</strong><ul class="mb-0 mt-2"><li>' + errors.join('</li><li>') + '</li></ul>';
+                form.insertBefore(alertDiv, form.firstChild);
+
+                // Essayer d'associer les erreurs aux champs spécifiques
+                errors.forEach(error => {
+                    const inputs = form.querySelectorAll('input, textarea, select');
+                    inputs.forEach(input => {
+                        const fieldName = input.name ? input.name.replace(/\[|\]/g, '').split('_').pop() : '';
+                        if (fieldName && error.toLowerCase().includes(fieldName.toLowerCase())) {
+                            input.classList.add('is-invalid');
+                            const errorDiv = document.createElement('div');
+                            errorDiv.className = 'invalid-feedback';
+                            errorDiv.textContent = error.replace(fieldName + ': ', '').replace(/^.*?: /, '');
+                            input.parentElement.appendChild(errorDiv);
+                        }
+                    });
+                });
+            }
+
+            function showToast(message, type = 'success') {
+                const toastMessage = document.getElementById('toastMessage');
+                const toastIcon = document.getElementById('toastIcon');
+                
+                toastMessage.textContent = message;
+                
+                if (type === 'success') {
+                    toastIcon.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i>';
+                    toastIcon.className = 'rounded me-2 bg-success';
+                } else {
+                    toastIcon.innerHTML = '<i class="bi bi-x-circle-fill text-danger"></i>';
+                    toastIcon.className = 'rounded me-2 bg-danger';
+                }
+                
+                toast.show();
+            }
+
+            // Event Listeners
+            [newGoalBtn, newGoalBtnHero, newGoalBtnEmpty].forEach(btn => {
+                if (btn) {
+                    btn.addEventListener('click', () => {
+                        openModal('Nouvel Objectif', '{{ path('app_goal_new') }}');
+                    });
+                }
+            });
+
+            // Sort and Filter handlers
+            const sortSelect = document.getElementById('sortSelect');
+            const statusFilter = document.getElementById('statusFilter');
+            const searchInput = document.getElementById('searchInput');
+            let searchTimeout;
+
+            if (sortSelect) {
+                sortSelect.addEventListener('change', function() {
+                    applyFilters();
+                });
+            }
+
+            if (statusFilter) {
+                statusFilter.addEventListener('change', function() {
+                    applyFilters();
+                });
+            }
+
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        applyFilters();
+                    }, 500); // Debounce 500ms
+                });
+            }
+
+            function applyFilters() {
+                const sortValue = sortSelect ? sortSelect.value : 'createdAt-DESC';
+                const statusValue = statusFilter ? statusFilter.value : 'all';
+                const searchValue = searchInput ? searchInput.value : '';
+                
+                const [sort, order] = sortValue.split('-');
+                
+                const url = new URL(window.location.href);
+                url.searchParams.set('sort', sort);
+                url.searchParams.set('order', order);
+                url.searchParams.set('status', statusValue);
+                
+                if (searchValue) {
+                    url.searchParams.set('search', searchValue);
+                } else {
+                    url.searchParams.delete('search');
+                }
+                
+                window.location.href = url.toString();
+            }
+
+            document.getElementById('goalModal').addEventListener('hidden.bs.modal', () => {
+                document.body.style.overflow = '';
+            });
+
+            // Edit buttons
+            document.querySelectorAll('.edit-goal-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const goalId = btn.dataset.goalId;
+                    openModal('Modifier l\'Objectif', `{{ path('app_goal_edit', {id: '__ID__'}) }}`.replace('__ID__', goalId));
+                });
+            });
+
+            // Duplicate buttons
+            document.querySelectorAll('.duplicate-goal-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const goalId = btn.dataset.goalId;
+                    const goalTitle = btn.dataset.goalTitle;
+                    const csrfToken = btn.dataset.csrfToken;
+                    
+                    if (!confirm(`Voulez-vous dupliquer l'objectif "${goalTitle}" ?`)) {
+                        return;
+                    }
+
+                    btn.disabled = true;
+                    const originalHtml = btn.innerHTML;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+                    try {
+                        const response = await fetch(`{{ path('app_goal_duplicate', {id: '__ID__'}) }}`.replace('__ID__', goalId), {
+                            method: 'POST',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: `_token=${encodeURIComponent(csrfToken)}`
+                        });
+
+                        const data = await response.json();
+                        if (data.success) {
+                            showToast(data.message, 'success');
+                            setTimeout(() => location.reload(), 1000);
+                        } else {
+                            showToast(data.message || 'Erreur lors de la duplication', 'error');
+                            btn.disabled = false;
+                            btn.innerHTML = originalHtml;
+                        }
+                    } catch (error) {
+                        showToast('Erreur lors de la duplication', 'error');
+                        btn.disabled = false;
+                        btn.innerHTML = originalHtml;
+                    }
+                });
+            });
+
+            // Delete buttons with modal confirmation
+            const deleteGoalModal = new bootstrap.Modal(document.getElementById('deleteGoalModal'));
+            const confirmDeleteGoalBtn = document.getElementById('confirmDeleteGoalBtn');
+            const deleteGoalName = document.getElementById('deleteGoalName');
+            let currentDeleteGoalAction = null;
+
+            document.querySelectorAll('.delete-goal-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const goalId = btn.dataset.goalId;
+                    const goalTitle = btn.dataset.goalTitle || 'cet objectif';
+                    const csrfToken = btn.dataset.csrfToken;
+                    
+                    // Set the goal name in modal
+                    deleteGoalName.textContent = goalTitle;
+                    
+                    // Store the delete action
+                    currentDeleteGoalAction = async () => {
+                        confirmDeleteGoalBtn.disabled = true;
+                        confirmDeleteGoalBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Suppression...';
+
+                        try {
+                            const response = await fetch(`{{ path('app_goal_delete', {id: '__ID__'}) }}`.replace('__ID__', goalId), {
+                                method: 'POST',
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                },
+                                body: `_token=${encodeURIComponent(csrfToken)}`
+                            });
+
+                            const data = await response.json();
+                            if (data.success) {
+                                showToast(data.message, 'success');
+                                deleteGoalModal.hide();
+                                setTimeout(() => location.reload(), 1000);
+                            } else {
+                                showToast(data.message || 'Erreur lors de la suppression', 'error');
+                                confirmDeleteGoalBtn.disabled = false;
+                                confirmDeleteGoalBtn.innerHTML = '<i class="bi bi-trash me-1"></i>Supprimer';
+                            }
+                        } catch (error) {
+                            showToast('Erreur lors de la suppression', 'error');
+                            confirmDeleteGoalBtn.disabled = false;
+                            confirmDeleteGoalBtn.innerHTML = '<i class="bi bi-trash me-1"></i>Supprimer';
+                        }
+                    };
+                    
+                    // Show modal
+                    deleteGoalModal.show();
+                });
+            });
+
+            // Handle confirm delete button click
+            confirmDeleteGoalBtn.addEventListener('click', () => {
+                if (currentDeleteGoalAction) {
+                    currentDeleteGoalAction();
+                }
+            });
+
+            // Reset button state when modal is hidden
+            document.getElementById('deleteGoalModal').addEventListener('hidden.bs.modal', () => {
+                confirmDeleteGoalBtn.disabled = false;
+                confirmDeleteGoalBtn.innerHTML = '<i class="bi bi-trash me-1"></i>Supprimer';
+                currentDeleteGoalAction = null;
+            });
+
+            // Layout toggle functionality
+            const layoutToggles = document.querySelectorAll('.layout-toggle');
+            const goalsContainer = document.getElementById('goalsContainer');
+            
+            // Load saved layout preference
+            const savedLayout = localStorage.getItem('goalsLayout') || 'grid';
+            if (savedLayout === 'list') {
+                goalsContainer.classList.add('list-view');
+                layoutToggles.forEach(btn => {
+                    if (btn.dataset.layout === 'list') {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+
+            layoutToggles.forEach(button => {
+                button.addEventListener('click', function() {
+                    const layout = this.dataset.layout;
+                    
+                    // Update active state
+                    layoutToggles.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Toggle layout
+                    if (layout === 'list') {
+                        goalsContainer.classList.add('list-view');
+                    } else {
+                        goalsContainer.classList.remove('list-view');
+                    }
+                    
+                    // Save preference
+                    localStorage.setItem('goalsLayout', layout);
+                });
+            });
+
+            // Favorite toggle functionality
+            document.querySelectorAll('.favorite-btn').forEach(btn => {
+                btn.addEventListener('click', async function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const goalId = this.dataset.goalId;
+                    const isFavorite = this.dataset.isFavorite === 'true';
+                    const icon = this.querySelector('i');
+                    
+                    // Optimistic UI update
+                    if (isFavorite) {
+                        icon.classList.remove('bi-heart-fill');
+                        icon.classList.add('bi-heart');
+                        this.classList.remove('favorited');
+                    } else {
+                        icon.classList.remove('bi-heart');
+                        icon.classList.add('bi-heart-fill');
+                        this.classList.add('favorited');
+                    }
+                    
+                    try {
+                        const response = await fetch(`/goal/${goalId}/toggle-favorite`, {
+                            method: 'POST',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json'
+                            }
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            this.dataset.isFavorite = data.isFavorite ? 'true' : 'false';
+                            this.title = data.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris';
+                            showToast(data.message, 'success');
+                        } else {
+                            // Revert on error
+                            if (!isFavorite) {
+                                icon.classList.remove('bi-heart-fill');
+                                icon.classList.add('bi-heart');
+                                this.classList.remove('favorited');
+                            } else {
+                                icon.classList.remove('bi-heart');
+                                icon.classList.add('bi-heart-fill');
+                                this.classList.add('favorited');
+                            }
+                            console.error('Error response:', data);
+                            showToast('Erreur: ' + (data.message || 'Erreur inconnue'), 'error');
+                        }
+                    } catch (error) {
+                        // Revert on error
+                        if (!isFavorite) {
+                            icon.classList.remove('bi-heart-fill');
+                            icon.classList.add('bi-heart');
+                            this.classList.remove('favorited');
+                        } else {
+                            icon.classList.remove('bi-heart');
+                            icon.classList.add('bi-heart-fill');
+                            this.classList.add('favorited');
+                        }
+                        console.error('Erreur:', error);
+                        showToast('Erreur lors de la mise à jour', 'error');
+                    }
+                });
+            });
+        });
+    </script>
+    <style>
+        .text-orange { color: var(--primary-color) !important; }
+        .btn-outline-orange {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        .btn-outline-orange:hover {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+    </style>
+{% endblock %}

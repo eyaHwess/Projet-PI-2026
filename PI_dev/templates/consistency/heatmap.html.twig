@@ -1,0 +1,632 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Consistency Heatmap{% endblock %}
+
+{% block stylesheets %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #9333ea;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #ffffff;
+        }
+        .navbar-custom {
+            background-color: #ffffff !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 1rem 0;
+        }
+        .content-section {
+            background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+            padding-top: 120px;
+            padding-bottom: 60px;
+            min-height: 100vh;
+        }
+        .heatmap-container {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            overflow-x: auto;
+        }
+        .heatmap-wrapper {
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+        }
+        .heatmap-grid {
+            display: inline-grid;
+            grid-template-columns: repeat(53, 14px);
+            grid-gap: 4px;
+            margin: 20px 0;
+        }
+        .heatmap-cell {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .heatmap-cell:hover {
+            transform: scale(1.8);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 10;
+            border: 2px solid #9333ea;
+        }
+        .heatmap-cell.empty {
+            background-color: #f3f4f6;
+            border: 1px solid #e5e7eb;
+        }
+        .stats-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            text-align: center;
+            border: 2px solid #f3f4f6;
+            transition: all 0.3s ease;
+        }
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(147, 51, 234, 0.15);
+            border-color: var(--primary-color);
+        }
+        .stats-value {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .stats-label {
+            color: #6b7280;
+            font-size: 0.95rem;
+            margin-top: 0.5rem;
+            font-weight: 600;
+        }
+        .stats-sublabel {
+            color: #9ca3af;
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+        }
+        .trend-badge {
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .trend-improving {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
+        }
+        .trend-stable {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+        }
+        .trend-decreasing {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);
+        }
+        .legend {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: #f9fafb;
+            border-radius: 15px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .legend-color {
+            width: 18px;
+            height: 18px;
+            border-radius: 3px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        .legend-text {
+            font-size: 0.85rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+        .tooltip-custom {
+            position: absolute;
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+            min-width: 220px;
+        }
+        .tooltip-custom::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: 20px;
+            width: 12px;
+            height: 12px;
+            background: #1f2937;
+            transform: rotate(45deg);
+        }
+        .tooltip-date {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 8px;
+            color: #f3f4f6;
+        }
+        .tooltip-percentage {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #10b981;
+            margin-bottom: 8px;
+        }
+        .tooltip-detail {
+            display: flex;
+            justify-content: space-between;
+            margin: 4px 0;
+            font-size: 0.85rem;
+        }
+        .tooltip-label {
+            color: #9ca3af;
+        }
+        .tooltip-value {
+            color: #f3f4f6;
+            font-weight: 600;
+        }
+        .weekday-labels {
+            display: grid;
+            grid-template-rows: repeat(7, 14px);
+            grid-gap: 4px;
+            margin-right: 15px;
+            font-size: 11px;
+            color: #6b7280;
+            font-weight: 600;
+        }
+        .weekday-label {
+            height: 14px;
+            display: flex;
+            align-items: center;
+        }
+        .month-labels {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 11px;
+            color: #6b7280;
+            font-weight: 600;
+        }
+        .month-label {
+            text-align: center;
+        }
+        .year-navigation {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .year-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            color: #6b7280;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .year-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            background: #f3f4f6;
+        }
+        .current-year {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .productivity-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .stats-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            opacity: 0.8;
+        }
+        .monthly-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 1rem;
+            height: 250px;
+            padding: 1rem;
+            background: #f9fafb;
+            border-radius: 15px;
+        }
+        .month-bar-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .month-bar {
+            width: 100%;
+            min-height: 20px;
+            background: linear-gradient(180deg, #9333ea 0%, #7e22ce 100%);
+            border-radius: 8px 8px 0 0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 0.5rem;
+        }
+        .month-bar:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(147, 51, 234, 0.3);
+        }
+        .month-value {
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .month-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #6b7280;
+            text-align: center;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+        <div class="container-fluid px-4 px-md-5">
+            <a class="navbar-brand" href="{{ path('app_home') }}"></a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_home') }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_goal_index') }}">Mes Objectifs</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active fw-bold" style="color: var(--primary-color);" href="{{ path('app_consistency_heatmap') }}">
+                            <i class="bi bi-graph-up me-1"></i>Consistency
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="content-section">
+        <div class="container py-5">
+            <h1 class="display-5 fw-bold mb-4">
+                <i class="bi bi-graph-up me-3" style="color: var(--primary-color);"></i>Consistency Heatmap
+            </h1>
+            <p class="text-muted mb-5">Visualisez votre productivité quotidienne sur l'année {{ currentYear }}</p>
+
+            <!-- Stats Cards -->
+            <div class="row g-4 mb-5">
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-value">{{ stats.consistencyScore }}%</div>
+                        <div class="stats-label">Consistency Score</div>
+                        <small class="text-muted">(30 derniers jours)</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-value">{{ stats.longestStreak }}</div>
+                        <div class="stats-label">Longest Streak</div>
+                        <small class="text-muted">jours consécutifs</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <div class="stats-value">
+                            {% if stats.mostProductiveDay %}
+                                <i class="bi bi-calendar-check"></i>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </div>
+                        <div class="stats-label">Most Productive Day</div>
+                        <small class="text-muted">{{ stats.mostProductiveDay ?? 'N/A' }}</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <span class="trend-badge trend-{{ stats.trend|lower }}">
+                            {% if stats.trend == 'Improving' %}
+                                <i class="bi bi-arrow-up"></i> {{ stats.trend }}
+                            {% elseif stats.trend == 'Decreasing' %}
+                                <i class="bi bi-arrow-down"></i> {{ stats.trend }}
+                            {% else %}
+                                <i class="bi bi-dash"></i> {{ stats.trend }}
+                            {% endif %}
+                        </span>
+                        <div class="stats-label mt-2">Trend</div>
+                        <small class="text-muted">(14 derniers jours)</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monthly Comparison Chart -->
+            <div class="row mb-5">
+                <div class="col-12">
+                    <div class="heatmap-container">
+                        <h3 class="h5 fw-bold mb-4">
+                            <i class="bi bi-bar-chart-line me-2" style="color: var(--primary-color);"></i>
+                            Comparaison mensuelle {{ currentYear }}
+                        </h3>
+                        <div class="monthly-chart">
+                            {% for monthData in monthlyAverages %}
+                                <div class="month-bar-container">
+                                    <div class="month-bar" style="height: {{ monthData.average }}%;" 
+                                         data-month="{{ monthData.month }}"
+                                         data-average="{{ monthData.average }}"
+                                         data-count="{{ monthData.count }}"
+                                         title="{{ monthData.month }}: {{ monthData.average }}%">
+                                        <span class="month-value">{{ monthData.average }}%</span>
+                                    </div>
+                                    <div class="month-label">{{ monthData.month }}</div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Heatmap -->
+            <div class="heatmap-container">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="h5 fw-bold mb-0">Activité {{ currentYear }}</h3>
+                    <div class="btn-group">
+                        <a href="{{ path('app_consistency_heatmap', {year: currentYear - 1}) }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-chevron-left"></i> {{ currentYear - 1 }}
+                        </a>
+                        <a href="{{ path('app_consistency_heatmap', {year: currentYear + 1}) }}" class="btn btn-sm btn-outline-secondary">
+                            {{ currentYear + 1 }} <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div style="display: flex;">
+                    <div class="weekday-labels">
+                        <div class="weekday-label">Mon</div>
+                        <div class="weekday-label"></div>
+                        <div class="weekday-label">Wed</div>
+                        <div class="weekday-label"></div>
+                        <div class="weekday-label">Fri</div>
+                        <div class="weekday-label"></div>
+                        <div class="weekday-label">Sun</div>
+                    </div>
+                    <div class="heatmap-grid">
+                        {% for week in heatmapData %}
+                            {% for day in week %}
+                                <div class="heatmap-cell" 
+                                     style="background-color: {{ day.color }};"
+                                     data-date="{{ day.date }}"
+                                     data-percentage="{{ day.percentage }}"
+                                     data-completed="{{ day.completedActivities }}"
+                                     data-total="{{ day.totalActivities }}"
+                                     data-routines-completed="{{ day.completedRoutines }}"
+                                     data-routines-total="{{ day.totalRoutines }}"
+                                     title="{{ day.date }}">
+                                </div>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Legend -->
+                <div class="legend mt-4">
+                    <span class="text-muted small">Moins</span>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #f3f4f6;"></div>
+                        <span class="small">Aucune</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #ef4444;"></div>
+                        <span class="small">0%</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #86efac;"></div>
+                        <span class="small">1-49%</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #22c55e;"></div>
+                        <span class="small">50-79%</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #15803d;"></div>
+                        <span class="small">80-100%</span>
+                    </div>
+                    <span class="text-muted small">Plus</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tooltip -->
+    <div id="tooltip" class="tooltip-custom"></div>
+
+    <!-- Day Details Modal -->
+    <div class="modal fade" id="dayDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 20px; border: none;">
+                <div class="modal-header" style="background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%); color: white; border: none; padding: 1.5rem;">
+                    <h5 class="modal-title fw-bold" id="dayDetailsTitle">
+                        <i class="bi bi-calendar-day me-2"></i>Détails du jour
+                    </h5>
+                    <button type="button" class="btn-close" style="filter: brightness(0) invert(1);" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" style="padding: 2rem;">
+                    <div id="dayDetailsContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const cells = document.querySelectorAll('.heatmap-cell');
+            const tooltip = document.getElementById('tooltip');
+            const dayDetailsModal = new bootstrap.Modal(document.getElementById('dayDetailsModal'));
+
+            function showDayDetails(date, percentage, completed, total, routinesCompleted, routinesTotal) {
+                const content = document.getElementById('dayDetailsContent');
+                const title = document.getElementById('dayDetailsTitle');
+                
+                // Format date nicely
+                const dateObj = new Date(date);
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                const formattedDate = dateObj.toLocaleDateString('fr-FR', options);
+                
+                title.innerHTML = `<i class="bi bi-calendar-day me-2"></i>${formattedDate}`;
+                
+                // Determine color based on percentage
+                let colorClass = 'text-muted';
+                let bgClass = 'bg-light';
+                if (percentage == 0 && total > 0) {
+                    colorClass = 'text-danger';
+                    bgClass = 'bg-danger-subtle';
+                } else if (percentage < 50) {
+                    colorClass = 'text-success';
+                    bgClass = 'bg-success-subtle';
+                } else if (percentage < 80) {
+                    colorClass = 'text-success';
+                    bgClass = 'bg-success-subtle';
+                } else if (percentage >= 80) {
+                    colorClass = 'text-success';
+                    bgClass = 'bg-success';
+                }
+                
+                content.innerHTML = `
+                    <div class="text-center mb-4">
+                        <div class="display-4 fw-bold ${colorClass} mb-2">${percentage}%</div>
+                        <p class="text-muted">Taux de complétion</p>
+                    </div>
+                    
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="card ${bgClass} border-0" style="border-radius: 15px;">
+                                <div class="card-body text-center p-3">
+                                    <i class="bi bi-check-circle-fill ${colorClass} mb-2" style="font-size: 2rem;"></i>
+                                    <h3 class="mb-0 fw-bold">${completed}</h3>
+                                    <p class="text-muted small mb-0">Activités complétées</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card bg-light border-0" style="border-radius: 15px;">
+                                <div class="card-body text-center p-3">
+                                    <i class="bi bi-list-task text-secondary mb-2" style="font-size: 2rem;"></i>
+                                    <h3 class="mb-0 fw-bold">${total}</h3>
+                                    <p class="text-muted small mb-0">Total activités</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card ${bgClass} border-0" style="border-radius: 15px;">
+                                <div class="card-body text-center p-3">
+                                    <i class="bi bi-check-circle-fill ${colorClass} mb-2" style="font-size: 2rem;"></i>
+                                    <h3 class="mb-0 fw-bold">${routinesCompleted}</h3>
+                                    <p class="text-muted small mb-0">Routines complétées</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card bg-light border-0" style="border-radius: 15px;">
+                                <div class="card-body text-center p-3">
+                                    <i class="bi bi-repeat text-secondary mb-2" style="font-size: 2rem;"></i>
+                                    <h3 class="mb-0 fw-bold">${routinesTotal}</h3>
+                                    <p class="text-muted small mb-0">Total routines</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ${total === 0 ? '<div class="alert alert-info mt-3" style="border-radius: 15px;"><i class="bi bi-info-circle me-2"></i>Aucune activité enregistrée ce jour-là</div>' : ''}
+                `;
+                
+                dayDetailsModal.show();
+            }
+
+            cells.forEach(cell => {
+                cell.addEventListener('mouseenter', function(e) {
+                    const date = this.dataset.date;
+                    const percentage = this.dataset.percentage;
+                    const completed = this.dataset.completed;
+                    const total = this.dataset.total;
+                    const routinesCompleted = this.dataset.routinesCompleted;
+                    const routinesTotal = this.dataset.routinesTotal;
+
+                    tooltip.innerHTML = `
+                        <strong>${date}</strong><br>
+                        <strong>${percentage}%</strong> completion<br>
+                        ${completed}/${total} activities completed<br>
+                        ${routinesCompleted}/${routinesTotal} routines completed
+                    `;
+                    tooltip.style.display = 'block';
+                });
+
+                cell.addEventListener('mousemove', function(e) {
+                    tooltip.style.left = (e.pageX + 10) + 'px';
+                    tooltip.style.top = (e.pageY + 10) + 'px';
+                });
+
+                cell.addEventListener('mouseleave', function() {
+                    tooltip.style.display = 'none';
+                });
+
+                cell.addEventListener('click', function() {
+                    const date = this.dataset.date;
+                    const percentage = this.dataset.percentage;
+                    const completed = this.dataset.completed;
+                    const total = this.dataset.total;
+                    const routinesCompleted = this.dataset.routinesCompleted;
+                    const routinesTotal = this.dataset.routinesTotal;
+                    
+                    showDayDetails(date, percentage, completed, total, routinesCompleted, routinesTotal);
+                });
+            });
+        });
+    </script>
+{% endblock %}
