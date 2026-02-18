@@ -1,0 +1,180 @@
+<<<<<<< Updated upstream
+/* 🌸 General Page */
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #fff5f8;
+    margin: 0;
+    padding: 0;
+}
+
+/* 🌸 Container */
+.container {
+    width: 60%;
+    margin: 40px auto;
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(255, 182, 193, 0.3);
+}
+
+/* 🌸 Titles */
+h1 {
+    text-align: center;
+    color: #d63384;
+    margin-bottom: 20px;
+}
+
+/* 🌸 Buttons */
+button, .btn {
+    background-color: #ff99c8;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover, .btn:hover {
+    background-color: #ff66a3;
+}
+
+/* 🌸 Form fields */
+input, textarea, select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ffc0cb;
+    margin-bottom: 15px;
+}
+
+/* 🌸 Cards */
+.card {
+    background: #ffe6f0;
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ffb3d9;
+}
+
+/* 🌸 Status Badge */
+.status {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.status-pending {
+    background-color: #ffd6e8;
+    color: #d63384;
+}
+
+.status-answered {
+    background-color: #ffcce6;
+    color: #a61e4d;
+}
+
+/* 🌸 Back link */
+a {
+    text-decoration: none;
+    color: #d63384;
+    font-weight: bold;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+=======
+/* Reclamation System Styles */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    background-color: #f9f9f9;
+}
+
+.status {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+.status-pending {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.status-answered {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.btn {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background-color: #0056b3;
+}
+
+button[type="submit"] {
+    background-color: #28a745;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button[type="submit"]:hover {
+    background-color: #218838;
+}
+
+h1, h2 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+form div {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input, textarea, select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+>>>>>>> Stashed changes

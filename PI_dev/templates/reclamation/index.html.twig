@@ -1,0 +1,40 @@
+<link rel="stylesheet" href="{{ asset('css/reclamation.css') }}">
+
+<h1>My Reclamations</h1>
+
+<a href="{{ path('reclamation_new') }}">➕ Create New Reclamation</a>
+
+<hr>
+
+{% if reclamations|length > 0 %}
+    {% for reclamation in reclamations %}
+        <div style="border:1px solid #ccc; padding:15px; margin-bottom:15px; border-radius:5px;">
+            
+            <p><strong>Content:</strong> {{ reclamation.content }}</p>
+
+            <p>
+                <strong>Status:</strong>
+                {{ reclamation.status.value }}
+            </p>
+
+            <p>
+                <strong>Type:</strong>
+                {{ reclamation.type.value }}
+            </p>
+
+            <p>
+                <strong>Created At:</strong>
+                {{ reclamation.createdAt|date('Y-m-d H:i') }}
+            </p>
+
+            <br>
+
+            <a href="{{ path('reclamation_show', { id: reclamation.id }) }}">
+                🔎 View Details
+            </a>
+
+        </div>
+    {% endfor %}
+{% else %}
+    <p>No reclamations found.</p>
+{% endif %}

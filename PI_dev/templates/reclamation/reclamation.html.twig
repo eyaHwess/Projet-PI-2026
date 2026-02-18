@@ -1,0 +1,12 @@
+<link rel="stylesheet" href="{{ asset('css/reclamation.css') }}">
+
+<div class="container">
+    <h1>🌸 Create Reclamation</h1>
+
+    {{ form_start(form) }}
+        {{ form_row(form.content) }}
+        {{ form_row(form.type) }}
+
+        <button type="submit">Submit</button>
+    {{ form_end(form) }}
+</div>

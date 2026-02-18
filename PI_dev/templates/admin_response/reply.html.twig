@@ -1,0 +1,39 @@
+<link rel="stylesheet" href="{{ asset('css/reclamation.css') }}">
+
+<div class="container">
+
+    <h1>💌 Reply to Reclamation</h1>
+
+    <div class="card">
+        <p><strong>Reclamation Content:</strong></p>
+        <p>{{ reclamation.content }}</p>
+
+        <p>
+            <strong>Status:</strong>
+            {% if reclamation.status.value == 'Pending' %}
+                <span class="status status-pending">
+                    {{ reclamation.status.value }}
+                </span>
+            {% else %}
+                <span class="status status-answered">
+                    {{ reclamation.status.value }}
+                </span>
+            {% endif %}
+        </p>
+    </div>
+
+    <h2>✍️ Your Response</h2>
+
+    {{ form_start(form) }}
+        {{ form_row(form.content) }}
+
+        <button type="submit">Send Response</button>
+    {{ form_end(form) }}
+
+    <br>
+
+    <a href="{{ path('admin_reclamation_list') }}">
+        ← Back to list
+    </a>
+
+</div>

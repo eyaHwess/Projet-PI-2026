@@ -117,6 +117,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\OneToMany(targetEntity: PostLike::class, mappedBy: 'Liker')]
     private Collection $postLikes;
+    /**
+     * @var Collection<int, Reclamation>
+     */
+<<<<<<< Updated upstream
+    #[ORM\OneToMany(targetEntity: Reclamation::class, mappedBy: 'userId', orphanRemoval: true)]
+=======
+    #[ORM\OneToMany(targetEntity: Reclamation::class, mappedBy: 'user', orphanRemoval: true)]
+>>>>>>> Stashed changes
+    private Collection $reclamations;
 
     public function __construct()
 {
@@ -126,6 +135,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     $this->posts = new ArrayCollection();
     $this->comments = new ArrayCollection();
     $this->postLikes = new ArrayCollection();
+    $this->reclamations = new ArrayCollection();
 }
 
     public function getId(): ?int
@@ -330,6 +340,31 @@ public function addPost(Post $post): static
 
     return $this;
 }
+ 
+<<<<<<< Updated upstream
+=======
+/**
+ * @return Collection<int, Reclamation>
+ */
+>>>>>>> Stashed changes
+public function getReclamations(): Collection
+{
+    return $this->reclamations;
+}
+
+public function addReclamation(Reclamation $reclamation): static
+{
+    if (!$this->reclamations->contains($reclamation)) {
+        $this->reclamations->add($reclamation);
+<<<<<<< Updated upstream
+        $reclamation->setUserId($this);
+=======
+        $reclamation->setUser($this);
+>>>>>>> Stashed changes
+    }
+
+    return $this;
+}
 
 public function removePost(Post $post): static
 {
@@ -337,6 +372,23 @@ public function removePost(Post $post): static
         // set the owning side to null (unless already changed)
         if ($post->getCreatedBy() === $this) {
             $post->setCreatedBy(null);
+        }
+    }
+
+    return $this;
+}
+
+public function removeReclamation(Reclamation $reclamation): static
+{
+    if ($this->reclamations->removeElement($reclamation)) {
+        // set the owning side to null (unless already changed)
+<<<<<<< Updated upstream
+        if ($reclamation->getUserId() === $this) {
+            $reclamation->setUserId(null);
+=======
+        if ($reclamation->getUser() === $this) {
+            $reclamation->setUser(null);
+>>>>>>> Stashed changes
         }
     }
 

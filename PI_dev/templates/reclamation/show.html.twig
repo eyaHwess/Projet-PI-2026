@@ -1,0 +1,51 @@
+<link rel="stylesheet" href="{{ asset('css/reclamation.css') }}">
+
+<div class="container">
+
+    <h1>📩 Reclamation Details</h1>
+
+    <div class="card">
+        <p><strong>Content:</strong></p>
+        <p>{{ reclamation.content }}</p>
+
+        <p><strong>Type:</strong> {{ reclamation.type.value }}</p>
+
+        <p>
+            <strong>Status:</strong>
+            {% if reclamation.status.value == 'Pending' %}
+                <span class="status status-pending">
+                    {{ reclamation.status.value }}
+                </span>
+            {% else %}
+                <span class="status status-answered">
+                    {{ reclamation.status.value }}
+                </span>
+            {% endif %}
+        </p>
+
+        <p>
+            <strong>Created At:</strong>
+            {{ reclamation.createdAt|date('Y-m-d H:i') }}
+        </p>
+    </div>
+
+    <h2>💬 Responses</h2>
+
+    {% for response in reclamation.responses %}
+        <div class="card">
+            <p>{{ response.content }}</p>
+            <small>
+                {{ response.createdAt|date('Y-m-d H:i') }}
+            </small>
+        </div>
+    {% else %}
+        <p>No responses yet.</p>
+    {% endfor %}
+
+    <br>
+
+    <a href="{{ path('reclamation_index') }}">
+        ← Back to My Reclamations
+    </a>
+
+</div>

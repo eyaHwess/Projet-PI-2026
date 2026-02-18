@@ -1,0 +1,38 @@
+<link rel="stylesheet" href="{{ asset('css/reclamation.css') }}">
+
+<div class="container">
+    <h1>📋 All Reclamations</h1>
+
+    {% for reclamation in reclamations %}
+        <div class="card">
+            <p><strong>Content:</strong> {{ reclamation.content }}</p>
+            <p><strong>Type:</strong> {{ reclamation.type.value }}</p>
+
+            <p>
+                <strong>Status:</strong>
+                {% if reclamation.status.name == 'PENDING' %}
+                    <span class="status status-pending">
+                        {{ reclamation.status.value }}
+                    </span>
+                {% else %}
+                    <span class="status status-answered">
+                        {{ reclamation.status.value }}
+                    </span>
+                {% endif %}
+            </p>
+
+            {% if reclamation.status.name != 'ANSWERED' %}
+                <a class="btn"
+                   href="{{ path('admin_reclamation_reply', {id: reclamation.id}) }}">
+                    Reply
+                </a>
+            {% else %}
+                <span style="color: gray; font-style: italic;">
+                    ✔ Already answered
+                </span>
+            {% endif %}
+        </div>
+    {% else %}
+        <p>No reclamations found.</p>
+    {% endfor %}
+</div>
