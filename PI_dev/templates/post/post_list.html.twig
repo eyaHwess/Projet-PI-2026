@@ -1,0 +1,67 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Posts{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- Posts Custom CSS -->
+    <link rel="stylesheet" href="{{ asset('post/posts.css') }}">
+    
+    <style>
+        .avatar {
+            position: relative;
+            display: inline-block;
+        }
+        .avatar-md {
+            width: 48px;
+            height: 48px;
+        }
+        .avatar-sm {
+            width: 32px;
+            height: 32px;
+        }
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<script>
+    // Add posts-page class to body
+    document.body.classList.add('posts-page');
+</script>
+
+<div class="posts-container">
+    <!-- Create Post Component -->
+    <div class="create-post-glass">
+        {% include 'post/create_post_card.html.twig' %}
+    </div>
+    
+    <!-- Posts List -->
+    <div class="vstack gap-4">
+        {% for item in postsWithLikeStatus %}
+            {% include 'post/post_card.html.twig' with {
+                'post': item.post, 
+                'isLikedByCurrentUser': item.isLikedByCurrentUser,
+                'currentUser': currentUser
+            } %}
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Include Image Lightbox -->
+{% include 'post/image_lightbox.html.twig' %}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

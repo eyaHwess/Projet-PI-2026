@@ -1,0 +1,206 @@
+<!-- Create Post Button -->
+<div class="d-flex justify-content-end mb-4">
+    <button class="btn btn-primary btn-sm rounded-pill px-4" type="button" onclick="toggleCreatePost()">
+        <i class="bi bi-plus-circle me-2"></i> Create Post
+    </button>
+</div>
+
+<!-- Create Post Glass Card (Hidden by default with animation) -->
+<div class="create-post-glass-container mb-4" id="createPostCard" style="display: none; opacity: 0;">
+    <form id="createPostForm" method="POST" action="{{ path('post_create_ajax') }}" enctype="multipart/form-data">
+        <h5 class="mb-4" style="color: #2d3748; font-weight: 600;">Create New Post</h5>
+        
+        <!-- Title Input -->
+        <div class="mb-3">
+            <label for="postTitle" class="form-label" style="color: #4a5568; font-weight: 500;">Title</label>
+            <input type="text" 
+                   class="form-control input-glass" 
+                   id="postTitle" 
+                   name="title"
+                   placeholder="Enter post title" 
+                   required>
+        </div>
+        
+        <!-- Content Input -->
+        <div class="mb-3">
+            <label for="postContent" class="form-label" style="color: #4a5568; font-weight: 500;">Content</label>
+            <textarea class="form-control textarea-glass" 
+                      id="postContent" 
+                      name="content"
+                      rows="4" 
+                      placeholder="What's on your mind?" 
+                      required></textarea>
+        </div>
+
+        <!-- Image Upload -->
+        <div class="mb-3">
+            <label for="postImages" class="form-label" style="color: #4a5568; font-weight: 500;">Images (Max 3)</label>
+            <input type="file" 
+                   class="form-control input-glass" 
+                   id="postImages" 
+                   name="images[]"
+                   accept="image/*"
+                   multiple
+                   onchange="handleImageSelection(event)">
+            <small style="color: #718096;">You can upload up to 3 images</small>
+            
+            <!-- Error Message -->
+            <div id="imageError" class="alert alert-danger mt-2" style="display: none; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 16px; backdrop-filter: blur(10px);" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <strong>Maximum limit reached!</strong> You can only upload up to 3 images.
+            </div>
+            
+            <!-- Image Preview -->
+            <div id="imagePreview" class="d-flex gap-2 mt-2 flex-wrap"></div>
+        </div>
+
+        <!-- Status Selection -->
+        <div class="mb-4">
+            <label for="postStatus" class="form-label" style="color: #4a5568; font-weight: 500;">Status</label>
+            <select class="form-select input-glass" id="postStatus" name="status">
+                <option value="published" selected>Publish Now</option>
+                <option value="draft">Save as Draft</option>
+            </select>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="d-flex gap-2 justify-content-end">
+            <button type="button" 
+                    class="btn btn-glass px-4" 
+                    onclick="toggleCreatePost()">
+                Cancel
+            </button>
+            <button type="submit" class="btn btn-primary-glass px-4">
+                <i class="bi bi-send me-2"></i> Post
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+// Store selected files
+let selectedFiles = [];
+
+function toggleCreatePost() {
+    const createPostCard = document.getElementById('createPostCard');
+    
+    if (createPostCard.style.display === 'none') {
+        // Show with animation
+        createPostCard.style.display = 'block';
+        setTimeout(() => {
+            createPostCard.style.opacity = '1';
+            createPostCard.style.transform = 'translateY(0)';
+        }, 10);
+    } else {
+        // Hide with animation
+        createPostCard.style.opacity = '0';
+        createPostCard.style.transform = 'translateY(-20px)';
+        setTimeout(() => {
+            createPostCard.style.display = 'none';
+            // Clear form when closing
+            document.getElementById('createPostForm').reset();
+            document.getElementById('imagePreview').innerHTML = '';
+            document.getElementById('imageError').style.display = 'none';
+            selectedFiles = [];
+        }, 300);
+    }
+}
+
+function handleImageSelection(event) {
+    const files = Array.from(event.target.files);
+    const errorDiv = document.getElementById('imageError');
+    
+    // Check if adding these files would exceed the limit
+    if (selectedFiles.length + files.length > 3) {
+        // Show error message
+        errorDiv.style.display = 'block';
+        event.target.value = ''; // Clear the input
+        
+        // Hide error after 5 seconds
+        setTimeout(() => {
+            errorDiv.style.display = 'none';
+        }, 5000);
+        return;
+    }
+    
+    // Hide error message if it was showing
+    errorDiv.style.display = 'none';
+    
+    // Add new files to selected files
+    files.forEach(file => {
+        if (selectedFiles.length < 3) {
+            selectedFiles.push(file);
+        }
+    });
+    
+    // Update preview
+    updateImagePreview();
+    
+    // Clear the input so the same file can be selected again if needed
+    event.target.value = '';
+}
+
+function updateImagePreview() {
+    const preview = document.getElementById('imagePreview');
+    preview.innerHTML = '';
+    
+    selectedFiles.forEach((file, index) => {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            const imgContainer = document.createElement('div');
+            imgContainer.className = 'position-relative';
+            imgContainer.style.width = '120px';
+            imgContainer.style.height = '120px';
+            
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.style.width = '100%';
+            img.style.height = '100%';
+            img.style.objectFit = 'cover';
+            img.style.borderRadius = '16px';
+            img.style.border = '2px solid rgba(255, 255, 255, 0.5)';
+            
+            // Delete button
+            const deleteBtn = document.createElement('button');
+            deleteBtn.type = 'button';
+            deleteBtn.className = 'btn btn-danger btn-sm position-absolute top-0 start-0 m-1';
+            deleteBtn.style.padding = '4px 8px';
+            deleteBtn.style.fontSize = '12px';
+            deleteBtn.style.borderRadius = '12px';
+            deleteBtn.innerHTML = '<i class="bi bi-trash"></i>';
+            deleteBtn.onclick = function() {
+                removeImage(index);
+            };
+            
+            imgContainer.appendChild(img);
+            imgContainer.appendChild(deleteBtn);
+            preview.appendChild(imgContainer);
+        };
+        
+        reader.readAsDataURL(file);
+    });
+}
+
+function removeImage(index) {
+    selectedFiles.splice(index, 1);
+    updateImagePreview();
+    updateFileInput();
+}
+
+function updateFileInput() {
+    const input = document.getElementById('postImages');
+    const dataTransfer = new DataTransfer();
+    
+    selectedFiles.forEach(file => {
+        dataTransfer.items.add(file);
+    });
+    
+    input.files = dataTransfer.files;
+}
+
+// Update file input before form submission
+document.getElementById('createPostForm').addEventListener('submit', function(e) {
+    updateFileInput();
+});
+</script>

@@ -16,7 +16,7 @@ class CommentService
         private PostRepository $postRepository
     ) {}
 
-    public function createComment(int $postId, string $content, User $user): Comment
+    public function createComment(int $postId, string $content, User $user, ?int $parentCommentId = null): Comment
     {
         $post = $this->postRepository->find($postId);
 
@@ -30,7 +30,34 @@ class CommentService
         $comment->setCommenter($user);
         $comment->setCreatedAt(new \DateTimeImmutable());
 
+        // If this is a reply, set the parent comment
+        if ($parentCommentId) {
+            $parentComment = $this->commentRepository->find($parentCommentId);
+            if ($parentComment && !$parentComment->isReply()) {
+                // Only allow replies to top-level comments
+                $comment->setParentComment($parentComment);
+            }
+        }
+
         $this->em->persist($comment);
+        $this->em->flush();
+
+        return $comment;
+    }
+
+    public function editComment(int $commentId, string $content, User $user): Comment
+    {
+        $comment = $this->commentRepository->find($commentId);
+
+        if (!$comment) {
+            throw new NotFoundHttpException('Comment not found');
+        }
+
+        if ($comment->getCommenter() !== $user) {
+            throw new \Exception('You cannot edit this comment');
+        }
+
+        $comment->setContent($content);
         $this->em->flush();
 
         return $comment;

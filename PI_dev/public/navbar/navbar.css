@@ -1,0 +1,324 @@
+/* Soft Pastel Navbar Styling - Cutesy Aesthetic */
+
+/* Base Navbar - Glassmorphism Effect */
+nav.soft-navbar {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(200, 182, 255, 0.2);
+    box-shadow: 0 4px 24px rgba(167, 139, 250, 0.1);
+    padding: 1rem 2rem;
+    transition: all 0.3s ease;
+    min-height: 65px;
+}
+
+/* Navbar Container - Wider */
+nav.soft-navbar .nav-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Logo styling */
+nav.soft-navbar img {
+    transition: transform 0.3s ease;
+    height: 50px;
+}
+
+nav.soft-navbar img:hover {
+    transform: scale(1.05);
+}
+
+nav.soft-navbar .logo-text {
+    color: #7c3aed;
+    font-weight: 600;
+    font-size: 1.25rem;
+    transition: color 0.3s ease;
+}
+
+nav.soft-navbar .logo-text:hover {
+    color: #a78bfa;
+}
+
+/* Navigation Links - Soft Pastel Style */
+nav.soft-navbar a.nav-link {
+    color: #6b7280;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    font-weight: 500;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+nav.soft-navbar a.nav-link:hover {
+    color: #7c3aed;
+    background: rgba(200, 182, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+/* Active link indicator */
+nav.soft-navbar a.nav-link.active {
+    color: #7c3aed;
+    background: rgba(200, 182, 255, 0.2);
+}
+
+/* Primary Button - Soft Gradient */
+nav.soft-navbar .btn-primary-soft {
+    background: linear-gradient(135deg, #c8b6ff 0%, #a78bfa 50%, #c084fc 100%);
+    color: white;
+    padding: 0.875rem 2rem;
+    border-radius: 30px;
+    font-weight: 600;
+    font-size: 1rem;
+    border: none;
+    box-shadow: 0 4px 16px rgba(124, 58, 237, 0.25);
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+nav.soft-navbar .btn-primary-soft:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 24px rgba(124, 58, 237, 0.35);
+    background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 50%, #a855f7 100%);
+}
+
+/* User Info Badge - Soft Style */
+nav.soft-navbar .user-badge {
+    background: rgba(200, 182, 255, 0.15);
+    color: #6b7280;
+    padding: 0.625rem 1.5rem;
+    border-radius: 25px;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    border: 1px solid rgba(200, 182, 255, 0.3);
+}
+
+/* Logout Button - Soft Pink/Red */
+nav.soft-navbar .btn-logout {
+    color: #f472b6;
+    padding: 0.625rem 1.5rem;
+    border-radius: 25px;
+    font-weight: 500;
+    font-size: 0.9375rem;
+    transition: all 0.3s ease;
+    background: rgba(244, 114, 182, 0.1);
+    border: 1px solid rgba(244, 114, 182, 0.2);
+}
+
+nav.soft-navbar .btn-logout:hover {
+    background: rgba(244, 114, 182, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(244, 114, 182, 0.25);
+}
+
+/* Mobile Menu Button */
+nav.soft-navbar .mobile-menu-btn {
+    color: #6b7280;
+    padding: 0.75rem;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+nav.soft-navbar .mobile-menu-btn:hover {
+    background: rgba(200, 182, 255, 0.15);
+    color: #7c3aed;
+}
+
+/* Mobile Menu - Soft Glassmorphism */
+#mobileMenu {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-left: 1px solid rgba(200, 182, 255, 0.2);
+}
+
+#mobileMenu a {
+    color: #6b7280;
+    padding: 0.875rem 1.5rem;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+#mobileMenu a:hover {
+    background: rgba(200, 182, 255, 0.15);
+    color: #7c3aed;
+    transform: translateX(4px);
+}
+
+/* Close button in mobile menu */
+#closeMenu {
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0.5rem;
+    border-radius: 15px;
+}
+
+#closeMenu:hover {
+    background: rgba(244, 114, 182, 0.15);
+    color: #f472b6;
+    transform: rotate(90deg);
+}
+
+/* Notification Badge - Soft Pink Style */
+.notification-badge {
+    position: relative;
+}
+
+.notification-badge .badge-count {
+    background: linear-gradient(135deg, #f9a8d4, #f472b6);
+    color: white;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    border: 2px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 2px 8px rgba(244, 114, 182, 0.3);
+}
+
+/* Notification Button */
+#notificationBtn {
+    color: #6b7280;
+    padding: 0.75rem;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+#notificationBtn:hover {
+    background: rgba(200, 182, 255, 0.15);
+    color: #7c3aed;
+    transform: scale(1.05);
+}
+
+/* Notification Dropdown - Soft Glassmorphism */
+.notification-dropdown {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(200, 182, 255, 0.2);
+    border-radius: 25px;
+    box-shadow: 0 8px 32px rgba(124, 58, 237, 0.15);
+}
+
+.notification-item {
+    border-radius: 20px;
+    transition: all 0.3s ease;
+}
+
+.notification-item:hover {
+    background: rgba(200, 182, 255, 0.1);
+}
+
+.notification-item.unread {
+    background: rgba(200, 182, 255, 0.08);
+}
+
+.notification-item.unread:hover {
+    background: rgba(200, 182, 255, 0.15);
+}
+
+/* Notification Icons - Pastel Colors */
+.notification-item .bg-green-500 {
+    background: linear-gradient(135deg, #a7f3d0, #6ee7b7) !important;
+}
+
+.notification-item .bg-red-500 {
+    background: linear-gradient(135deg, #fecaca, #fca5a5) !important;
+}
+
+.notification-item .bg-yellow-500 {
+    background: linear-gradient(135deg, #fde68a, #fcd34d) !important;
+}
+
+.notification-item .bg-blue-500 {
+    background: linear-gradient(135deg, #bfdbfe, #93c5fd) !important;
+}
+
+.notification-item .bg-purple-500 {
+    background: linear-gradient(135deg, #ddd6fe, #c4b5fd) !important;
+}
+
+/* Mark All Read Button - Soft Purple */
+#markAllRead {
+    color: #7c3aed;
+    padding: 0.5rem 1rem;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    background: rgba(200, 182, 255, 0.1);
+    border: none;
+    font-weight: 500;
+}
+
+#markAllRead:hover {
+    background: rgba(200, 182, 255, 0.2);
+    transform: scale(1.05);
+}
+
+/* View All Notifications Link - Soft Purple */
+.notification-dropdown a[href*="notifications"] {
+    color: #7c3aed;
+    padding: 0.75rem;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.notification-dropdown a[href*="notifications"]:hover {
+    background: rgba(200, 182, 255, 0.15);
+    transform: scale(1.05);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    nav.soft-navbar {
+        padding: 0.875rem 1.5rem;
+        min-height: 60px;
+    }
+    
+    nav.soft-navbar .btn-primary-soft {
+        padding: 0.75rem 1.5rem;
+        font-size: 0.9375rem;
+    }
+    
+    nav.soft-navbar a.nav-link {
+        padding: 0.625rem 1.25rem;
+        font-size: 0.9375rem;
+    }
+}
+
+/* Smooth animations */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+nav.soft-navbar {
+    animation: fadeInDown 0.5s ease;
+}
+
+/* Divider styling */
+nav.soft-navbar .divider {
+    width: 1px;
+    height: 24px;
+    background: rgba(200, 182, 255, 0.3);
+    margin: 0 0.5rem;
+}

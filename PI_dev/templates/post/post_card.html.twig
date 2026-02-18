@@ -1,0 +1,992 @@
+<!-- Post Card -->
+<div class="card post-card border shadow-sm mb-4" id="post{{ post.id }}">
+    <!-- Post Header -->
+    <div class="card-header bg-white border-0 pb-0">
+        <div class="d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center">
+                <!-- Avatar -->
+                <div class="avatar avatar-md me-2">
+                    <img class="avatar-img rounded-circle" src="{{ asset('/adminDashboard/assets/images/avatar/01.jpg') }}" alt="avatar">
+                </div>
+                <!-- Info -->
+                <div>
+                    <h6 class="mb-0">{{ post.createdBy.firstName }} {{ post.createdBy.lastName }}</h6>
+                    <small class="text-muted">{{ post.createdAt|date('d M Y, H:i') }}</small>
+                </div>
+            </div>
+            
+            <!-- Three Dots Menu -->
+            <div class="dropdown">
+                <button class="btn btn-link text-secondary p-0" type="button" id="postMenu{{ post.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-three-dots"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="postMenu{{ post.id }}">
+                    {% if currentUser and currentUser.id == post.createdBy.id %}
+                    <li>
+                        <a class="dropdown-item" href="#" onclick="editPost({{ post.id }}); return false;">
+                            <i class="bi bi-pencil me-2"></i> Edit
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item text-danger" href="#" data-bs-toggle="modal" data-bs-target="#deletePostModal{{ post.id }}">
+                            <i class="bi bi-trash me-2"></i> Delete
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    {% endif %}
+                    <li>
+                        <a class="dropdown-item" href="#" onclick="return false;">
+                            <i class="bi bi-flag me-2"></i> Report
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include Delete Confirmation Modal -->
+    {% include 'post/delete_confirmation_modal.html.twig' with {'postId': post.id} %}
+
+    <!-- Post Body -->
+    <div class="card-body">
+        <!-- View Mode -->
+        <div id="postView{{ post.id }}">
+            <h6 class="mb-2">{{ post.title }}</h6>
+            <p class="mb-3">{{ post.content }}</p>
+        </div>
+        
+        <!-- Edit Mode (Hidden by default) -->
+        <div id="postEdit{{ post.id }}" style="display: none;">
+            <form id="editForm{{ post.id }}" onsubmit="savePost({{ post.id }}); return false;">
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Title</label>
+                    <input type="text" 
+                           class="form-control" 
+                           id="editTitle{{ post.id }}" 
+                           value="{{ post.title }}"
+                           required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Content</label>
+                    <textarea class="form-control" 
+                              id="editContent{{ post.id }}" 
+                              rows="4"
+                              required>{{ post.content }}</textarea>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="bi bi-check-lg me-1"></i> Save
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="cancelEdit({{ post.id }})">
+                        <i class="bi bi-x-lg me-1"></i> Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Post Images -->
+        {% if post.images is not empty %}
+            <div class="row g-2 mb-3">
+                {% for image in post.images %}
+                    <div class="col-{{ post.images|length == 1 ? '12' : (post.images|length == 2 ? '6' : '4') }}">
+                        <img src="{{ asset(image) }}" 
+                             class="img-fluid rounded post-image" 
+                             alt="Post image"
+                             style="width: 100%; height: 200px; object-fit: cover; cursor: pointer;"
+                             onclick="openPostLightbox{{ post.id }}({{ loop.index0 }})">
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <script>
+            function openPostLightbox{{ post.id }}(index) {
+                const images = [
+                    {% for image in post.images %}
+                        '{{ asset(image) }}'{{ loop.last ? '' : ',' }}
+                    {% endfor %}
+                ];
+                openLightbox(images, index);
+            }
+            </script>
+        {% endif %}
+    </div>
+
+    <!-- Post Stats -->
+    <div class="card-footer bg-white border-0 pt-0">
+        <!-- Likes and Comments Count -->
+        <div class="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom">
+            <button class="btn btn-link text-muted text-decoration-none p-0 d-flex align-items-center" 
+                    onclick="likePost({{ post.id }})"
+                    id="likeBtn{{ post.id }}">
+                <i class="bi bi-heart{% if isLikedByCurrentUser %}-fill text-danger{% endif %} me-1" 
+                   id="likeIcon{{ post.id }}"></i>
+                <span class="text-dark" id="likeCount{{ post.id }}">{{ post.postLikes|length }}</span>
+            </button>
+            <div class="d-flex align-items-center">
+                <i class="bi bi-chat me-1 text-muted"></i>
+                <span class="text-dark" id="commentCount{{ post.id }}">{{ post.comments|length }}</span>
+                <span class="text-dark ms-1">Comments</span>
+            </div>
+        </div>
+
+        <!-- Comment Input -->
+        <div class="d-flex align-items-center mb-3">
+            <div class="avatar avatar-sm me-2">
+                <img class="avatar-img rounded-circle" src="{{ asset('/adminDashboard/assets/images/avatar/01.jpg') }}" alt="avatar">
+            </div>
+            <div class="flex-grow-1">
+                <input type="text" class="form-control" placeholder="Write a comment..." id="commentInput{{ post.id }}">
+            </div>
+            <button class="btn btn-primary btn-sm ms-2" onclick="addComment({{ post.id }})">Comment</button>
+        </div>
+
+        <!-- Comments Section (Always Visible) -->
+        <div id="comments{{ post.id }}">
+            <div class="vstack gap-3 mt-3 p-3 bg-light rounded" id="commentsList{{ post.id }}">
+                {% if post.comments|length > 0 %}
+                    {% for comment in post.comments %}
+                        {% if not comment.isReply %}
+                        <div class="{% if loop.index0 < 3 %}d-flex{% endif %} comment-item" id="comment{{ comment.id }}" data-index="{{ loop.index0 }}" {% if loop.index0 >= 3 %}style="display: none !important;"{% endif %}>
+                            <div class="avatar avatar-sm me-2">
+                                <img class="avatar-img rounded-circle" src="{{ asset('/adminDashboard/assets/images/avatar/02.jpg') }}" alt="avatar">
+                            </div>
+                            <div class="flex-grow-1">
+                                <!-- Comment Header -->
+                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <h6 class="mb-0 small fw-bold">{{ comment.commenter.firstName }} {{ comment.commenter.lastName }}</h6>
+                                        <small class="text-muted">{{ comment.createdAt|date('d M Y, H:i') }}</small>
+                                    </div>
+                                    
+                                    <!-- Three Dots Menu -->
+                                    <div class="dropdown">
+                                        <button class="btn btn-link text-secondary p-0 btn-sm" type="button" id="commentMenu{{ comment.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="bi bi-three-dots"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="commentMenu{{ comment.id }}">
+                                            {% if currentUser and currentUser.id == comment.commenter.id %}
+                                            <li>
+                                                <a class="dropdown-item" href="#" onclick="editComment({{ comment.id }}, {{ post.id }}); return false;">
+                                                    <i class="bi bi-pencil me-2"></i> Edit
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item text-danger" href="#" onclick="deleteComment({{ comment.id }}, {{ post.id }}); return false;">
+                                                    <i class="bi bi-trash me-2"></i> Delete
+                                                </a>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            {% endif %}
+                                            <li>
+                                                <a class="dropdown-item" href="#" onclick="return false;">
+                                                    <i class="bi bi-flag me-2"></i> Report
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <!-- Comment View Mode -->
+                                <div id="commentView{{ comment.id }}">
+                                    <p class="mb-2 small">{{ comment.content }}</p>
+                                    
+                                    <!-- Comment Actions -->
+                                    <div class="d-flex align-items-center gap-3 mb-2">
+                                        <button class="btn btn-link text-muted p-0 text-decoration-none small" 
+                                                onclick="likeComment({{ comment.id }}, {{ post.id }})"
+                                                id="commentLikeBtn{{ comment.id }}">
+                                            <i class="bi bi-heart{% if commentLikeService.hasUserLikedComment(comment, currentUser) %}-fill text-danger{% endif %}" 
+                                               id="commentLikeIcon{{ comment.id }}"></i>
+                                            <span id="commentLikeCount{{ comment.id }}">{{ comment.commentLikes|length }}</span>
+                                        </button>
+                                        <button class="btn btn-link text-muted p-0 text-decoration-none small" 
+                                                onclick="showReplyInput({{ comment.id }}, {{ post.id }})">
+                                            Reply
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Comment Edit Mode (Hidden by default) -->
+                                <div id="commentEdit{{ comment.id }}" style="display: none;">
+                                    <textarea class="form-control form-control-sm mb-2" 
+                                              id="commentEditContent{{ comment.id }}" 
+                                              rows="2">{{ comment.content }}</textarea>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-secondary btn-sm" onclick="cancelEditComment({{ comment.id }})">
+                                            Cancel
+                                        </button>
+                                        <button class="btn btn-primary btn-sm" onclick="saveComment({{ comment.id }}, {{ post.id }})">
+                                            Save
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Reply Input (Hidden by default) -->
+                                <div id="replyInput{{ comment.id }}" style="display: none;" class="mt-2">
+                                    <div class="d-flex gap-2 align-items-start">
+                                        <div class="avatar avatar-sm">
+                                            <img class="avatar-img rounded-circle" src="{{ asset('/adminDashboard/assets/images/avatar/01.jpg') }}" alt="avatar">
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <input type="text" 
+                                                   class="form-control form-control-sm mb-2" 
+                                                   id="replyContent{{ comment.id }}"
+                                                   placeholder="Reply...">
+                                            <div class="d-flex gap-2">
+                                                <button class="btn btn-secondary btn-sm" onclick="cancelReply({{ comment.id }})">
+                                                    Cancel
+                                                </button>
+                                                <button class="btn btn-primary btn-sm" onclick="submitReply({{ comment.id }}, {{ post.id }})">
+                                                    Save
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Replies -->
+                                {% if comment.replies|length > 0 %}
+                                <div class="ms-4 mt-2">
+                                    <!-- View/Hide Replies Button -->
+                                    <button class="btn btn-link text-muted p-0 text-decoration-none small mb-2" 
+                                            id="viewRepliesBtn{{ comment.id }}"
+                                            onclick="toggleReplies({{ comment.id }}, {{ comment.replies|length }})">
+                                        <span class="fw-bold">—</span> View {{ comment.replies|length }} {{ comment.replies|length == 1 ? 'reply' : 'replies' }}
+                                    </button>
+                                    
+                                    <!-- Replies Container (hidden by default) -->
+                                    <div id="replies{{ comment.id }}" style="display: none;">
+                                        {% for reply in comment.replies %}
+                                        <div class="d-flex mb-3" id="comment{{ reply.id }}">
+                                            <div class="avatar avatar-sm me-2">
+                                                <img class="avatar-img rounded-circle" src="{{ asset('/adminDashboard/assets/images/avatar/02.jpg') }}" alt="avatar">
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <h6 class="mb-0 small fw-bold">{{ reply.commenter.firstName }} {{ reply.commenter.lastName }}</h6>
+                                                        <small class="text-muted">{{ reply.createdAt|date('d M Y, H:i') }}</small>
+                                                    </div>
+                                                    
+                                                    <div class="dropdown">
+                                                        <button class="btn btn-link text-secondary p-0 btn-sm" type="button" id="commentMenu{{ reply.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                                            <i class="bi bi-three-dots"></i>
+                                                        </button>
+                                                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="commentMenu{{ reply.id }}">
+                                                            {% if currentUser and currentUser.id == reply.commenter.id %}
+                                                            <li>
+                                                                <a class="dropdown-item" href="#" onclick="editComment({{ reply.id }}, {{ post.id }}); return false;">
+                                                                    <i class="bi bi-pencil me-2"></i> Edit
+                                                                </a>
+                                                            </li>
+                                                            <li>
+                                                                <a class="dropdown-item text-danger" href="#" onclick="deleteComment({{ reply.id }}, {{ post.id }}); return false;">
+                                                                    <i class="bi bi-trash me-2"></i> Delete
+                                                                </a>
+                                                            </li>
+                                                            <li><hr class="dropdown-divider"></li>
+                                                            {% endif %}
+                                                            <li>
+                                                                <a class="dropdown-item" href="#" onclick="return false;">
+                                                                    <i class="bi bi-flag me-2"></i> Report
+                                                                </a>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div id="commentView{{ reply.id }}">
+                                                    <p class="mb-2 small">{{ reply.content }}</p>
+                                                    <div class="d-flex align-items-center gap-3">
+                                                        <button class="btn btn-link text-muted p-0 text-decoration-none small" 
+                                                                onclick="likeComment({{ reply.id }}, {{ post.id }})"
+                                                                id="commentLikeBtn{{ reply.id }}">
+                                                            <i class="bi bi-heart{% if commentLikeService.hasUserLikedComment(reply, currentUser) %}-fill text-danger{% endif %}" 
+                                                               id="commentLikeIcon{{ reply.id }}"></i>
+                                                            <span id="commentLikeCount{{ reply.id }}">{{ reply.commentLikes|length }}</span>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div id="commentEdit{{ reply.id }}" style="display: none;">
+                                                    <textarea class="form-control form-control-sm mb-2" 
+                                                              id="commentEditContent{{ reply.id }}" 
+                                                              rows="2">{{ reply.content }}</textarea>
+                                                    <div class="d-flex gap-2">
+                                                        <button class="btn btn-secondary btn-sm" onclick="cancelEditComment({{ reply.id }})">
+                                                            Cancel
+                                                        </button>
+                                                        <button class="btn btn-primary btn-sm" onclick="saveComment({{ reply.id }}, {{ post.id }})">
+                                                            Save
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% else %}
+                                <div class="ms-4 mt-2" id="replies{{ comment.id }}" style="display: none;"></div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if post.comments|length > 3 %}
+                        <button class="btn btn-link text-primary text-decoration-none p-0 small" 
+                                id="viewMoreBtn{{ post.id }}"
+                                onclick="toggleComments({{ post.id }}, {{ post.comments|length }})">
+                            View more comments ({{ post.comments|length - 3 }} more)
+                        </button>
+                    {% endif %}
+                {% else %}
+                    <p class="text-muted small">No comments yet. Be the first to comment!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function likePost(postId) {
+    {% if currentUser %}
+    try {
+        const response = await fetch('/posts/' + postId + '/like', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            
+            // Update like count
+            document.getElementById('likeCount' + postId).textContent = data.likeCount;
+            
+            // Update like icon (Bootstrap heart icon)
+            const likeIcon = document.getElementById('likeIcon' + postId);
+            if (data.liked) {
+                likeIcon.classList.remove('bi-heart');
+                likeIcon.classList.add('bi-heart-fill', 'text-danger');
+            } else {
+                likeIcon.classList.remove('bi-heart-fill', 'text-danger');
+                likeIcon.classList.add('bi-heart');
+            }
+        }
+    } catch (error) {
+        console.error('Error liking post:', error);
+        alert('Failed to like post. Please try again.');
+    }
+    {% else %}
+    alert('Please login to like posts');
+    {% endif %}
+}
+
+async function addComment(postId) {
+    {% if currentUser %}
+    const input = document.getElementById('commentInput' + postId);
+    const content = input.value.trim();
+    
+    if (!content) {
+        alert('Please enter a comment');
+        return;
+    }
+    
+    try {
+        const formData = new FormData();
+        formData.append('content', content);
+        
+        const response = await fetch('/posts/' + postId + '/comment', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            
+            if (data.success) {
+                // Clear input
+                input.value = '';
+                
+                // Get comments list container
+                const commentsList = document.getElementById('commentsList' + postId);
+                
+                // Remove "no comments" message if it exists
+                const noCommentsMsg = commentsList.querySelector('.text-muted');
+                if (noCommentsMsg) {
+                    noCommentsMsg.remove();
+                }
+                
+                // Create new comment HTML
+                const commentHTML = `
+                    <div class="d-flex comment-item" id="comment${data.comment.id}" data-index="0" style="display: flex;">
+                        <div class="avatar avatar-sm me-2">
+                            <img class="avatar-img rounded-circle" src="{{ asset('/adminDashboard/assets/images/avatar/01.jpg') }}" alt="avatar">
+                        </div>
+                        <div class="flex-grow-1">
+                            <!-- Comment Header -->
+                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                <div class="d-flex align-items-center gap-2">
+                                    <h6 class="mb-0 small">${data.comment.commenter.firstName} ${data.comment.commenter.lastName}</h6>
+                                    <small class="text-muted">${data.comment.createdAt}</small>
+                                </div>
+                                
+                                <!-- Three Dots Menu -->
+                                <div class="dropdown">
+                                    <button class="btn btn-link text-secondary p-0 btn-sm" type="button" id="commentMenu${data.comment.id}" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-three-dots"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="commentMenu${data.comment.id}">
+                                        <li>
+                                            <a class="dropdown-item" href="#" onclick="editComment(${data.comment.id}, ${postId}); return false;">
+                                                <i class="bi bi-pencil me-2"></i> Edit
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item text-danger" href="#" onclick="deleteComment(${data.comment.id}, ${postId}); return false;">
+                                                <i class="bi bi-trash me-2"></i> Delete
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <!-- Comment View Mode -->
+                            <div class="bg-white rounded p-2" id="commentView${data.comment.id}">
+                                <p class="mb-0 small">${data.comment.content}</p>
+                            </div>
+                            
+                            <!-- Comment Edit Mode (Hidden by default) -->
+                            <div id="commentEdit${data.comment.id}" style="display: none;">
+                                <div class="bg-white rounded p-2">
+                                    <textarea class="form-control form-control-sm mb-2" 
+                                              id="commentEditContent${data.comment.id}" 
+                                              rows="2">${data.comment.content}</textarea>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-primary btn-sm" onclick="saveComment(${data.comment.id}, ${postId})">
+                                            <i class="bi bi-check-lg"></i> Save
+                                        </button>
+                                        <button class="btn btn-secondary btn-sm" onclick="cancelEditComment(${data.comment.id})">
+                                            <i class="bi bi-x-lg"></i> Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Add new comment at the beginning
+                const viewMoreBtn = document.getElementById('viewMoreBtn' + postId);
+                if (viewMoreBtn) {
+                    viewMoreBtn.insertAdjacentHTML('beforebegin', commentHTML);
+                } else {
+                    commentsList.insertAdjacentHTML('beforeend', commentHTML);
+                }
+                
+                // Update all comment indices
+                const allComments = commentsList.querySelectorAll('.comment-item');
+                allComments.forEach((comment, index) => {
+                    comment.setAttribute('data-index', index);
+                });
+                
+                // Update comment count
+                const commentCountElement = document.getElementById('commentCount' + postId);
+                const currentCount = parseInt(commentCountElement.textContent);
+                const newCount = currentCount + 1;
+                commentCountElement.textContent = newCount;
+                
+                // Update or create view more button
+                if (newCount > 3 && !viewMoreBtn) {
+                    const btnHTML = `
+                        <button class="btn btn-link text-primary text-decoration-none p-0 small" 
+                                id="viewMoreBtn${postId}"
+                                onclick="toggleComments(${postId}, ${newCount})">
+                            View more comments (${newCount - 3} more)
+                        </button>
+                    `;
+                    commentsList.insertAdjacentHTML('beforeend', btnHTML);
+                } else if (viewMoreBtn) {
+                    // Update existing button text
+                    const visibleComments = Array.from(allComments).filter(c => c.style.display !== 'none').length;
+                    if (visibleComments < newCount) {
+                        viewMoreBtn.textContent = `View more comments (${newCount - visibleComments} more)`;
+                        viewMoreBtn.setAttribute('onclick', `toggleComments(${postId}, ${newCount})`);
+                    }
+                }
+            }
+        } else {
+            const error = await response.json();
+            alert(error.error || 'Failed to add comment');
+        }
+    } catch (error) {
+        console.error('Error adding comment:', error);
+        alert('Failed to add comment. Please try again.');
+    }
+    {% else %}
+    alert('Please login to comment');
+    {% endif %}
+}
+</script>
+
+<script>
+function editPost(postId) {
+    {% if currentUser %}
+    // Hide view mode, show edit mode
+    document.getElementById('postView' + postId).style.display = 'none';
+    document.getElementById('postEdit' + postId).style.display = 'block';
+    {% else %}
+    alert('Please login to edit posts');
+    {% endif %}
+}
+
+function cancelEdit(postId) {
+    // Show view mode, hide edit mode
+    document.getElementById('postView' + postId).style.display = 'block';
+    document.getElementById('postEdit' + postId).style.display = 'none';
+}
+
+async function savePost(postId) {
+    {% if currentUser %}
+    const title = document.getElementById('editTitle' + postId).value;
+    const content = document.getElementById('editContent' + postId).value;
+    
+    if (!title.trim() || !content.trim()) {
+        alert('Title and content are required');
+        return;
+    }
+    
+    try {
+        const formData = new FormData();
+        formData.append('title', title);
+        formData.append('content', content);
+        
+        const response = await fetch('/posts/' + postId + '/edit', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (response.ok) {
+            // Reload the page to show updated content
+            window.location.reload();
+        } else {
+            alert('Failed to update post. Please try again.');
+        }
+    } catch (error) {
+        console.error('Error updating post:', error);
+        alert('Failed to update post. Please try again.');
+    }
+    {% else %}
+    alert('Please login to edit posts');
+    {% endif %}
+}
+
+async function deletePost(postId) {
+    {% if currentUser %}
+    try {
+        const response = await fetch('/posts/' + postId + '/delete', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        if (response.ok) {
+            // Reload the page to show updated list
+            window.location.reload();
+        } else {
+            alert('Failed to delete post. Please try again.');
+        }
+    } catch (error) {
+        console.error('Error deleting post:', error);
+        alert('Failed to delete post. Please try again.');
+    }
+    {% else %}
+    alert('Please login to delete posts');
+    {% endif %}
+}
+
+// Confirm delete from modal
+function confirmDeletePost(postId) {
+    deletePost(postId);
+}
+
+// Alias for backward compatibility
+function hidePost(postId) {
+    deletePost(postId);
+}
+
+// Toggle comments visibility
+function toggleComments(postId, totalComments) {
+    const commentsList = document.getElementById('commentsList' + postId);
+    const viewMoreBtn = document.getElementById('viewMoreBtn' + postId);
+    const comments = commentsList.querySelectorAll('.comment-item');
+    
+    console.log('Total comments:', totalComments);
+    console.log('Comment elements found:', comments.length);
+    
+    // Count currently visible comments
+    let visibleCount = 0;
+    comments.forEach(comment => {
+        const displayStyle = window.getComputedStyle(comment).display;
+        console.log('Comment display:', displayStyle);
+        if (displayStyle !== 'none') {
+            visibleCount++;
+        }
+    });
+    
+    console.log('Visible count:', visibleCount);
+    
+    // If all comments are visible, collapse to show only 3
+    if (visibleCount === totalComments) {
+        comments.forEach((comment, index) => {
+            if (index >= 3) {
+                comment.style.display = 'none';
+                comment.style.setProperty('display', 'none', 'important');
+                comment.classList.remove('d-flex');
+            }
+        });
+        viewMoreBtn.textContent = `View more comments (${totalComments - 3} more)`;
+    } else {
+        // Show next 6 comments
+        let shown = 0;
+        comments.forEach((comment, index) => {
+            const displayStyle = window.getComputedStyle(comment).display;
+            if (displayStyle === 'none' && shown < 6) {
+                comment.style.display = 'flex';
+                comment.classList.add('d-flex');
+                shown++;
+            }
+        });
+        
+        // Update button text
+        const newVisibleCount = visibleCount + shown;
+        if (newVisibleCount >= totalComments) {
+            viewMoreBtn.textContent = 'Show less';
+        } else {
+            const remaining = totalComments - newVisibleCount;
+            viewMoreBtn.textContent = `View more comments (${remaining} more)`;
+        }
+    }
+}
+
+// Edit comment
+function editComment(commentId, postId) {
+    document.getElementById('commentView' + commentId).style.display = 'none';
+    document.getElementById('commentEdit' + commentId).style.display = 'block';
+}
+
+// Cancel edit comment
+function cancelEditComment(commentId) {
+    document.getElementById('commentView' + commentId).style.display = 'block';
+    document.getElementById('commentEdit' + commentId).style.display = 'none';
+}
+
+// Save comment
+async function saveComment(commentId, postId) {
+    {% if currentUser %}
+    const content = document.getElementById('commentEditContent' + commentId).value.trim();
+    
+    if (!content) {
+        alert('Comment cannot be empty');
+        return;
+    }
+    
+    try {
+        const formData = new FormData();
+        formData.append('content', content);
+        
+        const response = await fetch('/comments/' + commentId + '/edit', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (response.ok) {
+            // Reload page to show updated comment
+            window.location.reload();
+        } else {
+            alert('Failed to update comment. Please try again.');
+        }
+    } catch (error) {
+        console.error('Error updating comment:', error);
+        alert('Failed to update comment. Please try again.');
+    }
+    {% else %}
+    alert('Please login to edit comments');
+    {% endif %}
+}
+
+// Delete comment
+async function deleteComment(commentId, postId) {
+    {% if currentUser %}
+    try {
+        const response = await fetch('/comments/' + commentId + '/delete', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        if (response.ok) {
+            // Remove comment from DOM
+            const commentElement = document.getElementById('comment' + commentId);
+            
+            // Check if this is a reply (inside a replies container)
+            const repliesContainer = commentElement.closest('[id^="replies"]');
+            const isReply = repliesContainer !== null;
+            
+            commentElement.remove();
+            
+            // Update comment count
+            const commentCountElement = document.getElementById('commentCount' + postId);
+            const currentCount = parseInt(commentCountElement.textContent);
+            const newCount = currentCount - 1;
+            commentCountElement.textContent = newCount;
+            
+            // If this was a reply, check if there are any replies left
+            if (isReply && repliesContainer) {
+                const remainingReplies = repliesContainer.querySelectorAll('[id^="comment"]').length;
+                
+                if (remainingReplies === 0) {
+                    // Hide the view replies button
+                    const parentCommentId = repliesContainer.id.replace('replies', '');
+                    const viewRepliesBtn = document.getElementById('viewRepliesBtn' + parentCommentId);
+                    if (viewRepliesBtn) {
+                        viewRepliesBtn.style.display = 'none';
+                    }
+                    // Hide the replies container
+                    repliesContainer.style.display = 'none';
+                }
+            }
+            
+            // If no comments left, show "No comments" message
+            if (newCount === 0) {
+                const commentsList = document.getElementById('commentsList' + postId);
+                commentsList.innerHTML = '<p class="text-muted small">No comments yet. Be the first to comment!</p>';
+            }
+        } else {
+            alert('Failed to delete comment. Please try again.');
+        }
+    } catch (error) {
+        console.error('Error deleting comment:', error);
+        alert('Failed to delete comment. Please try again.');
+    }
+    {% else %}
+    alert('Please login to delete comments');
+    {% endif %}
+}
+
+// Like comment
+async function likeComment(commentId, postId) {
+    {% if currentUser %}
+    try {
+        const response = await fetch('/comments/' + commentId + '/like', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            
+            // Update like icon
+            const likeIcon = document.getElementById('commentLikeIcon' + commentId);
+            if (data.liked) {
+                likeIcon.classList.remove('bi-heart');
+                likeIcon.classList.add('bi-heart-fill', 'text-danger');
+            } else {
+                likeIcon.classList.remove('bi-heart-fill', 'text-danger');
+                likeIcon.classList.add('bi-heart');
+            }
+            
+            // Update like count
+            document.getElementById('commentLikeCount' + commentId).textContent = data.likeCount;
+        }
+    } catch (error) {
+        console.error('Error liking comment:', error);
+    }
+    {% else %}
+    alert('Please login to like comments');
+    {% endif %}
+}
+
+// Show reply input
+function showReplyInput(commentId, postId) {
+    const replyInput = document.getElementById('replyInput' + commentId);
+    replyInput.style.display = 'block';
+    document.getElementById('replyContent' + commentId).focus();
+}
+
+// Cancel reply
+function cancelReply(commentId) {
+    const replyInput = document.getElementById('replyInput' + commentId);
+    replyInput.style.display = 'none';
+    document.getElementById('replyContent' + commentId).value = '';
+}
+
+// Toggle replies visibility
+function toggleReplies(commentId, totalReplies) {
+    const repliesContainer = document.getElementById('replies' + commentId);
+    const viewRepliesBtn = document.getElementById('viewRepliesBtn' + commentId);
+    
+    if (repliesContainer.style.display === 'none') {
+        // Show replies
+        repliesContainer.style.display = 'block';
+        viewRepliesBtn.innerHTML = '<span class="fw-bold">—</span> Hide replies';
+    } else {
+        // Hide replies
+        repliesContainer.style.display = 'none';
+        viewRepliesBtn.innerHTML = '<span class="fw-bold">—</span> View ' + totalReplies + ' ' + (totalReplies === 1 ? 'reply' : 'replies');
+    }
+}
+
+// Submit reply
+async function submitReply(parentCommentId, postId) {
+    {% if currentUser %}
+    const content = document.getElementById('replyContent' + parentCommentId).value.trim();
+    
+    if (!content) {
+        alert('Please enter a reply');
+        return;
+    }
+    
+    try {
+        const formData = new FormData();
+        formData.append('content', content);
+        formData.append('parent_comment_id', parentCommentId);
+        
+        const response = await fetch('/posts/' + postId + '/comment', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            
+            if (data.success) {
+                // Clear input and hide reply form
+                document.getElementById('replyContent' + parentCommentId).value = '';
+                cancelReply(parentCommentId);
+                
+                // Check if view replies button exists
+                let viewRepliesBtn = document.getElementById('viewRepliesBtn' + parentCommentId);
+                let repliesContainer = document.getElementById('replies' + parentCommentId);
+                
+                // If no view replies button exists, create the structure
+                if (!viewRepliesBtn) {
+                    const replyInputElement = document.getElementById('replyInput' + parentCommentId);
+                    const parentDiv = replyInputElement.parentElement;
+                    
+                    // Create the replies section with button
+                    const repliesSection = document.createElement('div');
+                    repliesSection.className = 'ms-4 mt-2';
+                    repliesSection.innerHTML = `
+                        <button class="btn btn-link text-muted p-0 text-decoration-none small mb-2" 
+                                id="viewRepliesBtn${parentCommentId}"
+                                onclick="toggleReplies(${parentCommentId}, 1)">
+                            <span class="fw-bold">—</span> View 1 reply
+                        </button>
+                        <div id="replies${parentCommentId}" style="display: none;"></div>
+                    `;
+                    
+                    // Insert after reply input
+                    replyInputElement.insertAdjacentElement('afterend', repliesSection);
+                    
+                    viewRepliesBtn = document.getElementById('viewRepliesBtn' + parentCommentId);
+                    repliesContainer = document.getElementById('replies' + parentCommentId);
+                }
+                
+                // Show replies container
+                repliesContainer.style.display = 'block';
+                
+                // Create reply HTML
+                const replyHTML = `
+                    <div class="d-flex mb-3" id="comment${data.comment.id}">
+                        <div class="avatar avatar-sm me-2">
+                            <img class="avatar-img rounded-circle" src="{{ asset('/adminDashboard/assets/images/avatar/01.jpg') }}" alt="avatar">
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                <div class="d-flex align-items-center gap-2">
+                                    <h6 class="mb-0 small fw-bold">${data.comment.commenter.firstName} ${data.comment.commenter.lastName}</h6>
+                                    <small class="text-muted">${data.comment.createdAt}</small>
+                                </div>
+                                
+                                <div class="dropdown">
+                                    <button class="btn btn-link text-secondary p-0 btn-sm" type="button" id="commentMenu${data.comment.id}" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-three-dots"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="commentMenu${data.comment.id}">
+                                        <li>
+                                            <a class="dropdown-item" href="#" onclick="editComment(${data.comment.id}, ${postId}); return false;">
+                                                <i class="bi bi-pencil me-2"></i> Edit
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item text-danger" href="#" onclick="deleteComment(${data.comment.id}, ${postId}); return false;">
+                                                <i class="bi bi-trash me-2"></i> Delete
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div id="commentView${data.comment.id}">
+                                <p class="mb-2 small">${data.comment.content}</p>
+                                <div class="d-flex align-items-center gap-3">
+                                    <button class="btn btn-link text-muted p-0 text-decoration-none small" 
+                                            onclick="likeComment(${data.comment.id}, ${postId})"
+                                            id="commentLikeBtn${data.comment.id}">
+                                        <i class="bi bi-heart" id="commentLikeIcon${data.comment.id}"></i>
+                                        <span id="commentLikeCount${data.comment.id}">0</span>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div id="commentEdit${data.comment.id}" style="display: none;">
+                                <textarea class="form-control form-control-sm mb-2" 
+                                          id="commentEditContent${data.comment.id}" 
+                                          rows="2">${data.comment.content}</textarea>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-secondary btn-sm" onclick="cancelEditComment(${data.comment.id})">
+                                        Cancel
+                                    </button>
+                                    <button class="btn btn-primary btn-sm" onclick="saveComment(${data.comment.id}, ${postId})">
+                                        Save
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Add reply to container
+                repliesContainer.insertAdjacentHTML('beforeend', replyHTML);
+                
+                // Update view replies button text
+                const replyCount = repliesContainer.querySelectorAll('.d-flex.mb-3').length;
+                viewRepliesBtn.innerHTML = '<span class="fw-bold">—</span> Hide replies';
+                viewRepliesBtn.setAttribute('onclick', `toggleReplies(${parentCommentId}, ${replyCount})`);
+                
+                // Update comment count
+                const commentCountElement = document.getElementById('commentCount' + postId);
+                const currentCount = parseInt(commentCountElement.textContent);
+                commentCountElement.textContent = currentCount + 1;
+            }
+        } else {
+            alert('Failed to add reply. Please try again.');
+        }
+    } catch (error) {
+        console.error('Error adding reply:', error);
+        alert('Failed to add reply. Please try again.');
+    }
+    {% else %}
+    alert('Please login to reply');
+    {% endif %}
+}
+
+</script>

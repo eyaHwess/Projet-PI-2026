@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use App\Enum\PostStatus;
 
 #[ORM\Entity(repositoryClass: PostRepository::class)]
 class Post
@@ -18,38 +19,46 @@ class Post
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank(message: 'Le titre est obligatoire.')]
+    #[Assert\NotBlank(message: "Title is required")]
     #[Assert\Length(
         min: 3,
         max: 255,
-        minMessage: 'Le titre doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'Le titre ne peut pas dépasser {{ limit }} caractères.'
+        minMessage: "Title must be at least {{ limit }} characters long",
+        maxMessage: "Title cannot be longer than {{ limit }} characters"
     )]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Assert\NotBlank(message: 'Le contenu est obligatoire.')]
+    #[Assert\NotBlank(message: "Content is required")]
     #[Assert\Length(
         min: 5,
         max: 5000,
-        minMessage: 'Le contenu doit contenir au moins {{ limit }} caractères.',
-        maxMessage: 'Le contenu ne peut pas dépasser {{ limit }} caractères.'
+        minMessage: "Content must be at least {{ limit }} characters long",
+        maxMessage: "Content cannot be longer than {{ limit }} characters"
     )]
     private ?string $content = null;
 
     #[ORM\Column]
-    #[Assert\NotNull(message: 'La date de création est obligatoire.')]
     private ?\DateTimeImmutable $createdAt = null;
+
+    #[ORM\Column(length: 255, options: ["default" => "active"])]
+    private string $status = PostStatus::PUBLISHED->value;
+
+    /**
+     * @var array<string>
+     */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $images = [];
 
     #[ORM\ManyToOne(inversedBy: 'posts')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Assert\NotNull(message: 'L’auteur est obligatoire.')]
     private ?User $createdBy = null;
 
     /**
      * @var Collection<int, Comment>
      */
     #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'post')]
+    #[ORM\OrderBy(['createdAt' => 'DESC'])]
     private Collection $comments;
 
     /**
@@ -174,6 +183,80 @@ class Post
             }
         }
 
+        return $this;
+    }
+
+    public function getStatus(): string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): static
+    {
+        $this->status = $status;
+        return $this;
+    }
+
+    public function getStatusEnum(): PostStatus
+    {
+        return PostStatus::from($this->status);
+    }
+
+    public function setStatusEnum(PostStatus $status): static
+    {
+        $this->status = $status->value;
+        return $this;
+    }
+
+    public function isPublished(): bool
+    {
+        return $this->status === PostStatus::PUBLISHED->value;
+    }
+
+    public function isDraft(): bool
+    {
+        return $this->status === PostStatus::DRAFT->value;
+    }
+
+    public function isHidden(): bool
+    {
+        return $this->status === PostStatus::HIDDEN->value;
+    }
+
+
+
+    /**
+     * @return array<string>
+     */
+    public function getImages(): array
+    {
+        return $this->images ?? [];
+    }
+
+    /**
+     * @param array<string> $images
+     */
+    public function setImages(?array $images): static
+    {
+        $this->images = $images;
+        return $this;
+    }
+
+    public function addImage(string $imagePath): static
+    {
+        if (!in_array($imagePath, $this->images ?? [])) {
+            $this->images[] = $imagePath;
+        }
+        return $this;
+    }
+
+    public function removeImage(string $imagePath): static
+    {
+        $key = array_search($imagePath, $this->images ?? []);
+        if ($key !== false) {
+            unset($this->images[$key]);
+            $this->images = array_values($this->images);
+        }
         return $this;
     }
 }
