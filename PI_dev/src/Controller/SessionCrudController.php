@@ -18,10 +18,10 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
  * Gestion des sessions par le coach uniquement (création, modification, suppression).
- * Réservé aux utilisateurs avec le rôle ROLE_COACH.
+ * Accessible aux utilisateurs authentifiés, mais les actions sont réservées aux coachs.
  */
 #[Route('/sessions/manage', name: 'app_session_crud_')]
-#[IsGranted('ROLE_COACH')]
+#[IsGranted('IS_AUTHENTICATED_FULLY')]
 class SessionCrudController extends AbstractController
 {
     public function __construct(

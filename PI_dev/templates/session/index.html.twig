@@ -6,40 +6,555 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
     <style>
-        :root { --orange-primary: #f97316; }
-        .btn-orange { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); border: none; color: white; border-radius: 50px; font-weight: 600; }
-        .session-card { border-radius: 16px; border: 2px solid #e9ecef; }
+        :root {
+            --pastel-blue: #A8D8EA;
+            --pastel-blue-light: #E8F6F9;
+            --pastel-pink: #FFE4E9;
+            --pastel-pink-dark: #FFB3C1;
+            --pastel-yellow: #FFF4B8;
+            --pastel-yellow-light: #FFFBEA;
+            --pastel-green: #B5EAD7;
+            --pastel-green-light: #E8F8F3;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #F8FCFE 0%, #F0F8FF 100%);
+            min-height: 100vh;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        /* Header */
+        .page-header {
+            background: linear-gradient(135deg, var(--pastel-blue-light) 0%, #F0F8FF 50%, var(--pastel-pink) 100%);
+            padding: 3rem 0 2rem;
+            margin-bottom: 2rem;
+            border-radius: 0 0 2rem 2rem;
+            box-shadow: 0 4px 20px rgba(168, 216, 234, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(255, 179, 193, 0.2) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #2C5F7F;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        .page-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--pastel-blue), #B8E6F0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.75rem;
+            box-shadow: 0 6px 20px rgba(168, 216, 234, 0.3);
+        }
+        
+        /* Stats Cards */
+        .stats-row {
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border: 2px solid;
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
+        }
+        
+        .stat-icon {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin: 0 auto 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-label {
+            color: #5A7C8F;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        /* Filter Tabs */
+        .filter-tabs {
+            background: white;
+            border: 2px solid var(--pastel-blue-light);
+            border-radius: 1rem;
+            padding: 0.5rem;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 16px rgba(168, 216, 234, 0.1);
+        }
+        
+        .filter-tab {
+            flex: 1;
+            min-width: 120px;
+            padding: 0.75rem 1.25rem;
+            border: 2px solid transparent;
+            border-radius: 0.75rem;
+            background: transparent;
+            color: #5A7C8F;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .filter-tab:hover {
+            background: var(--pastel-blue-light);
+            color: #2C5F7F;
+        }
+        
+        .filter-tab.active {
+            background: linear-gradient(135deg, var(--pastel-blue), #B8E6F0);
+            color: white;
+            border-color: var(--pastel-blue);
+            box-shadow: 0 4px 12px rgba(168, 216, 234, 0.3);
+        }
+        
+        .filter-badge {
+            background: rgba(255, 255, 255, 0.9);
+            color: #2C5F7F;
+            padding: 0.25rem 0.5rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        
+        /* Session Cards */
+        .session-card {
+            background: white;
+            border: 2px solid var(--pastel-blue-light);
+            border-radius: 1.25rem;
+            padding: 1.75rem;
+            margin-bottom: 1.25rem;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        .session-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(135deg, var(--pastel-blue), var(--pastel-pink-dark));
+            transform: scaleY(0);
+            transition: transform 0.3s;
+        }
+        
+        .session-card:hover {
+            border-color: var(--pastel-blue);
+            box-shadow: 0 8px 28px rgba(168, 216, 234, 0.25);
+            transform: translateX(5px);
+        }
+        
+        .session-card:hover::before {
+            transform: scaleY(1);
+        }
+        
+        .session-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .session-avatar {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--pastel-blue-light), #F0F8FF);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--pastel-blue);
+            font-size: 1.5rem;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(168, 216, 234, 0.2);
+        }
+        
+        .session-info {
+            flex: 1;
+        }
+        
+        .session-name {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #2C5F7F;
+            margin-bottom: 0.25rem;
+        }
+        
+        .session-meta {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .session-badge {
+            padding: 0.375rem 0.875rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+        
+        .badge-scheduling {
+            background: linear-gradient(135deg, var(--pastel-yellow), var(--pastel-yellow-light));
+            color: #8B7355;
+        }
+        
+        .badge-proposed {
+            background: linear-gradient(135deg, var(--pastel-blue), #B8E6F0);
+            color: #2C5F7F;
+        }
+        
+        .badge-confirmed {
+            background: linear-gradient(135deg, var(--pastel-green), #C8F2E3);
+            color: #2D6A5C;
+        }
+        
+        .badge-completed {
+            background: linear-gradient(135deg, var(--pastel-pink-dark), #FFD1DC);
+            color: #8B5F7A;
+        }
+        
+        .badge-cancelled {
+            background: linear-gradient(135deg, #FFB3B3, #FFD1D1);
+            color: #8B5F5F;
+        }
+        
+        .session-duration {
+            color: #8B9DAF;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+        
+        .session-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--pastel-blue-light);
+        }
+        
+        .btn-view {
+            background: linear-gradient(135deg, var(--pastel-blue), #B8E6F0);
+            border: none;
+            color: white;
+            padding: 0.625rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 12px rgba(168, 216, 234, 0.3);
+        }
+        
+        .btn-view:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(168, 216, 234, 0.5);
+            color: white;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 5rem 2rem;
+            background: white;
+            border-radius: 1.5rem;
+            border: 3px dashed var(--pastel-blue-light);
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        .empty-icon {
+            font-size: 5rem;
+            color: var(--pastel-blue);
+            opacity: 0.5;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .session-card {
+                padding: 1.25rem;
+            }
+            
+            .filter-tab {
+                min-width: 100px;
+                font-size: 0.875rem;
+            }
+        }
     </style>
 {% endblock %}
 
 {% block body %}
-    <div class="container py-5">
-        <h1 class="mb-4"><i class="bi bi-calendar-event me-2" style="color: var(--orange-primary);"></i>Mes sessions</h1>
+    <!-- Header -->
+    <div class="page-header">
+        <div class="container position-relative">
+            <div class="page-title">
+                <div class="page-icon">
+                    <i class="bi bi-calendar-event-fill"></i>
+                </div>
+                Mes sessions
+            </div>
+            <p class="text-muted mb-0">Gérez toutes vos sessions de coaching</p>
+        </div>
+    </div>
+
+    <div class="container pb-5">
         {% if sessions|length > 0 %}
-            <div class="row g-3">
+            <!-- Stats -->
+            <div class="row g-3 stats-row">
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card" style="border-color: var(--pastel-blue);">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, var(--pastel-blue), #B8E6F0); color: white;">
+                            <i class="bi bi-calendar-check"></i>
+                        </div>
+                        <div class="stat-number" style="color: var(--pastel-blue);">{{ sessions|length }}</div>
+                        <div class="stat-label">Total sessions</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card" style="border-color: var(--pastel-yellow);">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, var(--pastel-yellow), var(--pastel-yellow-light)); color: #8B7355;">
+                            <i class="bi bi-hourglass-split"></i>
+                        </div>
+                        <div class="stat-number" style="color: #8B7355;">{{ sessions|filter(s => s.status in ['scheduling', 'proposed_by_coach', 'proposed_by_user'])|length }}</div>
+                        <div class="stat-label">En attente</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card" style="border-color: var(--pastel-green);">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, var(--pastel-green), #C8F2E3); color: white;">
+                            <i class="bi bi-check-circle-fill"></i>
+                        </div>
+                        <div class="stat-number" style="color: #2D6A5C;">{{ sessions|filter(s => s.status == 'confirmed')|length }}</div>
+                        <div class="stat-label">Confirmées</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card" style="border-color: var(--pastel-pink-dark);">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, var(--pastel-pink-dark), #FFD1DC); color: white;">
+                            <i class="bi bi-trophy-fill"></i>
+                        </div>
+                        <div class="stat-number" style="color: #8B5F7A;">{{ sessions|filter(s => s.status == 'completed')|length }}</div>
+                        <div class="stat-label">Terminées</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filter-tabs">
+                <button class="filter-tab active" data-filter="all">
+                    <i class="bi bi-grid-fill"></i>
+                    Toutes
+                    <span class="filter-badge">{{ sessions|length }}</span>
+                </button>
+                <button class="filter-tab" data-filter="scheduling">
+                    <i class="bi bi-hourglass-split"></i>
+                    En attente
+                    <span class="filter-badge">{{ sessions|filter(s => s.status in ['scheduling', 'proposed_by_coach', 'proposed_by_user'])|length }}</span>
+                </button>
+                <button class="filter-tab" data-filter="confirmed">
+                    <i class="bi bi-check-circle-fill"></i>
+                    Confirmées
+                    <span class="filter-badge">{{ sessions|filter(s => s.status == 'confirmed')|length }}</span>
+                </button>
+                <button class="filter-tab" data-filter="completed">
+                    <i class="bi bi-trophy-fill"></i>
+                    Terminées
+                    <span class="filter-badge">{{ sessions|filter(s => s.status == 'completed')|length }}</span>
+                </button>
+            </div>
+
+            <!-- Sessions List -->
+            <div id="sessionsList">
                 {% for s in sessions %}
-                    <div class="col-12">
-                        <div class="card session-card">
-                            <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-2">
-                                <div>
-                                    <strong>
-                                        {% if s.coachingRequest.coach.id == currentUser.id %}
-                                            Client : {{ s.coachingRequest.user.firstName }} {{ s.coachingRequest.user.lastName }}
-                                        {% else %}
-                                            Coach : {{ s.coachingRequest.coach.firstName }} {{ s.coachingRequest.coach.lastName }}
-                                        {% endif %}
-                                    </strong>
-                                    <span class="badge bg-secondary ms-2">{{ s.status }}</span>
-                                    {% if s.duration %}<span class="text-muted ms-2">{{ s.duration }} min</span>{% endif %}
-                                </div>
-                                <a href="{{ path('app_session_show', { id: s.id }) }}" class="btn btn-orange btn-sm">Voir</a>
+                    <div class="session-card" 
+                         data-status="{{ s.status }}"
+                         data-filter-category="{% if s.status in ['scheduling', 'proposed_by_coach', 'proposed_by_user'] %}scheduling{% else %}{{ s.status }}{% endif %}"
+                         style="animation-delay: {{ loop.index * 0.05 }}s;">
+                        <div class="session-header">
+                            <div class="session-avatar">
+                                <i class="bi bi-person-fill"></i>
                             </div>
+                            <div class="session-info">
+                                <div class="session-name">
+                                    {% if s.coachingRequest.coach.id == currentUser.id %}
+                                        <i class="bi bi-person-badge me-1" style="color: var(--pastel-blue);"></i>
+                                        Client : {{ s.coachingRequest.user.firstName }} {{ s.coachingRequest.user.lastName }}
+                                    {% else %}
+                                        <i class="bi bi-person-badge me-1" style="color: var(--pastel-blue);"></i>
+                                        Coach : {{ s.coachingRequest.coach.firstName }} {{ s.coachingRequest.coach.lastName }}
+                                    {% endif %}
+                                </div>
+                                <div class="session-meta">
+                                    <span class="session-badge 
+                                        {% if s.status == 'scheduling' %}badge-scheduling
+                                        {% elseif s.status in ['proposed_by_coach', 'proposed_by_user'] %}badge-proposed
+                                        {% elseif s.status == 'confirmed' %}badge-confirmed
+                                        {% elseif s.status == 'completed' %}badge-completed
+                                        {% elseif s.status == 'cancelled' %}badge-cancelled
+                                        {% else %}badge-scheduling{% endif %}">
+                                        <i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i>
+                                        {% if s.status == 'scheduling' %}En attente
+                                        {% elseif s.status == 'proposed_by_user' %}Créneau proposé
+                                        {% elseif s.status == 'proposed_by_coach' %}Créneau proposé
+                                        {% elseif s.status == 'confirmed' %}Confirmée
+                                        {% elseif s.status == 'completed' %}Terminée
+                                        {% elseif s.status == 'cancelled' %}Annulée
+                                        {% else %}{{ s.status }}{% endif %}
+                                    </span>
+                                    {% if s.duration %}
+                                        <span class="session-duration">
+                                            <i class="bi bi-clock"></i>
+                                            {{ s.duration }} min
+                                        </span>
+                                    {% endif %}
+                                    {% if s.displayTime %}
+                                        <span class="session-duration">
+                                            <i class="bi bi-calendar3"></i>
+                                            {{ s.displayTime|date('d/m/Y H:i') }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="session-actions">
+                            <a href="{{ path('app_session_show', { id: s.id }) }}" class="btn-view">
+                                <i class="bi bi-eye"></i>
+                                Voir les détails
+                            </a>
                         </div>
                     </div>
                 {% endfor %}
             </div>
         {% else %}
-            <p class="text-muted">Aucune session.</p>
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="bi bi-calendar-x"></i>
+                </div>
+                <h3 class="h3 fw-bold text-dark mb-3">Aucune session</h3>
+                <p class="text-muted mb-4 lead">Vous n'avez pas encore de sessions de coaching.<br>Commencez par faire une demande à un coach !</p>
+                <a href="{{ path('app_coach_index') }}" class="btn-view" style="padding: 1rem 2.5rem; font-size: 1rem;">
+                    <i class="bi bi-search"></i>
+                    Trouver un coach
+                </a>
+            </div>
         {% endif %}
     </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function() {
+            const filterTabs = document.querySelectorAll('.filter-tab');
+            const sessionCards = document.querySelectorAll('.session-card');
+            
+            filterTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Update active tab
+                    filterTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const filter = this.dataset.filter;
+                    
+                    // Filter sessions
+                    sessionCards.forEach(card => {
+                        if (filter === 'all') {
+                            card.style.display = '';
+                        } else {
+                            const category = card.dataset.filterCategory;
+                            if (category === filter) {
+                                card.style.display = '';
+                            } else {
+                                card.style.display = 'none';
+                            }
+                        }
+                    });
+                });
+            });
+        })();
+    </script>
 {% endblock %}

@@ -69,11 +69,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Assert\Range(min: 0, max: 5)]
     private ?float $rating = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?int $reviewCount = 0;
+
+    #[ORM\Column(nullable: true)]
+    #[Assert\PositiveOrZero]
+    private ?float $pricePerSession = null;
+
+    #[ORM\Column(length: 500, nullable: true)]
+    private ?string $bio = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $photoUrl = null;
+
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $badges = [];
+
+    #[ORM\Column(nullable: true)]
+    private ?bool $respondsQuickly = false;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $totalSessions = 0;
+
     #[ORM\Column(type: 'datetime_immutable')]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
+
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $lastActivityAt = null;
 
     /**
      * @var Collection<int, Post>
@@ -376,6 +401,139 @@ public function removePostLike(PostLike $postLike): static
     }
 
     return $this;
+}
+
+public function getReviewCount(): ?int
+{
+    return $this->reviewCount;
+}
+
+public function setReviewCount(?int $reviewCount): static
+{
+    $this->reviewCount = $reviewCount;
+    return $this;
+}
+
+public function getPricePerSession(): ?float
+{
+    return $this->pricePerSession;
+}
+
+public function setPricePerSession(?float $pricePerSession): static
+{
+    $this->pricePerSession = $pricePerSession;
+    return $this;
+}
+
+public function getBio(): ?string
+{
+    return $this->bio;
+}
+
+public function setBio(?string $bio): static
+{
+    $this->bio = $bio;
+    return $this;
+}
+
+public function getPhotoUrl(): ?string
+{
+    return $this->photoUrl;
+}
+
+public function setPhotoUrl(?string $photoUrl): static
+{
+    $this->photoUrl = $photoUrl;
+    return $this;
+}
+
+public function getBadges(): ?array
+{
+    return $this->badges ?? [];
+}
+
+public function setBadges(?array $badges): static
+{
+    $this->badges = $badges;
+    return $this;
+}
+
+public function addBadge(string $badge): static
+{
+    if (!in_array($badge, $this->badges ?? [])) {
+        $this->badges[] = $badge;
+    }
+    return $this;
+}
+
+public function getRespondsQuickly(): ?bool
+{
+    return $this->respondsQuickly;
+}
+
+public function setRespondsQuickly(?bool $respondsQuickly): static
+{
+    $this->respondsQuickly = $respondsQuickly;
+    return $this;
+}
+
+public function getTotalSessions(): ?int
+{
+    return $this->totalSessions;
+}
+
+public function setTotalSessions(?int $totalSessions): static
+{
+    $this->totalSessions = $totalSessions;
+    return $this;
+}
+
+public function getLastActivityAt(): ?\DateTimeImmutable
+{
+    return $this->lastActivityAt;
+}
+
+public function setLastActivityAt(?\DateTimeImmutable $lastActivityAt): static
+{
+    $this->lastActivityAt = $lastActivityAt;
+    return $this;
+}
+
+public function updateLastActivity(): static
+{
+    $this->lastActivityAt = new \DateTimeImmutable();
+    return $this;
+}
+
+public function isOnline(): bool
+{
+    if (!$this->lastActivityAt) {
+        return false;
+    }
+    
+    $now = new \DateTimeImmutable();
+    $diff = $now->getTimestamp() - $this->lastActivityAt->getTimestamp();
+    
+    // Considéré en ligne si activité dans les 5 dernières minutes
+    return $diff < 300;
+}
+
+public function getOnlineStatus(): string
+{
+    if (!$this->lastActivityAt) {
+        return 'offline';
+    }
+    
+    $now = new \DateTimeImmutable();
+    $diff = $now->getTimestamp() - $this->lastActivityAt->getTimestamp();
+    
+    if ($diff < 300) { // 5 minutes
+        return 'online';
+    } elseif ($diff < 3600) { // 1 heure
+        return 'away';
+    } else {
+        return 'offline';
+    }
 }
 
 }

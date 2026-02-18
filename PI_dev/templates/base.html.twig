@@ -7,7 +7,77 @@
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
 
         <title>{% block title %}Welcome!{% endblock %}</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
         {% block stylesheets %}{% endblock %}
+        <style>
+            .notification-badge {
+                position: relative;
+                display: inline-block;
+            }
+            .notification-badge .badge-count {
+                position: absolute;
+                top: -8px;
+                right: -8px;
+                background: #ef4444;
+                color: white;
+                border-radius: 50%;
+                width: 20px;
+                height: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 11px;
+                font-weight: bold;
+                border: 2px solid white;
+                pointer-events: none;
+            }
+            .notification-badge .badge-count.hidden {
+                display: none;
+            }
+            #notificationBtn {
+                cursor: pointer;
+                user-select: none;
+            }
+            #notificationBtn:active {
+                transform: scale(0.95);
+            }
+            .notification-dropdown {
+                position: absolute;
+                top: 100%;
+                right: 0;
+                margin-top: 0.5rem;
+                width: 320px;
+                max-height: 400px;
+                overflow-y: auto;
+                background: white;
+                border: 1px solid #e5e7eb;
+                border-radius: 0.5rem;
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+                z-index: 1000;
+                display: none;
+            }
+            .notification-dropdown.show {
+                display: block;
+            }
+            .notification-item {
+                padding: 1rem;
+                border-bottom: 1px solid #f3f4f6;
+                transition: background 0.2s;
+                cursor: pointer;
+            }
+            .notification-item:hover {
+                background: #f9fafb;
+            }
+            .notification-item.unread {
+                background: #eff6ff;
+            }
+            .notification-item.unread:hover {
+                background: #dbeafe;
+            }
+            .notification-item:last-child {
+                border-bottom: none;
+            }
+        </style>
     </head>
     <body class="min-h-screen bg-gray-50 antialiased">
         <nav class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
@@ -19,6 +89,28 @@
                     </a>
                     <div class="flex items-center flex-wrap gap-3 sm:gap-5">
                         {% if app.user %}
+                            {# Badge de notifications #}
+                            <div class="notification-badge relative">
+                                <div id="notificationBtn" onclick="window.toggleNotifications(event)" class="text-gray-600 hover:text-orange-500 text-lg relative cursor-pointer inline-block">
+                                    <i class="bi bi-bell"></i>
+                                    <span id="notificationCount" class="badge-count hidden">0</span>
+                                </div>
+                                <div id="notificationDropdown" class="notification-dropdown">
+                                    <div class="p-3 border-b border-gray-200 flex justify-between items-center">
+                                        <h3 class="font-semibold text-gray-800">Notifications</h3>
+                                        <button type="button" id="markAllRead" class="text-xs text-blue-600 hover:text-blue-700">Tout marquer lu</button>
+                                    </div>
+                                    <div id="notificationList">
+                                        <div class="p-4 text-center text-gray-500 text-sm">
+                                            Aucune notification
+                                        </div>
+                                    </div>
+                                    <div class="p-2 border-t border-gray-200 text-center">
+                                        <a href="{{ path('app_notifications_index') }}" class="text-sm text-blue-600 hover:text-blue-700">Voir toutes les notifications</a>
+                                    </div>
+                                </div>
+                            </div>
+                            
                             {% if is_granted('ROLE_COACH') %}
                                 {# Navbar coach : uniquement demandes + gérer sessions #}
                                 <a href="{{ path('app_coaching_request_index') }}" class="text-gray-600 hover:text-orange-500 text-sm font-medium">Mes demandes</a>
@@ -48,6 +140,305 @@
         </main>
 
         {% block javascripts %}
+        {% if app.user %}
+        <script>
+            console.log('🚀 Script chargé');
+            
+            // Variable globale pour l'état du dropdown
+            window.notificationDropdownOpen = false;
+            
+            // Fonction globale accessible depuis onclick
+            window.toggleNotifications = function(e) {
+                console.log('🖱️ CLIC DÉTECTÉ via onclick!');
+                if (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                
+                const dropdown = document.getElementById('notificationDropdown');
+                if (!dropdown) {
+                    console.error('❌ Dropdown non trouvé');
+                    return;
+                }
+                
+                window.notificationDropdownOpen = !window.notificationDropdownOpen;
+                console.log('État:', window.notificationDropdownOpen ? 'OUVERT' : 'FERMÉ');
+                
+                if (window.notificationDropdownOpen) {
+                    dropdown.classList.add('show');
+                    dropdown.style.display = 'block';
+                    console.log('✅ Dropdown affiché');
+                    if (typeof loadNotifications === 'function') {
+                        loadNotifications();
+                    }
+                } else {
+                    dropdown.classList.remove('show');
+                    dropdown.style.display = 'none';
+                    console.log('✅ Dropdown masqué');
+                }
+            };
+            
+            // Attendre que le DOM soit prêt
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initNotifications);
+            } else {
+                initNotifications();
+            }
+            
+            function initNotifications() {
+                console.log('🔔 Initialisation des notifications');
+                
+                const notificationBtn = document.getElementById('notificationBtn');
+                const notificationDropdown = document.getElementById('notificationDropdown');
+                const notificationCount = document.getElementById('notificationCount');
+                const notificationList = document.getElementById('notificationList');
+                const markAllReadBtn = document.getElementById('markAllRead');
+                
+                // Vérification des éléments
+                console.log('Éléments trouvés:', {
+                    btn: !!notificationBtn,
+                    dropdown: !!notificationDropdown,
+                    count: !!notificationCount,
+                    list: !!notificationList
+                });
+                
+                if (!notificationBtn) {
+                    console.error('❌ Bouton de notification non trouvé');
+                    return;
+                }
+                
+                if (!notificationDropdown) {
+                    console.error('❌ Dropdown de notification non trouvé');
+                    return;
+                }
+                
+                console.log('✅ Tous les éléments sont présents');
+                
+                // Fermer en cliquant ailleurs
+                document.addEventListener('click', function(e) {
+                    if (window.notificationDropdownOpen && 
+                        !notificationDropdown.contains(e.target) && 
+                        !notificationBtn.contains(e.target)) {
+                        console.log('📁 Fermeture (clic extérieur)');
+                        window.notificationDropdownOpen = false;
+                        notificationDropdown.classList.remove('show');
+                        notificationDropdown.style.display = 'none';
+                    }
+                });
+                
+                // Empêcher la fermeture en cliquant dans le dropdown
+                notificationDropdown.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+                
+                // Charger le compteur de notifications
+                async function loadNotificationCount() {
+                    try {
+                        console.log('📊 Chargement du compteur...');
+                        const res = await fetch('{{ path('app_notifications_unread_count') }}');
+                        if (!res.ok) {
+                            console.error('❌ Erreur HTTP:', res.status);
+                            throw new Error('Erreur réseau');
+                        }
+                        const data = await res.json();
+                        console.log('✅ Compteur reçu:', data.count);
+                        
+                        if (data.count > 0) {
+                            notificationCount.textContent = data.count > 99 ? '99+' : data.count;
+                            notificationCount.classList.remove('hidden');
+                        } else {
+                            notificationCount.classList.add('hidden');
+                        }
+                    } catch (err) {
+                        console.error('❌ Erreur lors du chargement du compteur:', err);
+                    }
+                }
+                
+                // Charger les notifications
+                async function loadNotifications() {
+                    try {
+                        console.log('📥 Chargement des notifications...');
+                        notificationList.innerHTML = '<div class="p-4 text-center text-gray-500 text-sm"><i class="bi bi-hourglass-split"></i> Chargement...</div>';
+                        
+                        const res = await fetch('{{ path('app_notifications_unread') }}');
+                        if (!res.ok) {
+                            console.error('❌ Erreur HTTP:', res.status);
+                            throw new Error('Erreur réseau');
+                        }
+                        const data = await res.json();
+                        console.log('✅ Notifications reçues:', data);
+                        
+                        if (!data.notifications || data.notifications.length === 0) {
+                            console.log('ℹ️ Aucune notification');
+                            notificationList.innerHTML = '<div class="p-4 text-center text-gray-500 text-sm"><i class="bi bi-bell-slash"></i> Aucune notification</div>';
+                            return;
+                        }
+                        
+                        console.log(`✅ ${data.notifications.length} notification(s) à afficher`);
+                        notificationList.innerHTML = data.notifications.map(notif => {
+                            const icon = getNotificationIcon(notif.type);
+                            const color = getNotificationColor(notif.type);
+                            let timeAgo = 'Date inconnue';
+                            
+                            try {
+                                if (notif.createdAt) {
+                                    const date = new Date(notif.createdAt.replace(' ', 'T'));
+                                    timeAgo = getTimeAgo(date);
+                                }
+                            } catch (e) {
+                                console.error('❌ Erreur parsing date:', e, notif.createdAt);
+                            }
+                            
+                            return `
+                                <div class="notification-item ${notif.isRead ? '' : 'unread'} cursor-pointer" 
+                                     data-id="${notif.id}" 
+                                     data-session-id="${notif.sessionId || ''}">
+                                    <div class="flex gap-3">
+                                        <div class="flex-shrink-0">
+                                            <div class="w-10 h-10 rounded-full ${color} flex items-center justify-center">
+                                                <i class="bi ${icon} text-white"></i>
+                                            </div>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm text-gray-800">${notif.message}</p>
+                                            <p class="text-xs text-gray-500 mt-1">
+                                                <i class="bi bi-clock"></i> ${timeAgo}
+                                                ${notif.sessionId ? '<i class="bi bi-arrow-right ml-2"></i> Voir la session' : ''}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                        
+                        // Ajouter les événements de clic pour marquer comme lu et rediriger
+                        document.querySelectorAll('.notification-item').forEach(item => {
+                            item.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                const id = this.dataset.id;
+                                const sessionId = this.dataset.sessionId;
+                                console.log('🖱️ Clic sur notification:', id, 'Session:', sessionId);
+                                markAsReadAndRedirect(id, sessionId);
+                            });
+                        });
+                    } catch (err) {
+                        console.error('❌ Erreur lors du chargement des notifications:', err);
+                        notificationList.innerHTML = '<div class="p-4 text-center text-red-500 text-sm"><i class="bi bi-exclamation-triangle"></i> Erreur de chargement</div>';
+                    }
+                }
+                
+                // Marquer une notification comme lue et rediriger
+                async function markAsReadAndRedirect(id, sessionId) {
+                    try {
+                        console.log('✔️ Marquage notification comme lue:', id);
+                        const res = await fetch(`/notifications/${id}/mark-read`, {
+                            method: 'POST',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        if (!res.ok) {
+                            console.error('❌ Erreur HTTP:', res.status);
+                            throw new Error('Erreur réseau');
+                        }
+                        
+                        const result = await res.json();
+                        console.log('✅ Notification marquée:', result);
+                        
+                        // Rediriger vers la session si elle existe
+                        if (sessionId) {
+                            console.log('🔗 Redirection vers la session:', sessionId);
+                            window.location.href = `/sessions/${sessionId}`;
+                        } else {
+                            // Sinon, juste recharger les notifications
+                            loadNotificationCount();
+                            loadNotifications();
+                        }
+                    } catch (err) {
+                        console.error('❌ Erreur lors du marquage:', err);
+                    }
+                }
+                
+                // Marquer toutes les notifications comme lues
+                if (markAllReadBtn) {
+                    markAllReadBtn.addEventListener('click', async function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('✔️ Marquage de toutes les notifications');
+                        try {
+                            const res = await fetch('{{ path('app_notifications_mark_all_read') }}', {
+                                method: 'POST',
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+                            
+                            if (!res.ok) {
+                                console.error('❌ Erreur HTTP:', res.status);
+                                throw new Error('Erreur réseau');
+                            }
+                            
+                            const result = await res.json();
+                            console.log('✅ Toutes les notifications marquées:', result);
+                            
+                            loadNotificationCount();
+                            loadNotifications();
+                        } catch (err) {
+                            console.error('❌ Erreur lors du marquage:', err);
+                        }
+                    });
+                }
+                
+                // Obtenir l'icône selon le type
+                function getNotificationIcon(type) {
+                    switch(type) {
+                        case 'request_accepted': return 'bi-check-circle-fill';
+                        case 'request_declined': return 'bi-x-circle-fill';
+                        case 'request_pending': return 'bi-clock-history';
+                        case 'session_scheduled': return 'bi-calendar-check';
+                        case 'session_confirmed': return 'bi-check2-circle';
+                        default: return 'bi-bell-fill';
+                    }
+                }
+                
+                // Obtenir la couleur selon le type
+                function getNotificationColor(type) {
+                    switch(type) {
+                        case 'request_accepted': return 'bg-green-500';
+                        case 'request_declined': return 'bg-red-500';
+                        case 'request_pending': return 'bg-yellow-500';
+                        case 'session_scheduled': return 'bg-blue-500';
+                        case 'session_confirmed': return 'bg-purple-500';
+                        default: return 'bg-blue-500';
+                    }
+                }
+                
+                // Calculer le temps écoulé
+                function getTimeAgo(date) {
+                    const now = new Date();
+                    const diff = Math.floor((now - date) / 1000); // en secondes
+                    
+                    if (diff < 60) return 'À l\'instant';
+                    if (diff < 3600) return `Il y a ${Math.floor(diff / 60)} min`;
+                    if (diff < 86400) return `Il y a ${Math.floor(diff / 3600)}h`;
+                    if (diff < 604800) return `Il y a ${Math.floor(diff / 86400)}j`;
+                    return date.toLocaleDateString('fr-FR');
+                }
+                
+                // Charger le compteur au démarrage
+                console.log('🚀 Chargement initial du compteur');
+                loadNotificationCount();
+                
+                // Rafraîchir le compteur toutes les 30 secondes
+                setInterval(loadNotificationCount, 30000);
+                
+                console.log('✅ Initialisation terminée');
+            } // Fin de initNotifications
+        </script>
+        {% endif %}
         {% endblock %}
     </body>
 </html>

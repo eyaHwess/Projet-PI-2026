@@ -113,6 +113,138 @@ class UserRepository extends ServiceEntityRepository
         return array_column($result, 'speciality');
     }
 
+    /**
+     * Recherche avancée de coaches avec filtres et tri
+     * @return User[]
+     */
+    public function searchCoaches(array $criteria): array
+    {
+        $qb = $this->createQueryBuilder('u');
+
+        if ($this->isPostgreSQL()) {
+            $qb->where('u.roles::text LIKE :role');
+        } else {
+            $qb->where('u.roles LIKE :role');
+        }
+        $qb->setParameter('role', '%' . self::ROLE_COACH . '%');
+
+        // Recherche par nom, email ou spécialité
+        if (!empty($criteria['query'])) {
+            $qb->andWhere(
+                $qb->expr()->orX(
+                    $qb->expr()->like('LOWER(u.firstName)', ':query'),
+                    $qb->expr()->like('LOWER(u.lastName)', ':query'),
+                    $qb->expr()->like('LOWER(u.email)', ':query'),
+                    $qb->expr()->like('LOWER(u.speciality)', ':query'),
+                    $qb->expr()->like('LOWER(u.bio)', ':query')
+                )
+            );
+            $qb->setParameter('query', '%' . strtolower($criteria['query']) . '%');
+        }
+
+        // Filtre par spécialité
+        if (!empty($criteria['speciality'])) {
+            $qb->andWhere('u.speciality = :speciality')
+               ->setParameter('speciality', $criteria['speciality']);
+        }
+
+        // Filtre par prix
+        if (isset($criteria['minPrice'])) {
+            $qb->andWhere('u.pricePerSession >= :minPrice')
+               ->setParameter('minPrice', $criteria['minPrice']);
+        }
+        if (isset($criteria['maxPrice'])) {
+            $qb->andWhere('u.pricePerSession <= :maxPrice')
+               ->setParameter('maxPrice', $criteria['maxPrice']);
+        }
+
+        // Filtre par note
+        if (isset($criteria['minRating'])) {
+            $qb->andWhere('u.rating >= :minRating')
+               ->setParameter('minRating', $criteria['minRating']);
+        }
+
+        // Filtre par disponibilité
+        if (!empty($criteria['availability'])) {
+            $qb->andWhere('u.availability = :availability')
+               ->setParameter('availability', $criteria['availability']);
+        }
+
+        // Tri
+        $sortBy = $criteria['sortBy'] ?? 'rating';
+        $sortOrder = strtoupper($criteria['sortOrder'] ?? 'DESC');
+
+        switch ($sortBy) {
+            case 'price':
+                $qb->orderBy('u.pricePerSession', $sortOrder);
+                break;
+            case 'rating':
+                $qb->orderBy('u.rating', $sortOrder);
+                break;
+            case 'popularity':
+                $qb->orderBy('u.totalSessions', $sortOrder);
+                break;
+            case 'availability':
+                $qb->orderBy('u.availability', $sortOrder);
+                break;
+            default:
+                $qb->orderBy('u.rating', 'DESC');
+        }
+
+        // Tri secondaire par nom
+        $qb->addOrderBy('u.lastName', 'ASC');
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * Récupère la plage de prix des coaches
+     */
+    public function getCoachPriceRange(): array
+    {
+        $qb = $this->createQueryBuilder('u')
+            ->select('MIN(u.pricePerSession) as minPrice, MAX(u.pricePerSession) as maxPrice');
+
+        if ($this->isPostgreSQL()) {
+            $qb->where('u.roles::text LIKE :role');
+        } else {
+            $qb->where('u.roles LIKE :role');
+        }
+        $qb->setParameter('role', '%' . self::ROLE_COACH . '%')
+           ->andWhere('u.pricePerSession IS NOT NULL');
+
+        $result = $qb->getQuery()->getSingleResult();
+        
+        return [
+            'min' => $result['minPrice'] ?? 0,
+            'max' => $result['maxPrice'] ?? 100,
+        ];
+    }
+
+    /**
+     * Récupère toutes les disponibilités uniques
+     */
+    public function getAvailabilities(): array
+    {
+        if ($this->isPostgreSQL()) {
+            $conn = $this->getEntityManager()->getConnection();
+            $sql = 'SELECT DISTINCT availability FROM "user" WHERE (roles::text LIKE :role) AND availability IS NOT NULL ORDER BY availability ASC';
+            $result = $conn->executeQuery($sql, ['role' => '%' . self::ROLE_COACH . '%'])->fetchAllAssociative();
+            return array_column($result, 'availability');
+        }
+
+        $result = $this->createQueryBuilder('u')
+            ->select('DISTINCT u.availability')
+            ->where('u.roles LIKE :role')
+            ->andWhere('u.availability IS NOT NULL')
+            ->setParameter('role', '%' . self::ROLE_COACH . '%')
+            ->orderBy('u.availability', 'ASC')
+            ->getQuery()
+            ->getResult();
+        
+        return array_column($result, 'availability');
+    }
+
     //    /**
     //     * @return User[] Returns an array of User objects
     //     */

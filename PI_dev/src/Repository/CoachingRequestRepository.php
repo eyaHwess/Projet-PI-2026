@@ -27,7 +27,8 @@ class CoachingRequestRepository extends ServiceEntityRepository
             ->andWhere('cr.status = :status')
             ->setParameter('coach', $coach)
             ->setParameter('status', CoachingRequest::STATUS_PENDING)
-            ->orderBy('cr.createdAt', 'DESC')
+            ->orderBy('cr.priority', 'DESC') // urgent avant standard
+            ->addOrderBy('cr.createdAt', 'DESC')
             ->getQuery()
             ->getResult();
     }
@@ -40,7 +41,8 @@ class CoachingRequestRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('cr')
             ->where('cr.coach = :coach')
             ->setParameter('coach', $coach)
-            ->orderBy('cr.createdAt', 'DESC')
+            ->orderBy('cr.priority', 'DESC') // urgent avant standard
+            ->addOrderBy('cr.createdAt', 'DESC')
             ->getQuery()
             ->getResult();
     }
@@ -147,5 +149,50 @@ class CoachingRequestRepository extends ServiceEntityRepository
             ->orderBy('cr.createdAt', 'DESC')
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * Compte les demandes urgentes pour un coach
+     */
+    public function countUrgentForCoach(User $coach): int
+    {
+        return (int) $this->createQueryBuilder('cr')
+            ->select('COUNT(cr.id)')
+            ->where('cr.coach = :coach')
+            ->andWhere('cr.priority = :priority')
+            ->setParameter('coach', $coach)
+            ->setParameter('priority', CoachingRequest::PRIORITY_URGENT)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Compte les demandes par priorité pour un coach
+     */
+    public function countByPriorityForCoach(User $coach, string $priority): int
+    {
+        return (int) $this->createQueryBuilder('cr')
+            ->select('COUNT(cr.id)')
+            ->where('cr.coach = :coach')
+            ->andWhere('cr.priority = :priority')
+            ->setParameter('coach', $coach)
+            ->setParameter('priority', $priority)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Compte les demandes par statut pour un coach
+     */
+    public function countByStatusForCoach(User $coach, string $status): int
+    {
+        return (int) $this->createQueryBuilder('cr')
+            ->select('COUNT(cr.id)')
+            ->where('cr.coach = :coach')
+            ->andWhere('cr.status = :status')
+            ->setParameter('coach', $coach)
+            ->setParameter('status', $status)
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 }

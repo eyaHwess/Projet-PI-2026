@@ -31,6 +31,7 @@ security:
                 target: /login
 
     access_control:
+
         - { path: ^/$, roles: PUBLIC_ACCESS }
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/user/add, roles: PUBLIC_ACCESS }
@@ -42,6 +43,7 @@ security:
 
         - { path: ^/demo, roles: PUBLIC_ACCESS }
         - { path: ^/coach, roles: ROLE_COACH }
+        
         - { path: ^/sessions/manage, roles: ROLE_COACH }
         - { path: ^/, roles: ROLE_USER }
 

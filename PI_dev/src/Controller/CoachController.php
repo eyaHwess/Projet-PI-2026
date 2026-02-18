@@ -8,8 +8,11 @@ use App\Entity\User;
 use App\Form\CoachingRequestType;
 use App\Repository\CoachingRequestRepository;
 use App\Repository\SessionRepository;
+use App\Repository\TimeSlotRepository;
 use App\Repository\UserRepository;
+use App\Service\CoachRecommendationService;
 use App\Service\DemoUserContext;
+use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -30,7 +33,10 @@ class CoachController extends AbstractController
         private SessionRepository $sessionRepository,
         private UserPasswordHasherInterface $passwordHasher,
         private ValidatorInterface $validator,
-        private DemoUserContext $demoUserContext
+        private DemoUserContext $demoUserContext,
+        private CoachRecommendationService $recommendationService,
+        private NotificationService $notificationService,
+        private TimeSlotRepository $timeSlotRepository
     ) {
     }
 
@@ -80,10 +86,33 @@ class CoachController extends AbstractController
     {
         $currentUser = $this->getCurrentUser();
 
+        // Récupération des filtres
         $speciality = $request->query->get('speciality');
-        $coaches = $speciality
-            ? $this->userRepository->findCoachesBySpeciality($speciality)
-            : $this->userRepository->findCoaches();
+        $minPrice = $request->query->get('minPrice');
+        $maxPrice = $request->query->get('maxPrice');
+        $minRating = $request->query->get('minRating');
+        $availability = $request->query->get('availability');
+
+        // Récupération de tous les coaches
+        $coaches = $this->userRepository->findCoaches();
+        
+        // Application des filtres
+        if ($speciality) {
+            $coaches = array_filter($coaches, fn($coach) => $coach->getSpeciality() === $speciality);
+        }
+        if ($minPrice !== null && $minPrice !== '') {
+            $coaches = array_filter($coaches, fn($coach) => $coach->getPricePerSession() >= (float)$minPrice);
+        }
+        if ($maxPrice !== null && $maxPrice !== '') {
+            $coaches = array_filter($coaches, fn($coach) => $coach->getPricePerSession() <= (float)$maxPrice);
+        }
+        if ($minRating !== null && $minRating !== '') {
+            $coaches = array_filter($coaches, fn($coach) => $coach->getRating() >= (float)$minRating);
+        }
+        if ($availability) {
+            $coaches = array_filter($coaches, fn($coach) => $coach->getAvailability() === $availability);
+        }
+        
         $allCoachesForForm = $this->userRepository->findCoaches();
 
         $coachingRequest = new CoachingRequest();
@@ -107,23 +136,58 @@ class CoachController extends AbstractController
                 return $this->redirectToRoute('app_coach_index');
             }
 
+            // Gérer le créneau sélectionné
+            $timeSlotId = $request->request->get('timeSlotId');
+            if ($timeSlotId) {
+                $timeSlot = $this->timeSlotRepository->find($timeSlotId);
+                if ($timeSlot && $timeSlot->isAvailable()) {
+                    $coachingRequest->setTimeSlot($timeSlot);
+                    $timeSlot->book($currentUser, $coachingRequest);
+                }
+            }
+
             $this->entityManager->persist($coachingRequest);
             $this->entityManager->flush();
+
+            // Envoyer les notifications
+            $this->notificationService->notifyCoachNewRequest($coachingRequest);
+            $this->notificationService->notifyUserRequestSent($coachingRequest);
 
             $this->addFlash('success', 'Votre demande a été envoyée avec succès ! Le coach vous contactera bientôt.');
             return $this->redirectToRoute('app_coach_index');
         }
 
-        // Spécialités pour les filtres
+        // Spécialités et disponibilités pour les filtres
         $specialities = $this->userRepository->findAllCoachSpecialities();
+        $allCoaches = $this->userRepository->findCoaches();
+        $availabilities = array_values(array_unique(array_filter(array_map(fn($c) => $c->getAvailability(), $allCoaches))));
 
         return $this->render('coach/index.html.twig', [
             'coaches' => $coaches,
             'specialities' => $specialities,
+            'availabilities' => $availabilities,
             'selectedSpeciality' => $speciality,
+            'selectedMinPrice' => $minPrice,
+            'selectedMaxPrice' => $maxPrice,
+            'selectedMinRating' => $minRating,
+            'selectedAvailability' => $availability,
             'myRequests' => $this->coachingRequestRepository->findByUser($currentUser),
             'currentUser' => $currentUser,
             'form' => $form->createView(),
+            'isDemoSwitch' => (bool) $this->demoUserContext->getCurrentEmail(),
+        ]);
+    }
+
+    /**
+     * Liste des coaches - Version améliorée
+     */
+    #[Route('/enhanced', name: 'index_enhanced', methods: ['GET'])]
+    public function indexEnhanced(Request $request): Response
+    {
+        $currentUser = $this->getCurrentUser();
+
+        return $this->render('coach/index_enhanced.html.twig', [
+            'currentUser' => $currentUser,
             'isDemoSwitch' => (bool) $this->demoUserContext->getCurrentEmail(),
         ]);
     }
@@ -293,6 +357,42 @@ class CoachController extends AbstractController
         return $this->json([
             'success' => true,
             'message' => 'Demande envoyée avec succès ! Le coach vous contactera bientôt.',
+        ]);
+    }
+
+    #[Route('/recommendations', name: 'recommendations', methods: ['POST'])]
+    public function getRecommendations(Request $request): Response
+    {
+        $data = json_decode($request->getContent(), true);
+        $message = $data['message'] ?? '';
+
+        if (strlen($message) < 10) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Le message doit contenir au moins 10 caractères pour obtenir des recommandations.'
+            ]);
+        }
+
+        $coaches = $this->userRepository->findCoaches();
+        $recommendations = $this->recommendationService->recommendCoaches($message, $coaches);
+
+        return $this->json([
+            'success' => true,
+            'recommendations' => array_map(function($rec) {
+                $coach = $rec['coach'];
+                return [
+                    'id' => $coach->getId(),
+                    'firstName' => $coach->getFirstName(),
+                    'lastName' => $coach->getLastName(),
+                    'email' => $coach->getEmail(),
+                    'speciality' => $coach->getSpeciality(),
+                    'rating' => $coach->getRating(),
+                    'pricePerSession' => $coach->getPricePerSession(),
+                    'availability' => $coach->getAvailability(),
+                    'score' => $rec['score'],
+                    'reasons' => $rec['reasons']
+                ];
+            }, $recommendations)
         ]);
     }
 }

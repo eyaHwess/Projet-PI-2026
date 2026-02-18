@@ -6,119 +6,686 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
     <style>
-        :root { --orange-primary: #f97316; }
-        .card-dash { border-radius: 1rem; border: 1px solid #e9ecef; transition: box-shadow 0.2s; }
-        .card-dash:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
-        .btn-dash { border-radius: 0.5rem; font-weight: 600; padding: 0.75rem 1.5rem; }
+        :root {
+            --pastel-blue: #A8D8EA;
+            --pastel-blue-light: #E8F6F9;
+            --pastel-pink: #FFB3D9;
+            --pastel-pink-light: #FFE4E9;
+            --pastel-yellow: #FFE5B4;
+            --pastel-yellow-light: #FFF9F0;
+            --pastel-green: #B5EAD7;
+            --pastel-green-light: #E8F8F3;
+            --pastel-purple: #E2C2E8;
+            --pastel-purple-light: #F5EDF7;
+            --pastel-orange: #FFD1A3;
+            --pastel-orange-light: #FFF5E8;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #F8FCFE 0%, #F0F8FF 100%);
+            min-height: 100vh;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+        
+        .animate-fade-in {
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, var(--pastel-blue-light) 0%, #F0F8FF 50%, var(--pastel-pink-light) 100%);
+            padding: 3rem 0 2rem;
+            margin-bottom: 2rem;
+            border-radius: 0 0 2rem 2rem;
+            box-shadow: 0 4px 20px rgba(168, 216, 234, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(255, 179, 217, 0.2) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        
+        .hero-section::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -5%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(168, 216, 234, 0.2) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        
+        .welcome-badge {
+            background: white;
+            border: 2px solid var(--pastel-blue);
+            color: #4A7C9D;
+            padding: 0.5rem 1.25rem;
+            border-radius: 50px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 12px rgba(168, 216, 234, 0.2);
+            animation: pulse 3s infinite;
+        }
+        
+        /* Action Cards */
+        .action-card {
+            background: white;
+            border: 3px solid transparent;
+            border-radius: 1.5rem;
+            padding: 2rem;
+            transition: all 0.3s;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        .action-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--card-color-1), var(--card-color-2));
+            transform: scaleX(0);
+            transition: transform 0.3s;
+        }
+        
+        .action-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+            border-color: var(--card-color-1);
+        }
+        
+        .action-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .action-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        
+        .action-icon::after {
+            content: '';
+            position: absolute;
+            inset: -5px;
+            border-radius: 50%;
+            border: 2px solid currentColor;
+            opacity: 0.2;
+        }
+        
+        .action-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #2C5F7F;
+            margin-bottom: 0.5rem;
+        }
+        
+        .action-description {
+            color: #5A7C8F;
+            margin-bottom: 1.25rem;
+            line-height: 1.6;
+        }
+        
+        .action-btn {
+            background: linear-gradient(135deg, var(--card-color-1), var(--card-color-2));
+            color: white;
+            border: none;
+            padding: 0.75rem 1.75rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+            color: white;
+        }
+        
+        /* Stats Cards */
+        .stats-card {
+            background: white;
+            border: 2px solid;
+            border-radius: 1.25rem;
+            padding: 1.75rem;
+            text-align: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stats-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+            background: linear-gradient(135deg, var(--stats-color-1), var(--stats-color-2));
+            opacity: 0.05;
+            transition: opacity 0.3s;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
+        }
+        
+        .stats-card:hover::before {
+            opacity: 0.1;
+        }
+        
+        .stats-icon {
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            margin: 0 auto 1rem;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stats-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--stats-color-1), var(--stats-color-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .stats-label {
+            color: #5A7C8F;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        
+        /* Content Cards */
+        .content-card {
+            background: white;
+            border: 2px solid #E8F6F9;
+            border-radius: 1.25rem;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s;
+        }
+        
+        .content-card:hover {
+            border-color: var(--pastel-blue);
+            box-shadow: 0 8px 28px rgba(168, 216, 234, 0.2);
+        }
+        
+        .content-card-header {
+            background: linear-gradient(135deg, var(--pastel-blue-light), #F0F8FF);
+            padding: 1.5rem;
+            border-bottom: 2px solid #E8F6F9;
+        }
+        
+        .content-card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #2C5F7F;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .content-badge {
+            background: linear-gradient(135deg, var(--pastel-blue), #B8E6F0);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+        
+        /* Session Item */
+        .session-item {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #F0F8FF;
+            transition: all 0.3s;
+        }
+        
+        .session-item:last-child {
+            border-bottom: none;
+        }
+        
+        .session-item:hover {
+            background: linear-gradient(135deg, #FAFCFE, #F8FCFE);
+            transform: translateX(5px);
+        }
+        
+        .session-coach {
+            font-weight: 700;
+            color: #2C5F7F;
+            font-size: 1.05rem;
+        }
+        
+        .session-badge {
+            padding: 0.375rem 0.875rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+        
+        .badge-scheduled {
+            background: var(--pastel-green-light);
+            color: #2D6A5C;
+        }
+        
+        .badge-completed {
+            background: var(--pastel-blue-light);
+            color: #2C5F7F;
+        }
+        
+        .badge-pending {
+            background: var(--pastel-yellow-light);
+            color: #8B7355;
+        }
+        
+        /* Goal/Routine Items */
+        .goal-item {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #F0F8FF;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        
+        .goal-item:last-child {
+            border-bottom: none;
+        }
+        
+        .goal-item:hover {
+            background: linear-gradient(135deg, #FAFCFE, #F8FCFE);
+            transform: translateX(5px);
+        }
+        
+        .goal-title {
+            color: #2C5F7F;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .goal-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: #8B9DAF;
+        }
+        
+        .empty-icon {
+            font-size: 4rem;
+            color: var(--pastel-blue);
+            opacity: 0.5;
+            margin-bottom: 1rem;
+        }
+        
+        /* Buttons */
+        .btn-view-all {
+            background: white;
+            border: 2px solid var(--pastel-blue);
+            color: #2C5F7F;
+            padding: 0.625rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-view-all:hover {
+            background: var(--pastel-blue-light);
+            border-color: var(--pastel-blue);
+            color: #2C5F7F;
+            transform: translateY(-2px);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-section {
+                padding: 2rem 0 1.5rem;
+            }
+            
+            .action-card {
+                padding: 1.5rem;
+            }
+            
+            .action-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 1.75rem;
+            }
+            
+            .stats-number {
+                font-size: 2rem;
+            }
+        }
     </style>
 {% endblock %}
 
 {% block body %}
-    <div class="container py-5">
-        <h1 class="h2 fw-bold mb-1">Tableau de bord</h1>
-        <p class="text-muted mb-4">Bienvenue, {{ app.user.firstName }}.</p>
-
-        <div class="row g-4 mb-4">
-            <div class="col-md-6 col-lg-4">
-                <a href="{{ path('app_coach_index') }}" class="text-decoration-none">
-                    <div class="card card-dash h-100 border-0 shadow-sm">
-                        <div class="card-body d-flex align-items-center">
-                            <div class="rounded-circle bg-light p-3 me-3" style="color: var(--orange-primary);">
-                                <i class="bi bi-person-plus-fill fs-4"></i>
-                            </div>
-                            <div>
-                                <h2 class="h5 fw-bold mb-1 text-dark">Demander coaching</h2>
-                                <p class="text-muted small mb-0">Trouvez un coach et envoyez une demande</p>
-                            </div>
-                            <i class="bi bi-chevron-right text-muted ms-auto"></i>
-                        </div>
-                    </div>
-                </a>
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="container position-relative">
+            <div class="animate-fade-in">
+                <span class="welcome-badge mb-3">
+                    <i class="bi bi-stars"></i>
+                    Bienvenue sur votre espace
+                </span>
+                <h1 class="display-5 fw-bold text-dark mb-2 mt-3">
+                    Bonjour, {{ app.user.firstName }} ! 👋
+                </h1>
+                <p class="text-muted lead mb-0">Prêt à atteindre vos objectifs aujourd'hui ?</p>
             </div>
-            <div class="col-md-6 col-lg-4">
-                <a href="{{ path('app_session_index') }}" class="text-decoration-none">
-                    <div class="card card-dash h-100 border-0 shadow-sm">
-                        <div class="card-body d-flex align-items-center">
-                            <div class="rounded-circle bg-light p-3 me-3" style="color: var(--orange-primary);">
-                                <i class="bi bi-calendar-check-fill fs-4"></i>
-                            </div>
-                            <div>
-                                <h2 class="h5 fw-bold mb-1 text-dark">Mes sessions</h2>
-                                <p class="text-muted small mb-0">{{ sessionsCount }} session(s)</p>
-                            </div>
-                            <i class="bi bi-chevron-right text-muted ms-auto"></i>
-                        </div>
+        </div>
+    </div>
+
+    <div class="container pb-5">
+        <!-- Stats Overview -->
+        <div class="row g-3 mb-5">
+            <div class="col-md-3 col-sm-6">
+                <div class="stats-card" style="border-color: var(--pastel-blue); --stats-color-1: #A8D8EA; --stats-color-2: #B8E6F0;">
+                    <div class="stats-icon" style="background: linear-gradient(135deg, var(--pastel-blue), #B8E6F0); color: white;">
+                        <i class="bi bi-calendar-check-fill"></i>
                     </div>
-                </a>
+                    <div class="stats-number">{{ sessionsCount }}</div>
+                    <div class="stats-label">Sessions</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="stats-card" style="border-color: var(--pastel-green); --stats-color-1: #B5EAD7; --stats-color-2: #C8F2E3;">
+                    <div class="stats-icon" style="background: linear-gradient(135deg, var(--pastel-green), #C8F2E3); color: white;">
+                        <i class="bi bi-bullseye"></i>
+                    </div>
+                    <div class="stats-number">{{ goalsCount }}</div>
+                    <div class="stats-label">Objectifs</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="stats-card" style="border-color: var(--pastel-purple); --stats-color-1: #E2C2E8; --stats-color-2: #EDD5F0;">
+                    <div class="stats-icon" style="background: linear-gradient(135deg, var(--pastel-purple), #EDD5F0); color: white;">
+                        <i class="bi bi-list-check"></i>
+                    </div>
+                    <div class="stats-number">{{ routinesCount }}</div>
+                    <div class="stats-label">Routines</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="stats-card" style="border-color: var(--pastel-pink); --stats-color-1: #FFB3D9; --stats-color-2: #FFD1DC;">
+                    <div class="stats-icon" style="background: linear-gradient(135deg, var(--pastel-pink), #FFD1DC); color: white;">
+                        <i class="bi bi-trophy-fill"></i>
+                    </div>
+                    <div class="stats-number">0</div>
+                    <div class="stats-label">Réalisations</div>
+                </div>
             </div>
         </div>
 
+        <!-- Quick Actions -->
+        <div class="mb-4">
+            <h2 class="h4 fw-bold text-dark mb-3">
+                <i class="bi bi-lightning-charge-fill me-2" style="color: var(--pastel-yellow);"></i>
+                Actions rapides
+            </h2>
+        </div>
+        
+        <div class="row g-4 mb-5">
+            <div class="col-md-6 col-lg-4">
+                <div class="action-card" style="--card-color-1: #A8D8EA; --card-color-2: #B8E6F0; animation-delay: 0.1s;">
+                    <div class="action-icon" style="background: linear-gradient(135deg, var(--pastel-blue), #B8E6F0); color: white;">
+                        <i class="bi bi-person-plus-fill"></i>
+                    </div>
+                    <h3 class="action-title">Demander un coaching</h3>
+                    <p class="action-description">Trouvez le coach parfait pour vous accompagner vers vos objectifs</p>
+                    <a href="{{ path('app_coach_index') }}" class="action-btn" style="--card-color-1: #A8D8EA; --card-color-2: #B8E6F0;">
+                        <i class="bi bi-search"></i>
+                        Trouver un coach
+                    </a>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="action-card" style="--card-color-1: #B5EAD7; --card-color-2: #C8F2E3; animation-delay: 0.2s;">
+                    <div class="action-icon" style="background: linear-gradient(135deg, var(--pastel-green), #C8F2E3); color: white;">
+                        <i class="bi bi-calendar-event-fill"></i>
+                    </div>
+                    <h3 class="action-title">Mes sessions</h3>
+                    <p class="action-description">Consultez et gérez toutes vos sessions de coaching planifiées</p>
+                    <a href="{{ path('app_session_index') }}" class="action-btn" style="--card-color-1: #B5EAD7; --card-color-2: #C8F2E3;">
+                        <i class="bi bi-calendar-check"></i>
+                        Voir mes sessions
+                    </a>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="action-card" style="--card-color-1: #E2C2E8; --card-color-2: #EDD5F0; animation-delay: 0.3s;">
+                    <div class="action-icon" style="background: linear-gradient(135deg, var(--pastel-purple), #EDD5F0); color: white;">
+                        <i class="bi bi-bullseye"></i>
+                    </div>
+                    <h3 class="action-title">Mes objectifs</h3>
+                    <p class="action-description">Suivez vos progrès et définissez de nouveaux objectifs à atteindre</p>
+                    <a href="{{ path('app_goal_index') }}" class="action-btn" style="--card-color-1: #E2C2E8; --card-color-2: #EDD5F0;">
+                        <i class="bi bi-flag-fill"></i>
+                        Gérer mes objectifs
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sessions Section -->
         {% if sessions|length > 0 %}
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-white border-bottom py-3">
-                    <i class="bi bi-calendar-event me-2" style="color: var(--orange-primary);"></i>
-                    <strong>Mes prochaines sessions</strong>
+            <div class="mb-5">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="h4 fw-bold text-dark mb-0">
+                        <i class="bi bi-calendar-week me-2" style="color: var(--pastel-blue);"></i>
+                        Prochaines sessions
+                    </h2>
+                    <a href="{{ path('app_session_index') }}" class="btn-view-all">
+                        Tout voir
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
                 </div>
-                <div class="card-body p-0">
-                    <ul class="list-group list-group-flush">
+                
+                <div class="content-card">
+                    <div class="content-card-header">
+                        <h3 class="content-card-title">
+                            <i class="bi bi-clock-history"></i>
+                            À venir
+                            <span class="content-badge">{{ sessions|length }}</span>
+                        </h3>
+                    </div>
+                    <div>
                         {% for s in sessions|slice(0, 5) %}
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
-                                    <strong>Coach : {{ s.coachingRequest.coach.firstName }} {{ s.coachingRequest.coach.lastName }}</strong>
-                                    <span class="badge bg-secondary ms-2">{{ s.status }}</span>
-                                    {% if s.duration %}<span class="text-muted ms-2">{{ s.duration }} min</span>{% endif %}
+                            <div class="session-item">
+                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                                    <div class="flex-grow-1">
+                                        <div class="session-coach mb-2">
+                                            <i class="bi bi-person-badge me-2" style="color: var(--pastel-blue);"></i>
+                                            Coach : {{ s.coachingRequest.coach.firstName }} {{ s.coachingRequest.coach.lastName }}
+                                        </div>
+                                        <div class="d-flex gap-2 flex-wrap">
+                                            <span class="session-badge badge-{{ s.status }}">
+                                                <i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i>
+                                                {{ s.status }}
+                                            </span>
+                                            {% if s.duration %}
+                                                <span class="session-badge" style="background: var(--pastel-orange-light); color: #8B7355;">
+                                                    <i class="bi bi-clock"></i>
+                                                    {{ s.duration }} min
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <a href="{{ path('app_session_show', { id: s.id }) }}" class="btn-view-all">
+                                        <i class="bi bi-eye"></i>
+                                        Détails
+                                    </a>
                                 </div>
-                                <a href="{{ path('app_session_show', { id: s.id }) }}" class="btn btn-sm btn-outline-primary">Voir</a>
-                            </li>
+                            </div>
                         {% endfor %}
-                    </ul>
-                </div>
-                <div class="card-footer bg-white border-top py-2">
-                    <a href="{{ path('app_session_index') }}" class="btn btn-sm btn-link text-decoration-none">Voir toutes les sessions</a>
+                    </div>
                 </div>
             </div>
         {% endif %}
 
+        <!-- Goals & Routines -->
         <div class="row g-4">
-            <div class="col-12 col-lg-6">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white border-bottom py-3">
-                        <i class="bi bi-bullseye me-2" style="color: var(--orange-primary);"></i>
-                        <strong>Objectifs</strong>
-                        <span class="badge bg-primary ms-2">{{ goalsCount }}</span>
+            <div class="col-lg-6">
+                <div class="content-card h-100">
+                    <div class="content-card-header">
+                        <h3 class="content-card-title">
+                            <i class="bi bi-bullseye"></i>
+                            Objectifs
+                            <span class="content-badge" style="background: linear-gradient(135deg, var(--pastel-green), #C8F2E3);">{{ goalsCount }}</span>
+                        </h3>
                     </div>
-                    <div class="card-body">
+                    <div>
                         {% if recentGoals is empty %}
-                            <p class="text-muted mb-0">Aucun objectif pour le moment.</p>
-                            <a href="{{ path('app_goal_index') }}" class="btn btn-sm btn-outline-primary mt-2">Voir les objectifs</a>
+                            <div class="empty-state">
+                                <div class="empty-icon">
+                                    <i class="bi bi-flag"></i>
+                                </div>
+                                <p class="mb-3">Aucun objectif pour le moment</p>
+                                <a href="{{ path('app_goal_index') }}" class="btn-view-all">
+                                    <i class="bi bi-plus-circle"></i>
+                                    Créer un objectif
+                                </a>
+                            </div>
                         {% else %}
-                            <ul class="list-group list-group-flush">
-                                {% for goal in recentGoals %}
-                                    <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                            {% for goal in recentGoals %}
+                                <div class="goal-item">
+                                    <div class="goal-title">
+                                        <div class="goal-icon" style="background: linear-gradient(135deg, var(--pastel-green-light), #F0FAF7); color: #2D6A5C;">
+                                            <i class="bi bi-check-circle-fill"></i>
+                                        </div>
                                         {{ goal.title }}
-                                        {% if goal.status is defined and goal.status == 'completed' %}
-                                            <span class="badge bg-success">Terminé</span>
-                                        {% else %}
-                                            <span class="badge bg-warning text-dark">En cours</span>
-                                        {% endif %}
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                            <a href="{{ path('app_goal_index') }}" class="btn btn-sm btn-outline-primary mt-2">Voir tous les objectifs</a>
+                                    </div>
+                                    {% if goal.status is defined and goal.status == 'completed' %}
+                                        <span class="session-badge" style="background: var(--pastel-green-light); color: #2D6A5C;">
+                                            <i class="bi bi-check-circle-fill"></i>
+                                            Terminé
+                                        </span>
+                                    {% else %}
+                                        <span class="session-badge badge-pending">
+                                            <i class="bi bi-hourglass-split"></i>
+                                            En cours
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                            <div class="p-3 text-center border-top">
+                                <a href="{{ path('app_goal_index') }}" class="btn-view-all">
+                                    Voir tous les objectifs
+                                    <i class="bi bi-arrow-right"></i>
+                                </a>
+                            </div>
                         {% endif %}
                     </div>
                 </div>
             </div>
-            <div class="col-12 col-lg-6">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white border-bottom py-3">
-                        <i class="bi bi-list-check me-2" style="color: var(--orange-primary);"></i>
-                        <strong>Routines</strong>
-                        <span class="badge bg-success ms-2">{{ routinesCount }}</span>
+            
+            <div class="col-lg-6">
+                <div class="content-card h-100">
+                    <div class="content-card-header">
+                        <h3 class="content-card-title">
+                            <i class="bi bi-list-check"></i>
+                            Routines
+                            <span class="content-badge" style="background: linear-gradient(135deg, var(--pastel-purple), #EDD5F0);">{{ routinesCount }}</span>
+                        </h3>
                     </div>
-                    <div class="card-body">
-                        <p class="text-muted mb-0">{{ routinesCount }} routine(s) associée(s) à vos objectifs.</p>
-                        <a href="{{ path('app_goal_index') }}" class="btn btn-sm btn-outline-primary mt-2">Voir mes objectifs</a>
+                    <div>
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <i class="bi bi-repeat"></i>
+                            </div>
+                            <p class="mb-3">{{ routinesCount }} routine(s) associée(s) à vos objectifs</p>
+                            <a href="{{ path('app_goal_index') }}" class="btn-view-all">
+                                <i class="bi bi-eye"></i>
+                                Voir mes objectifs
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>

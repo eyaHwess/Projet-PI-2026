@@ -8,6 +8,7 @@ use App\Entity\User;
 use App\Repository\CoachingRequestRepository;
 use App\Repository\UserRepository;
 use App\Service\DemoUserContext;
+use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -30,7 +31,8 @@ class CoachingRequestController extends AbstractController
         private UserRepository $userRepository,
         private CoachingRequestRepository $coachingRequestRepository,
         private UserPasswordHasherInterface $passwordHasher,
-        private DemoUserContext $demoUserContext
+        private DemoUserContext $demoUserContext,
+        private NotificationService $notificationService
     ) {
     }
 
@@ -72,11 +74,23 @@ class CoachingRequestController extends AbstractController
         $pendingRequests = $this->coachingRequestRepository->findPendingForCoach($currentUser);
         $allRequests = $this->coachingRequestRepository->findAllForCoach($currentUser);
 
+        // Calculer les statistiques
+        $stats = [
+            'total' => count($allRequests),
+            'pending' => count($pendingRequests),
+            'accepted' => $this->coachingRequestRepository->countByStatusForCoach($currentUser, CoachingRequest::STATUS_ACCEPTED),
+            'declined' => $this->coachingRequestRepository->countByStatusForCoach($currentUser, CoachingRequest::STATUS_DECLINED),
+            'urgent' => $this->coachingRequestRepository->countByPriorityForCoach($currentUser, CoachingRequest::PRIORITY_URGENT),
+            'medium' => $this->coachingRequestRepository->countByPriorityForCoach($currentUser, CoachingRequest::PRIORITY_MEDIUM),
+            'normal' => $this->coachingRequestRepository->countByPriorityForCoach($currentUser, CoachingRequest::PRIORITY_NORMAL),
+        ];
+
         return $this->render('coaching_request/index.html.twig', [
             'pendingRequests' => $pendingRequests,
             'allRequests' => $allRequests,
             'currentUser' => $currentUser,
             'isDemoSwitch' => (bool) $this->demoUserContext->getCurrentEmail(),
+            'stats' => $stats,
         ]);
     }
 
@@ -114,6 +128,9 @@ class CoachingRequestController extends AbstractController
 
         $this->entityManager->persist($session);
         $this->entityManager->flush();
+
+        // Créer une notification pour l'utilisateur
+        $this->notificationService->notifyRequestAccepted($coachingRequest);
 
         if ($request->isXmlHttpRequest() || $request->headers->get('X-Requested-With') === 'XMLHttpRequest') {
             return new JsonResponse([
@@ -156,6 +173,9 @@ class CoachingRequestController extends AbstractController
         $coachingRequest->setStatus(CoachingRequest::STATUS_DECLINED);
         $this->entityManager->flush();
 
+        // Créer une notification pour l'utilisateur
+        $this->notificationService->notifyRequestDeclined($coachingRequest);
+
         if ($request->isXmlHttpRequest() || $request->headers->get('X-Requested-With') === 'XMLHttpRequest') {
             return new JsonResponse([
                 'success' => true,
@@ -195,6 +215,9 @@ class CoachingRequestController extends AbstractController
         
         $this->entityManager->flush();
 
+        // Créer une notification pour l'utilisateur
+        $this->notificationService->notifyRequestPending($coachingRequest);
+
         if ($request->isXmlHttpRequest() || $request->headers->get('X-Requested-With') === 'XMLHttpRequest') {
             return new JsonResponse([
                 'success' => true,
@@ -204,5 +227,107 @@ class CoachingRequestController extends AbstractController
 
         $this->addFlash('info', 'Demande remise en attente.');
         return $this->redirectToRoute('app_coaching_request_index');
+    }
+    /**
+     * Créer une demande de coaching via AJAX (pour les utilisateurs)
+     */
+    #[Route('/create-ajax', name: 'create_ajax', methods: ['POST'])]
+    public function createAjax(Request $request): JsonResponse
+    {
+        $currentUser = $this->getCurrentUser();
+
+        // Vérifier que l'utilisateur est authentifié
+        if (!$currentUser) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Vous devez être connecté pour faire une demande.',
+            ], 401);
+        }
+
+        // Récupérer les données du formulaire
+        $coachId = $request->request->get('coaching_request')['coach'] ?? null;
+        $goal = $request->request->get('coaching_request')['goal'] ?? null;
+        $level = $request->request->get('coaching_request')['level'] ?? null;
+        $frequency = $request->request->get('coaching_request')['frequency'] ?? null;
+        $budget = $request->request->get('coaching_request')['budget'] ?? null;
+        $message = $request->request->get('coaching_request')['message'] ?? null;
+
+        // Validation
+        $errors = [];
+
+        if (!$coachId) {
+            $errors[] = 'Veuillez sélectionner un coach.';
+        }
+
+        if (!$message || strlen(trim($message)) < 10) {
+            $errors[] = 'Le message doit contenir au moins 10 caractères.';
+        }
+
+        if ($message && strlen($message) > 1000) {
+            $errors[] = 'Le message ne peut pas dépasser 1000 caractères.';
+        }
+
+        if (!empty($errors)) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => implode(' ', $errors),
+                'errors' => $errors,
+            ], 400);
+        }
+
+        // Récupérer le coach
+        $coach = $this->userRepository->find($coachId);
+        if (!$coach || !$coach->isCoach()) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Coach introuvable.',
+            ], 404);
+        }
+
+        // Vérifier qu'on ne fait pas une demande à soi-même
+        if ($coach->getId() === $currentUser->getId()) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Vous ne pouvez pas faire une demande à vous-même.',
+            ], 400);
+        }
+
+        // Créer la demande
+        $coachingRequest = new CoachingRequest();
+        $coachingRequest->setUser($currentUser);
+        $coachingRequest->setCoach($coach);
+        $coachingRequest->setMessage(trim($message));
+
+        if ($goal) {
+            $coachingRequest->setGoal($goal);
+        }
+        if ($level) {
+            $coachingRequest->setLevel($level);
+        }
+        if ($frequency) {
+            $coachingRequest->setFrequency($frequency);
+        }
+        if ($budget) {
+            $coachingRequest->setBudget((float) $budget);
+        }
+
+        // Détecter automatiquement la priorité basée sur le message
+        $coachingRequest->detectAndSetPriority();
+
+        try {
+            $this->entityManager->persist($coachingRequest);
+            $this->entityManager->flush();
+
+            return new JsonResponse([
+                'success' => true,
+                'message' => 'Votre demande a été envoyée avec succès !',
+                'requestId' => $coachingRequest->getId(),
+            ]);
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Une erreur est survenue lors de l\'envoi de votre demande.',
+            ], 500);
+        }
     }
 }

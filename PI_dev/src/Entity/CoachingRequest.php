@@ -14,6 +14,10 @@ class CoachingRequest
     public const STATUS_ACCEPTED = 'accepted';
     public const STATUS_DECLINED = 'declined';
 
+    public const PRIORITY_NORMAL = 'normal';
+    public const PRIORITY_MEDIUM = 'medium';
+    public const PRIORITY_URGENT = 'urgent';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -52,6 +56,33 @@ class CoachingRequest
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $respondedAt = null;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $goal = null;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $level = null;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $frequency = null;
+
+    #[ORM\Column(nullable: true)]
+    #[Assert\PositiveOrZero]
+    private ?float $budget = null;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $coachingType = null;
+
+    #[ORM\Column(length: 20)]
+    #[Assert\Choice(
+        choices: [self::PRIORITY_NORMAL, self::PRIORITY_MEDIUM, self::PRIORITY_URGENT],
+        message: "La priorité de la demande est invalide."
+    )]
+    private string $priority = self::PRIORITY_NORMAL;
+
+    #[ORM\ManyToOne(targetEntity: TimeSlot::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?TimeSlot $timeSlot = null;
 
     #[ORM\OneToOne(mappedBy: 'coachingRequest', cascade: ['persist', 'remove'])]
     private ?Session $session = null;
@@ -138,6 +169,126 @@ class CoachingRequest
 
         $this->session = $session;
 
+        return $this;
+    }
+
+    public function getGoal(): ?string
+    {
+        return $this->goal;
+    }
+
+    public function setGoal(?string $goal): static
+    {
+        $this->goal = $goal;
+        return $this;
+    }
+
+    public function getLevel(): ?string
+    {
+        return $this->level;
+    }
+
+    public function setLevel(?string $level): static
+    {
+        $this->level = $level;
+        return $this;
+    }
+
+    public function getFrequency(): ?string
+    {
+        return $this->frequency;
+    }
+
+    public function setFrequency(?string $frequency): static
+    {
+        $this->frequency = $frequency;
+        return $this;
+    }
+
+    public function getBudget(): ?float
+    {
+        return $this->budget;
+    }
+
+    public function setBudget(?float $budget): static
+    {
+        $this->budget = $budget;
+        return $this;
+    }
+
+    public function getCoachingType(): ?string
+    {
+        return $this->coachingType;
+    }
+
+    public function setCoachingType(?string $coachingType): static
+    {
+        $this->coachingType = $coachingType;
+        return $this;
+    }
+
+    public function getPriority(): string
+    {
+        return $this->priority;
+    }
+
+    public function setPriority(string $priority): static
+    {
+        $this->priority = $priority;
+        return $this;
+    }
+
+    public function isUrgent(): bool
+    {
+        return $this->priority === self::PRIORITY_URGENT;
+    }
+
+    public function isMedium(): bool
+    {
+        return $this->priority === self::PRIORITY_MEDIUM;
+    }
+
+    public function isNormal(): bool
+    {
+        return $this->priority === self::PRIORITY_NORMAL;
+    }
+
+    /**
+     * Détecte automatiquement la priorité basée sur le message
+     */
+    public function detectAndSetPriority(): static
+    {
+        $messageLower = strtolower($this->message ?? '');
+        
+        $urgentKeywords = ['urgent', 'urgence', 'crise', 'choc', 'immédiat', 'critique', 'grave', 'aide', 'sos', 'rapidement', 'vite'];
+        $mediumKeywords = ['important', 'bientôt', 'besoin', 'problème', 'difficulté', 'stress', 'anxiété', 'préoccupé'];
+        
+        foreach ($urgentKeywords as $keyword) {
+            if (str_contains($messageLower, $keyword)) {
+                $this->priority = self::PRIORITY_URGENT;
+                return $this;
+            }
+        }
+        
+        foreach ($mediumKeywords as $keyword) {
+            if (str_contains($messageLower, $keyword)) {
+                $this->priority = self::PRIORITY_MEDIUM;
+                return $this;
+            }
+        }
+        
+        $this->priority = self::PRIORITY_NORMAL;
+        return $this;
+    }
+
+    public function getTimeSlot(): ?TimeSlot
+    {
+        return $this->timeSlot;
+    }
+
+    public function setTimeSlot(?TimeSlot $timeSlot): static
+    {
+        $this->timeSlot = $timeSlot;
         return $this;
     }
 }
