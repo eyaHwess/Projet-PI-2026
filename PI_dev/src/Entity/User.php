@@ -120,11 +120,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var Collection<int, Reclamation>
      */
-<<<<<<< Updated upstream
-    #[ORM\OneToMany(targetEntity: Reclamation::class, mappedBy: 'userId', orphanRemoval: true)]
-=======
     #[ORM\OneToMany(targetEntity: Reclamation::class, mappedBy: 'user', orphanRemoval: true)]
->>>>>>> Stashed changes
     private Collection $reclamations;
 
     public function __construct()
@@ -341,12 +337,9 @@ public function addPost(Post $post): static
     return $this;
 }
  
-<<<<<<< Updated upstream
-=======
 /**
  * @return Collection<int, Reclamation>
  */
->>>>>>> Stashed changes
 public function getReclamations(): Collection
 {
     return $this->reclamations;
@@ -356,11 +349,7 @@ public function addReclamation(Reclamation $reclamation): static
 {
     if (!$this->reclamations->contains($reclamation)) {
         $this->reclamations->add($reclamation);
-<<<<<<< Updated upstream
-        $reclamation->setUserId($this);
-=======
         $reclamation->setUser($this);
->>>>>>> Stashed changes
     }
 
     return $this;
@@ -382,13 +371,8 @@ public function removeReclamation(Reclamation $reclamation): static
 {
     if ($this->reclamations->removeElement($reclamation)) {
         // set the owning side to null (unless already changed)
-<<<<<<< Updated upstream
-        if ($reclamation->getUserId() === $this) {
-            $reclamation->setUserId(null);
-=======
         if ($reclamation->getUser() === $this) {
             $reclamation->setUser(null);
->>>>>>> Stashed changes
         }
     }
 
