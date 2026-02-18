@@ -16,15 +16,20 @@ class LoginSuccessHandler implements AuthenticationSuccessHandlerInterface
 {
     $roles = $token->getRoleNames();
 
-    if (in_array('ROLE_ADMIN', $roles)) {
+    if (in_array('ROLE_ADMIN', $roles, true)) {
         return new RedirectResponse($this->router->generate('admin_dashboard'));
     }
 
-    if (in_array('ROLE_COACH', $roles)) {
+    if (in_array('ROLE_COACH', $roles, true)) {
         return new RedirectResponse($this->router->generate('app_coaching_request_index'));
     }
 
-    return new RedirectResponse($this->router->generate('user_dashboard'));
+    if (in_array('ROLE_USER', $roles, true)) {
+        return new RedirectResponse($this->router->generate('user_dashboard'));
+    }
+
+    // Fallback to homepage if no specific role
+    return new RedirectResponse($this->router->generate('app_home'));
 }
 
 }
