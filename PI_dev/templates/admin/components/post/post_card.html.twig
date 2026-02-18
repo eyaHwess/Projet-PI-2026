@@ -5,7 +5,7 @@
         <div class="d-flex align-items-center">
             <!-- Avatar -->
             <div class="avatar avatar-md me-2">
-                <img class="avatar-img rounded-circle" src="{{ asset('/adminDashboard/assets/images/avatar/01.jpg') }}" alt="avatar">
+                <img class="avatar-img rounded-circle" src="//adminDashboard/assets/images/avatar/01.jpg" alt="avatar">
             </div>
             <!-- Info -->
             <div>
@@ -57,7 +57,7 @@
         <!-- Comment Input -->
         <div class="d-flex align-items-center mb-3">
             <div class="avatar avatar-sm me-2">
-                <img class="avatar-img rounded-circle" src="{{ asset('/adminDashboard/assets/images/avatar/01.jpg') }}" alt="avatar">
+                <img class="avatar-img rounded-circle" src="//adminDashboard/assets/images/avatar/01.jpg" alt="avatar">
             </div>
             <div class="flex-grow-1">
                 <input type="text" class="form-control" placeholder="Write a comment..." id="commentInput{{ post.id }}">
@@ -72,7 +72,7 @@
                     {% for comment in post.comments %}
                         <div class="d-flex" id="comment{{ comment.id }}">
                             <div class="avatar avatar-sm me-2">
-                                <img class="avatar-img rounded-circle" src="{{ asset('/adminDashboard/assets/images/avatar/02.jpg') }}" alt="avatar">
+                                <img class="avatar-img rounded-circle" src="//adminDashboard/assets/images/avatar/02.jpg" alt="avatar">
                             </div>
                             <div class="flex-grow-1">
                                 <div class="d-flex justify-content-between align-items-start mb-1">
@@ -166,7 +166,7 @@ async function addComment(postId) {
                 const commentHTML = `
                     <div class="d-flex" id="comment${data.comment.id}">
                         <div class="avatar avatar-sm me-2">
-                            <img class="avatar-img rounded-circle" src="{{ asset('/adminDashboard/assets/images/avatar/01.jpg') }}" alt="avatar">
+                            <img class="avatar-img rounded-circle" src="//adminDashboard/assets/images/avatar/01.jpg" alt="avatar">
                         </div>
                         <div class="flex-grow-1">
                             <div class="bg-light rounded p-2">

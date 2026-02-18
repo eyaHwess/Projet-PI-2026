@@ -9,7 +9,7 @@
         content="Kayouta est votre espace pour organiser vos journées, créer des routines puissantes et suivre vos objectifs au quotidien.">
     <meta name="application-name" content="Kayouta">
     <meta name="author" content="Kayouta">
-    <link rel="manifest" href="{{ asset('images/manifest.json') }}">
+    <link rel="manifest" href="/images/manifest.json">
     <meta name="keywords"
         content="routines, organisation quotidienne, objectifs, coaching, productivité, bien-être">
     <meta name="creator" content="Kayouta">
@@ -19,7 +19,7 @@
     <meta property="og:title" content="Kayouta – Organise ta journée et tes routines">
     <meta property="og:description"
         content="Kayouta t’aide à structurer ta journée, créer des routines et suivre tes objectifs pour progresser chaque jour.">
-    <meta property="og:image" content="{{ asset('images/opengraph-image.png') }}">
+    <meta property="og:image" content="/images/opengraph-image.png">
     <meta property="og:image:width" content="1280">
     <meta property="og:image:height" content="640">
     <meta property="og:image:type" content="image/png">
@@ -28,15 +28,15 @@
     <meta name="twitter:title" content="Kayouta – Organise ta journée et tes routines">
     <meta name="twitter:description"
         content="Organise ton quotidien, crée des routines et deviens chaque jour une meilleure version de toi-même avec Kayouta.">
-    <meta name="twitter:image" content="{{ asset('images/opengraph-image.png') }}">
+    <meta name="twitter:image" content="/images/opengraph-image.png">
     <meta name="twitter:image:width" content="1280">
     <meta name="twitter:image:height" content="640">
     <meta name="twitter:image:type" content="image/png">
-    <link rel="icon" href="{{ asset('images/favicon.ico') }}" sizes="48x48" type="image/x-icon">
-    <link rel="icon" href="{{ asset('images/icon0.svg') }}" sizes="any" type="image/svg+xml">
-    <link rel="icon" href="{{ asset('images/icon1.png') }}" sizes="96x96" type="image/png">
-    <link rel="apple-touch-icon" href="{{ asset('images/apple-icon.png') }}" sizes="180x180" type="image/png">
-    <link rel="stylesheet" href="{{ asset('styles/home/output.css') }}">
+    <link rel="icon" href="/images/favicon.ico" sizes="48x48" type="image/x-icon">
+    <link rel="icon" href="/images/icon0.svg" sizes="any" type="image/svg+xml">
+    <link rel="icon" href="/images/icon1.png" sizes="96x96" type="image/png">
+    <link rel="apple-touch-icon" href="/images/apple-icon.png" sizes="180x180" type="image/png">
+    <link rel="stylesheet" href="/styles/home/output.css">
     <style>
         /* Navbar: liens et boutons visibles sur fond blanc */
         nav a:not([style*="background"]) { color: #27272a !important; }
@@ -51,7 +51,7 @@
         <nav class="fixed w-full top-0 z-50 px-4 md:px-16 lg:px-24 xl:px-32 py-4 border-b transition-all duration-300 border-neutral-300">
             <div class="max-w-7xl mx-auto flex items-center justify-between">
                 <a href="{{ path('app_home') }}">
-                    <img alt="Logo Kayouta" width="135" height="36" src="{{ asset('images/logo.svg') }}">
+                    <img alt="Logo Kayouta" width="135" height="36" src="/images/logo.svg">
                 </a>
                 <div class="hidden md:flex gap-3 items-center">
                     {% if app.user %}
@@ -96,7 +96,7 @@
     </div>
     <div id="mobileMenu" class="fixed top-0 right-0 z-50 w-full bg-white shadow-xl shadow-black/5 transition-all duration-300 ease-in-out h-0 overflow-hidden">
         <div class="flex items-center justify-between p-4">
-            <img alt="Logo Kayouta" width="135" height="36" src="{{ asset('images/logo.svg') }}">
+            <img alt="Logo Kayouta" width="135" height="36" src="/images/logo.svg">
             <svg id="closeMenu" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x size-6.5" aria-hidden="true">
                 <path d="M18 6 6 18"></path>
                 <path d="m6 6 12 12"></path>
@@ -132,7 +132,7 @@
     </div>
 
     <!-- Hero Section -->
-    <section class="bg-[url('{{ asset('images/hero-gradient-bg.png') }}')] bg-cover bg-center bg-no-repeat px-4 md:px-16 lg:px-24 xl:px-32">
+    <section class="bg-[url('/images/hero-gradient-bg.png')] bg-cover bg-center bg-no-repeat px-4 md:px-16 lg:px-24 xl:px-32">
         <div class="max-w-7xl mx-auto flex flex-col items-center justify-center h-screen">
             <div class="flex items-center gap-2 bg-white/50 backdrop-blur p-1 rounded-full">
                 <span class="px-3 text-sm text-zinc-700 font-medium">
@@ -161,7 +161,7 @@
                 <a href="#features" class="relative py-3 md:py-2.5 w-full md:w-auto px-8 bg-white/50 text-gray-600 font-medium text-center border border-white rounded-full">
                     Découvrir
                     <div class="absolute size-8 pointer-events-none right-0 top-full -translate-y-1/2">
-                        <img alt="mouse-arrow" width="24" height="24" src="{{ asset('images/mouse-arrow.svg') }}">
+                        <img alt="mouse-arrow" width="24" height="24" src="/images/mouse-arrow.svg">
                     </div>
                 </a>
             </div>
@@ -790,8 +790,8 @@
         <div class="border-x border-gray-200 px-4 md:px-12 max-w-7xl mx-auto pt-40">
             <div class="flex flex-col md:flex-row items-start justify-between relative p-8 md:p-12 overflow-hidden pb-32 md:pb-42 bg-linear-to-t from-orange-50 to-orange-100 rounded-t-2xl">
                 <div class="max-w-72">
-                    <img alt="Logo" width="135" height="35" class="h-62 w-auto absolute -bottom-18 opacity-7 select-none pointer-events-none" src="{{ asset('images/logo-colored.svg') }}">
-                    <img alt="Logo" width="135" height="35" class="h-9" src="{{ asset('images/logo-colored.svg') }}">
+                    <img alt="Logo" width="135" height="35" class="h-62 w-auto absolute -bottom-18 opacity-7 select-none pointer-events-none" src="/images/logo-colored.svg">
+                    <img alt="Logo" width="135" height="35" class="h-9" src="/images/logo-colored.svg">
                     <p class="text-zinc-500 mt-4 pb-6">
                         For further assistance or additional inquiries, feel free to contact us
                     </p>
@@ -828,7 +828,7 @@ Distributed by <a href="https://themewagon.com" target="_blank">ThemeWagon</a></
             </div>
         </div>
     </footer>
-    <script src="{{ asset('assets/script.js') }}"></script>
+    <script src="/assets/script.js"></script>
 </body>
 
 </html>
