@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: PostRepository::class)]
 class Post
@@ -17,16 +18,32 @@ class Post
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Le titre est obligatoire.')]
+    #[Assert\Length(
+        min: 3,
+        max: 255,
+        minMessage: 'Le titre doit contenir au moins {{ limit }} caractères.',
+        maxMessage: 'Le titre ne peut pas dépasser {{ limit }} caractères.'
+    )]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Assert\NotBlank(message: 'Le contenu est obligatoire.')]
+    #[Assert\Length(
+        min: 5,
+        max: 5000,
+        minMessage: 'Le contenu doit contenir au moins {{ limit }} caractères.',
+        maxMessage: 'Le contenu ne peut pas dépasser {{ limit }} caractères.'
+    )]
     private ?string $content = null;
 
     #[ORM\Column]
+    #[Assert\NotNull(message: 'La date de création est obligatoire.')]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'posts')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotNull(message: 'L’auteur est obligatoire.')]
     private ?User $createdBy = null;
 
     /**

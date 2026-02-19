@@ -1,313 +1,431 @@
 {% extends 'admin/base_admin.html.twig' %}
 
-{% block title %}Dashboard{% endblock %}
+{% block title %}Dashboard Admin{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .stat-card {
+            border-radius: 1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
+        }
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+        }
+    </style>
+{% endblock %}
 
 {% block content %}
-	<!-- Page main content START -->
 <div class="row g-4 pt-4">
+    <!-- Titre -->
+    <div class="col-12">
+        <h1 class="h3 mb-2 mb-sm-0">Dashboard Administrateur</h1>
+        <p class="text-muted mb-0">Vue d'ensemble de l'application Buildify</p>
+    </div>
 
-		<!-- Title -->
-		<div class="row">
-			<div class="col-12 mb-3">
-				<h1 class="h3 mb-2 mb-sm-0">Dashboard</h1>
-			</div>
-		</div>
+    <!-- Cartes statistiques principales -->
+    <div class="row g-4 mb-4">
+        <!-- Total Utilisateurs -->
+        <div class="col-sm-6 col-lg-3">
+            <div class="card stat-card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="text-muted mb-2">Total Utilisateurs</h6>
+                            <h2 class="mb-0 fw-bold">{{ totalUsers }}</h2>
+                            <small class="text-success">
+                                <i class="bi bi-arrow-up"></i> {{ totalCoaches }} coachs
+                            </small>
+                        </div>
+                        <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                            <i class="bi bi-people-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-		<!-- Counter boxes START -->
-		<div class="row g-4 mb-4">
+        <!-- Total Demandes -->
+        <div class="col-sm-6 col-lg-3">
+            <div class="card stat-card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="text-muted mb-2">Demandes Coaching</h6>
+                            <h2 class="mb-0 fw-bold">{{ totalRequests }}</h2>
+                            <small class="text-warning">
+                                <i class="bi bi-clock"></i> {{ pendingRequests }} en attente
+                            </small>
+                        </div>
+                        <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+                            <i class="bi bi-inbox-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-			{% include 'admin/components/counter_box.html.twig' with {
-				value: 500,
-				title: 'Total Users',
-				icon: 'bi bi-people-fill',
-				bgColor: 'bg-warning',
-				bgOpacity: 'bg-opacity-15',
-				iconBg: 'bg-warning'
-			} %}
+        <!-- Total Sessions -->
+        <div class="col-sm-6 col-lg-3">
+            <div class="card stat-card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="text-muted mb-2">Total Sessions</h6>
+                            <h2 class="mb-0 fw-bold">{{ totalSessions }}</h2>
+                            <small class="text-success">
+                                <i class="bi bi-check-circle"></i> {{ confirmedSessions }} confirmées
+                            </small>
+                        </div>
+                        <div class="stat-icon bg-success bg-opacity-10 text-success">
+                            <i class="bi bi-calendar-check-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-			{% include 'admin/components/counter_box.html.twig' with {
-				value: 123,
-				title: 'Active Routines',
-				icon: 'bi bi-journal-check',
-				bgColor: 'bg-purple',
-				bgOpacity: 'bg-opacity-10',
-				iconBg: 'bg-purple'
-			} %}
+        <!-- Total Objectifs -->
+        <div class="col-sm-6 col-lg-3">
+            <div class="card stat-card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="text-muted mb-2">Objectifs & Routines</h6>
+                            <h2 class="mb-0 fw-bold">{{ totalGoals }}</h2>
+                            <small class="text-info">
+                                <i class="bi bi-list-check"></i> {{ totalRoutines }} routines
+                            </small>
+                        </div>
+                        <div class="stat-icon bg-info bg-opacity-10 text-info">
+                            <i class="bi bi-bullseye"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-			{% include 'admin/components/counter_box.html.twig' with {
-				value: 47,
-				title: 'Pending Reclamations',
-				icon: 'bi bi-exclamation-triangle-fill',
-				bgColor: 'bg-primary',
-				bgOpacity: 'bg-opacity-10',
-				iconBg: 'bg-primary'
-			} %}
+    <!-- Graphiques et tableaux -->
+    <div class="row g-4 mb-4">
+        <!-- Graphique évolution (7 jours) -->
+        <div class="col-12 col-xl-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="card-header-title mb-0">
+                        <i class="bi bi-graph-up me-2"></i>Évolution (7 derniers jours)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="evolutionChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
 
-			{% include 'admin/components/counter_box.html.twig' with {
-				value: 67,
-				title: 'Coach Requests',
-				icon: 'bi bi-person-plus-fill',
-				bgColor: 'bg-success',
-				bgOpacity: 'bg-opacity-10',
-				iconBg: 'bg-success'
-			} %}
+        <!-- Répartition demandes -->
+        <div class="col-12 col-xl-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="card-header-title mb-0">
+                        <i class="bi bi-pie-chart-fill me-2"></i>Demandes par statut
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="requestsChart"></canvas>
+                    <div class="mt-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span><i class="bi bi-circle-fill text-warning me-2"></i>En attente</span>
+                            <strong>{{ pendingRequests }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span><i class="bi bi-circle-fill text-success me-2"></i>Acceptées</span>
+                            <strong>{{ acceptedRequests }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span><i class="bi bi-circle-fill text-danger me-2"></i>Refusées</span>
+                            <strong>{{ declinedRequests }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-		</div>
+    <!-- Répartition sessions et tableaux -->
+    <div class="row g-4 mb-4">
+        <!-- Répartition sessions -->
+        <div class="col-12 col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="card-header-title mb-0">
+                        <i class="bi bi-bar-chart-fill me-2"></i>Sessions par statut
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="sessionsChart"></canvas>
+                </div>
+            </div>
+        </div>
 
-		<!-- Counter boxes END -->
+        <!-- Utilisateurs récents -->
+        <div class="col-12 col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="card-header-title mb-0">
+                        <i class="bi bi-person-plus-fill me-2"></i>Utilisateurs récents
+                    </h5>
+                    <a href="{{ path('admin_user_list') }}" class="btn btn-sm btn-link p-0">Voir tout</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Email</th>
+                                    <th>Rôle</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in recentUsers %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-2">
+                                                <i class="bi bi-person-fill text-primary"></i>
+                                            </div>
+                                            <strong>{{ user.firstName }} {{ user.lastName }}</strong>
+                                        </div>
+                                    </td>
+                                    <td><small class="text-muted">{{ user.email }}</small></td>
+                                    <td>
+                                        {% if 'ROLE_COACH' in user.roles %}
+                                            <span class="badge bg-success">Coach</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">User</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><small class="text-muted">{{ user.createdAt|date('d/m/Y') }}</small></td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-3">Aucun utilisateur récent</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-		<!-- Chart and Ticket START -->
-		<div class="row g-4 mb-4">
+    <!-- Demandes et sessions récentes -->
+    <div class="row g-4">
+        <!-- Demandes récentes -->
+        <div class="col-12 col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="card-header-title mb-0">
+                        <i class="bi bi-inbox me-2"></i>Demandes récentes
+                    </h5>
+                    <a href="{{ path('admin_coach_requests') }}" class="btn btn-sm btn-link p-0">Voir tout</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for request in recentRequests %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">{{ request.user.firstName }} {{ request.user.lastName }}</h6>
+                                    <p class="mb-1 small text-muted">{{ request.message|slice(0, 60) }}{% if request.message|length > 60 %}...{% endif %}</p>
+                                    <small class="text-muted">{{ request.createdAt|date('d/m/Y à H:i') }}</small>
+                                </div>
+                                <span class="badge {% if request.status == 'pending' %}bg-warning{% elseif request.status == 'accepted' %}bg-success{% else %}bg-danger{% endif %}">
+                                    {{ request.status }}
+                                </span>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="list-group-item text-center text-muted py-3">Aucune demande récente</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
 
-			<!-- Chart START -->
-			<div class="col-xxl-8">
-				<div class="card shadow h-100">
+        <!-- Sessions récentes -->
+        <div class="col-12 col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="card-header-title mb-0">
+                        <i class="bi bi-calendar-event me-2"></i>Sessions récentes
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for session in recentSessions %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">
+                                        Session #{{ session.id }}
+                                    </h6>
+                                    <p class="mb-1 small text-muted">
+                                        Coach: {{ session.coachingRequest.coach.firstName }} {{ session.coachingRequest.coach.lastName }}<br>
+                                        Client: {{ session.coachingRequest.user.firstName }} {{ session.coachingRequest.user.lastName }}
+                                    </p>
+                                    <small class="text-muted">{{ session.createdAt|date('d/m/Y à H:i') }}</small>
+                                </div>
+                                <span class="badge {% if session.status == 'confirmed' %}bg-success{% elseif session.status == 'completed' %}bg-primary{% elseif session.status == 'cancelled' %}bg-danger{% else %}bg-warning{% endif %}">
+                                    {{ session.status }}
+                                </span>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="list-group-item text-center text-muted py-3">Aucune session récente</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
 
-					<!-- Card header -->
-					<div class="card-header p-4 border-bottom">
-						<h5 class="card-header-title">Earnings</h5>
-					</div>
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        // Graphique évolution (7 jours)
+        const ctxEvolution = document.getElementById('evolutionChart');
+        if (ctxEvolution) {
+            new Chart(ctxEvolution, {
+                type: 'line',
+                data: {
+                    labels: {{ chartData.labels|json_encode|raw }},
+                    datasets: [{
+                        label: 'Utilisateurs',
+                        data: {{ chartData.users|json_encode|raw }},
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Sessions',
+                        data: {{ chartData.sessions|json_encode|raw }},
+                        borderColor: 'rgb(34, 197, 94)',
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Demandes',
+                        data: {{ chartData.requests|json_encode|raw }},
+                        borderColor: 'rgb(249, 115, 22)',
+                        backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
 
-					<!-- Card body -->
-					<div class="card-body">
-						<!-- Apex chart -->
-						<div id="ChartPayout"></div>
-					</div>
-				</div>
-			</div>
-			<!-- Chart END -->
-			{% embed 'admin/components/card/card_base.html.twig' with {
-			title: 'Support Requests',
-			viewAllLink: '#'
-			} %}
+        // Graphique demandes par statut (camembert)
+        const ctxRequests = document.getElementById('requestsChart');
+        if (ctxRequests) {
+            new Chart(ctxRequests, {
+                type: 'doughnut',
+                data: {
+                    labels: ['En attente', 'Acceptées', 'Refusées'],
+                    datasets: [{
+                        data: [{{ pendingRequests }}, {{ acceptedRequests }}, {{ declinedRequests }}],
+                        backgroundColor: [
+                            'rgb(251, 191, 36)',
+                            'rgb(34, 197, 94)',
+                            'rgb(239, 68, 68)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
 
-			{% block content %}
-
-				{% include 'admin/components/card/first_item.html.twig' with {
-				avatar: asset('adminDashboard/assets/images/avatar/09.jpg'),
-				name: 'Lori Stevens',
-				message: 'New ticket #759 from Lori Stevens for General Enquiry',
-				time: '8 hour ago'
-				} %}
-
-				<hr>
-
-				{% include 'admin/components/card/first_item.html.twig' with {
-				avatar: '',
-				name: 'Dennis Barrett',
-				message: 'Comment from Billy Vasquez on ticket #659',
-				time: '8 hour ago'
-				} %}
-
-				<hr>
-
-				{% include 'admin/components/card/first_item.html.twig' with {
-				avatar: '',
-				name: 'Dennis Barrett',
-				message: '<b>Webestica</b> assign you a new ticket for <b>Eduport theme</b>',
-				time: '5 hour ago'
-				} %}
-
-				<hr>
-
-				{% include 'admin/components/card/first_item.html.twig' with {
-				avatar: asset('adminDashboard/assets/images/avatar/04.jpg'),
-				name: 'Dennis Barrett',
-				message: 'Thanks for contact us with your issues.',
-				time: '9 hour ago'
-				} %}
-
-			{% endblock %}
-
-			{% endembed %}
-
-		</div>
-		<!-- Chart and Ticket END -->
-
-		<!-- Top listed Cards START -->
-		<div class="row g-4">
-
-			<!-- Top instructors START -->
-			{% embed 'admin/components/card/card_base.html.twig' with {
-				title: 'Top Instructors',
-				viewAllLink: '#'
-			} %}
-
-				{% block content %}
-
-					{% include 'admin/components/card/second_item.html.twig' with {
-						avatar: asset('adminDashboard/assets/images/avatar/09.jpg'),
-						name: 'Lori Stevens',
-						verified: true,
-						courses: 25,
-						rating: 4.5
-					} %}
-					<hr>
-
-					{% include 'admin/components/card/second_item.html.twig' with {
-						avatar: asset('adminDashboard/assets/images/avatar/03.jpg'),
-						name: 'Dennis Barrett',
-						courses: 18,
-						rating: 4.5
-					} %}
-					<hr>
-
-					{% include 'admin/components/card/second_item.html.twig' with {
-						avatar: asset('adminDashboard/assets/images/avatar/01.jpg'),
-						name: 'Jacqueline Miller',
-						verified: true,
-						courses: 21,
-						rating: 4.8
-					} %}
-					<hr>
-
-					{% include 'admin/components/card/second_item.html.twig' with {
-						avatar: asset('adminDashboard/assets/images/avatar/04.jpg'),
-						name: 'Billy Vasquez',
-						courses: 15,
-						rating: 4.5
-					} %}
-					<hr>
-
-					{% include 'admin/components/card/second_item.html.twig' with {
-						avatar: asset('adminDashboard/assets/images/avatar/05.jpg'),
-						name: 'Amanda Reed',
-						verified: true,
-						courses: 29,
-						rating: 4.5
-					} %}
-
-				{% endblock %}
-
-			{% endembed %}
-
-			<!-- Top instructors END -->
-
-			<!-- Notice Board START -->
-			<div class="col-lg-6 col-xxl-4">
-				<div class="card shadow h-100">
-					<!-- Card header -->
-					<div class="card-header border-bottom p-4">
-						<h5 class="card-header-title">Notice board</h5>
-					</div>
-
-					<!-- Card body START -->
-					<div class="card-body p-4">
-						<div class="custom-scrollbar h-300px">
-
-							<!-- Notice Board item START -->
-							<div class="d-flex justify-content-between position-relative">
-								<div class="d-sm-flex">
-									<div class="icon-lg bg-purple bg-opacity-10 text-purple rounded-2 flex-shrink-0"><i class="fas fa-user-tie fs-5"></i></div>
-									<!-- Info -->
-									<div class="ms-0 ms-sm-3 mt-2 mt-sm-0">
-										<h6 class="mb-0"><a href="#" class="stretched-link">Join New Instructor</a></h6>
-										<p class="mb-0">Amongst moments do in arrived Fat weddings believed prospect</p>
-										<span class="small">5 min ago</span>
-									</div>
-								</div>
-							</div>
-							<!-- Notice Board item END -->
-
-							<hr><!-- Divider -->
-
-							<!-- Notice Board item START -->
-							<div class="d-flex justify-content-between position-relative">
-								<div class="d-sm-flex">
-									<div class="icon-lg bg-orange bg-opacity-10 text-orange rounded-2 flex-shrink-0"><i class="fas fa-book-open fs-5"></i></div>
-									<!-- Info -->
-									<div class="ms-0 ms-sm-3 mt-2 mt-sm-0">
-										<h6 class="mb-0"><a href="#" class="stretched-link">Update New Course</a></h6>
-										<p class="mb-0">Arrived Fat weddings believed prospect</p>
-										<span class="small">4 hour ago</span>
-									</div>
-								</div>
-							</div>
-							<!-- Notice Board item END -->
-
-							<hr><!-- Divider -->
-
-							<!-- Notice Board item START -->
-							<div class="d-flex justify-content-between position-relative">
-								<div class="d-sm-flex">
-									<div class="icon-lg bg-info bg-opacity-10 text-info rounded-2 flex-shrink-0"><i class="fas fa-book fs-5"></i></div>
-									<!-- Info -->
-									<div class="ms-0 ms-sm-3 mt-2 mt-sm-0">
-										<h6 class="mb-0"><a href="#" class="stretched-link">Update Syllabus</a></h6>
-										<p class="mb-0">Arrived Fat weddings believed prospect</p>
-										<span class="small">2 days ago</span>
-									</div>
-								</div>
-							</div>
-							<!-- Notice Board item END -->
-
-							<hr><!-- Divider -->
-
-							<!-- Notice Board item START -->
-							<div class="d-flex justify-content-between position-relative">
-								<div class="d-sm-flex">
-									<div class="icon-lg bg-danger bg-opacity-10 text-danger rounded-2 flex-shrink-0"><i class="fas fa-globe fs-5"></i></div>
-									<!-- Info -->
-									<div class="ms-0 ms-sm-3 mt-2 mt-sm-0">
-										<h6 class="mb-0"><a href="#" class="stretched-link">Update New Feature</a></h6>
-										<p class="mb-0">Arrived Fat weddings believed prospect</p>
-										<span class="small">3 days ago</span>
-									</div>
-								</div>
-							</div>
-							<!-- Notice Board item END -->
-						</div>
-					</div>
-					<!-- Card body END -->
-
-					<!-- Card footer START -->
-					<div class="card-footer border-top">
-						<div class="alert alert-success d-flex align-items-center mb-0 py-2">
-							<div>
-								<small class="mb-0">45 more notices listed</small>
-							</div>
-							<div class="ms-auto">
-								<a class="btn btn-sm btn-success-soft mb-0" href="#!"> View all </a>
-							</div>
-						</div>
-					</div>
-					<!-- Card footer START -->
-				</div>
-			</div>
-			<!-- Notice Board END -->
-
-			<!-- Traffic sources START -->
-			<div class="col-lg-6 col-xxl-4">
-				<div class="card shadow h-100">
-
-					<!-- Card header -->
-					<div class="card-header border-bottom d-flex justify-content-between align-items-center p-4">
-						<h5 class="card-header-title">Traffic Sources</h5>
-						<a href="#" class="btn btn-link p-0 mb-0">View all</a>
-					</div>
-
-					<!-- Card body START -->
-					<div class="card-body p-4">
-						<!-- Chart -->
-						<div class="col-sm-6 mx-auto">
-							<div id="ChartTrafficViews"></div>
-						</div>
-
-						<!-- Content -->
-						<ul class="list-group list-group-borderless mt-3">
-							<li class="list-group-item"><i class="text-primary fas fa-circle me-2"></i>Create a Design System in Figma</li>
-							<li class="list-group-item"><i class="text-success fas fa-circle me-2"></i>The Complete Digital Marketing Course - 12 Courses in 1</li>
-							<li class="list-group-item"><i class="text-warning fas fa-circle me-2"></i>Google Ads Training: Become a PPC Expert</li>
-							<li class="list-group-item"><i class="text-danger fas fa-circle me-2"></i>Microsoft Excel - Excel from Beginner to Advanced</li>
-						</ul>
-					</div>
-				</div>
-				<!-- Card body END -->
-			</div>
-			<!-- Traffic sources END -->
-
-		</div>
-		<!-- Top listed Cards END -->
-
-	</div>
-    {% endblock %}
+        // Graphique sessions par statut (barres)
+        const ctxSessions = document.getElementById('sessionsChart');
+        if (ctxSessions) {
+            new Chart(ctxSessions, {
+                type: 'bar',
+                data: {
+                    labels: ['En planification', 'Confirmées', 'Terminées', 'Annulées'],
+                    datasets: [{
+                        label: 'Nombre de sessions',
+                        data: [{{ schedulingSessions }}, {{ confirmedSessions }}, {{ completedSessions }}, {{ cancelledSessions }}],
+                        backgroundColor: [
+                            'rgba(251, 191, 36, 0.8)',
+                            'rgba(34, 197, 94, 0.8)',
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(239, 68, 68, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgb(251, 191, 36)',
+                            'rgb(34, 197, 94)',
+                            'rgb(59, 130, 246)',
+                            'rgb(239, 68, 68)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+{% endblock %}

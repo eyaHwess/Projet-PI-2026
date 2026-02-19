@@ -30,18 +30,6 @@ class GoalRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    /**
-     * Récupère les goals auxquels un utilisateur participe
-     */
-    public function findByUser(User $user): array
-    {
-        return $this->createQueryBuilder('g')
-            ->innerJoin('g.goalParticipations', 'gp')
-            ->where('gp.user = :user')
-            ->setParameter('user', $user)
-            ->getQuery()
-            ->getResult();
-    }
 
     /**
      * Récupère les goals actifs
@@ -80,4 +68,40 @@ class GoalRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+    public function countByUser(User $user): int
+    {
+        return (int) $this->createQueryBuilder('g')
+            ->select('COUNT(g.id)')
+            ->where('g.user = :user')
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Premier objectif de l'utilisateur (pour affichage).
+     */
+    public function findFirstByUser(User $user): ?Goal
+    {
+        return $this->createQueryBuilder('g')
+            ->where('g.user = :user')
+            ->setParameter('user', $user)
+            ->orderBy('g.createdAt', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
+     * @return Goal[] Returns an array of Goal objects
+     */
+    public function findByUser($userId): array
+    {
+        return $this->createQueryBuilder('g')
+            ->andWhere('g.user = :userId')
+            ->setParameter('userId', $userId)
+            ->orderBy('g.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

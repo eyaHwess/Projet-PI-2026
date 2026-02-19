@@ -1,0 +1,43 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}User Statistics{% endblock %}
+
+{% block content %}
+
+<div class="row g-4 pt-4">
+
+    <!-- Title -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <h1 class="h3 mb-0">User Statistics</h1>
+        </div>
+    </div>
+
+    <!-- Top 3 Cards Row -->
+    <div class="row g-4 mb-4">
+        <!-- User Growth Card -->
+        <div class="col-md-4">
+            {% include 'admin/components/statistics/user_growth_card.html.twig' %}
+        </div>
+
+        <!-- Active Routines Card -->
+        <div class="col-md-4">
+            {% include 'admin/components/statistics/active_routines_card.html.twig' %}
+        </div>
+
+        <!-- Completion Rate Card -->
+        <div class="col-md-4">
+            {% include 'admin/components/statistics/completion_rate_card.html.twig' %}
+        </div>
+    </div>
+
+    <!-- Large Chart Card -->
+    <div class="row">
+        <div class="col-12">
+            {% include 'admin/components/statistics/main_chart_card.html.twig' %}
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

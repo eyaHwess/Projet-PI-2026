@@ -1,0 +1,201 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Sessions{% endblock %}
+
+{% block stylesheets %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+    <style>
+        :root { --orange-primary: #f97316; }
+        .navbar-custom { background-color: #fff !important; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .navbar-custom .nav-link { color: #212529 !important; }
+        .navbar-custom .nav-link:hover { color: var(--orange-primary) !important; }
+        .navbar-custom .navbar-brand { color: #212529 !important; }
+        .btn-orange { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); border: none; color: white; border-radius: 50px; font-weight: 600; }
+        .table-custom { border-radius: 15px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .badge-scheduling { background: #fef3c7; color: #92400e; }
+        .badge-confirmed { background: #d1fae5; color: #065f46; }
+        .badge-completed { background: #dbeafe; color: #1e40af; }
+        .badge-cancelled { background: #fee2e2; color: #991b1b; }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <section class="pt-5 pb-5">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="mb-0">
+                    <i class="bi bi-calendar-event me-2" style="color: var(--orange-primary);"></i>
+                    Gestion des Sessions
+                </h1>
+                <a href="{{ path('app_session_crud_new') }}" class="btn btn-orange">
+                    <i class="bi bi-plus-circle me-2"></i>Ajouter une session
+                </a>
+            </div>
+
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle me-2"></i>{{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-circle me-2"></i>{{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+
+            {% if sessions|length > 0 %}
+                <div class="card border-0 table-custom">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Date et Heure</th>
+                                        <th>Durée</th>
+                                        <th>Coach</th>
+                                        <th>Utilisateur</th>
+                                        <th>Statut</th>
+                                        <th class="text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for session in sessions %}
+                                        <tr>
+                                            <td><strong>#{{ session.id }}</strong></td>
+                                            <td>
+                                                {% if session.scheduledAt %}
+                                                    <i class="bi bi-calendar3 me-1"></i>
+                                                    {{ session.scheduledAt|date('d/m/Y à H:i') }}
+                                                {% else %}
+                                                    <span class="text-muted">Non planifiée</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if session.duration %}
+                                                    <i class="bi bi-clock me-1"></i>{{ session.duration }} min
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <i class="bi bi-person-badge me-1"></i>
+                                                {{ session.coachingRequest.coach.firstName }} {{ session.coachingRequest.coach.lastName }}
+                                            </td>
+                                            <td>
+                                                <i class="bi bi-person me-1"></i>
+                                                {{ session.coachingRequest.user.firstName }} {{ session.coachingRequest.user.lastName }}
+                                            </td>
+                                            <td>
+                                                <span class="badge 
+                                                    {% if session.status == 'scheduling' %}badge-scheduling
+                                                    {% elseif session.status == 'confirmed' %}badge-confirmed
+                                                    {% elseif session.status == 'completed' %}badge-completed
+                                                    {% elseif session.status == 'cancelled' %}badge-cancelled
+                                                    {% else %}bg-secondary{% endif %} rounded-pill px-3 py-1">
+                                                    {% if session.status == 'scheduling' %}En planification
+                                                    {% elseif session.status == 'proposed_by_user' %}Proposé par utilisateur
+                                                    {% elseif session.status == 'proposed_by_coach' %}Proposé par coach
+                                                    {% elseif session.status == 'confirmed' %}Confirmée
+                                                    {% elseif session.status == 'completed' %}Terminée
+                                                    {% elseif session.status == 'cancelled' %}Annulée
+                                                    {% endif %}
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group" role="group">
+                                                    <a href="{{ path('app_session_crud_edit', {id: session.id}) }}" 
+                                                       class="btn btn-sm btn-outline-primary" 
+                                                       title="Modifier">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+                                                    <button type="button" 
+                                                            class="btn btn-sm btn-outline-danger" 
+                                                            data-bs-toggle="modal" 
+                                                            data-bs-target="#deleteModal{{ session.id }}"
+                                                            title="Supprimer">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+
+                                                <!-- Modal de confirmation de suppression -->
+                                                <div class="modal fade" id="deleteModal{{ session.id }}" tabindex="-1">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title">Confirmer la suppression</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                Êtes-vous sûr de vouloir supprimer cette session?
+                                                                <br><strong>Coach:</strong> {{ session.coachingRequest.coach.firstName }} {{ session.coachingRequest.coach.lastName }}
+                                                                <br><strong>Date:</strong> {{ session.scheduledAt ? session.scheduledAt|date('d/m/Y à H:i') : 'Non planifiée' }}
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                                                <form method="post" action="{{ path('app_session_crud_delete', {id: session.id}) }}" class="d-inline session-delete-form" data-session-id="{{ session.id }}">
+                                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ session.id) }}">
+                                                                    <button type="submit" class="btn btn-danger btn-delete-session">Supprimer</button>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-calendar-x" style="font-size: 4rem; color: #ccc;"></i>
+                    <h3 class="mt-3">Aucune session</h3>
+                    <p class="text-muted">Commencez par ajouter une nouvelle session</p>
+                    <a href="{{ path('app_session_crud_new') }}" class="btn btn-orange mt-3">
+                        <i class="bi bi-plus-circle me-2"></i>Ajouter une session
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+{% endblock %}
+
+{% block javascripts %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.querySelectorAll('.session-delete-form').forEach(function(form) {
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                var btn = this.querySelector('.btn-delete-session');
+                var sessionId = this.getAttribute('data-session-id');
+                btn.disabled = true;
+                var formData = new FormData(this);
+                try {
+                    var res = await fetch(this.action, { method: 'POST', body: formData, headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                    var data = await res.json();
+                    if (data.success) {
+                        var modal = document.getElementById('deleteModal' + sessionId);
+                        if (modal && window.bootstrap) {
+                            var m = bootstrap.Modal.getInstance(modal);
+                            if (m) m.hide();
+                        }
+                        location.reload();
+                    } else {
+                        alert(data.message || 'Erreur.');
+                        btn.disabled = false;
+                    }
+                } catch (err) {
+                    alert('Erreur réseau.');
+                    btn.disabled = false;
+                }
+            });
+        });
+    </script>
+{% endblock %}

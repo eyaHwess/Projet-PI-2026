@@ -9,9 +9,9 @@ use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
-use App\Enums\UserRole;
-use App\Enums\UserStatus;
-
+use App\Enum\UserRole;
+use App\Enum\UserStatus;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`', uniqueConstraints: [
     new ORM\UniqueConstraint(name: 'UNIQ_USER_EMAIL', columns: ['email'])
@@ -62,12 +62,40 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?float $rating = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?int $reviewCount = 0;
+
+    #[ORM\Column(nullable: true)]
+    #[Assert\PositiveOrZero]
+    private ?float $pricePerSession = null;
+
+    #[ORM\Column(length: 500, nullable: true)]
+    private ?string $bio = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $photoUrl = null;
+
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $badges = [];
+
+    #[ORM\Column(nullable: true)]
+    private ?bool $respondsQuickly = false;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $totalSessions = 0;
+
     #[ORM\Column(type: 'datetime_immutable')]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $lastActivityAt = null;
+
+    /**
+     * @var Collection<int, Post>
+     */
     #[ORM\OneToMany(targetEntity: Post::class, mappedBy: 'createdBy')]
     private Collection $posts;
 
@@ -150,13 +178,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getComments(): Collection { return $this->comments; }
-
-    public function getPostLikes(): Collection { return $this->postLikes; }
-
    
 
-    
     public function setRoles(array $roles): static
     {
         $this->roles = $roles;
@@ -247,6 +270,11 @@ public function setUpdatedAt(?\DateTimeImmutable $updatedAt): self
     return $this;
 }
 
+public function isCoach(): bool
+{
+    return in_array('ROLE_COACH', $this->roles, true);
+}
+
 /**
  * @return Collection<int, GoalParticipation>
  */
@@ -275,4 +303,198 @@ public function removeGoalParticipation(GoalParticipation $goalParticipation): s
 
     return $this;
 }
+
+/**
+ * @return Collection<int, Comment>
+ */
+public function getComments(): Collection
+{
+    return $this->comments;
+}
+
+public function addComment(Comment $comment): static
+{
+    if (!$this->comments->contains($comment)) {
+        $this->comments->add($comment);
+        $comment->setCommenter($this);
+    }
+
+    return $this;
+}
+
+public function removeComment(Comment $comment): static
+{
+    if ($this->comments->removeElement($comment)) {
+        // set the owning side to null (unless already changed)
+        if ($comment->getCommenter() === $this) {
+            $comment->setCommenter(null);
+        }
+    }
+
+    return $this;
+}
+
+/**
+ * @return Collection<int, PostLike>
+ */
+public function getPostLikes(): Collection
+{
+    return $this->postLikes;
+}
+
+public function addPostLike(PostLike $postLike): static
+{
+    if (!$this->postLikes->contains($postLike)) {
+        $this->postLikes->add($postLike);
+        $postLike->setLiker($this);
+    }
+
+    return $this;
+}
+
+public function removePostLike(PostLike $postLike): static
+{
+    if ($this->postLikes->removeElement($postLike)) {
+        // set the owning side to null (unless already changed)
+        if ($postLike->getLiker() === $this) {
+            $postLike->setLiker(null);
+        }
+    }
+
+    return $this;
+}
+
+public function getReviewCount(): ?int
+{
+    return $this->reviewCount;
+}
+
+public function setReviewCount(?int $reviewCount): static
+{
+    $this->reviewCount = $reviewCount;
+    return $this;
+}
+
+public function getPricePerSession(): ?float
+{
+    return $this->pricePerSession;
+}
+
+public function setPricePerSession(?float $pricePerSession): static
+{
+    $this->pricePerSession = $pricePerSession;
+    return $this;
+}
+
+public function getBio(): ?string
+{
+    return $this->bio;
+}
+
+public function setBio(?string $bio): static
+{
+    $this->bio = $bio;
+    return $this;
+}
+
+public function getPhotoUrl(): ?string
+{
+    return $this->photoUrl;
+}
+
+public function setPhotoUrl(?string $photoUrl): static
+{
+    $this->photoUrl = $photoUrl;
+    return $this;
+}
+
+public function getBadges(): ?array
+{
+    return $this->badges ?? [];
+}
+
+public function setBadges(?array $badges): static
+{
+    $this->badges = $badges;
+    return $this;
+}
+
+public function addBadge(string $badge): static
+{
+    if (!in_array($badge, $this->badges ?? [])) {
+        $this->badges[] = $badge;
+    }
+    return $this;
+}
+
+public function getRespondsQuickly(): ?bool
+{
+    return $this->respondsQuickly;
+}
+
+public function setRespondsQuickly(?bool $respondsQuickly): static
+{
+    $this->respondsQuickly = $respondsQuickly;
+    return $this;
+}
+
+public function getTotalSessions(): ?int
+{
+    return $this->totalSessions;
+}
+
+public function setTotalSessions(?int $totalSessions): static
+{
+    $this->totalSessions = $totalSessions;
+    return $this;
+}
+
+public function getLastActivityAt(): ?\DateTimeImmutable
+{
+    return $this->lastActivityAt;
+}
+
+public function setLastActivityAt(?\DateTimeImmutable $lastActivityAt): static
+{
+    $this->lastActivityAt = $lastActivityAt;
+    return $this;
+}
+
+public function updateLastActivity(): static
+{
+    $this->lastActivityAt = new \DateTimeImmutable();
+    return $this;
+}
+
+public function isOnline(): bool
+{
+    if (!$this->lastActivityAt) {
+        return false;
+    }
+    
+    $now = new \DateTimeImmutable();
+    $diff = $now->getTimestamp() - $this->lastActivityAt->getTimestamp();
+    
+    // Considéré en ligne si activité dans les 5 dernières minutes
+    return $diff < 300;
+}
+
+public function getOnlineStatus(): string
+{
+    if (!$this->lastActivityAt) {
+        return 'offline';
+    }
+    
+    $now = new \DateTimeImmutable();
+    $diff = $now->getTimestamp() - $this->lastActivityAt->getTimestamp();
+    
+    if ($diff < 300) { // 5 minutes
+        return 'online';
+    } elseif ($diff < 3600) { // 1 heure
+        return 'away';
+    } else {
+        return 'offline';
+    }
+}
+
 }

@@ -12,14 +12,19 @@ class LoginSuccessHandler implements AuthenticationSuccessHandlerInterface
 {
     public function __construct(private RouterInterface $router) {}
 
-    public function onAuthenticationSuccess(Request $request, TokenInterface $token): RedirectResponse
-    {
-        $roles = $token->getRoleNames();
+   public function onAuthenticationSuccess(Request $request, TokenInterface $token): RedirectResponse
+{
+    $roles = $token->getRoleNames();
 
-        return match (true) {
-            in_array('ROLE_ADMIN', $roles) => new RedirectResponse($this->router->generate('admin_dashboard')),
-            in_array('ROLE_COACH', $roles) => new RedirectResponse($this->router->generate('coach_dashboard')),
-            default => new RedirectResponse($this->router->generate('user_dashboard')),
-        };
+    if (in_array('ROLE_ADMIN', $roles)) {
+        return new RedirectResponse($this->router->generate('admin_dashboard'));
     }
+
+    if (in_array('ROLE_COACH', $roles)) {
+        return new RedirectResponse($this->router->generate('app_coaching_request_index'));
+    }
+
+    return new RedirectResponse($this->router->generate('user_dashboard'));
+}
+
 }

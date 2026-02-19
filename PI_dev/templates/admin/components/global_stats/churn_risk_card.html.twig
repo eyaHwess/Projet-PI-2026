@@ -1,0 +1,96 @@
+<!-- Churn Risk Prediction Card (AI) -->
+<div class="card bg-transparent border">
+    <div class="card-header bg-transparent border-bottom">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="card-header-title mb-0">Churn Risk Prediction</h5>
+                <p class="mb-0 small text-muted">AI-Powered Analysis</p>
+            </div>
+            <span class="badge bg-warning bg-opacity-10 text-warning">
+                <i class="fas fa-robot me-1"></i> AI Analysis
+            </span>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <div id="churnRiskGauge"></div>
+            </div>
+            <div class="col-md-6">
+                <h6 class="mb-3">Risk Factors</h6>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="small">Low Engagement</span>
+                        <span class="badge bg-danger bg-opacity-10 text-danger">High</span>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-danger" style="width: {{ churnData.factors.lowEngagement }}%"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="small">Inactive Routines</span>
+                        <span class="badge bg-warning bg-opacity-10 text-warning">Medium</span>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-warning" style="width: {{ churnData.factors.inactiveRoutines }}%"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="small">No Coach Interaction</span>
+                        <span class="badge bg-success bg-opacity-10 text-success">Low</span>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-success" style="width: {{ churnData.factors.noCoachInteraction }}%"></div>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-light rounded">
+                    <small class="text-muted d-block mb-1">Users at Risk</small>
+                    <h4 class="mb-0 text-danger">{{ churnData.usersAtRisk }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var churnRisk = {{ churnData.riskPercentage }};
+    var color = churnRisk > 60 ? '#d6293e' : (churnRisk > 30 ? '#f7c32e' : '#0cbc87');
+    
+    var options = {
+        series: [churnRisk],
+        chart: {
+            height: 250,
+            type: 'radialBar',
+        },
+        plotOptions: {
+            radialBar: {
+                hollow: {
+                    size: '60%',
+                },
+                dataLabels: {
+                    name: {
+                        fontSize: '16px',
+                    },
+                    value: {
+                        fontSize: '24px',
+                        formatter: function(val) {
+                            return val + '%'
+                        }
+                    }
+                },
+                track: {
+                    background: '#f2f2f2',
+                }
+            },
+        },
+        colors: [color],
+        labels: ['Churn Risk'],
+    };
+
+    var chart = new ApexCharts(document.querySelector("#churnRiskGauge"), options);
+    chart.render();
+});
+</script>

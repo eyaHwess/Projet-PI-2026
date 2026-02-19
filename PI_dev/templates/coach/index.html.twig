@@ -1,0 +1,2201 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nos Coachs{% endblock %}
+
+{% block stylesheets %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css' rel='stylesheet' />
+    <style>
+        :root { 
+            --pastel-primary: #A8D8EA;      /* Bleu ciel pastel */
+            --pastel-hover: #B8E6F0;        /* Bleu clair pastel */
+            --pastel-light: #E8F6F9;        /* Bleu très clair */
+            --pastel-success: #B5EAD7;      /* Vert menthe pastel */
+            --pastel-warning: #FFE5B4;      /* Jaune pastel */
+            --pastel-danger: #FFB3D9;       /* Rose pastel */
+            --pastel-purple: #E2C2E8;       /* Violet pastel */
+            --pastel-pink: #FFD1DC;         /* Rose clair pastel */
+            --pastel-yellow: #FFF9C4;       /* Jaune clair pastel */
+            --lemon-yellow: #FFF4B8;        /* Jaune citron pastel */
+            --lemon-light: #FFFBEA;         /* Jaune citron très clair */
+            --lemon-dark: #F4D03F;          /* Jaune citron foncé */
+            --baby-pink: #FFE4E9;           /* Rose bébé pastel */
+            --baby-pink-light: #FFF5F7;     /* Rose bébé très clair */
+            --baby-pink-dark: #FFB3C1;      /* Rose bébé foncé */
+        }
+        
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        
+        /* Hero Section */
+        .hero-gradient { background: linear-gradient(135deg, #F0F8FF 0%, #E8F6F9 50%, #D4EEF7 100%); }
+        .hero-badge { 
+            border: 2px solid var(--pastel-primary); 
+            background: var(--pastel-light); 
+            color: #4A7C9D; 
+            font-weight: 600; 
+            padding: 0.75rem 1.5rem; 
+            border-radius: 50px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-fade-in { animation: fadeInUp 0.6s ease-out; }
+        
+        /* Buttons */
+        .btn-orange { 
+            background: linear-gradient(135deg, var(--pastel-primary) 0%, var(--pastel-hover) 100%); 
+            border: none; 
+            color: #2C5F7F; 
+            padding: 0.875rem 2rem; 
+            border-radius: 0.75rem; 
+            font-weight: 600; 
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(168, 216, 234, 0.3);
+        }
+        .btn-orange:hover { 
+            color: #2C5F7F; 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 20px rgba(168, 216, 234, 0.5); 
+            background: linear-gradient(135deg, var(--pastel-hover) 0%, var(--pastel-primary) 100%);
+        }
+        
+        .btn-filter { 
+            border-radius: 50px; 
+            padding: 0.625rem 1.5rem; 
+            font-weight: 500; 
+            transition: all 0.3s;
+            border: 2px solid #D4EEF7;
+        }
+        .btn-filter.active { 
+            background-color: var(--pastel-primary); 
+            border-color: var(--pastel-primary); 
+            color: #2C5F7F;
+            transform: scale(1.05);
+        }
+        .btn-filter:not(.active) { 
+            background: #F8FCFE; 
+            color: #5A7C8F; 
+        }
+        .btn-filter:not(.active):hover { 
+            border-color: var(--pastel-hover); 
+            color: #2C5F7F; 
+            background: var(--pastel-light);
+            transform: translateY(-2px);
+        }
+        
+        /* Coach Cards */
+        .coach-card { 
+            border: 2px solid #D4EEF7; 
+            border-radius: 1.25rem; 
+            transition: all 0.3s; 
+            height: 100%; 
+            background: #F8FCFE;
+            overflow: hidden;
+            position: relative;
+        }
+        .coach-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--pastel-primary), var(--pastel-pink));
+            transform: scaleX(0);
+            transition: transform 0.3s;
+        }
+        .coach-card:hover::before {
+            transform: scaleX(1);
+        }
+        .coach-card:hover { 
+            border-color: var(--pastel-primary); 
+            box-shadow: 0 12px 32px rgba(168, 216, 234, 0.25);
+            transform: translateY(-4px);
+        }
+        
+        .coach-avatar { 
+            width: 80px; 
+            height: 80px; 
+            background: linear-gradient(135deg, var(--pastel-light), var(--pastel-hover)); 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 2rem; 
+            color: #4A7C9D; 
+            flex-shrink: 0;
+            border: 3px solid #F0F8FF;
+            box-shadow: 0 4px 12px rgba(168, 216, 234, 0.3);
+        }
+        
+        /* Search Bar */
+        .search-container {
+            max-width: 600px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 1rem 3.5rem 1rem 3rem;
+            border: 2px solid #D4EEF7;
+            border-radius: 50px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background: white;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--pastel-primary);
+            box-shadow: 0 0 0 4px rgba(168, 216, 234, 0.2);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #4A7C9D;
+            font-size: 1.25rem;
+            pointer-events: none;
+        }
+        
+        .search-clear {
+            position: absolute;
+            right: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #8B9DAF;
+            cursor: pointer;
+            padding: 0.25rem;
+            font-size: 1.25rem;
+            transition: color 0.3s;
+        }
+        
+        .search-clear:hover {
+            color: var(--pastel-danger);
+        }
+        
+        .search-results-count {
+            color: #4A7C9D;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: var(--pastel-light);
+            border-radius: 1rem;
+            border: 2px dashed #D4EEF7;
+        }
+        
+        .empty-state-icon {
+            font-size: 4rem;
+            color: #A8D8EA;
+            margin-bottom: 1rem;
+        }
+        
+        .coach-card.hidden {
+            display: none;
+        }
+        
+        /* Recommendations Section */
+        .recommendations-section {
+            background: linear-gradient(135deg, #FFF9F0 0%, #FFF5E8 100%);
+            border: 2px solid var(--pastel-warning);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            display: none;
+            animation: slideDown 0.5s ease-out;
+        }
+        
+        .recommendations-section.show {
+            display: block;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .recommendation-badge {
+            background: linear-gradient(135deg, var(--pastel-warning), var(--pastel-yellow));
+            color: #8B7355;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: pulse 2s infinite;
+        }
+        
+        .recommended-coach-card {
+            background: white;
+            border: 3px solid var(--pastel-warning);
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .recommended-coach-card.top-match {
+            border-color: #FFD700;
+            box-shadow: 0 8px 32px rgba(255, 215, 0, 0.3);
+        }
+        
+        .recommended-coach-card.top-match::before {
+            content: '👑';
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            font-size: 3rem;
+            opacity: 0.2;
+            transform: rotate(25deg);
+        }
+        
+        .recommended-coach-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(255, 229, 180, 0.4);
+        }
+        
+        .match-score {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            display: inline-block;
+        }
+        
+        .match-reasons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+        
+        .match-reason {
+            background: var(--pastel-light);
+            color: #4A7C9D;
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            border: 1px solid #D4EEF7;
+        }
+        
+        .top-match-badge {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+        }
+        
+        /* Reviews Section */
+        .reviews-badge {
+            background: var(--pastel-light);
+            color: #4A7C9D;
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid #D4EEF7;
+        }
+        
+        .reviews-badge:hover {
+            background: var(--pastel-primary);
+            color: white;
+            transform: scale(1.05);
+        }
+        
+        .review-stars {
+            display: inline-flex;
+            gap: 2px;
+        }
+        
+        /* Modal Reviews */
+        .modal-reviews {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .review-card {
+            background: var(--pastel-light);
+            border-radius: 1rem;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            border: 2px solid #D4EEF7;
+            transition: all 0.3s;
+        }
+        
+        .review-card:hover {
+            border-color: var(--pastel-primary);
+            box-shadow: 0 4px 12px rgba(168, 216, 234, 0.2);
+        }
+        
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 0.75rem;
+        }
+        
+        .review-user {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .review-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--pastel-primary), var(--pastel-hover));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #4A7C9D;
+            font-weight: 700;
+            font-size: 0.875rem;
+        }
+        
+        .verified-badge {
+            background: var(--pastel-success);
+            color: #4A7C59;
+            padding: 0.125rem 0.5rem;
+            border-radius: 50px;
+            font-size: 0.625rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .rating-distribution {
+            margin-top: 1rem;
+        }
+        
+        .rating-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .rating-bar-fill {
+            flex: 1;
+            height: 8px;
+            background: #E8E8E8;
+            border-radius: 50px;
+            overflow: hidden;
+        }
+        
+        .rating-bar-value {
+            height: 100%;
+            background: linear-gradient(90deg, #FFD700, #FFA500);
+            border-radius: 50px;
+            transition: width 0.5s ease;
+        }
+        
+        /* Priority Radio Buttons */
+        .priority-radio-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .priority-radio-group .form-check {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .priority-radio-group .form-check-input {
+            display: none;
+        }
+        
+        .priority-radio-group .form-check-label {
+            display: block;
+            padding: 1rem 1.5rem;
+            border: 3px solid #D4EEF7;
+            border-radius: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            font-weight: 600;
+            background: white;
+        }
+        
+        .priority-radio-group .form-check-input:checked + .form-check-label {
+            border-color: var(--pastel-primary);
+            background: var(--pastel-light);
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(168, 216, 234, 0.3);
+        }
+        
+        .priority-radio-group .form-check-label:hover {
+            border-color: var(--pastel-hover);
+            transform: translateY(-2px);
+        }
+        
+        /* Urgent Badge */
+        .urgent-badge {
+            background: linear-gradient(135deg, #FF6B6B, #FF8E8E);
+            color: white;
+            padding: 0.375rem 0.875rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            animation: pulse 2s infinite;
+            box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+        }
+        
+        .standard-badge {
+            background: var(--pastel-success);
+            color: #4A7C59;
+            padding: 0.375rem 0.875rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+        
+        /* Online Status */
+        .online-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .online-status.online {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+        
+        .online-status.away {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+        
+        .online-status.offline {
+            background: #F3F4F6;
+            color: #6B7280;
+        }
+        
+        .online-status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse-dot 2s infinite;
+        }
+        
+        .online-status.online .online-status-dot {
+            background: #10B981;
+        }
+        
+        .online-status.away .online-status-dot {
+            background: #F59E0B;
+        }
+        
+        .online-status.offline .online-status-dot {
+            background: #9CA3AF;
+        }
+        
+        @keyframes pulse-dot {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+        
+        /* Available Today Badge */
+        .available-today-badge {
+            background: linear-gradient(135deg, #FFE4E9, #FFF0F3);
+            color: #8B5F7A;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: pulse 2s infinite;
+            box-shadow: 0 4px 16px rgba(255, 179, 193, 0.3);
+            border: 2px solid #FFB3C1;
+        }
+        
+        .fully-booked-badge {
+            background: var(--pastel-light);
+            color: #5A7C8F;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: 2px solid #D4EEF7;
+        }
+        
+        /* Calendar Modal */
+        .calendar-modal .modal-dialog {
+            max-width: 1400px;
+        }
+        
+        .calendar-modal .modal-content {
+            border: 3px solid var(--pastel-primary);
+            box-shadow: 0 25px 70px rgba(168, 216, 234, 0.35);
+            background: linear-gradient(135deg, #FFFFFF 0%, #F8FCFE 100%);
+        }
+        
+        #calendar {
+            padding: 2.5rem;
+            background: white;
+            border-radius: 1.25rem;
+            border: 3px solid var(--pastel-light);
+            box-shadow: 0 8px 24px rgba(168, 216, 234, 0.15);
+            min-height: 700px;
+        }
+        
+        /* FullCalendar Customization */
+        .fc {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        
+        .fc-button {
+            background: linear-gradient(135deg, var(--pastel-primary), var(--pastel-hover)) !important;
+            border: none !important;
+            color: #2C5F7F !important;
+            font-weight: 700 !important;
+            padding: 0.625rem 1.25rem !important;
+            border-radius: 0.75rem !important;
+            text-transform: none !important;
+            box-shadow: 0 4px 12px rgba(168, 216, 234, 0.25) !important;
+        }
+        
+        .fc-button:hover {
+            background: linear-gradient(135deg, var(--pastel-hover), var(--pastel-primary)) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(168, 216, 234, 0.4) !important;
+        }
+        
+        .fc-button-active {
+            background: linear-gradient(135deg, #4A7C9D, #5A8CAD) !important;
+            color: white !important;
+            box-shadow: 0 6px 20px rgba(74, 124, 157, 0.4) !important;
+        }
+        
+        .fc-col-header-cell {
+            background: linear-gradient(135deg, var(--pastel-light), #F0F8FF) !important;
+            color: #2C5F7F !important;
+            font-weight: 700 !important;
+            padding: 1rem !important;
+            border-color: #D4EEF7 !important;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+        
+        .fc-timegrid-slot {
+            border-color: #E8F6F9 !important;
+            height: 2.5rem !important;
+        }
+        
+        .fc-timegrid-slot-label {
+            color: #5A7C8F !important;
+            font-weight: 600 !important;
+        }
+        
+        .fc-event {
+            cursor: pointer;
+            border-radius: 0.5rem !important;
+            padding: 0.35rem 0.5rem !important;
+            font-weight: 600 !important;
+            transition: all 0.3s !important;
+            font-size: 0.75rem !important;
+            min-height: 50px !important;
+            max-height: 60px !important;
+        }
+        
+        .fc-event:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+            z-index: 10 !important;
+        }
+        
+        .fc-event-available {
+            background: linear-gradient(135deg, #FFE4E9, #FFF0F3) !important;
+            border: 2px solid #FFB3C1 !important;
+            color: #8B5F7A !important;
+        }
+        
+        .fc-event-available .fc-event-main {
+            background: linear-gradient(135deg, #FFE4E9, #FFF0F3) !important;
+            color: #8B5F7A !important;
+        }
+        
+        .fc-event-available .fc-event-title {
+            color: #8B5F7A !important;
+            font-weight: 600 !important;
+        }
+        
+        .fc-event-booked {
+            background: linear-gradient(135deg, var(--pastel-danger), var(--pastel-pink)) !important;
+            border: 2px solid #FFB3D9 !important;
+            color: #8B5F7A !important;
+        }
+        
+        .fc-daygrid-day-number {
+            color: #2C5F7F !important;
+            font-weight: 700 !important;
+            font-size: 1rem !important;
+        }
+        
+        .fc-day-today {
+            background: linear-gradient(135deg, #FFF5F7, #FFF9FB) !important;
+        }
+        
+        .fc-day-today .fc-daygrid-day-number {
+            background: #FFB3C1 !important;
+            color: white !important;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+        }
+        
+        /* Force rose pastel pour tous les événements disponibles */
+        .fc-timegrid-event.fc-event-available,
+        .fc-daygrid-event.fc-event-available {
+            background: linear-gradient(135deg, #FFE4E9, #FFF0F3) !important;
+            border: 2px solid #FFB3C1 !important;
+            border-left: 4px solid #FFB3C1 !important;
+        }
+        
+        .fc-event.fc-event-available * {
+            color: #8B5F7A !important;
+        }
+        
+        /* Timeslot Selector */
+        .timeslot-selector {
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 0.75rem;
+        }
+        
+        .timeslot-selector::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        .timeslot-selector::-webkit-scrollbar-track {
+            background: var(--pastel-light);
+            border-radius: 10px;
+        }
+        
+        .timeslot-selector::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, var(--pastel-primary), var(--pastel-hover));
+            border-radius: 10px;
+        }
+        
+        .timeslot-selector::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, var(--pastel-hover), var(--baby-pink));
+        }
+        
+        .timeslot-card {
+            border: 2px solid #E8F6F9;
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .timeslot-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(135deg, var(--pastel-primary), #FFB3D9);
+            transform: scaleY(0);
+            transition: transform 0.3s;
+        }
+        
+        .timeslot-card:hover {
+            border-color: var(--pastel-primary);
+            box-shadow: 0 6px 20px rgba(168, 216, 234, 0.3);
+            transform: translateX(4px);
+            background: linear-gradient(135deg, #FFFFFF, #F8FCFE);
+        }
+        
+        .timeslot-card:hover::before {
+            transform: scaleY(1);
+        }
+        
+        .timeslot-card.selected {
+            border-color: #FFB3C1;
+            background: linear-gradient(135deg, #FFF5F7, #FFF9FB);
+            box-shadow: 0 8px 28px rgba(255, 179, 193, 0.35);
+            transform: translateX(4px) scale(1.01);
+        }
+        
+        .timeslot-card.selected::before {
+            background: linear-gradient(135deg, #FFB3C1, #FFB3D9);
+            transform: scaleY(1);
+            width: 6px;
+        }
+        
+        .timeslot-card.unavailable {
+            opacity: 0.4;
+            cursor: not-allowed;
+            background: #F9FAFB;
+            border-color: #E5E7EB;
+        }
+        
+        .timeslot-card.unavailable:hover {
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .timeslot-card.unavailable::before {
+            display: none;
+        }
+        
+        .timeslot-time {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #2C5F7F;
+            margin-bottom: 0.375rem;
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+        
+        .timeslot-duration {
+            font-size: 0.85rem;
+            color: #5A7C8F;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-weight: 600;
+        }
+        
+        .timeslot-check-icon {
+            font-size: 2rem;
+            color: #FFB3C1;
+            animation: scaleIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            filter: drop-shadow(0 3px 6px rgba(255, 179, 193, 0.3));
+        }
+        
+        @keyframes scaleIn {
+            from {
+                transform: scale(0) rotate(-180deg);
+            }
+            to {
+                transform: scale(1) rotate(0deg);
+            }
+        }
+        
+        /* Selected Slot Info */
+        .selected-slot-info {
+            background: linear-gradient(135deg, #FFE4E9, #FFF0F3);
+            border: 2px solid #FFB3C1;
+            border-radius: 1rem;
+            padding: 1.25rem;
+            color: #8B5F7A;
+            box-shadow: 0 6px 20px rgba(255, 179, 193, 0.25);
+        }
+        
+        .selected-slot-info strong {
+            color: #6B3F5A;
+            font-size: 1rem;
+        }
+        
+        .selected-slot-info i {
+            color: #FFB3C1;
+        }
+        
+        /* Calendar Header */
+        .calendar-section-header {
+            background: linear-gradient(135deg, var(--pastel-light), #F0F8FF);
+            padding: 1.25rem 1.75rem;
+            border-radius: 1.25rem;
+            margin-bottom: 1.25rem;
+            border: 3px solid #D4EEF7;
+            box-shadow: 0 4px 12px rgba(168, 216, 234, 0.15);
+        }
+        
+        .calendar-section-header h6 {
+            color: #2C5F7F;
+            margin: 0;
+            font-weight: 800;
+            font-size: 1.1rem;
+        }
+        
+        .calendar-section-header .text-muted {
+            color: #5A7C8F !important;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        
+        .legend-badge {
+            padding: 0.375rem 0.875rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .legend-badge-available {
+            background: linear-gradient(135deg, #FFE4E9, #FFF0F3);
+            color: #8B5F7A;
+            border: 2px solid #FFB3C1;
+        }
+        
+        .legend-badge-booked {
+            background: linear-gradient(135deg, var(--pastel-danger), var(--pastel-pink));
+            color: #8B5F7A;
+            border: 2px solid #FFB3D9;
+        }
+        
+        /* Badges */
+        .badge-pending { background: linear-gradient(135deg, var(--pastel-warning), var(--pastel-yellow)); color: #8B7355; font-weight: 600; }
+        .badge-accepted { background: linear-gradient(135deg, var(--pastel-success), #C1E1C1); color: #4A7C59; font-weight: 600; }
+        .badge-declined { background: linear-gradient(135deg, var(--pastel-danger), var(--pastel-pink)); color: #8B5F7A; font-weight: 600; }
+        
+        /* Form Card */
+        .form-card {
+            border: 2px solid var(--pastel-hover);
+            border-radius: 1.5rem;
+            box-shadow: 0 8px 32px rgba(168, 216, 234, 0.2);
+            overflow: hidden;
+            background: #F8FCFE;
+        }
+        .form-card-header {
+            background: linear-gradient(135deg, var(--pastel-primary), var(--pastel-hover));
+            color: #2C5F7F;
+            padding: 2rem;
+        }
+        
+        /* Form Controls */
+        .form-control, .form-select {
+            border: 2px solid #D4EEF7;
+            border-radius: 0.75rem;
+            padding: 0.875rem 1.25rem;
+            transition: all 0.3s;
+            background: #F8FCFE;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--pastel-primary);
+            box-shadow: 0 0 0 4px rgba(168, 216, 234, 0.2);
+            background: white;
+        }
+        
+        /* Alert */
+        .alert {
+            border-radius: 0.75rem;
+            border: 2px solid;
+            padding: 1rem 1.5rem;
+        }
+        .alert-success {
+            background: linear-gradient(135deg, var(--pastel-success), #C1E1C1);
+            color: #4A7C59;
+            border-color: var(--pastel-success);
+        }
+        .alert-danger {
+            background: linear-gradient(135deg, var(--pastel-danger), var(--pastel-pink));
+            color: #8B5F7A;
+            border-color: var(--pastel-danger);
+        }
+        
+        /* Stats Badge */
+        .stats-badge {
+            background: var(--pastel-light);
+            color: #4A7C9D;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            border: 2px solid var(--pastel-hover);
+        }
+        
+        /* Request Card */
+        .request-card {
+            border: 2px solid #D4EEF7;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            background: #F8FCFE;
+            transition: all 0.3s;
+        }
+        .request-card:hover {
+            border-color: var(--pastel-primary);
+            box-shadow: 0 8px 24px rgba(168, 216, 234, 0.25);
+            transform: translateY(-2px);
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <!-- Hero Section with Gradient -->
+    <section class="hero-gradient pt-5 pb-5">
+        <div class="container container-lg">
+            <div class="row align-items-center mb-5">
+                <div class="col-lg-8 animate-fade-in">
+                    <span class="hero-badge mb-3">
+                        <i class="bi bi-stars"></i>
+                        Coaching fitness & bien-être
+                    </span>
+                    <h1 class="display-4 fw-bold mb-3 text-dark">
+                        Trouvez votre coach idéal
+                    </h1>
+                    <p class="lead text-muted mb-4">
+                        Connectez-vous avec un coach professionnel certifié pour atteindre vos objectifs de santé et de bien-être.
+                    </p>
+                    
+                    <!-- Barre de recherche -->
+                    <div class="search-container mb-4">
+                        <div class="position-relative">
+                            <i class="bi bi-search search-icon"></i>
+                            <input 
+                                type="text" 
+                                id="searchInput" 
+                                class="search-input" 
+                                placeholder="Rechercher un coach par nom ou spécialité..."
+                                autocomplete="off"
+                            >
+                            <button class="search-clear" id="searchClear" style="display: none;">
+                                <i class="bi bi-x-circle-fill"></i>
+                            </button>
+                        </div>
+                        <div id="searchResults" class="search-results-count mt-2"></div>
+                    </div>
+                    
+                    <div class="d-flex gap-3 flex-wrap">
+                        <span class="stats-badge">
+                            <i class="bi bi-people-fill me-2"></i>
+                            <span id="totalCoaches">{{ coaches|length }}</span> coaches disponibles
+                        </span>
+                        <span class="stats-badge">
+                            <i class="bi bi-star-fill me-2"></i>
+                            Certifiés et expérimentés
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Advanced Filters -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="filter-panel p-4 rounded-4 mb-4" style="background: #F8FCFE; border: 2px solid #D4EEF7;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h3 class="h5 fw-bold mb-0 text-dark">
+                                <i class="bi bi-funnel-fill me-2" style="color: #4A7C9D;"></i>
+                                Filtres avancés
+                            </h3>
+                            <button id="resetFilters" class="btn btn-sm" style="background: var(--pastel-danger); color: #8B5F7A; border: none; padding: 0.5rem 1rem; border-radius: 50px; font-weight: 600;">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i>Réinitialiser
+                            </button>
+                        </div>
+                        
+                        <form id="filterForm" method="GET" action="{{ path('app_coach_index') }}">
+                            <div class="row g-3">
+                                <!-- Spécialité -->
+                                {% if specialities|length > 0 %}
+                                    <div class="col-md-6 col-lg-3">
+                                        <label class="form-label fw-semibold text-dark mb-2">
+                                            <i class="bi bi-star me-1" style="color: #4A7C9D;"></i>
+                                            Spécialité
+                                        </label>
+                                        <select name="speciality" class="form-select" style="border: 2px solid #D4EEF7; border-radius: 0.75rem;">
+                                            <option value="">Toutes les spécialités</option>
+                                            {% for speciality in specialities %}
+                                                <option value="{{ speciality }}" {% if selectedSpeciality == speciality %}selected{% endif %}>
+                                                    {{ speciality }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                {% endif %}
+                                
+                                <!-- Prix minimum -->
+                                <div class="col-md-6 col-lg-2">
+                                    <label class="form-label fw-semibold text-dark mb-2">
+                                        <i class="bi bi-currency-euro me-1" style="color: #4A7C9D;"></i>
+                                        Prix min (€)
+                                    </label>
+                                    <input type="number" name="minPrice" class="form-control" placeholder="0" min="0" step="5" value="{{ selectedMinPrice }}" style="border: 2px solid #D4EEF7; border-radius: 0.75rem;">
+                                </div>
+                                
+                                <!-- Prix maximum -->
+                                <div class="col-md-6 col-lg-2">
+                                    <label class="form-label fw-semibold text-dark mb-2">
+                                        <i class="bi bi-currency-euro me-1" style="color: #4A7C9D;"></i>
+                                        Prix max (€)
+                                    </label>
+                                    <input type="number" name="maxPrice" class="form-control" placeholder="200" min="0" step="5" value="{{ selectedMaxPrice }}" style="border: 2px solid #D4EEF7; border-radius: 0.75rem;">
+                                </div>
+                                
+                                <!-- Note minimum -->
+                                <div class="col-md-6 col-lg-2">
+                                    <label class="form-label fw-semibold text-dark mb-2">
+                                        <i class="bi bi-star-fill me-1" style="color: #FFD700;"></i>
+                                        Note min
+                                    </label>
+                                    <select name="minRating" class="form-select" style="border: 2px solid #D4EEF7; border-radius: 0.75rem;">
+                                        <option value="">Toutes</option>
+                                        <option value="4.5" {% if selectedMinRating == '4.5' %}selected{% endif %}>4.5+ ⭐</option>
+                                        <option value="4" {% if selectedMinRating == '4' %}selected{% endif %}>4+ ⭐</option>
+                                        <option value="3.5" {% if selectedMinRating == '3.5' %}selected{% endif %}>3.5+ ⭐</option>
+                                        <option value="3" {% if selectedMinRating == '3' %}selected{% endif %}>3+ ⭐</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Disponibilité -->
+                                {% if availabilities|length > 0 %}
+                                    <div class="col-md-6 col-lg-3">
+                                        <label class="form-label fw-semibold text-dark mb-2">
+                                            <i class="bi bi-calendar-check me-1" style="color: #4A7C9D;"></i>
+                                            Disponibilité
+                                        </label>
+                                        <select name="availability" class="form-select" style="border: 2px solid #D4EEF7; border-radius: 0.75rem;">
+                                            <option value="">Toutes</option>
+                                            {% for avail in availabilities %}
+                                                <option value="{{ avail }}" {% if selectedAvailability == avail %}selected{% endif %}>
+                                                    {{ avail }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mt-3">
+                                <button type="submit" class="btn btn-orange">
+                                    <i class="bi bi-funnel me-2"></i>Appliquer les filtres
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <section class="py-5 bg-white">
+        <div class="container container-lg">
+            <!-- Request Form -->
+            <div class="row mb-5 justify-content-center">
+                <div class="col-12 col-lg-10 col-xl-8">
+                    <div id="request-form-alert" class="alert d-none mb-4" role="alert"></div>
+                    <div class="form-card animate-fade-in">
+                        <div class="form-card-header">
+                            <h2 class="h3 mb-2 fw-bold">
+                                <i class="bi bi-send-fill me-2"></i>Faire une demande de coaching
+                            </h2>
+                            <p class="mb-0 opacity-90">Choisissez votre coach et décrivez vos objectifs</p>
+                        </div>
+                        <div class="p-4 p-md-5">
+                            {{ form_start(form, { attr: { id: 'coaching-request-form' } }) }}
+                                <div class="mb-4">
+                                    {{ form_label(form.coach, 'Sélectionnez votre coach', { label_attr: { class: 'form-label fw-bold text-dark mb-2' } }) }}
+                                    {{ form_widget(form.coach, { attr: { class: 'form-select form-select-lg' } }) }}
+                                    <div id="error-coach" class="invalid-feedback d-block"></div>
+                                    {{ form_errors(form.coach) }}
+                                    <div class="form-text mt-2">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Choisissez le coach qui correspond le mieux à vos besoins
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    {{ form_label(form.message, 'Votre message', { label_attr: { class: 'form-label fw-bold text-dark mb-2' } }) }}
+                                    {{ form_widget(form.message, { attr: { class: 'form-control', rows: 6, placeholder: 'Décrivez vos objectifs, votre niveau actuel, vos disponibilités et toute information utile pour le coach...' } }) }}
+                                    <div class="d-flex justify-content-between align-items-center mt-2">
+                                        <div class="form-text">
+                                            <i class="bi bi-chat-left-text me-1"></i>
+                                            Minimum 10 caractères, maximum 1000
+                                        </div>
+                                        <span id="char-count" class="text-muted small">0 / 1000</span>
+                                    </div>
+                                    <div id="error-message" class="invalid-feedback d-block"></div>
+                                    {{ form_errors(form.message) }}
+                                </div>
+                                
+                                <div class="mb-4">
+                                    {{ form_label(form.priority, 'Priorité de la demande', { label_attr: { class: 'form-label fw-bold text-dark mb-3' } }) }}
+                                    <div class="priority-radio-group">
+                                        {{ form_widget(form.priority) }}
+                                    </div>
+                                    <div class="form-text mt-2">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Les demandes urgentes sont traitées en priorité par les coaches
+                                    </div>
+                                    {{ form_errors(form.priority) }}
+                                </div>
+                                
+                                <button type="submit" id="btn-submit-request" class="btn btn-orange w-100 py-3">
+                                    <i class="bi bi-send-fill me-2"></i>Envoyer ma demande
+                                </button>
+                            {{ form_end(form) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recommendations Section -->
+            <div class="row mb-5 justify-content-center" id="recommendationsContainer" style="display: none;">
+                <div class="col-12 col-lg-10 col-xl-8">
+                    <div class="recommendations-section" id="recommendationsSection">
+                        <div class="d-flex align-items-center justify-content-between mb-4">
+                            <div>
+                                <span class="recommendation-badge mb-2">
+                                    <i class="bi bi-lightbulb-fill"></i>
+                                    Recommandé pour vous
+                                </span>
+                                <h3 class="h4 fw-bold text-dark mt-2 mb-1">
+                                    Coaches les plus adaptés à votre objectif
+                                </h3>
+                                <p class="text-muted small mb-0">Basé sur l'analyse de votre message</p>
+                            </div>
+                        </div>
+                        
+                        <div id="recommendationsList" class="row g-3">
+                            <!-- Les recommandations seront insérées ici par JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coaches List -->
+            <div class="mb-4">
+                <h2 class="h3 fw-bold text-dark mb-1">
+                    <i class="bi bi-people-fill me-2" style="color: #4A7C9D;"></i>
+                    Nos coaches disponibles
+                </h2>
+                <p class="text-muted">Découvrez nos coaches certifiés et expérimentés</p>
+            </div>
+            
+            {% if coaches|length > 0 %}
+                <div class="row g-4 mb-5" id="coachesGrid">
+                    {% for coach in coaches %}
+                        <div class="col-sm-6 col-lg-4 coach-card-wrapper" 
+                             data-coach-name="{{ (coach.firstName ~ ' ' ~ coach.lastName)|lower }}"
+                             data-coach-speciality="{{ coach.speciality|lower|default('') }}"
+                             data-coach-email="{{ coach.email|lower }}"
+                             data-coach-price="{{ coach.pricePerSession|default(0) }}"
+                             data-coach-rating="{{ coach.rating|default(0) }}"
+                             data-coach-availability="{{ coach.availability|lower|default('') }}">
+                            <div class="coach-card card h-100 animate-fade-in" style="animation-delay: {{ loop.index * 0.1 }}s;">
+                                <div class="card-body d-flex flex-column p-4">
+                                    <div class="d-flex align-items-start mb-3">
+                                        <div class="coach-avatar me-3">
+                                            <i class="bi bi-person-fill"></i>
+                                        </div>
+                                        <div class="min-w-0 flex-grow-1">
+                                            <h3 class="h5 card-title fw-bold mb-1 text-dark">
+                                                {{ coach.firstName }} {{ coach.lastName }}
+                                            </h3>
+                                            <p class="card-text text-muted small mb-0 text-break">
+                                                <i class="bi bi-envelope me-1"></i>{{ coach.email }}
+                                            </p>
+                                            {% set onlineStatus = coach.onlineStatus %}
+                                            <div class="mt-2">
+                                                <span class="online-status {{ onlineStatus }}">
+                                                    <span class="online-status-dot"></span>
+                                                    {% if onlineStatus == 'online' %}
+                                                        En ligne
+                                                    {% elseif onlineStatus == 'away' %}
+                                                        Absent
+                                                    {% else %}
+                                                        Hors ligne
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    {% if coach.speciality %}
+                                        <div class="mb-3">
+                                            <span class="badge bg-light text-dark border border-2 px-3 py-2" style="border-color: var(--pastel-primary) !important;">
+                                                <i class="bi bi-star-fill me-1" style="color: #4A7C9D;"></i>
+                                                {{ coach.speciality }}
+                                            </span>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <div class="mb-3">
+                                        {% if coach.rating is defined and coach.rating %}
+                                            <div class="d-flex align-items-center gap-1 mb-2">
+                                                {% for i in 1..5 %}
+                                                    <i class="bi bi-star-fill" style="color: {% if i <= coach.rating %}#FFD700{% else %}#E8E8E8{% endif %}; font-size: 1rem;"></i>
+                                                {% endfor %}
+                                                <span class="ms-2 fw-bold text-dark">{{ coach.rating }}/5</span>
+                                                <button class="reviews-badge ms-2" onclick="showReviews({{ coach.id }}, '{{ coach.firstName }} {{ coach.lastName }}')">
+                                                    <i class="bi bi-chat-left-text-fill"></i>
+                                                    <span id="review-count-{{ coach.id }}">Voir les avis</span>
+                                                </button>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        {% if coach.pricePerSession %}
+                                            <div class="d-flex align-items-center text-dark">
+                                                <i class="bi bi-currency-euro me-1" style="color: #4A7C9D;"></i>
+                                                <span class="fw-bold">{{ coach.pricePerSession }}€</span>
+                                                <span class="text-muted ms-1">/session</span>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        {% if coach.availability %}
+                                            <div class="d-flex align-items-center text-muted mt-2">
+                                                <i class="bi bi-calendar-check me-1" style="color: var(--pastel-success);"></i>
+                                                <span class="small">{{ coach.availability }}</span>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    {% set pendingRequest = myRequests|filter(r => r.coach.id == coach.id and r.status == 'pending')|first %}
+                                    {% set acceptedRequest = myRequests|filter(r => r.coach.id == coach.id and r.status == 'accepted')|first %}
+                                    {% set declinedRequest = myRequests|filter(r => r.coach.id == coach.id and r.status == 'declined')|first %}
+                                    
+                                    <div class="mt-auto pt-3">
+                                        {% if pendingRequest %}
+                                            <span class="badge badge-pending rounded-pill px-3 py-2 w-100 text-center d-inline-block">
+                                                <i class="bi bi-clock-history me-1"></i>Demande en attente
+                                            </span>
+                                        {% elseif acceptedRequest %}
+                                            <span class="badge badge-accepted rounded-pill px-3 py-2 w-100 text-center d-inline-block">
+                                                <i class="bi bi-check-circle-fill me-1"></i>Demande acceptée
+                                            </span>
+                                        {% elseif declinedRequest %}
+                                            <span class="badge badge-declined rounded-pill px-3 py-2 w-100 text-center d-inline-block">
+                                                <i class="bi bi-x-circle-fill me-1"></i>Demande refusée
+                                            </span>
+                                        {% else %}
+                                            <div class="d-grid gap-2">
+                                                <button class="btn" style="background: linear-gradient(135deg, var(--pastel-primary), var(--pastel-hover)); border: none; color: #2C5F7F; font-weight: 600; padding: 0.75rem; border-radius: 0.75rem; transition: all 0.3s;" 
+                                                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(168, 216, 234, 0.4)';" 
+                                                        onmouseout="this.style.transform=''; this.style.boxShadow='';"
+                                                        onclick="openCalendar({{ coach.id }}, '{{ coach.firstName }} {{ coach.lastName }}')">
+                                                    <i class="bi bi-calendar-check me-2"></i>Voir disponibilités
+                                                </button>
+                                                <button class="btn btn-sm" style="background: var(--pastel-light); border: 2px solid #D4EEF7; color: #5A7C8F; font-weight: 600; padding: 0.5rem; border-radius: 0.5rem; transition: all 0.3s;"
+                                                        onmouseover="this.style.borderColor='var(--pastel-primary)'; this.style.color='#2C5F7F';"
+                                                        onmouseout="this.style.borderColor='#D4EEF7'; this.style.color='#5A7C8F';"
+                                                        onclick="document.getElementById('coaching_request_coach').value='{{ coach.id }}'; document.getElementById('coaching-request-form').scrollIntoView({behavior: 'smooth'});">
+                                                    <i class="bi bi-send me-1"></i>Demande sans créneau
+                                                </button>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state" id="emptyState">
+                    <div class="empty-state-icon">
+                        <i class="bi bi-search"></i>
+                    </div>
+                    <h3 class="h4 fw-bold mb-2">Aucun coach trouvé</h3>
+                    <p class="text-muted mb-0">
+                        {% if selectedSpeciality %}
+                            Aucun coach trouvé pour la spécialité « {{ selectedSpeciality }} ».
+                            <a href="{{ path('app_coach_index') }}" class="text-decoration-none fw-bold" style="color: #4A7C9D;">Voir tous les coaches</a>
+                        {% else %}
+                            Les coachs seront bientôt disponibles. Revenez plus tard !
+                        {% endif %}
+                    </p>
+                </div>
+            {% endif %}
+
+            <!-- My Requests -->
+            {% if myRequests|length > 0 %}
+                <div class="mt-5 pt-5 border-top">
+                    <h2 class="h3 fw-bold text-dark mb-4">
+                        <i class="bi bi-inbox-fill me-2" style="color: #4A7C9D;"></i>
+                        Mes demandes de coaching
+                    </h2>
+                    <div class="row g-3">
+                        {% for request in myRequests %}
+                            <div class="col-12">
+                                <div class="request-card">
+                                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3">
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                                                <h3 class="h6 fw-bold mb-0">
+                                                    <i class="bi bi-person-badge me-1"></i>
+                                                    Coach : {{ request.coach.firstName }} {{ request.coach.lastName }}
+                                                </h3>
+                                                <span class="badge {% if request.status == 'pending' %}badge-pending{% elseif request.status == 'accepted' %}badge-accepted{% else %}badge-declined{% endif %} rounded-pill px-3 py-1">
+                                                    {% if request.status == 'pending' %}
+                                                        <i class="bi bi-clock-history me-1"></i>En attente
+                                                    {% elseif request.status == 'accepted' %}
+                                                        <i class="bi bi-check-circle-fill me-1"></i>Acceptée
+                                                    {% else %}
+                                                        <i class="bi bi-x-circle-fill me-1"></i>Refusée
+                                                    {% endif %}
+                                                </span>
+                                                {% if request.priority == 'urgent' %}
+                                                    <span class="urgent-badge">
+                                                        <i class="bi bi-exclamation-circle-fill"></i>
+                                                        URGENT
+                                                    </span>
+                                                {% else %}
+                                                    <span class="standard-badge">
+                                                        <i class="bi bi-check-circle"></i>
+                                                        Standard
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                            <p class="text-muted small mb-2">
+                                                <i class="bi bi-calendar3 me-1"></i>
+                                                {{ request.createdAt|date('d/m/Y à H:i') }}
+                                            </p>
+                                            <p class="mb-0">
+                                                <strong class="text-dark">Message :</strong> {{ request.message }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Modal Reviews -->
+    <div class="modal fade" id="reviewsModal" tabindex="-1" aria-labelledby="reviewsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content" style="border-radius: 1.5rem; border: 2px solid var(--pastel-primary);">
+                <div class="modal-header" style="background: linear-gradient(135deg, var(--pastel-primary), var(--pastel-hover)); color: #2C5F7F; border-radius: 1.5rem 1.5rem 0 0;">
+                    <h5 class="modal-title fw-bold" id="reviewsModalLabel">
+                        <i class="bi bi-star-fill me-2"></i>
+                        Avis sur <span id="modalCoachName"></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <!-- Stats Section -->
+                    <div class="text-center mb-4 p-4" style="background: var(--pastel-light); border-radius: 1rem;">
+                        <div class="display-4 fw-bold text-dark mb-2" id="modalAvgRating">-</div>
+                        <div class="review-stars mb-2" id="modalStars"></div>
+                        <div class="text-muted" id="modalTotalReviews">Chargement...</div>
+                        
+                        <!-- Distribution des notes -->
+                        <div class="rating-distribution mt-4" id="ratingDistribution" style="display: none;">
+                            <h6 class="fw-bold text-dark mb-3">Distribution des notes</h6>
+                            <div class="rating-bar">
+                                <span class="text-muted small" style="width: 60px;">5 étoiles</span>
+                                <div class="rating-bar-fill">
+                                    <div class="rating-bar-value" id="bar-5" style="width: 0%"></div>
+                                </div>
+                                <span class="text-muted small" id="count-5">0</span>
+                            </div>
+                            <div class="rating-bar">
+                                <span class="text-muted small" style="width: 60px;">4 étoiles</span>
+                                <div class="rating-bar-fill">
+                                    <div class="rating-bar-value" id="bar-4" style="width: 0%"></div>
+                                </div>
+                                <span class="text-muted small" id="count-4">0</span>
+                            </div>
+                            <div class="rating-bar">
+                                <span class="text-muted small" style="width: 60px;">3 étoiles</span>
+                                <div class="rating-bar-fill">
+                                    <div class="rating-bar-value" id="bar-3" style="width: 0%"></div>
+                                </div>
+                                <span class="text-muted small" id="count-3">0</span>
+                            </div>
+                            <div class="rating-bar">
+                                <span class="text-muted small" style="width: 60px;">2 étoiles</span>
+                                <div class="rating-bar-fill">
+                                    <div class="rating-bar-value" id="bar-2" style="width: 0%"></div>
+                                </div>
+                                <span class="text-muted small" id="count-2">0</span>
+                            </div>
+                            <div class="rating-bar">
+                                <span class="text-muted small" style="width: 60px;">1 étoile</span>
+                                <div class="rating-bar-fill">
+                                    <div class="rating-bar-value" id="bar-1" style="width: 0%"></div>
+                                </div>
+                                <span class="text-muted small" id="count-1">0</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Reviews List -->
+                    <div id="reviewsList" class="modal-reviews">
+                        <div class="text-center text-muted">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Chargement...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Calendrier -->
+    <div class="modal fade calendar-modal" id="calendarModal" tabindex="-1" aria-labelledby="calendarModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content" style="border-radius: 1.5rem;">
+                <div class="modal-header" style="background: linear-gradient(135deg, var(--pastel-primary), var(--pastel-hover)); color: #2C5F7F; border-radius: 1.5rem 1.5rem 0 0; padding: 1.5rem 2rem;">
+                    <div>
+                        <h5 class="modal-title fw-bold mb-1" id="calendarModalLabel">
+                            <i class="bi bi-calendar-check me-2"></i>
+                            Disponibilités de <span id="modalCoachNameCalendar"></span>
+                        </h5>
+                        <p class="mb-0 small opacity-90">Sélectionnez un créneau pour réserver votre session</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4" style="background: #F8FCFE;">
+                    <div class="row g-4">
+                        <div class="col-lg-8">
+                            <div class="calendar-section-header">
+                                <h6>
+                                    <i class="bi bi-calendar3 me-2"></i>
+                                    Calendrier des disponibilités
+                                </h6>
+                                <p class="text-muted mb-0 mt-2">
+                                    <span class="legend-badge legend-badge-available">
+                                        <i class="bi bi-circle-fill" style="font-size: 0.6rem;"></i>Disponible
+                                    </span>
+                                    <span class="legend-badge legend-badge-booked ms-2">
+                                        <i class="bi bi-circle-fill" style="font-size: 0.6rem;"></i>Réservé
+                                    </span>
+                                </p>
+                            </div>
+                            <div id="calendar"></div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="calendar-section-header">
+                                <h6>
+                                    <i class="bi bi-clock-history me-2"></i>
+                                    Créneaux disponibles
+                                </h6>
+                            </div>
+                            <div id="timeslotsList" class="timeslot-selector">
+                                <div class="text-center py-5">
+                                    <i class="bi bi-calendar-event" style="font-size: 3rem; color: var(--pastel-primary); opacity: 0.5;"></i>
+                                    <p class="text-muted mt-3">Sélectionnez une date dans le calendrier</p>
+                                </div>
+                            </div>
+                            <div class="mt-3 d-none" id="selectedSlotInfo">
+                                <div class="selected-slot-info">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="bi bi-check-circle-fill me-2" style="font-size: 1.5rem;"></i>
+                                        <strong>Créneau sélectionné</strong>
+                                    </div>
+                                    <p class="mb-0" id="selectedSlotText"></p>
+                                </div>
+                                <button class="btn btn-orange w-100 mt-3 py-3" onclick="confirmTimeSlot()" style="font-size: 1.05rem;">
+                                    <i class="bi bi-check-circle me-2"></i>Confirmer et continuer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+    <script>
+        (function() {
+            const form = document.getElementById('coaching-request-form');
+            const btn = document.getElementById('btn-submit-request');
+            const alertBox = document.getElementById('request-form-alert');
+            const messageField = form.querySelector('[name*="[message]"]');
+            const charCountEl = document.getElementById('char-count');
+            
+            // Search functionality
+            const searchInput = document.getElementById('searchInput');
+            const searchClear = document.getElementById('searchClear');
+            const searchResults = document.getElementById('searchResults');
+            const coachCards = document.querySelectorAll('.coach-card-wrapper');
+            const totalCoachesEl = document.getElementById('totalCoaches');
+            const coachesGrid = document.getElementById('coachesGrid');
+            const emptyState = document.getElementById('emptyState');
+            const resetFiltersBtn = document.getElementById('resetFilters');
+            const recommendationsContainer = document.getElementById('recommendationsContainer');
+            const recommendationsList = document.getElementById('recommendationsList');
+            
+            let searchTimeout;
+            let recommendationTimeout;
+            
+            // Search function
+            function performSearch() {
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                let visibleCount = 0;
+                
+                coachCards.forEach(card => {
+                    const name = card.dataset.coachName || '';
+                    const speciality = card.dataset.coachSpeciality || '';
+                    const email = card.dataset.coachEmail || '';
+                    
+                    const matches = name.includes(searchTerm) || 
+                                  speciality.includes(searchTerm) || 
+                                  email.includes(searchTerm);
+                    
+                    if (matches || searchTerm === '') {
+                        card.style.display = '';
+                        visibleCount++;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+                
+                // Update results count
+                if (searchTerm) {
+                    searchResults.innerHTML = `<i class="bi bi-search me-1"></i>${visibleCount} coach${visibleCount > 1 ? 'es' : ''} trouvé${visibleCount > 1 ? 's' : ''}`;
+                    searchClear.style.display = 'block';
+                } else {
+                    searchResults.innerHTML = '';
+                    searchClear.style.display = 'none';
+                }
+                
+                // Show/hide empty state
+                if (visibleCount === 0 && searchTerm) {
+                    if (coachesGrid) coachesGrid.style.display = 'none';
+                    if (emptyState) {
+                        emptyState.style.display = 'block';
+                        emptyState.querySelector('h3').textContent = 'Aucun coach trouvé';
+                        emptyState.querySelector('p').innerHTML = `Aucun coach ne correspond à votre recherche "<strong>${searchTerm}</strong>".<br>Essayez avec un autre terme.`;
+                    }
+                } else {
+                    if (coachesGrid) coachesGrid.style.display = '';
+                    if (emptyState && searchTerm) emptyState.style.display = 'none';
+                }
+                
+                // Update total count
+                if (totalCoachesEl) {
+                    totalCoachesEl.textContent = visibleCount;
+                }
+            }
+            
+            // Search input event
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(performSearch, 300);
+                });
+                
+                searchInput.addEventListener('keyup', function(e) {
+                    if (e.key === 'Escape') {
+                        searchInput.value = '';
+                        performSearch();
+                    }
+                });
+            }
+            
+            // Clear search
+            if (searchClear) {
+                searchClear.addEventListener('click', function() {
+                    searchInput.value = '';
+                    performSearch();
+                    searchInput.focus();
+                });
+            }
+            
+            // Reset filters button
+            if (resetFiltersBtn) {
+                resetFiltersBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    window.location.href = '{{ path('app_coach_index') }}';
+                });
+            }
+
+            // Character counter
+            if (messageField && charCountEl) {
+                messageField.addEventListener('input', function() {
+                    const length = this.value.length;
+                    charCountEl.textContent = length + ' / 1000';
+                    
+                    if (length > 1000) {
+                        charCountEl.style.color = '#ef4444';
+                        charCountEl.style.fontWeight = 'bold';
+                    } else if (length > 900) {
+                        charCountEl.style.color = '#f59e0b';
+                        charCountEl.style.fontWeight = 'bold';
+                    } else if (length >= 10) {
+                        charCountEl.style.color = '#10b981';
+                        charCountEl.style.fontWeight = '600';
+                    } else {
+                        charCountEl.style.color = '#6b7280';
+                        charCountEl.style.fontWeight = 'normal';
+                    }
+                    
+                    // Obtenir les recommandations en temps réel
+                    if (length >= 10) {
+                        clearTimeout(recommendationTimeout);
+                        recommendationTimeout = setTimeout(() => {
+                            fetchRecommendations(this.value);
+                        }, 1000);
+                    } else {
+                        hideRecommendations();
+                    }
+                });
+            }
+
+            // Fonction pour récupérer les recommandations
+            async function fetchRecommendations(message) {
+                try {
+                    const res = await fetch('{{ path('app_coach_recommendations') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({ message: message })
+                    });
+                    
+                    const data = await res.json();
+                    
+                    if (data.success && data.recommendations.length > 0) {
+                        displayRecommendations(data.recommendations);
+                    } else {
+                        hideRecommendations();
+                    }
+                } catch (err) {
+                    console.error('Erreur lors de la récupération des recommandations:', err);
+                }
+            }
+
+            // Fonction pour afficher les recommandations
+            function displayRecommendations(recommendations) {
+                recommendationsList.innerHTML = '';
+                
+                recommendations.forEach((rec, index) => {
+                    const isTopMatch = index === 0;
+                    const cardClass = isTopMatch ? 'recommended-coach-card top-match' : 'recommended-coach-card';
+                    
+                    const card = document.createElement('div');
+                    card.className = 'col-12';
+                    card.innerHTML = `
+                        <div class="${cardClass}">
+                            ${isTopMatch ? '<div class="top-match-badge mb-3"><i class="bi bi-trophy-fill me-1"></i>Meilleur match</div>' : ''}
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="coach-avatar" style="width: 60px; height: 60px; font-size: 1.5rem;">
+                                    <i class="bi bi-person-fill"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h4 class="h6 fw-bold mb-1">${rec.firstName} ${rec.lastName}</h4>
+                                            ${rec.speciality ? `<span class="badge bg-light text-dark border px-2 py-1" style="border-color: var(--pastel-primary) !important; font-size: 0.75rem;">
+                                                <i class="bi bi-star-fill me-1" style="color: #4A7C9D;"></i>${rec.speciality}
+                                            </span>` : ''}
+                                        </div>
+                                        <span class="match-score">${Math.round(rec.score)}% compatible</span>
+                                    </div>
+                                    
+                                    <div class="d-flex gap-3 mb-2 text-muted small">
+                                        ${rec.rating ? `<span><i class="bi bi-star-fill" style="color: #FFD700;"></i> ${rec.rating}/5</span>` : ''}
+                                        ${rec.pricePerSession ? `<span><i class="bi bi-currency-euro"></i> ${rec.pricePerSession}€/session</span>` : ''}
+                                        ${rec.availability ? `<span><i class="bi bi-calendar-check"></i> ${rec.availability}</span>` : ''}
+                                    </div>
+                                    
+                                    ${rec.reasons && rec.reasons.length > 0 ? `
+                                        <div class="match-reasons">
+                                            ${rec.reasons.map(reason => `<span class="match-reason"><i class="bi bi-check-circle-fill me-1"></i>${reason}</span>`).join('')}
+                                        </div>
+                                    ` : ''}
+                                    
+                                    <button class="btn btn-sm btn-orange mt-3" onclick="selectCoach(${rec.id})">
+                                        <i class="bi bi-hand-thumbs-up me-1"></i>Choisir ce coach
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    recommendationsList.appendChild(card);
+                });
+                
+                recommendationsContainer.style.display = 'block';
+                document.getElementById('recommendationsSection').classList.add('show');
+                
+                // Scroll vers les recommandations
+                setTimeout(() => {
+                    recommendationsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
+            }
+
+            // Fonction pour masquer les recommandations
+            function hideRecommendations() {
+                if (recommendationsContainer) {
+                    recommendationsContainer.style.display = 'none';
+                    document.getElementById('recommendationsSection').classList.remove('show');
+                }
+            }
+
+            // Fonction pour sélectionner un coach recommandé
+            window.selectCoach = function(coachId) {
+                const coachSelect = document.getElementById('coaching_request_coach');
+                if (coachSelect) {
+                    coachSelect.value = coachId;
+                    coachSelect.dispatchEvent(new Event('change'));
+                    
+                    // Scroll vers le formulaire
+                    document.getElementById('coaching-request-form').scrollIntoView({ behavior: 'smooth' });
+                    
+                    // Highlight du select
+                    coachSelect.style.border = '3px solid #FFD700';
+                    setTimeout(() => {
+                        coachSelect.style.border = '';
+                    }, 2000);
+                }
+            };
+
+            // Fonction pour afficher les avis d'un coach
+            window.showReviews = async function(coachId, coachName) {
+                const modal = new bootstrap.Modal(document.getElementById('reviewsModal'));
+                document.getElementById('modalCoachName').textContent = coachName;
+                document.getElementById('reviewsList').innerHTML = '<div class="text-center text-muted"><div class="spinner-border" role="status"><span class="visually-hidden">Chargement...</span></div></div>';
+                
+                modal.show();
+                
+                try {
+                    const res = await fetch(`/reviews/coach/${coachId}`);
+                    const data = await res.json();
+                    
+                    if (data.success) {
+                        displayReviewsInModal(data);
+                    } else {
+                        document.getElementById('reviewsList').innerHTML = '<div class="alert alert-warning">Impossible de charger les avis.</div>';
+                    }
+                } catch (err) {
+                    console.error('Erreur lors du chargement des avis:', err);
+                    document.getElementById('reviewsList').innerHTML = '<div class="alert alert-danger">Erreur lors du chargement des avis.</div>';
+                }
+            };
+
+            // Fonction pour afficher les avis dans le modal
+            function displayReviewsInModal(data) {
+                const stats = data.stats;
+                const reviews = data.reviews;
+                
+                // Afficher les statistiques
+                document.getElementById('modalAvgRating').textContent = stats.average || '-';
+                document.getElementById('modalTotalReviews').textContent = `Basé sur ${stats.total} avis`;
+                
+                // Afficher les étoiles
+                const starsHtml = Array.from({length: 5}, (_, i) => {
+                    const filled = i < Math.round(stats.average);
+                    return `<i class="bi bi-star-fill" style="color: ${filled ? '#FFD700' : '#E8E8E8'}; font-size: 1.5rem;"></i>`;
+                }).join('');
+                document.getElementById('modalStars').innerHTML = starsHtml;
+                
+                // Afficher la distribution
+                if (stats.total > 0) {
+                    document.getElementById('ratingDistribution').style.display = 'block';
+                    for (let i = 1; i <= 5; i++) {
+                        const count = stats.distribution[i] || 0;
+                        const percentage = (count / stats.total) * 100;
+                        document.getElementById(`bar-${i}`).style.width = percentage + '%';
+                        document.getElementById(`count-${i}`).textContent = count;
+                    }
+                }
+                
+                // Afficher les avis
+                if (reviews.length === 0) {
+                    document.getElementById('reviewsList').innerHTML = '<div class="text-center text-muted p-4">Aucun avis pour le moment.</div>';
+                    return;
+                }
+                
+                const reviewsHtml = reviews.map(review => {
+                    const stars = Array.from({length: 5}, (_, i) => {
+                        const filled = i < Math.round(review.rating);
+                        return `<i class="bi bi-star-fill" style="color: ${filled ? '#FFD700' : '#E8E8E8'};"></i>`;
+                    }).join('');
+                    
+                    const initials = review.userName.split(' ').map(n => n[0]).join('');
+                    
+                    return `
+                        <div class="review-card">
+                            <div class="review-header">
+                                <div class="review-user">
+                                    <div class="review-avatar">${initials}</div>
+                                    <div>
+                                        <div class="fw-bold text-dark">${review.userName}</div>
+                                        <div class="small text-muted">${review.createdAtRelative}</div>
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <div class="review-stars mb-1">${stars}</div>
+                                    ${review.isVerified ? '<span class="verified-badge"><i class="bi bi-patch-check-fill"></i>Vérifié</span>' : ''}
+                                </div>
+                            </div>
+                            <p class="mb-0 text-dark">${review.comment}</p>
+                        </div>
+                    `;
+                }).join('');
+                
+                document.getElementById('reviewsList').innerHTML = reviewsHtml;
+            }
+
+            function showAlert(message, type) {
+                alertBox.textContent = message;
+                alertBox.className = 'alert alert-' + type + ' show';
+                alertBox.classList.remove('d-none');
+                alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+
+            function clearErrors() {
+                ['coach', 'message'].forEach(function(name) {
+                    const el = form.querySelector('[name*="[' + name + ']"]');
+                    const errEl = document.getElementById('error-' + name);
+                    if (el) el.classList.remove('is-invalid');
+                    if (errEl) errEl.textContent = '';
+                });
+            }
+
+            function setFieldError(fieldName, message) {
+                const widget = form.querySelector('[name*="[' + fieldName + ']"]');
+                const errEl = document.getElementById('error-' + fieldName);
+                if (widget) {
+                    widget.classList.add('is-invalid');
+                }
+                if (errEl) errEl.textContent = message || '';
+            }
+
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                clearErrors();
+                alertBox.classList.add('d-none');
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Envoi en cours...';
+
+                const formData = new FormData(form);
+
+                try {
+                    const res = await fetch('{{ path('app_coach_request_create_ajax') }}', {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+                    const data = await res.json();
+
+                    if (data.success) {
+                        showAlert('✅ ' + data.message, 'success');
+                        form.reset();
+                        if (charCountEl) charCountEl.textContent = '0 / 1000';
+                        window.setTimeout(function() { location.reload(); }, 2000);
+                    } else {
+                        showAlert('❌ ' + (data.message || 'Erreur lors de l\'envoi.'), 'danger');
+                        if (data.errors) {
+                            if (data.errors.coach) setFieldError('coach', data.errors.coach[0]);
+                            if (data.errors.message) setFieldError('message', data.errors.message[0]);
+                        }
+                    }
+                } catch (err) {
+                    showAlert('❌ Erreur réseau. Veuillez réessayer.', 'danger');
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-send-fill me-2"></i>Envoyer ma demande';
+                }
+            });
+            
+            // ===== SYSTÈME DE CALENDRIER ET CRÉNEAUX =====
+            let calendar = null;
+            let currentCoachId = null;
+            let selectedTimeSlot = null;
+            let allTimeSlots = [];
+            
+            // Ouvrir le calendrier d'un coach
+            window.openCalendar = async function(coachId, coachName) {
+                currentCoachId = coachId;
+                selectedTimeSlot = null;
+                
+                document.getElementById('modalCoachNameCalendar').textContent = coachName;
+                document.getElementById('timeslotsList').innerHTML = '<p class="text-muted text-center">Chargement...</p>';
+                document.getElementById('selectedSlotInfo').classList.add('d-none');
+                
+                const modal = new bootstrap.Modal(document.getElementById('calendarModal'));
+                modal.show();
+                
+                // Charger les créneaux
+                await loadCoachTimeSlots(coachId);
+                
+                // Initialiser le calendrier
+                if (!calendar) {
+                    initCalendar();
+                } else {
+                    calendar.refetchEvents();
+                }
+            };
+            
+            // Initialiser FullCalendar
+            function initCalendar() {
+                const calendarEl = document.getElementById('calendar');
+                
+                calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'timeGridWeek',
+                    locale: 'fr',
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'timeGridWeek,timeGridDay'
+                    },
+                    slotMinTime: '08:00:00',
+                    slotMaxTime: '21:00:00',
+                    allDaySlot: false,
+                    height: 'auto',
+                    events: function(info, successCallback, failureCallback) {
+                        successCallback(allTimeSlots);
+                    },
+                    eventClick: function(info) {
+                        if (info.event.extendedProps.available) {
+                            selectTimeSlot(parseInt(info.event.id));
+                        }
+                    },
+                    dateClick: function(info) {
+                        showTimeSlotsForDate(info.dateStr);
+                    }
+                });
+                
+                calendar.render();
+            }
+            
+            // Charger les créneaux d'un coach
+            async function loadCoachTimeSlots(coachId) {
+                try {
+                    const res = await fetch(`/api/timeslots/coach/${coachId}`);
+                    const data = await res.json();
+                    
+                    if (data.success) {
+                        allTimeSlots = data.timeSlots;
+                        
+                        // Afficher les créneaux d'aujourd'hui par défaut
+                        const today = new Date().toISOString().split('T')[0];
+                        showTimeSlotsForDate(today);
+                    }
+                } catch (err) {
+                    console.error('Erreur lors du chargement des créneaux:', err);
+                }
+            }
+            
+            // Afficher les créneaux pour une date donnée
+            function showTimeSlotsForDate(dateStr) {
+                const date = dateStr.split('T')[0];
+                const slots = allTimeSlots.filter(slot => slot.start.startsWith(date) && slot.available);
+                
+                const timeslotsList = document.getElementById('timeslotsList');
+                
+                if (slots.length === 0) {
+                    timeslotsList.innerHTML = `
+                        <div class="text-center py-5">
+                            <i class="bi bi-calendar-x" style="font-size: 3rem; color: var(--pastel-danger); opacity: 0.5;"></i>
+                            <p class="text-muted mt-3 mb-0">Aucun créneau disponible ce jour</p>
+                            <p class="text-muted small">Essayez une autre date</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const dateObj = new Date(date);
+                const dateFormatted = dateObj.toLocaleDateString('fr-FR', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+                
+                timeslotsList.innerHTML = `
+                    <div class="mb-3 p-3" style="background: white; border-radius: 0.75rem; border: 2px solid var(--pastel-light);">
+                        <h6 class="text-dark fw-bold mb-1" style="color: #2C5F7F;">
+                            <i class="bi bi-calendar-day me-2"></i>${dateFormatted}
+                        </h6>
+                        <p class="text-muted small mb-0">
+                            <i class="bi bi-clock me-1"></i>
+                            ${slots.length} créneau${slots.length > 1 ? 'x' : ''} disponible${slots.length > 1 ? 's' : ''}
+                        </p>
+                    </div>
+                    ${slots.map(slot => {
+                        const startTime = new Date(slot.start).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                        const endTime = new Date(slot.end).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                        
+                        return `
+                            <div class="timeslot-card ${selectedTimeSlot === slot.id ? 'selected' : ''}" 
+                                 data-slot-id="${slot.id}" 
+                                 onclick="selectTimeSlot(${slot.id})">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="flex-grow-1">
+                                        <div class="timeslot-time">
+                                            <i class="bi bi-clock me-2"></i>${startTime} - ${endTime}
+                                        </div>
+                                        <div class="timeslot-duration">
+                                            <i class="bi bi-hourglass-split"></i>
+                                            <span>Durée : ${slot.duration} minutes</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        ${selectedTimeSlot === slot.id ? 
+                                            '<i class="bi bi-check-circle-fill timeslot-check-icon"></i>' : 
+                                            '<i class="bi bi-circle text-muted" style="font-size: 1.5rem;"></i>'
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                `;
+            }
+            
+            // Sélectionner un créneau
+            function selectTimeSlot(slotId) {
+                selectedTimeSlot = slotId;
+                
+                // Mettre à jour l'affichage
+                document.querySelectorAll('.timeslot-card').forEach(card => {
+                    if (parseInt(card.dataset.slotId) === slotId) {
+                        card.classList.add('selected');
+                    } else {
+                        card.classList.remove('selected');
+                    }
+                });
+                
+                // Afficher les infos du créneau sélectionné
+                const slot = allTimeSlots.find(s => s.id === slotId);
+                if (slot) {
+                    const startDate = new Date(slot.start);
+                    const endDate = new Date(slot.end);
+                    const dateFormatted = startDate.toLocaleDateString('fr-FR', { 
+                        weekday: 'long', 
+                        day: 'numeric', 
+                        month: 'long', 
+                        year: 'numeric' 
+                    });
+                    const timeFormatted = startDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) + 
+                                        ' - ' + 
+                                        endDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                    
+                    document.getElementById('selectedSlotText').innerHTML = `
+                        <div class="mb-2">
+                            <i class="bi bi-calendar-event me-2"></i>
+                            <strong>${dateFormatted}</strong>
+                        </div>
+                        <div>
+                            <i class="bi bi-clock me-2"></i>
+                            ${timeFormatted}
+                        </div>
+                        <div class="mt-2 pt-2" style="border-top: 1px solid rgba(74, 124, 93, 0.2);">
+                            <i class="bi bi-hourglass-split me-2"></i>
+                            <span>Durée : ${slot.duration} minutes</span>
+                        </div>
+                    `;
+                    document.getElementById('selectedSlotInfo').classList.remove('d-none');
+                }
+                
+                // Recharger la liste pour mettre à jour les icônes
+                showTimeSlotsForDate(new Date(slot.start).toISOString().split('T')[0]);
+            }
+            
+            // Confirmer le créneau et envoyer la demande
+            window.confirmTimeSlot = function() {
+                if (!selectedTimeSlot) {
+                    alert('Veuillez sélectionner un créneau');
+                    return;
+                }
+                
+                // Fermer le modal
+                bootstrap.Modal.getInstance(document.getElementById('calendarModal')).hide();
+                
+                // Remplir le formulaire
+                document.getElementById('coaching_request_coach').value = currentCoachId;
+                
+                // Ajouter un champ caché pour le créneau
+                let timeSlotInput = document.getElementById('selected_timeslot');
+                if (!timeSlotInput) {
+                    timeSlotInput = document.createElement('input');
+                    timeSlotInput.type = 'hidden';
+                    timeSlotInput.id = 'selected_timeslot';
+                    timeSlotInput.name = 'timeSlotId';
+                    document.getElementById('coaching-request-form').appendChild(timeSlotInput);
+                }
+                timeSlotInput.value = selectedTimeSlot;
+                
+                // Scroll vers le formulaire
+                document.getElementById('coaching-request-form').scrollIntoView({ behavior: 'smooth' });
+                
+                // Afficher un message
+                const slot = allTimeSlots.find(s => s.id === selectedTimeSlot);
+                if (slot) {
+                    const startDate = new Date(slot.start);
+                    const dateFormatted = startDate.toLocaleDateString('fr-FR', { 
+                        day: 'numeric', 
+                        month: 'long', 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                    });
+                    
+                    alert(`Créneau sélectionné : ${dateFormatted}\nComplétez le formulaire pour envoyer votre demande.`);
+                }
+            };
+        })();
+    </script>
+{% endblock %}

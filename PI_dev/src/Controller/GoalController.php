@@ -25,7 +25,11 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 class GoalController extends AbstractController
 {
     public function __construct(
-        private ChatroomRepository $chatroomRepository
+        private ChatroomRepository $chatroomRepository,
+        private EntityManagerInterface $entityManager,
+        private GoalRepository $goalRepository,
+        private UserRepository $userRepository,
+        private UserPasswordHasherInterface $passwordHasher,
     ) {}
 
     #[Route('/goals', name: 'goal_list')]
@@ -38,45 +42,60 @@ class GoalController extends AbstractController
             'readReceiptRepo' => $readReceiptRepo,
         ]);
     }
+#[Route('/goal/new', name: 'goal_new', methods: ['GET', 'POST'])]
+public function new(Request $request, EntityManagerInterface $em): JsonResponse|Response
+{
+    $goal = new Goal();
+    $form = $this->createForm(GoalType::class, $goal);
+    $form->handleRequest($request);
 
-    #[Route('/goal/new', name: 'goal_new')]
-    public function new(Request $request, EntityManagerInterface $em): Response
-    {
-        // Pas de restriction d'authentification pour voir le formulaire
-        
-        $goal = new Goal();
-        $form = $this->createForm(GoalType::class, $goal);
-        $form->handleRequest($request);
+    $isAjax = $request->isXmlHttpRequest()
+        || $request->headers->get('X-Requested-With') === 'XMLHttpRequest'
+        || str_contains($request->headers->get('Accept', ''), 'application/json');
 
-        if ($form->isSubmitted() && $form->isValid()) {
+    if ($form->isSubmitted() && $form->isValid()) {
 
-            // Créer automatiquement le chatroom
-            $chatroom = new Chatroom();
-            $chatroom->setCreatedAt(new \DateTime());
-            $chatroom->setGoal($goal);
+        // Create Chatroom automatically
+        $chatroom = new Chatroom();
+        $chatroom->setCreatedAt(new \DateTime());
+        $chatroom->setGoal($goal);
 
-            // Créer automatiquement la participation du créateur (si connecté)
-            if ($this->getUser()) {
-                $participation = new GoalParticipation();
-                $participation->setGoal($goal);
-                $participation->setUser($this->getUser());
-                $participation->setCreatedAt(new \DateTime());
-                $em->persist($participation);
-            }
-
-            $em->persist($goal);
-            $em->persist($chatroom);
-
-            $em->flush();
-
-            $this->addFlash('success', 'Goal créé avec succès!');
-            return $this->redirectToRoute('goal_list');
+        // Creator joins automatically
+        if ($this->getUser()) {
+            $participation = new GoalParticipation();
+            $participation->setGoal($goal);
+            $participation->setUser($this->getUser());
+            $participation->setCreatedAt(new \DateTime());
+            $em->persist($participation);
         }
 
-        return $this->render('goal/new.html.twig', [
-            'form' => $form->createView(),
-        ]);
+        $em->persist($goal);
+        $em->persist($chatroom);
+        $em->flush();
+
+        if ($isAjax) {
+            return new JsonResponse([
+                'success' => true,
+                'message' => 'Goal created successfully!',
+                'goal' => [
+                    'id' => $goal->getId(),
+                    'title' => $goal->getTitle(),
+                    'description' => $goal->getDescription(),
+                    'status' => $goal->getStatus(),
+                    'startDate' => $goal->getStartDate()?->format('Y-m-d'),
+                    'endDate' => $goal->getEndDate()?->format('Y-m-d'),
+                ]
+            ], 201);
+        }
+
+        $this->addFlash('success', 'Goal created successfully!');
+        return $this->redirectToRoute('goal_list');
     }
+
+    return $this->render('goal/new.html.twig', [
+        'form' => $form->createView(),
+    ]);
+}
 
 
     #[Route('/goal/{id}/join', name: 'goal_join')]
@@ -1114,4 +1133,116 @@ class GoalController extends AbstractController
         $this->addFlash('success', "Demande de $userName refusée");
         return $this->redirectToRoute('goal_messages', ['id' => $goalId]);
     }
+
+
+    // 👇 USER STATIQUE
+    private function getStaticUser(): User
+    {
+        $user = $this->userRepository->findOneBy(['email' => 'static@example.com']);
+
+        if (!$user) {
+            $user = new User();
+            $user->setEmail('static@example.com');
+            $user->setFirstName('Static');
+            $user->setLastName('User');
+            $user->setStatus('active');
+            $user->setPassword(
+                $this->passwordHasher->hashPassword($user, 'password123')
+            );
+
+            $this->entityManager->persist($user);
+            $this->entityManager->flush();
+        }
+
+        return $user;
+    }
+
+    // 👇 INDEX
+    #[Route('/', name: 'index', methods: ['GET'])]
+    public function index(Request $request): Response
+    {
+        $sortBy = $request->query->get('sort', 'createdAt'); // Default sort by creation date
+        $sortOrder = $request->query->get('order', 'DESC'); // Default descending
+        $filterStatus = $request->query->get('status', 'all'); // Default show all
+
+        // Build query
+        $queryBuilder = $this->goalRepository->createQueryBuilder('g');
+
+        // Apply status filter
+        if ($filterStatus !== 'all') {
+            $queryBuilder->andWhere('g.status = :status')
+                        ->setParameter('status', $filterStatus);
+        }
+
+        // Apply sorting
+        $validSortFields = ['createdAt', 'startDate', 'endDate', 'title'];
+        if (in_array($sortBy, $validSortFields)) {
+            $queryBuilder->orderBy('g.' . $sortBy, $sortOrder);
+        } else {
+            $queryBuilder->orderBy('g.createdAt', 'DESC');
+        }
+
+        $goals = $queryBuilder->getQuery()->getResult();
+
+        return $this->render('goal/index.html.twig', [
+            'goals' => $goals,
+            'currentSort' => $sortBy,
+            'currentOrder' => $sortOrder,
+            'currentStatus' => $filterStatus,
+        ]);
+    }
+
+
+    // 👇 EDIT
+    #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
+    public function edit(Request $request, Goal $goal): JsonResponse|Response
+    {
+        $form = $this->createForm(GoalType::class, $goal);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+
+            $this->entityManager->flush();
+
+            return new JsonResponse([
+                'success' => true,
+                'message' => 'Objectif modifié avec succès !',
+                'goal' => [
+                    'id' => $goal->getId(),
+                    'title' => $goal->getTitle(),
+                    'description' => $goal->getDescription(),
+                    'status' => $goal->getStatus(),
+                    'startDate' => $goal->getStartDate()?->format('Y-m-d'),
+                    'endDate' => $goal->getEndDate()?->format('Y-m-d'),
+                ]
+            ]);
+        }
+
+        return $this->render('goal/_form.html.twig', [
+            'form' => $form,
+            'goal' => $goal,
+        ]);
+    }
+
+    // 👇 DELETE
+    #[Route('/{id}', name: 'delete', methods: ['POST'])]
+    public function delete(Request $request, Goal $goal): JsonResponse
+    {
+        if ($this->isCsrfTokenValid('delete' . $goal->getId(), $request->request->get('_token'))) {
+            $this->entityManager->remove($goal);
+            $this->entityManager->flush();
+
+            return new JsonResponse([
+                'success' => true,
+                'message' => 'Objectif supprimé avec succès !'
+            ]);
+        }
+
+        return new JsonResponse([
+            'success' => false,
+            'message' => 'Token CSRF invalide'
+        ], 403);
+    }
+    
+    
 }

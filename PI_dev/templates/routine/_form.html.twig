@@ -1,0 +1,34 @@
+{{ form_start(form, {
+    'action': (routine is defined and routine.id) ? path('app_routine_edit', {goalId: goal.id, id: routine.id}) : path('app_routine_new', {goalId: goal.id}),
+    'method': 'POST',
+    'attr': {'class': 'needs-validation', 'novalidate': ''}
+}) }}
+    <div class="row g-3">
+        <div class="col-12">
+            {{ form_label(form.title, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.title, {'attr': {'class': 'form-control form-control-lg', 'placeholder': 'Ex: Entraînement matinal'}}) }}
+            {{ form_errors(form.title) }}
+        </div>
+
+        <div class="col-12">
+            {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 4, 'placeholder': 'Décrivez votre routine...'}}) }}
+            {{ form_errors(form.description) }}
+        </div>
+
+        <div class="col-12">
+            {{ form_label(form.visibility, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.visibility, {'attr': {'class': 'form-select form-select-lg'}}) }}
+            {{ form_errors(form.visibility) }}
+        </div>
+    </div>
+
+    <div class="d-flex gap-3 mt-4 pt-4 border-top">
+        <button type="submit" class="btn btn-orange flex-grow-1">
+            <i class="bi bi-check-circle me-2"></i>Enregistrer
+        </button>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+            Annuler
+        </button>
+    </div>
+{{ form_end(form) }}
