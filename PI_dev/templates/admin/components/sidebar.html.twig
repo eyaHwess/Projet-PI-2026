@@ -3,10 +3,12 @@
 
     <!-- Navbar brand for xl START -->
     <div class="d-flex align-items-center">
-        <a class="navbar-brand" href="#">
+        <a class="navbar-brand d-flex align-items-center" href="#" style="gap: 0.5rem;">
             <img class="navbar-brand-item"
-                 src="{{ asset('adminDashboard/assets/images/logo-light.svg') }}"
-                 alt="Logo">
+                 src="{{ asset('images/dayflow_logo.png') }}"
+                 alt="DayFlow Logo"
+                 style="height: 40px;">
+            <span style="color: #7c3aed; font-weight: 600; font-size: 1.25rem;">DayFlow</span>
         </a>
     </div>
     <!-- Navbar brand for xl END -->
@@ -23,7 +25,7 @@
 
                 <!-- Menu item 1 -->
                 <li class="nav-item">
-                    <a href="{{ path('admin_dashboard') }}" class="nav-link active">
+                    <a href="{{ path('admin_dashboard') }}" class="nav-link {{ app.request.attributes.get('_route') == 'admin_dashboard' ? 'active' : '' }}">
                         <i class="bi-speedometer2"></i> Dashboard
                     </a>
                 </li>
@@ -33,7 +35,7 @@
 
                 <!-- Menu item 2 -->
                 <li class="nav-item">
-                    <a class="nav-link" data-bs-toggle="collapse" href="#collapsepage"
+                    <a class="nav-link {{ app.request.attributes.get('_route') in ['admin_user_list', 'admin_manage_accounts'] ? 'active' : '' }}" data-bs-toggle="collapse" href="#collapsepage"
                        role="button" aria-expanded="false" aria-controls="collapsepage">
                         <i class="bi-people-fill"></i>Users
                     </a>
@@ -41,10 +43,10 @@
                     <!-- Submenu -->
                     <ul class="nav collapse flex-column" id="collapsepage" data-bs-parent="#navbar-sidebar">
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ path('admin_user_list') }}">List users</a>
+                            <a class="nav-link {{ app.request.attributes.get('_route') == 'admin_user_list' ? 'active' : '' }}" href="{{ path('admin_user_list') }}">List users</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ path('admin_manage_accounts') }}">Manage accounts</a>
+                            <a class="nav-link {{ app.request.attributes.get('_route') == 'admin_manage_accounts' ? 'active' : '' }}" href="{{ path('admin_manage_accounts') }}">Manage accounts</a>
                         </li>
                     </ul>
                 </li>
@@ -83,14 +85,14 @@
 
                 <!-- Menu item 6 -->
                 <li class="nav-item">
-                    <a class="nav-link" data-bs-toggle="collapse" href="#collapseinstructors"
+                    <a class="nav-link {{ app.request.attributes.get('_route') in ['admin_claims'] ? 'active' : '' }}" data-bs-toggle="collapse" href="#collapseinstructors"
                        role="button" aria-expanded="false" aria-controls="collapseinstructors">
                         <i class="bi-exclamation-triangle-fill"></i> Reclamations
                     </a>
                     <!-- Submenu -->
                     <ul class="nav collapse flex-column" id="collapseinstructors" data-bs-parent="#navbar-sidebar">
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ path('admin_claims') }}">Complaints<span class="badge text-bg-success rounded-circle ms-2">2</span></a>
+                            <a class="nav-link {{ app.request.attributes.get('_route') == 'admin_claims' ? 'active' : '' }}" href="{{ path('admin_claims') }}">Complaints<span class="badge text-bg-success rounded-circle ms-2">2</span></a>
                             
                         </li>
                         <li class="nav-item">
@@ -109,7 +111,7 @@
 
                 <!-- Menu item 8 -->
                 <li class="nav-item">
-                    <a class="nav-link" data-bs-toggle="collapse" href="#collapseauthentication"
+                    <a class="nav-link {{ app.request.attributes.get('_route') in ['coaches_list', 'admin_coach_requests'] ? 'active' : '' }}" data-bs-toggle="collapse" href="#collapseauthentication"
                        role="button" aria-expanded="false" aria-controls="collapseauthentication">
                         <i class="bi-person-badge-fill"></i> Coaching Management
                     </a>
@@ -117,10 +119,10 @@
                     <!-- Submenu -->
                     <ul class="nav collapse flex-column" id="collapseauthentication" data-bs-parent="#navbar-sidebar">
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ path('coaches_list') }}">Coaches</a>
+                            <a class="nav-link {{ app.request.attributes.get('_route') == 'coaches_list' ? 'active' : '' }}" href="{{ path('coaches_list') }}">Coaches</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ path('admin_coach_requests') }}">Requests</a>
+                            <a class="nav-link {{ app.request.attributes.get('_route') == 'admin_coach_requests' ? 'active' : '' }}" href="{{ path('admin_coach_requests') }}">Requests</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="#">Sessions</a>
@@ -133,7 +135,7 @@
 
                 <!-- Menu item 9 -->
                 <li class="nav-item">
-                    <a class="nav-link" data-bs-toggle="collapse" href="#collapseStatistics"
+                    <a class="nav-link {{ app.request.attributes.get('_route') in ['admin_global_stats', 'admin_user_stats'] ? 'active' : '' }}" data-bs-toggle="collapse" href="#collapseStatistics"
                        role="button" aria-expanded="false" aria-controls="collapseStatistics">
                         <i class="bi-person-badge-fill"></i> Statistics & Monitoring
                     </a>
@@ -141,10 +143,10 @@
                     <!-- Submenu -->
                     <ul class="nav collapse flex-column" id="collapseStatistics" data-bs-parent="#navbar-sidebar">
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ path('admin_global_stats') }}">Global stats</a>
+                            <a class="nav-link {{ app.request.attributes.get('_route') == 'admin_global_stats' ? 'active' : '' }}" href="{{ path('admin_global_stats') }}">Global stats</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ path('admin_user_stats') }}">User activity</a>
+                            <a class="nav-link {{ app.request.attributes.get('_route') == 'admin_user_stats' ? 'active' : '' }}" href="{{ path('admin_user_stats') }}">User activity</a>
                         </li>
                     </ul>
                 </li>

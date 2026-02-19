@@ -29,8 +29,8 @@
 <div class="row g-4 pt-4">
     <!-- Titre -->
     <div class="col-12">
-        <h1 class="h3 mb-2 mb-sm-0">Dashboard Administrateur</h1>
-        <p class="text-muted mb-0">Vue d'ensemble de l'application Buildify</p>
+        <h1 class="h3 mb-2 mb-sm-0">Admin Dashboard</h1>
+        <p class="text-muted mb-0">Overview of the DayFlow application</p>
     </div>
 
     <!-- Cartes statistiques principales -->
@@ -41,10 +41,10 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <h6 class="text-muted mb-2">Total Utilisateurs</h6>
+                            <h6 class="text-muted mb-2">Total Users</h6>
                             <h2 class="mb-0 fw-bold">{{ totalUsers }}</h2>
                             <small class="text-success">
-                                <i class="bi bi-arrow-up"></i> {{ totalCoaches }} coachs
+                                <i class="bi bi-arrow-up"></i> {{ totalCoaches }} coaches
                             </small>
                         </div>
                         <div class="stat-icon bg-primary bg-opacity-10 text-primary">
@@ -61,10 +61,10 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <h6 class="text-muted mb-2">Demandes Coaching</h6>
+                            <h6 class="text-muted mb-2">Coaching Requests</h6>
                             <h2 class="mb-0 fw-bold">{{ totalRequests }}</h2>
                             <small class="text-warning">
-                                <i class="bi bi-clock"></i> {{ pendingRequests }} en attente
+                                <i class="bi bi-clock"></i> {{ pendingRequests }} pending
                             </small>
                         </div>
                         <div class="stat-icon bg-warning bg-opacity-10 text-warning">
@@ -84,7 +84,7 @@
                             <h6 class="text-muted mb-2">Total Sessions</h6>
                             <h2 class="mb-0 fw-bold">{{ totalSessions }}</h2>
                             <small class="text-success">
-                                <i class="bi bi-check-circle"></i> {{ confirmedSessions }} confirmées
+                                <i class="bi bi-check-circle"></i> {{ confirmedSessions }} confirmed
                             </small>
                         </div>
                         <div class="stat-icon bg-success bg-opacity-10 text-success">
@@ -101,7 +101,7 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <h6 class="text-muted mb-2">Objectifs & Routines</h6>
+                            <h6 class="text-muted mb-2">Goals & Routines</h6>
                             <h2 class="mb-0 fw-bold">{{ totalGoals }}</h2>
                             <small class="text-info">
                                 <i class="bi bi-list-check"></i> {{ totalRoutines }} routines
@@ -123,7 +123,7 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white border-bottom py-3">
                     <h5 class="card-header-title mb-0">
-                        <i class="bi bi-graph-up me-2"></i>Évolution (7 derniers jours)
+                        <i class="bi bi-graph-up me-2"></i>Evolution (Last 7 days)
                     </h5>
                 </div>
                 <div class="card-body">
@@ -137,22 +137,22 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white border-bottom py-3">
                     <h5 class="card-header-title mb-0">
-                        <i class="bi bi-pie-chart-fill me-2"></i>Demandes par statut
+                        <i class="bi bi-pie-chart-fill me-2"></i>Requests by Status
                     </h5>
                 </div>
                 <div class="card-body">
                     <canvas id="requestsChart"></canvas>
                     <div class="mt-3">
                         <div class="d-flex justify-content-between mb-2">
-                            <span><i class="bi bi-circle-fill text-warning me-2"></i>En attente</span>
+                            <span><i class="bi bi-circle-fill text-warning me-2"></i>Pending</span>
                             <strong>{{ pendingRequests }}</strong>
                         </div>
                         <div class="d-flex justify-content-between mb-2">
-                            <span><i class="bi bi-circle-fill text-success me-2"></i>Acceptées</span>
+                            <span><i class="bi bi-circle-fill text-success me-2"></i>Accepted</span>
                             <strong>{{ acceptedRequests }}</strong>
                         </div>
                         <div class="d-flex justify-content-between">
-                            <span><i class="bi bi-circle-fill text-danger me-2"></i>Refusées</span>
+                            <span><i class="bi bi-circle-fill text-danger me-2"></i>Declined</span>
                             <strong>{{ declinedRequests }}</strong>
                         </div>
                     </div>
@@ -168,7 +168,7 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white border-bottom py-3">
                     <h5 class="card-header-title mb-0">
-                        <i class="bi bi-bar-chart-fill me-2"></i>Sessions par statut
+                        <i class="bi bi-bar-chart-fill me-2"></i>Sessions by Status
                     </h5>
                 </div>
                 <div class="card-body">
@@ -182,18 +182,18 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
                     <h5 class="card-header-title mb-0">
-                        <i class="bi bi-person-plus-fill me-2"></i>Utilisateurs récents
+                        <i class="bi bi-person-plus-fill me-2"></i>Recent Users
                     </h5>
-                    <a href="{{ path('admin_user_list') }}" class="btn btn-sm btn-link p-0">Voir tout</a>
+                    <a href="{{ path('admin_user_list') }}" class="btn btn-sm btn-link p-0">View all</a>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table table-hover mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Nom</th>
+                                    <th>Name</th>
                                     <th>Email</th>
-                                    <th>Rôle</th>
+                                    <th>Role</th>
                                     <th>Date</th>
                                 </tr>
                             </thead>
@@ -220,7 +220,7 @@
                                 </tr>
                                 {% else %}
                                 <tr>
-                                    <td colspan="4" class="text-center text-muted py-3">Aucun utilisateur récent</td>
+                                    <td colspan="4" class="text-center text-muted py-3">No recent users</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -238,9 +238,9 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
                     <h5 class="card-header-title mb-0">
-                        <i class="bi bi-inbox me-2"></i>Demandes récentes
+                        <i class="bi bi-inbox me-2"></i>Recent Requests
                     </h5>
-                    <a href="{{ path('admin_coach_requests') }}" class="btn btn-sm btn-link p-0">Voir tout</a>
+                    <a href="{{ path('admin_coach_requests') }}" class="btn btn-sm btn-link p-0">View all</a>
                 </div>
                 <div class="card-body p-0">
                     <div class="list-group list-group-flush">
@@ -258,7 +258,7 @@
                             </div>
                         </div>
                         {% else %}
-                        <div class="list-group-item text-center text-muted py-3">Aucune demande récente</div>
+                        <div class="list-group-item text-center text-muted py-3">No recent requests</div>
                         {% endfor %}
                     </div>
                 </div>
@@ -270,7 +270,7 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white border-bottom py-3">
                     <h5 class="card-header-title mb-0">
-                        <i class="bi bi-calendar-event me-2"></i>Sessions récentes
+                        <i class="bi bi-calendar-event me-2"></i>Recent Sessions
                     </h5>
                 </div>
                 <div class="card-body p-0">
@@ -294,7 +294,7 @@
                             </div>
                         </div>
                         {% else %}
-                        <div class="list-group-item text-center text-muted py-3">Aucune session récente</div>
+                        <div class="list-group-item text-center text-muted py-3">No recent sessions</div>
                         {% endfor %}
                     </div>
                 </div>
@@ -316,26 +316,44 @@
                 data: {
                     labels: {{ chartData.labels|json_encode|raw }},
                     datasets: [{
-                        label: 'Utilisateurs',
+                        label: 'Users',
                         data: {{ chartData.users|json_encode|raw }},
-                        borderColor: 'rgb(59, 130, 246)',
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderColor: '#e879f9',
+                        backgroundColor: 'rgba(232, 121, 249, 0.2)',
                         tension: 0.4,
-                        fill: true
+                        fill: true,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#e879f9',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
                     }, {
                         label: 'Sessions',
                         data: {{ chartData.sessions|json_encode|raw }},
-                        borderColor: 'rgb(34, 197, 94)',
-                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        borderColor: '#c084fc',
+                        backgroundColor: 'rgba(192, 132, 252, 0.2)',
                         tension: 0.4,
-                        fill: true
+                        fill: true,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#c084fc',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
                     }, {
-                        label: 'Demandes',
+                        label: 'Requests',
                         data: {{ chartData.requests|json_encode|raw }},
-                        borderColor: 'rgb(249, 115, 22)',
-                        backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                        borderColor: '#f472b6',
+                        backgroundColor: 'rgba(244, 114, 182, 0.2)',
                         tension: 0.4,
-                        fill: true
+                        fill: true,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#f472b6',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
                     }]
                 },
                 options: {
@@ -344,6 +362,16 @@
                     plugins: {
                         legend: {
                             position: 'top',
+                            labels: {
+                                color: '#7c3aed',
+                                font: {
+                                    size: 13,
+                                    weight: '600'
+                                },
+                                padding: 15,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
                         },
                         title: {
                             display: false
@@ -351,7 +379,28 @@
                     },
                     scales: {
                         y: {
-                            beginAtZero: true
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(232, 121, 249, 0.1)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: '#a78bfa',
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#a78bfa',
+                                font: {
+                                    size: 12
+                                }
+                            }
                         }
                     }
                 }
@@ -364,14 +413,21 @@
             new Chart(ctxRequests, {
                 type: 'doughnut',
                 data: {
-                    labels: ['En attente', 'Acceptées', 'Refusées'],
+                    labels: ['Pending', 'Accepted', 'Declined'],
                     datasets: [{
                         data: [{{ pendingRequests }}, {{ acceptedRequests }}, {{ declinedRequests }}],
                         backgroundColor: [
-                            'rgb(251, 191, 36)',
-                            'rgb(34, 197, 94)',
-                            'rgb(239, 68, 68)'
-                        ]
+                            '#fbbf24',
+                            '#a7f3d0',
+                            '#fca5a5'
+                        ],
+                        borderColor: [
+                            '#fff',
+                            '#fff',
+                            '#fff'
+                        ],
+                        borderWidth: 3,
+                        hoverOffset: 10
                     }]
                 },
                 options: {
@@ -380,8 +436,20 @@
                     plugins: {
                         legend: {
                             display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            titleColor: '#7c3aed',
+                            bodyColor: '#6b7280',
+                            borderColor: '#e879f9',
+                            borderWidth: 2,
+                            padding: 12,
+                            cornerRadius: 12,
+                            displayColors: true,
+                            boxPadding: 6
                         }
-                    }
+                    },
+                    cutout: '70%'
                 }
             });
         }
@@ -392,23 +460,25 @@
             new Chart(ctxSessions, {
                 type: 'bar',
                 data: {
-                    labels: ['En planification', 'Confirmées', 'Terminées', 'Annulées'],
+                    labels: ['Scheduling', 'Confirmed', 'Completed', 'Cancelled'],
                     datasets: [{
-                        label: 'Nombre de sessions',
+                        label: 'Number of sessions',
                         data: [{{ schedulingSessions }}, {{ confirmedSessions }}, {{ completedSessions }}, {{ cancelledSessions }}],
                         backgroundColor: [
                             'rgba(251, 191, 36, 0.8)',
-                            'rgba(34, 197, 94, 0.8)',
-                            'rgba(59, 130, 246, 0.8)',
-                            'rgba(239, 68, 68, 0.8)'
+                            'rgba(167, 243, 208, 0.8)',
+                            'rgba(147, 197, 253, 0.8)',
+                            'rgba(252, 165, 165, 0.8)'
                         ],
                         borderColor: [
-                            'rgb(251, 191, 36)',
-                            'rgb(34, 197, 94)',
-                            'rgb(59, 130, 246)',
-                            'rgb(239, 68, 68)'
+                            '#fbbf24',
+                            '#6ee7b7',
+                            '#60a5fa',
+                            '#f87171'
                         ],
-                        borderWidth: 1
+                        borderWidth: 2,
+                        borderRadius: 12,
+                        borderSkipped: false
                     }]
                 },
                 options: {
@@ -417,11 +487,41 @@
                     plugins: {
                         legend: {
                             display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            titleColor: '#7c3aed',
+                            bodyColor: '#6b7280',
+                            borderColor: '#e879f9',
+                            borderWidth: 2,
+                            padding: 12,
+                            cornerRadius: 12
                         }
                     },
                     scales: {
                         y: {
-                            beginAtZero: true
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(232, 121, 249, 0.1)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: '#a78bfa',
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#a78bfa',
+                                font: {
+                                    size: 12
+                                }
+                            }
                         }
                     }
                 }
