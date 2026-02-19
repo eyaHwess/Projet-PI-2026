@@ -109,16 +109,49 @@ class PostController extends AbstractController
     }
 
     #[Route('/posts', name: 'post_list_view', methods: ['GET'])]
-    public function adminList(PostRepository $postRepository, PostLikeService $postLikeService, CommentLikeService $commentLikeService): Response
+    public function adminList(Request $request, PostRepository $postRepository, PostLikeService $postLikeService, CommentLikeService $commentLikeService): Response
     {
-        // Get only published posts from database, ordered by newest first
-        $posts = $postRepository->findBy(
-            ['status' => PostStatus::PUBLISHED->value], 
-            ['createdAt' => 'DESC']
-        );
-
-        // Get current user (may be null if not logged in)
+        // Get filter and sort parameters from request
+        $sortBy = $request->query->get('sort', 'newest'); // newest, oldest, most_liked, most_commented
+        $filterBy = $request->query->get('filter', 'all'); // all, following, my_posts
+        
+        // Base query - only published posts
+        $queryBuilder = $postRepository->createQueryBuilder('p')
+            ->where('p.status = :status')
+            ->setParameter('status', PostStatus::PUBLISHED->value);
+        
+        // Get current user
         $currentUser = $this->getUser();
+        
+        // Apply filters
+        if ($filterBy === 'my_posts' && $currentUser) {
+            $queryBuilder->andWhere('p.createdBy = :user')
+                ->setParameter('user', $currentUser);
+        }
+        // Note: 'following' filter would require a Follow/Friend system
+        
+        // Apply sorting
+        switch ($sortBy) {
+            case 'oldest':
+                $queryBuilder->orderBy('p.createdAt', 'ASC');
+                break;
+            case 'most_liked':
+                $queryBuilder->leftJoin('p.postLikes', 'pl')
+                    ->groupBy('p.id')
+                    ->orderBy('COUNT(pl.id)', 'DESC');
+                break;
+            case 'most_commented':
+                $queryBuilder->leftJoin('p.comments', 'c')
+                    ->groupBy('p.id')
+                    ->orderBy('COUNT(c.id)', 'DESC');
+                break;
+            case 'newest':
+            default:
+                $queryBuilder->orderBy('p.createdAt', 'DESC');
+                break;
+        }
+        
+        $posts = $queryBuilder->getQuery()->getResult();
 
         // Add like status for each post
         $postsWithLikeStatus = [];
@@ -132,7 +165,9 @@ class PostController extends AbstractController
         return $this->render('post/post_list.html.twig', [
             'postsWithLikeStatus' => $postsWithLikeStatus,
             'currentUser' => $currentUser,
-            'commentLikeService' => $commentLikeService
+            'commentLikeService' => $commentLikeService,
+            'currentSort' => $sortBy,
+            'currentFilter' => $filterBy
         ]);
     }
 
