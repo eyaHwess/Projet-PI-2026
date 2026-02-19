@@ -19,7 +19,7 @@ class PostLike
 
     #[ORM\ManyToOne(inversedBy: 'postLikes')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?User $Liker = null;
+    private ?User $liker = null;
 
     public function getId(): ?int
     {
@@ -40,12 +40,12 @@ class PostLike
 
     public function getLiker(): ?User
     {
-        return $this->Liker;
+        return $this->liker;
     }
 
-    public function setLiker(?User $Liker): static
+    public function setLiker(?User $liker): static
     {
-        $this->Liker = $Liker;
+        $this->liker = $liker;
 
         return $this;
     }

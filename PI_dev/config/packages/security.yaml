@@ -10,10 +10,6 @@ security:
                 property: email
 
     firewalls:
-        dev:
-            pattern: ^/(_profiler|_wdt|assets|build)/
-            security: false
-
         main:
             lazy: true
             provider: app_user_provider
@@ -21,26 +17,13 @@ security:
             form_login:
                 login_path: app_login
                 check_path: app_login
-                username_parameter: email
-                password_parameter: password
-                enable_csrf: true
-                success_handler: App\Security\LoginSuccessHandler
 
             logout:
                 path: app_logout
-                target: /login
+                target: /
 
     access_control:
-        - { path: ^/$, roles: PUBLIC_ACCESS }
-        - { path: ^/login, roles: PUBLIC_ACCESS }
-        - { path: ^/register, roles: PUBLIC_ACCESS }
-        - { path: ^/, roles: ROLE_USER }
+         - { path: ^/admin, roles: ROLE_ADMIN }
+        
+         - { path: ^/chatroom, roles: ROLE_USER }
 
-when@test:
-    security:
-        password_hashers:
-            App\Entity\User:
-                algorithm: auto
-                cost: 4
-                time_cost: 3
-                memory_cost: 10
