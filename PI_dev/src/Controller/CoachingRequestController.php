@@ -6,6 +6,7 @@ use App\Entity\CoachingRequest;
 use App\Entity\Session;
 use App\Entity\User;
 use App\Repository\CoachingRequestRepository;
+use App\Repository\SessionRepository;
 use App\Repository\UserRepository;
 use App\Service\DemoUserContext;
 use App\Service\NotificationService;
@@ -30,6 +31,7 @@ class CoachingRequestController extends AbstractController
         private EntityManagerInterface $entityManager,
         private UserRepository $userRepository,
         private CoachingRequestRepository $coachingRequestRepository,
+        private SessionRepository $sessionRepository,
         private UserPasswordHasherInterface $passwordHasher,
         private DemoUserContext $demoUserContext,
         private NotificationService $notificationService
@@ -66,20 +68,36 @@ class CoachingRequestController extends AbstractController
 
     /**
      * Liste des demandes de coaching reçues par le coach connecté.
+     * Recherche : nom, email, mot clé message. Filtres : statut, date, priorité.
      */
     #[Route('/requests', name: 'index', methods: ['GET'])]
-    public function index(): Response
+    public function index(Request $request): Response
     {
         $currentUser = $this->getCurrentUser();
-        $pendingRequests = $this->coachingRequestRepository->findPendingForCoach($currentUser);
-        $allRequests = $this->coachingRequestRepository->findAllForCoach($currentUser);
 
-        // Calculer les statistiques
+        $filters = [
+            'search' => $request->query->get('search', ''),
+            'status' => $request->query->get('status', ''),
+            'date_from' => $request->query->get('date_from', ''),
+            'date_to' => $request->query->get('date_to', ''),
+            'priority' => $request->query->get('priority', ''),
+        ];
+
+        $allRequests = $this->coachingRequestRepository->findForCoachWithFilters($currentUser, $filters);
+        $pendingRequests = array_values(array_filter($allRequests, fn (CoachingRequest $cr) => $cr->getStatus() === CoachingRequest::STATUS_PENDING));
+
+        $total = count($this->coachingRequestRepository->findAllForCoach($currentUser));
+        $pending = $this->coachingRequestRepository->countByStatusForCoach($currentUser, CoachingRequest::STATUS_PENDING);
+        $accepted = $this->coachingRequestRepository->countByStatusForCoach($currentUser, CoachingRequest::STATUS_ACCEPTED);
+        $declined = $this->coachingRequestRepository->countByStatusForCoach($currentUser, CoachingRequest::STATUS_DECLINED);
+
         $stats = [
-            'total' => count($allRequests),
-            'pending' => count($pendingRequests),
-            'accepted' => $this->coachingRequestRepository->countByStatusForCoach($currentUser, CoachingRequest::STATUS_ACCEPTED),
-            'declined' => $this->coachingRequestRepository->countByStatusForCoach($currentUser, CoachingRequest::STATUS_DECLINED),
+            'total' => $total,
+            'pending' => $pending,
+            'accepted' => $accepted,
+            'declined' => $declined,
+            'sessions_today' => $this->sessionRepository->countSessionsTodayForCoach($currentUser),
+            'conversion_rate' => $total > 0 ? round($accepted / $total * 100, 1) : 0,
             'urgent' => $this->coachingRequestRepository->countByPriorityForCoach($currentUser, CoachingRequest::PRIORITY_URGENT),
             'medium' => $this->coachingRequestRepository->countByPriorityForCoach($currentUser, CoachingRequest::PRIORITY_MEDIUM),
             'normal' => $this->coachingRequestRepository->countByPriorityForCoach($currentUser, CoachingRequest::PRIORITY_NORMAL),
@@ -91,6 +109,7 @@ class CoachingRequestController extends AbstractController
             'currentUser' => $currentUser,
             'isDemoSwitch' => (bool) $this->demoUserContext->getCurrentEmail(),
             'stats' => $stats,
+            'filters' => $filters,
         ]);
     }
 

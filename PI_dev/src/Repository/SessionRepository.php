@@ -105,4 +105,28 @@ class SessionRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+    /**
+     * Nombre de sessions du coach prévues aujourd'hui (scheduledAt, proposedTimeByCoach ou proposedTimeByUser à la date du jour).
+     */
+    public function countSessionsTodayForCoach(User $coach): int
+    {
+        $todayStart = (new \DateTimeImmutable('today'))->setTime(0, 0, 0);
+        $todayEnd = (new \DateTimeImmutable('today'))->setTime(23, 59, 59);
+
+        return (int) $this->createQueryBuilder('s')
+            ->select('COUNT(s.id)')
+            ->join('s.coachingRequest', 'cr')
+            ->where('cr.coach = :coach')
+            ->andWhere(
+                '(s.scheduledAt IS NOT NULL AND s.scheduledAt >= :todayStart AND s.scheduledAt <= :todayEnd)'
+                . ' OR (s.scheduledAt IS NULL AND s.proposedTimeByCoach IS NOT NULL AND s.proposedTimeByCoach >= :todayStart AND s.proposedTimeByCoach <= :todayEnd)'
+                . ' OR (s.scheduledAt IS NULL AND s.proposedTimeByCoach IS NULL AND s.proposedTimeByUser IS NOT NULL AND s.proposedTimeByUser >= :todayStart AND s.proposedTimeByUser <= :todayEnd)'
+            )
+            ->setParameter('coach', $coach)
+            ->setParameter('todayStart', $todayStart)
+            ->setParameter('todayEnd', $todayEnd)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }
