@@ -97,7 +97,7 @@ class GoalController extends AbstractController
             });
         }
 
-        return $this->render('goal/index.html.twig', [
+        return $this->render('goal/index_modern.html.twig', [
             'goals' => $goals,
             'currentSort' => $sortBy,
             'currentOrder' => $sortOrder,
