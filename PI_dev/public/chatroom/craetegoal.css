@@ -1,0 +1,38 @@
+<style>
+body {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Blobs décoratifs */
+body::before,
+body::after {
+    content: "";
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    z-index: 0;
+}
+
+body::before {
+    top: -100px;
+    left: -100px;
+}
+
+body::after {
+    bottom: -120px;
+    right: -120px;
+}
+
+/* Card glass effect */
+.card {
+    backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.85);
+    position: relative;
+    z-index: 2;
+}
+</style>

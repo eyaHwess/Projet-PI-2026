@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\Chatroom;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: GoalRepository::class)]
@@ -18,7 +19,17 @@ class Goal
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+   #[ORM\OneToOne(mappedBy: 'goal', targetEntity: Chatroom::class, cascade: ['persist', 'remove'])]
+    private ?Chatroom $chatroom = null;
+
+
+    /**
+     * @var Collection<int, GoalParticipation>
+     */
+    #[ORM\OneToMany(targetEntity: GoalParticipation::class, mappedBy: 'goal', cascade: ['persist', 'remove'])]
+    private Collection $goalParticipations;
+
+        
     #[Assert\NotBlank(message: 'Le titre est obligatoire.')]
     #[Assert\Length(
         min: 3,
@@ -71,6 +82,7 @@ class Goal
 
     public function __construct()
     {
+        $this->goalParticipations = new ArrayCollection();
         $this->routines = new ArrayCollection();
         $this->createdAt = new \DateTimeImmutable();
         $this->status = 'active';
@@ -158,6 +170,34 @@ class Goal
 
         return $this;
     }
+    /**
+     * @return Collection<int, GoalParticipation>
+     */
+    public function getGoalParticipations(): Collection
+    {
+        return $this->goalParticipations;
+    }
+
+    public function addGoalParticipation(GoalParticipation $goalParticipation): static
+    {
+        if (!$this->goalParticipations->contains($goalParticipation)) {
+            $this->goalParticipations->add($goalParticipation);
+            $goalParticipation->setGoal($this);
+        }
+
+        return $this;
+    }
+
+    public function removeGoalParticipation(GoalParticipation $goalParticipation): static
+    {
+        if ($this->goalParticipations->removeElement($goalParticipation)) {
+            if ($goalParticipation->getGoal() === $this) {
+                $goalParticipation->setGoal(null);
+            }
+        }
+
+        return $this;
+    }
 
     /**
      * @return Collection<int, Routine>
@@ -180,13 +220,23 @@ class Goal
     public function removeRoutine(Routine $routine): static
     {
         if ($this->routines->removeElement($routine)) {
-            // set the owning side to null (unless already changed)
             if ($routine->getGoal() === $this) {
                 $routine->setGoal(null);
             }
         }
 
         return $this;
+    }
+
+
+    public function getChatroom(): ?Chatroom
+    {
+        return $this->chatroom;
+    }
+
+    public function setChatroom(?Chatroom $chatroom): self
+    {
+        $this->chatroom = $chatroom;
     }
 
     public function getCreatedAt(): ?\DateTimeImmutable
@@ -199,6 +249,66 @@ class Goal
         $this->createdAt = $createdAt;
 
         return $this;
+    }
+
+    public function isUserParticipating(User $user): bool
+    {
+        foreach ($this->goalParticipations as $participation) {
+            if ($participation->getUser() === $user) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function getUserParticipation(User $user): ?GoalParticipation
+    {
+        foreach ($this->goalParticipations as $participation) {
+            if ($participation->getUser() === $user) {
+                return $participation;
+            }
+        }
+        return null;
+    }
+
+    public function canUserModifyGoal(User $user): bool
+    {
+        $participation = $this->getUserParticipation($user);
+        return $participation && ($participation->isOwner() || $participation->isAdmin());
+    }
+
+    public function canUserDeleteGoal(User $user): bool
+    {
+        $participation = $this->getUserParticipation($user);
+        return $participation && $participation->isOwner();
+    }
+
+    public function canUserRemoveMembers(User $user): bool
+    {
+        $participation = $this->getUserParticipation($user);
+        return $participation && ($participation->isOwner() || $participation->isAdmin());
+    }
+
+    public function getPendingRequests(): Collection
+    {
+        return $this->goalParticipations->filter(function($participation) {
+            return $participation->isPending();
+        });
+    }
+
+    public function getPendingRequestsCount(): int
+    {
+        return $this->getPendingRequests()->count();
+    }
+
+    public function hasUserRequestedAccess(User $user): bool
+    {
+        foreach ($this->goalParticipations as $participation) {
+            if ($participation->getUser() === $user && $participation->isPending()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public function getUpdatedAt(): ?\DateTimeImmutable
