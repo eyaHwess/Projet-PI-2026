@@ -15,6 +15,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Knp\Component\Pager\PaginatorInterface;
 
 #[Route('/goals', name: 'app_goal_')]
 class GoalController extends AbstractController
@@ -52,61 +53,53 @@ class GoalController extends AbstractController
     }
 
     // 👇 INDEX
-    #[Route('/', name: 'index', methods: ['GET'])]
-    public function index(Request $request): Response
-    {
-        $sortBy = $request->query->get('sort', 'createdAt'); // Default sort by creation date
-        $sortOrder = $request->query->get('order', 'DESC'); // Default descending
-        $filterStatus = $request->query->get('status', 'all'); // Default show all
-        $searchQuery = $request->query->get('search', ''); // Search query
+#[Route('/', name: 'index', methods: ['GET'])]
+public function index(Request $request, PaginatorInterface $paginator): Response
+{
+    $sortBy = $request->query->get('sort', 'createdAt');
+    $sortOrder = $request->query->get('order', 'DESC');
+    $filterStatus = $request->query->get('status', 'all');
+    $searchQuery = $request->query->get('search', '');
 
-        // Build query
-        $queryBuilder = $this->goalRepository->createQueryBuilder('g');
+    $queryBuilder = $this->goalRepository->createQueryBuilder('g');
 
-        // Apply search filter
-        if (!empty($searchQuery)) {
-            $queryBuilder->andWhere('g.title LIKE :search OR g.description LIKE :search')
-                        ->setParameter('search', '%' . $searchQuery . '%');
-        }
-
-        // Apply status filter
-        if ($filterStatus !== 'all') {
-            $queryBuilder->andWhere('g.status = :status')
-                        ->setParameter('status', $filterStatus);
-        }
-
-        // Apply sorting
-        $validSortFields = ['createdAt', 'startDate', 'endDate', 'title', 'priority', 'deadline'];
-        if (in_array($sortBy, $validSortFields)) {
-            $queryBuilder->orderBy('g.' . $sortBy, $sortOrder);
-        } else {
-            $queryBuilder->orderBy('g.createdAt', 'DESC');
-        }
-
-        $goals = $queryBuilder->getQuery()->getResult();
-
-        // Mettre à jour automatiquement les statuts de tous les goals
-        foreach ($goals as $goal) {
-            $this->statusManager->updateGoalStatuses($goal);
-        }
-
-        // Sort by urgency if requested
-        if ($sortBy === 'urgency') {
-            usort($goals, function($a, $b) use ($sortOrder) {
-                $scoreA = $a->getUrgencyScore();
-                $scoreB = $b->getUrgencyScore();
-                return $sortOrder === 'DESC' ? $scoreB - $scoreA : $scoreA - $scoreB;
-            });
-        }
-
-        return $this->render('goal/index_modern.html.twig', [
-            'goals' => $goals,
-            'currentSort' => $sortBy,
-            'currentOrder' => $sortOrder,
-            'currentStatus' => $filterStatus,
-            'searchQuery' => $searchQuery,
-        ]);
+    if (!empty($searchQuery)) {
+        $queryBuilder->andWhere('g.title LIKE :search OR g.description LIKE :search')
+                     ->setParameter('search', '%' . $searchQuery . '%');
     }
+
+    if ($filterStatus !== 'all') {
+        $queryBuilder->andWhere('g.status = :status')
+                     ->setParameter('status', $filterStatus);
+    }
+
+    $validSortFields = ['createdAt', 'startDate', 'endDate', 'title', 'priority', 'deadline'];
+
+    if ($sortBy !== 'urgency' && in_array($sortBy, $validSortFields)) {
+        $queryBuilder->orderBy('g.' . $sortBy, $sortOrder);
+    } else {
+        $queryBuilder->orderBy('g.createdAt', 'DESC');
+    }
+
+    $pagination = $paginator->paginate(
+        $queryBuilder,
+        $request->query->getInt('page', 1),
+        4
+    );
+
+    // Mise à jour statuts uniquement sur la page actuelle
+    foreach ($pagination as $goal) {
+        $this->statusManager->updateGoalStatuses($goal);
+    }
+
+    return $this->render('goal/index_modern.html.twig', [
+        'pagination' => $pagination,
+        'currentSort' => $sortBy,
+        'currentOrder' => $sortOrder,
+        'currentStatus' => $filterStatus,
+        'searchQuery' => $searchQuery,
+    ]);
+}
 
     // 👇 CREATE
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
@@ -163,27 +156,19 @@ class GoalController extends AbstractController
 
     // 👇 EDIT
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Goal $goal): JsonResponse|Response
+    public function edit(Request $request, Goal $goal): Response
     {
         $form = $this->createForm(GoalType::class, $goal);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-
             $this->entityManager->flush();
 
-            return new JsonResponse([
-                'success' => true,
-                'message' => 'Objectif modifié avec succès !',
-                'goal' => [
-                    'id' => $goal->getId(),
-                    'title' => $goal->getTitle(),
-                    'description' => $goal->getDescription(),
-                    'status' => $goal->getStatus(),
-                    'startDate' => $goal->getStartDate()?->format('Y-m-d'),
-                    'endDate' => $goal->getEndDate()?->format('Y-m-d'),
-                ]
-            ]);
+            // Add flash message for success feedback
+            $this->addFlash('success', 'Objectif modifié avec succès !');
+
+            // Redirect to the goals index page
+            return $this->redirectToRoute('app_goal_index');
         }
 
         return $this->render('goal/edit.html.twig', [
