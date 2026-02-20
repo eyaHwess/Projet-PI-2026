@@ -83,6 +83,15 @@ class Goal
     #[ORM\Column]
     private ?bool $isFavorite = false;
 
+    #[ORM\Column(nullable: true)]
+    private ?int $progress = 0;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $requiredTasks = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $trelloBoardId = null;
+
     public function __construct()
     {
         $this->routines = new ArrayCollection();
@@ -431,6 +440,39 @@ class Goal
     public function setIsFavorite(bool $isFavorite): static
     {
         $this->isFavorite = $isFavorite;
+        return $this;
+    }
+
+    public function getProgress(): ?int
+    {
+        return $this->progress;
+    }
+
+    public function setProgress(?int $progress): static
+    {
+        $this->progress = $progress;
+        return $this;
+    }
+
+    public function getRequiredTasks(): ?int
+    {
+        return $this->requiredTasks;
+    }
+
+    public function setRequiredTasks(?int $requiredTasks): static
+    {
+        $this->requiredTasks = $requiredTasks;
+        return $this;
+    }
+
+    public function getTrelloBoardId(): ?string
+    {
+        return $this->trelloBoardId;
+    }
+
+    public function setTrelloBoardId(?string $trelloBoardId): static
+    {
+        $this->trelloBoardId = $trelloBoardId;
         return $this;
     }
 

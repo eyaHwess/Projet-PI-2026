@@ -25,7 +25,9 @@ class GoalController extends AbstractController
         private UserRepository $userRepository,
         private UserPasswordHasherInterface $passwordHasher,
         private StatusManager $statusManager,
-    ) {}
+    ) {
+        
+    }
 
     // 👇 USER STATIQUE
     private function getStaticUser(): User
