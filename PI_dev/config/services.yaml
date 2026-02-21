@@ -1,4 +1,6 @@
 parameters:
+    openai.api_key: '%env(OPENAI_API_KEY)%'
+    openai.use_mock: '%env(bool:OPENAI_USE_MOCK)%'
 
 services:
     _defaults:
@@ -12,7 +14,7 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
-    App\Repository\:
-        resource: '../src/Repository'
-        autowire: true
-        autoconfigure: true
+    App\Service\AiAssistantService:
+        arguments:
+            $apiKey: '%openai.api_key%'
+            $useMockData: '%openai.use_mock%'
