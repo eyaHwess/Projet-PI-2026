@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Enum\UserRole;
 use App\Form\RegistrationFormType;
+use App\Service\FileUploader;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,7 +19,8 @@ class RegistrationController extends AbstractController
     public function register(
         Request $request,
         UserPasswordHasherInterface $passwordHasher,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        FileUploader $fileUploader
     ): Response {
 
         $user = new User();
@@ -40,9 +42,25 @@ class RegistrationController extends AbstractController
             $selectedRole = $form->get('role')->getData() ?? 'ROLE_USER';
             $user->setRole(UserRole::from($selectedRole));
 
+            // Gestion de l'upload de la photo de profil
+            $photoFile = $form->get('photoFile')->getData();
+            if ($photoFile) {
+                try {
+                    $photoFileName = $fileUploader->upload($photoFile);
+                    $user->setPhotoUrl('/uploads/profiles/' . $photoFileName);
+                } catch (\Exception $e) {
+                    $this->addFlash('error', 'Erreur lors du téléchargement de la photo: ' . $e->getMessage());
+                    return $this->render('security/register.html.twig', [
+                        'registrationForm' => $form->createView(),
+                    ]);
+                }
+            }
+
             if ($selectedRole === 'ROLE_COACH') {
                 $user->setSpeciality($form->get('speciality')->getData());
                 $user->setAvailability($form->get('availability')->getData());
+                $user->setPricePerSession($form->get('pricePerSession')->getData());
+                $user->setBio($form->get('bio')->getData());
             }
 
             try {

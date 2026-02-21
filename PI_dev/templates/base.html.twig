@@ -19,10 +19,20 @@
                 position: absolute;
                 top: -8px;
                 right: -8px;
+                background: #ef4444;
+                color: white;
+                border-radius: 9999px;
+                padding: 2px 6px;
+                font-size: 11px;
+                font-weight: 600;
                 pointer-events: none;
             }
             .notification-badge .badge-count.hidden {
                 display: none;
+            }
+            #notificationBtn {
+                cursor: pointer;
+                transition: transform 0.1s;
             }
             #notificationBtn:active {
                 transform: scale(0.95);
@@ -36,6 +46,9 @@
                 max-height: 400px;
                 overflow-y: auto;
                 z-index: 1000;
+                background: white;
+                border-radius: 0.5rem;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.1);
                 display: none;
             }
             .notification-dropdown.show {
@@ -43,44 +56,22 @@
             }
             .notification-item {
                 padding: 1rem;
-                border-bottom: 1px solid rgba(200, 182, 255, 0.2);
+                border-bottom: 1px solid #e5e7eb;
                 transition: background 0.2s;
                 cursor: pointer;
+            }
+            .notification-item:hover {
+                background: #f9fafb;
             }
             .notification-item:last-child {
                 border-bottom: none;
             }
+            .notification-item.unread {
+                background: #fef3c7;
+            }
         </style>
     </head>
     <body class="min-h-screen bg-gray-50 antialiased">
-        <nav class="soft-navbar sticky top-0 z-50">
-            <div class="nav-container">
-                <a href="{{ path('app_home') }}" class="flex items-center gap-2">
-                    <img src="{{ asset('images/dayflow_logo.png') }}" alt="DayFlow Logo" onerror="this.style.display='none'">
-                    <span class="logo-text">DayFlow</span>
-                </a>
-                <div class="flex items-center flex-wrap gap-2">
-                    {% if app.user %}
-                        <a href="{{ path('app_home') }}" class="nav-link">Accueil</a>
-                        <a href="{{ path('post_list_view') }}" class="nav-link">Posts</a>
-                        
-                        {% if is_granted('ROLE_COACH') %}
-                            <a href="{{ path('app_coaching_request_index') }}" class="nav-link">Mes demandes</a>
-                            <a href="{{ path('app_session_crud_index') }}" class="nav-link">Gérer sessions</a>
-                        {% else %}
-                            <a href="{{ path('app_coach_index') }}" class="nav-link">Demander coaching</a>
-                            <a href="{{ path('app_session_index') }}" class="nav-link">Mes sessions</a>
-                        {% endif %}
-                        
-                        <div class="notification-badge relative">
-                            <div id="notificationBtn" onclick="window.toggleNotifications(event)">
-                                <i class="bi bi-bell"></i>
-                                <span id="notificationCount" class="badge-count hidden">0</span>
-                            </div>
-                            <div id="notificationDropdown" class="notification-dropdown">
-                                <div class="p-3 border-b border-gray-200 flex justify-between items-center">
-                                    <h3 class="font-semibold text-gray-800">Notifications</h3>
-                                    <button type="button" id="markAllRead">Tout marquer lu</button>
         <nav class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between h-14 items-center">
@@ -90,34 +81,59 @@
                     </a>
                     <div class="flex items-center flex-wrap gap-3 sm:gap-5">
                         {% if app.user %}
-                            {# Badge de notifications #}
+                            <a href="{{ path('user_dashboard') }}" class="text-gray-600 hover:text-orange-500 transition">Accueil</a>
+                            <a href="{{ path('post_list_view') }}" class="text-gray-600 hover:text-orange-500 transition">Posts</a>
+                            
+                            {% if is_granted('ROLE_COACH') %}
+                                <a href="{{ path('app_coaching_request_index') }}" class="text-gray-600 hover:text-orange-500 transition">Mes demandes</a>
+                                <a href="{{ path('app_session_crud_index') }}" class="text-gray-600 hover:text-orange-500 transition">Gérer sessions</a>
+                            {% else %}
+                                <a href="{{ path('app_coach_index') }}" class="text-gray-600 hover:text-orange-500 transition">Demander coaching</a>
+                                <a href="{{ path('app_session_index') }}" class="text-gray-600 hover:text-orange-500 transition">Mes sessions</a>
+                            {% endif %}
+                            
                             <div class="notification-badge relative">
-                                <div id="notificationBtn" onclick="window.toggleNotifications(event)" class="text-gray-600 hover:text-orange-500 text-lg relative cursor-pointer inline-block">
+                                <div id="notificationBtn" onclick="window.toggleNotifications(event)" class="text-gray-600 hover:text-orange-500 text-lg relative">
                                     <i class="bi bi-bell"></i>
                                     <span id="notificationCount" class="badge-count hidden">0</span>
                                 </div>
-                                <div id="notificationList">
-                                    <div class="p-4 text-center text-gray-500 text-sm">
-                                        Aucune notification
+                                <div id="notificationDropdown" class="notification-dropdown">
+                                    <div class="p-3 border-b border-gray-200 flex justify-between items-center">
+                                        <h3 class="font-semibold text-gray-800">Notifications</h3>
+                                        <button type="button" id="markAllRead" class="text-xs text-orange-500 hover:text-orange-600">Tout marquer lu</button>
+                                    </div>
+                                    <div id="notificationList">
+                                        <div class="p-4 text-center text-gray-500 text-sm">
+                                            Aucune notification
+                                        </div>
+                                    </div>
+                                    <div class="p-2 border-t border-gray-200 text-center">
+                                        <a href="{{ path('app_notifications_index') }}" class="text-sm text-orange-500 hover:text-orange-600">Voir toutes les notifications</a>
                                     </div>
                                 </div>
-                                <div class="p-2 border-t border-gray-200 text-center">
-                                    <a href="{{ path('app_notifications_index') }}">Voir toutes les notifications</a>
-                                </div>
                             </div>
-                        </div>
-                        
-                        {% if is_granted('ROLE_ADMIN') %}
-                            <a href="{{ path('admin_dashboard') }}" class="nav-link">Admin</a>
+                            
+                            {% if is_granted('ROLE_ADMIN') %}
+                                <a href="{{ path('admin_dashboard') }}" class="text-gray-600 hover:text-orange-500 transition">Admin</a>
+                            {% endif %}
+                            
+                            <a href="{{ path('user_dashboard') }}" class="flex items-center justify-center w-10 h-10 rounded-full overflow-hidden border-2 border-orange-500 hover:border-orange-600 transition-colors">
+                                {% if app.user.photoUrl %}
+                                    <img src="{{ app.user.photoUrl }}" alt="{{ app.user.firstName }}" class="w-full h-full object-cover">
+                                {% else %}
+                                    <div class="w-full h-full bg-orange-500 flex items-center justify-center text-white font-semibold text-sm">
+                                        {{ app.user.firstName|first|upper }}{{ app.user.lastName|first|upper }}
+                                    </div>
+                                {% endif %}
+                            </a>
+                            
+                            <a href="{{ path('app_logout') }}" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm">Déconnexion</a>
+                        {% else %}
+                            <a href="{{ path('app_home') }}" class="text-gray-600 hover:text-orange-500 transition">Accueil</a>
+                            <a href="{{ path('app_login') }}" class="text-gray-600 hover:text-orange-500 transition">Connexion</a>
+                            <a href="{{ path('app_register') }}" class="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition text-sm">Inscription</a>
                         {% endif %}
-                        <div class="divider"></div>
-                        <span class="user-badge">{{ app.user.firstName }} {{ app.user.lastName }}</span>
-                        <a href="{{ path('app_logout') }}" class="btn-logout">Déconnexion</a>
-                    {% else %}
-                        <a href="{{ path('app_home') }}" class="nav-link">Accueil</a>
-                        <a href="{{ path('app_login') }}" class="nav-link">Connexion</a>
-                        <a href="{{ path('app_register') }}" class="btn-primary-soft">Inscription</a>
-                    {% endif %}
+                    </div>
                 </div>
             </div>
         </nav>
@@ -242,7 +258,7 @@
                 }
                 
                 // Charger les notifications
-                async function loadNotifications() {
+                window.loadNotifications = async function() {
                     try {
                         console.log('📥 Chargement des notifications...');
                         notificationList.innerHTML = '<div class="p-4 text-center text-gray-500 text-sm"><i class="bi bi-hourglass-split"></i> Chargement...</div>';
@@ -277,7 +293,7 @@
                             }
                             
                             return `
-                                <div class="notification-item ${notif.isRead ? '' : 'unread'} cursor-pointer" 
+                                <div class="notification-item ${notif.isRead ? '' : 'unread'}" 
                                      data-id="${notif.id}" 
                                      data-session-id="${notif.sessionId || ''}">
                                     <div class="flex gap-3">
@@ -312,7 +328,7 @@
                         console.error('❌ Erreur lors du chargement des notifications:', err);
                         notificationList.innerHTML = '<div class="p-4 text-center text-red-500 text-sm"><i class="bi bi-exclamation-triangle"></i> Erreur de chargement</div>';
                     }
-                }
+                };
                 
                 // Marquer une notification comme lue et rediriger
                 async function markAsReadAndRedirect(id, sessionId) {
@@ -341,7 +357,7 @@
                         } else {
                             // Sinon, juste recharger les notifications
                             loadNotificationCount();
-                            loadNotifications();
+                            window.loadNotifications();
                         }
                     } catch (err) {
                         console.error('❌ Erreur lors du marquage:', err);
@@ -372,7 +388,7 @@
                             console.log('✅ Toutes les notifications marquées:', result);
                             
                             loadNotificationCount();
-                            loadNotifications();
+                            window.loadNotifications();
                         } catch (err) {
                             console.error('❌ Erreur lors du marquage:', err);
                         }
@@ -423,7 +439,7 @@
                 setInterval(loadNotificationCount, 30000);
                 
                 console.log('✅ Initialisation terminée');
-            } // Fin de initNotifications
+            }
         </script>
         {% endif %}
         {% endblock %}

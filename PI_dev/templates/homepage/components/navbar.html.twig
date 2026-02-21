@@ -7,7 +7,7 @@
             </a>
             <div class="hidden md:flex gap-3 items-center">
                 {% if app.user %}
-                    <a href="{{ path('app_home') }}" class="py-1 px-3 text-zinc-800 hover:text-purple-600">Accueil</a>
+                    <a href="{{ path('user_dashboard') }}" class="py-1 px-3 text-zinc-800 hover:text-purple-600">Accueil</a>
                     <a href="{{ path('post_list_view') }}" class="py-1 px-3 text-zinc-800 hover:text-purple-600">Posts</a>
                     {% if is_granted('ROLE_USER') and not is_granted('ROLE_COACH') %}
                         <a href="{{ path('app_goal_index') }}" class="py-1 px-3 text-zinc-800 hover:text-purple-600">Mes objectifs</a>
@@ -31,15 +31,26 @@
                 </svg>
             </button>
             {% if app.user %}
-                {% if is_granted('ROLE_USER') and not is_granted('ROLE_COACH') %}
-                    <a href="{{ path('app_goal_index') }}" class="hidden md:inline-block py-2.5 px-6 rounded-full font-medium text-white hover:opacity-90" style="background-color: #7c3aed;">
-                        Mes objectifs
+                <div class="hidden md:flex items-center gap-3">
+                    {% if is_granted('ROLE_USER') and not is_granted('ROLE_COACH') %}
+                        <a href="{{ path('app_goal_index') }}" class="py-2.5 px-6 rounded-full font-medium text-white hover:opacity-90" style="background-color: #7c3aed;">
+                            Mes objectifs
+                        </a>
+                    {% elseif is_granted('ROLE_COACH') %}
+                        <a href="{{ path('app_coach_index') }}" class="py-2.5 px-6 rounded-full font-medium text-white hover:opacity-90" style="background-color: #7c3aed;">
+                            Voir les coaches
+                        </a>
+                    {% endif %}
+                    <a href="{{ path('user_dashboard') }}" class="flex items-center justify-center w-10 h-10 rounded-full overflow-hidden border-2 border-purple-600 hover:border-purple-700 transition-colors">
+                        {% if app.user.photoUrl %}
+                            <img src="{{ app.user.photoUrl }}" alt="{{ app.user.firstName }}" class="w-full h-full object-cover">
+                        {% else %}
+                            <div class="w-full h-full bg-purple-600 flex items-center justify-center text-white font-semibold">
+                                {{ app.user.firstName|first|upper }}{{ app.user.lastName|first|upper }}
+                            </div>
+                        {% endif %}
                     </a>
-                {% elseif is_granted('ROLE_COACH') %}
-                    <a href="{{ path('app_coach_index') }}" class="hidden md:inline-block py-2.5 px-6 rounded-full font-medium text-white hover:opacity-90" style="background-color: #7c3aed;">
-                        Voir les coaches
-                    </a>
-                {% endif %}
+                </div>
             {% else %}
                 <a href="{{ path('app_register') }}" class="hidden md:inline-block py-2.5 px-6 rounded-full font-medium text-white hover:opacity-90" style="background-color: #7c3aed;">
                     Commencer
@@ -59,7 +70,11 @@
         </svg>
     </div>
     <div class="flex flex-col gap-4 p-4 text-base">
-        <a href="{{ path('app_home') }}" class="py-1 px-3 text-zinc-800">Accueil</a>
+        {% if app.user %}
+            <a href="{{ path('user_dashboard') }}" class="py-1 px-3 text-zinc-800">Accueil</a>
+        {% else %}
+            <a href="{{ path('app_home') }}" class="py-1 px-3 text-zinc-800">Accueil</a>
+        {% endif %}
         <a href="{{ path('post_list_view') }}" class="py-1 px-3 text-zinc-800">Posts</a>
         {% if app.user %}
             {% if is_granted('ROLE_USER') and not is_granted('ROLE_COACH') %}
