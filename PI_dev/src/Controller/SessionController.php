@@ -93,6 +93,10 @@ class SessionController extends AbstractController
             $form = $this->createForm(SessionScheduleType::class, $session);
         }
 
+        // Vérifier si un créneau existe déjà (avant handleRequest qui modifie l'entité)
+        $hadExistingSlot = ($isCoach && $session->getProposedTimeByCoach() !== null) 
+            || (!$isCoach && $session->getProposedTimeByUser() !== null);
+
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -106,9 +110,13 @@ class SessionController extends AbstractController
 
             $this->entityManager->flush();
 
-            $this->addFlash('success', 'Créneau proposé ! L\'autre partie peut confirmer ou proposer un autre horaire.');
+            if ($hadExistingSlot) {
+                $this->addFlash('success', 'Créneau modifié avec succès ! L\'autre partie peut confirmer ou proposer un autre horaire.');
+            } else {
+                $this->addFlash('success', 'Créneau proposé ! L\'autre partie peut confirmer ou proposer un autre horaire.');
+            }
 
-            return $this->redirectToRoute('app_session_show', ['id' => $session->getId()]);
+            return $this->redirectToRoute('app_session_schedule', ['id' => $session->getId()]);
         }
 
         return $this->render('session/schedule.html.twig', [
