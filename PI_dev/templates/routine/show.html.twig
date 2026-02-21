@@ -82,6 +82,9 @@
         .status-in-progress { background-color: #dbeafe; color: #1e40af; }
         .status-completed { background-color: #d1fae5; color: #065f46; }
         .status-cancelled { background-color: #f3f4f6; color: #374151; }
+        .priority-high { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; }
+        .priority-medium { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
+        .priority-low { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; }
         .visibility-badge {
             padding: 0.5rem 1rem;
             border-radius: 50px;
@@ -148,6 +151,14 @@
             background-color: #dc3545;
             color: white;
         }
+        .btn-outline-info {
+            border-color: #0dcaf0;
+            color: #0dcaf0;
+        }
+        .btn-outline-info:hover {
+            background-color: #0dcaf0;
+            color: white;
+        }
         .toast-container {
             position: fixed;
             top: 100px;
@@ -158,6 +169,81 @@
             border-radius: 15px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.15);
             min-width: 300px;
+        }
+        /* List view styles */
+        .list-view .activity-card {
+            border-radius: 15px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 2rem;
+            min-height: 90px;
+        }
+        .list-view .row {
+            display: block;
+        }
+        .list-view .col-md-6,
+        .list-view .col-lg-4 {
+            width: 100%;
+            max-width: 100%;
+        }
+        .list-view .activity-card .activity-header {
+            flex: 0 0 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .list-view .activity-card .activity-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            padding: 0 1rem;
+        }
+        .list-view .activity-card .activity-times {
+            flex: 0 0 250px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .list-view .activity-card .activity-actions {
+            flex: 0 0 auto;
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        .list-view .activity-card .status-badge,
+        .list-view .activity-card .badge {
+            margin: 0;
+        }
+        .list-view .activity-card h5 {
+            margin-bottom: 0.25rem;
+            font-size: 1.1rem;
+        }
+        .list-view .activity-card .d-flex.justify-content-between {
+            display: contents !important;
+        }
+        .list-view .activity-card .d-flex.flex-column.gap-2 {
+            display: flex !important;
+            flex-direction: row !important;
+            gap: 0.5rem !important;
+            flex-wrap: wrap;
+        }
+        .list-view .activity-card .pt-3.border-top {
+            border: none !important;
+            padding: 0 !important;
+        }
+        .layout-toggle {
+            transition: all 0.3s ease;
+        }
+        .layout-toggle.active {
+            background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%) !important;
+            color: #6b21a8 !important;
+        }
+        .layout-toggle:not(.active):hover {
+            background: #f3f4f6 !important;
         }
     </style>
 {% endblock %}
@@ -175,6 +261,11 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link active fw-bold" style="color: var(--orange-primary);" href="{{ path('app_goal_index') }}">Mes Objectifs</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_calendar') }}">
+                            <i class="bi bi-calendar3 me-1"></i>Calendrier
+                        </a>
                     </li>
                 </ul>
             </div>
@@ -195,10 +286,31 @@
                             <p class="lead text-muted mb-0">{{ routine.description }}</p>
                         {% endif %}
                     </div>
-                    <div class="d-flex gap-2 align-items-start">
+                    <div class="d-flex gap-2 align-items-start flex-wrap">
                         <span class="visibility-badge visibility-{{ routine.visibility }}">{{ routine.visibility|upper }}</span>
+                        {% if routine.getPriority() %}
+                            <span class="badge priority-{{ routine.getPriority() }}" style="font-size: 0.8rem;">
+                                {% if routine.getPriority() == 'high' %}🔴 HAUTE
+                                {% elseif routine.getPriority() == 'medium' %}🟡 MOYENNE
+                                {% else %}🟢 BASSE{% endif %}
+                            </span>
+                        {% endif %}
+                        {% if routine.isDeadlineNear() %}
+                            <span class="badge bg-warning text-dark" style="font-size: 0.8rem;">
+                                <i class="bi bi-alarm me-1"></i>Deadline proche!
+                            </span>
+                        {% endif %}
+                        {% if routine.deadline %}
+                            <span class="badge bg-info text-white" style="font-size: 0.8rem;">
+                                <i class="bi bi-calendar-event me-1"></i>{{ routine.deadline|date('d/m/Y') }}
+                            </span>
+                        {% endif %}
                         <button id="editRoutineBtn" class="btn btn-outline-primary" title="Modifier la routine">
                             <i class="bi bi-pencil me-1"></i>Modifier
+                        </button>
+                        <button id="duplicateRoutineBtn" class="btn btn-outline-info" title="Dupliquer la routine" 
+                                data-csrf-token="{{ csrf_token('duplicate' ~ routine.id) }}">
+                            <i class="bi bi-files me-1"></i>Dupliquer
                         </button>
                         <button id="deleteRoutineBtn" class="btn btn-outline-danger" title="Supprimer la routine">
                             <i class="bi bi-trash me-1"></i>Supprimer
@@ -216,7 +328,25 @@
 
             <!-- Filters and Sort for Activities -->
             <div class="row g-3 mb-4">
-                <div class="col-md-6">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text" style="background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%); border: 1px solid #9333ea; color: #6b21a8;">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" id="searchInput" class="form-control" placeholder="Rechercher une activité..." value="{{ searchQuery }}" style="border-left: none;">
+                    </div>
+                </div>
+                <div class="col-md-1">
+                    <div class="btn-group w-100" role="group" style="border-radius: 50px; overflow: hidden; border: 2px solid #e9ecef;">
+                        <button type="button" class="btn btn-outline-secondary layout-toggle" data-layout="list" title="Vue liste" style="border: none; background: white;">
+                            <i class="bi bi-list-ul"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary layout-toggle active" data-layout="grid" title="Vue grille" style="border: none; background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%); color: #6b21a8;">
+                            <i class="bi bi-grid-3x3-gap"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-3">
                     <div class="d-flex gap-2 align-items-center">
                         <label class="text-muted fw-semibold me-2">Trier par:</label>
                         <select id="sortSelect" class="form-select form-select-sm" style="width: auto;">
@@ -229,7 +359,7 @@
                         </select>
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <div class="d-flex gap-2 align-items-center justify-content-md-end">
                         <label class="text-muted fw-semibold me-2">Filtrer par statut:</label>
                         <select id="statusFilter" class="form-select form-select-sm" style="width: auto;">
@@ -245,17 +375,38 @@
             </div>
 
             {% if activities|length > 0 %}
-                <div class="row g-4">
+                <div class="row g-4" id="activitiesContainer">
                     {% for activity in activities %}
                         <div class="col-md-6 col-lg-4">
-                            <div class="activity-card">
-                                <div class="d-flex justify-content-between align-items-start mb-3">
-                                    <h5 class="fw-bold mb-0">{{ activity.title }}</h5>
-                                    {% if activity.hasReminder %}
-                                        <i class="bi bi-bell-fill text-warning fs-5"></i>
-                                    {% endif %}
+                            <div class="activity-card clickable-activity-card" data-activity-id="{{ activity.id }}" style="cursor: pointer;">
+                                <!-- Activity Header -->
+                                <div class="activity-header">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <h5 class="fw-bold mb-0 text-dark">{{ activity.title }}</h5>
+                                        </div>
+                                        {% if activity.hasReminder %}
+                                            <i class="bi bi-bell-fill text-warning fs-5"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                                        {% if activity.getPriority() %}
+                                            <span class="badge priority-{{ activity.getPriority() }}" style="font-size: 0.7rem;">
+                                                {% if activity.getPriority() == 'high' %}🔴 HAUTE
+                                                {% elseif activity.getPriority() == 'medium' %}🟡 MOYENNE
+                                                {% else %}🟢 BASSE{% endif %}
+                                            </span>
+                                        {% endif %}
+                                        {% if activity.isDeadlineNear() %}
+                                            <span class="badge bg-warning text-dark" style="font-size: 0.7rem;">
+                                                <i class="bi bi-alarm me-1"></i>Deadline proche!
+                                            </span>
+                                        {% endif %}
+                                    </div>
                                 </div>
-                                <div class="mb-3">
+
+                                <!-- Activity Times -->
+                                <div class="activity-times mb-3">
                                     <div class="d-flex align-items-center mb-2">
                                         <i class="bi bi-clock me-2" style="color: var(--primary-color);"></i>
                                         <small class="text-muted">Début: {{ activity.startTime|date('d/m/Y H:i') }}</small>
@@ -264,17 +415,27 @@
                                         <i class="bi bi-hourglass-split me-2" style="color: var(--primary-color);"></i>
                                         <small class="text-muted">Durée: {{ activity.duration|date('H:i') }}</small>
                                     </div>
+                                    {% if activity.deadline %}
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="bi bi-calendar-event me-2" style="color: var(--primary-color);"></i>
+                                            <small class="text-muted">Deadline: {{ activity.deadline|date('d/m/Y H:i') }}</small>
+                                        </div>
+                                    {% endif %}
                                 </div>
-                                <div class="pt-3 border-top">
-                                    <span class="status-badge status-{{ activity.status|lower|replace({'_': '-'}) }} mb-3 d-inline-block">{{ activity.status|upper }}</span>
-                                    <div class="d-flex gap-2 mt-2">
-                                        <button class="btn btn-outline-primary btn-sm flex-fill edit-activity-btn" data-activity-id="{{ activity.id }}" title="Modifier">
-                                            <i class="bi bi-pencil me-1"></i>Modifier
-                                        </button>
-                                        <button class="btn btn-outline-danger btn-sm delete-activity-btn" data-activity-id="{{ activity.id }}" data-activity-title="{{ activity.title }}" title="Supprimer">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                        <input type="hidden" name="csrf_token_activity_{{ activity.id }}" value="{{ csrf_token('delete' ~ activity.id) }}">
+
+                                <!-- Status and Actions -->
+                                <div class="activity-actions">
+                                    <div class="pt-3 border-top w-100">
+                                        <span class="status-badge status-{{ activity.status|lower|replace({'_': '-'}) }} mb-3 d-inline-block">{{ activity.status|upper }}</span>
+                                        <div class="d-flex gap-2 mt-2" onclick="event.stopPropagation();">
+                                            <button class="btn btn-outline-primary btn-sm flex-fill edit-activity-btn" data-activity-id="{{ activity.id }}" title="Modifier">
+                                                <i class="bi bi-pencil me-1"></i>Modifier
+                                            </button>
+                                            <button class="btn btn-outline-danger btn-sm delete-activity-btn" data-activity-id="{{ activity.id }}" data-activity-title="{{ activity.title }}" title="Supprimer">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                            <input type="hidden" name="csrf_token_activity_{{ activity.id }}" value="{{ csrf_token('delete' ~ activity.id) }}">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -330,6 +491,66 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body" id="routineModalContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Activity Confirmation Modal -->
+    <div class="modal fade" id="deleteActivityModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 20px; border: none; overflow: hidden;">
+                <div class="modal-header" style="background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%); color: white; border: none; padding: 1.5rem;">
+                    <h5 class="modal-title" style="font-weight: 700;">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Confirmer la suppression
+                    </h5>
+                    <button type="button" class="btn-close" style="filter: brightness(0) invert(1);" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" style="padding: 2rem;">
+                    <p class="mb-3" style="font-size: 1.1rem; color: #374151;">Êtes-vous sûr de vouloir supprimer cette activité ?</p>
+                    <div class="alert" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b; border-radius: 15px; padding: 1.25rem;">
+                        <i class="bi bi-info-circle me-2" style="color: #d97706; font-size: 1.2rem;"></i>
+                        <strong id="deleteActivityName" style="color: #92400e; font-size: 1.05rem;"></strong>
+                        <p class="mb-0 mt-2 small" style="color: #78350f;">Cette action est irréversible.</p>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid #e5e7eb; padding: 1.25rem;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="background: #6b7280; border: none; padding: 0.75rem 1.5rem; border-radius: 10px; font-weight: 600;">
+                        <i class="bi bi-x-circle me-1"></i>Annuler
+                    </button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteActivityBtn" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); border: none; padding: 0.75rem 1.5rem; border-radius: 10px; font-weight: 600; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);">
+                        <i class="bi bi-trash me-1"></i>Supprimer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Routine Confirmation Modal -->
+    <div class="modal fade" id="deleteRoutineModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 20px; border: none; overflow: hidden;">
+                <div class="modal-header" style="background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%); color: white; border: none; padding: 1.5rem;">
+                    <h5 class="modal-title" style="font-weight: 700;">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Confirmer la suppression
+                    </h5>
+                    <button type="button" class="btn-close" style="filter: brightness(0) invert(1);" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" style="padding: 2rem;">
+                    <p class="mb-3" style="font-size: 1.1rem; color: #374151;">Êtes-vous sûr de vouloir supprimer cette routine ?</p>
+                    <div class="alert" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b; border-radius: 15px; padding: 1.25rem;">
+                        <i class="bi bi-info-circle me-2" style="color: #d97706; font-size: 1.2rem;"></i>
+                        <strong id="deleteRoutineName" style="color: #92400e; font-size: 1.05rem;"></strong>
+                        <p class="mb-0 mt-2 small" style="color: #78350f;">Cette action est irréversible et supprimera également toutes les activités associées.</p>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid #e5e7eb; padding: 1.25rem;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="background: #6b7280; border: none; padding: 0.75rem 1.5rem; border-radius: 10px; font-weight: 600;">
+                        <i class="bi bi-x-circle me-1"></i>Annuler
+                    </button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteRoutineBtn" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); border: none; padding: 0.75rem 1.5rem; border-radius: 10px; font-weight: 600; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);">
+                        <i class="bi bi-trash me-1"></i>Supprimer
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -506,6 +727,8 @@
             // Sort and Filter handlers for Activities
             const sortSelect = document.getElementById('sortSelect');
             const statusFilter = document.getElementById('statusFilter');
+            const searchInput = document.getElementById('searchInput');
+            let searchTimeout;
 
             if (sortSelect) {
                 sortSelect.addEventListener('change', function() {
@@ -519,9 +742,19 @@
                 });
             }
 
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        applyFilters();
+                    }, 500); // Debounce 500ms
+                });
+            }
+
             function applyFilters() {
                 const sortValue = sortSelect ? sortSelect.value : 'startTime-ASC';
                 const statusValue = statusFilter ? statusFilter.value : 'all';
+                const searchValue = searchInput ? searchInput.value : '';
                 
                 const [sort, order] = sortValue.split('-');
                 
@@ -530,57 +763,105 @@
                 url.searchParams.set('order', order);
                 url.searchParams.set('status', statusValue);
                 
+                if (searchValue) {
+                    url.searchParams.set('search', searchValue);
+                } else {
+                    url.searchParams.delete('search');
+                }
+                
                 window.location.href = url.toString();
             }
 
-            // Edit activity buttons
+            // Make activity cards clickable to open edit modal
+            document.querySelectorAll('.clickable-activity-card').forEach(card => {
+                card.addEventListener('click', (e) => {
+                    const activityId = card.dataset.activityId;
+                    openModal('Modifier l\'Activité', `/routines/{{ routine.id }}/activities/${activityId}/edit`);
+                });
+            });
+
+            // Edit activity buttons (also opens edit modal)
             document.querySelectorAll('.edit-activity-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.preventDefault();
+                    e.stopPropagation();
                     const activityId = btn.dataset.activityId;
                     openModal('Modifier l\'Activité', `/routines/{{ routine.id }}/activities/${activityId}/edit`);
                 });
             });
 
-            // Delete activity buttons
+            // Delete activity buttons with modal confirmation
+            const deleteActivityModal = new bootstrap.Modal(document.getElementById('deleteActivityModal'));
+            const confirmDeleteActivityBtn = document.getElementById('confirmDeleteActivityBtn');
+            const deleteActivityName = document.getElementById('deleteActivityName');
+            let currentDeleteActivityAction = null;
+
             document.querySelectorAll('.delete-activity-btn').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
+                btn.addEventListener('click', (e) => {
                     e.preventDefault();
+                    e.stopPropagation();
                     const activityId = btn.dataset.activityId;
                     const activityTitle = btn.dataset.activityTitle;
                     
-                    if (!confirm(`Êtes-vous sûr de vouloir supprimer l'activité "${activityTitle}" ?`)) {
-                        return;
-                    }
+                    // Get CSRF token
+                    const csrfTokenElement = document.querySelector(`input[name="csrf_token_activity_${activityId}"]`);
+                    const csrfToken = csrfTokenElement ? csrfTokenElement.value : '';
+                    
+                    // Set the item name in modal
+                    deleteActivityName.textContent = activityTitle;
+                    
+                    // Store the delete action
+                    currentDeleteActivityAction = async () => {
+                        confirmDeleteActivityBtn.disabled = true;
+                        confirmDeleteActivityBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Suppression...';
 
-                    try {
-                        // Get CSRF token
-                        const csrfTokenElement = document.querySelector(`input[name="csrf_token_activity_${activityId}"]`);
-                        const csrfToken = csrfTokenElement ? csrfTokenElement.value : '';
+                        try {
+                            const response = await fetch(`/routines/{{ routine.id }}/activities/${activityId}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Accept': 'application/json',
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                },
+                                body: `_token=${encodeURIComponent(csrfToken)}`
+                            });
 
-                        const response = await fetch(`/routines/{{ routine.id }}/activities/${activityId}`, {
-                            method: 'DELETE',
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest',
-                                'Accept': 'application/json',
-                                'Content-Type': 'application/x-www-form-urlencoded',
-                            },
-                            body: `_token=${encodeURIComponent(csrfToken)}`
-                        });
+                            const data = await response.json();
 
-                        const data = await response.json();
-
-                        if (data.success) {
-                            showToast(data.message, 'success');
-                            setTimeout(() => location.reload(), 1000);
-                        } else {
-                            showToast('Erreur: ' + (data.message || 'Impossible de supprimer l\'activité'), 'error');
+                            if (data.success) {
+                                showToast(data.message, 'success');
+                                deleteActivityModal.hide();
+                                setTimeout(() => location.reload(), 1000);
+                            } else {
+                                showToast('Erreur: ' + (data.message || 'Impossible de supprimer l\'activité'), 'error');
+                                confirmDeleteActivityBtn.disabled = false;
+                                confirmDeleteActivityBtn.innerHTML = '<i class="bi bi-trash me-1"></i>Supprimer';
+                            }
+                        } catch (error) {
+                            console.error('Erreur:', error);
+                            showToast('Erreur lors de la suppression: ' + error.message, 'error');
+                            confirmDeleteActivityBtn.disabled = false;
+                            confirmDeleteActivityBtn.innerHTML = '<i class="bi bi-trash me-1"></i>Supprimer';
                         }
-                    } catch (error) {
-                        console.error('Erreur:', error);
-                        showToast('Erreur lors de la suppression: ' + error.message, 'error');
-                    }
+                    };
+                    
+                    // Show modal
+                    deleteActivityModal.show();
                 });
+            });
+
+            // Handle confirm delete button click
+            confirmDeleteActivityBtn.addEventListener('click', () => {
+                if (currentDeleteActivityAction) {
+                    currentDeleteActivityAction();
+                }
+            });
+
+            // Reset button state when modal is hidden
+            document.getElementById('deleteActivityModal').addEventListener('hidden.bs.modal', () => {
+                confirmDeleteActivityBtn.disabled = false;
+                confirmDeleteActivityBtn.innerHTML = '<i class="bi bi-trash me-1"></i>Supprimer';
+                currentDeleteActivityAction = null;
             });
 
             // Edit routine button
@@ -591,13 +872,72 @@
                 });
             }
 
-            // Delete routine button
-            const deleteRoutineBtn = document.getElementById('deleteRoutineBtn');
-            if (deleteRoutineBtn) {
-                deleteRoutineBtn.addEventListener('click', async () => {
-                    if (!confirm('Êtes-vous sûr de vouloir supprimer cette routine ?')) {
+            // Duplicate routine button
+            const duplicateRoutineBtn = document.getElementById('duplicateRoutineBtn');
+            if (duplicateRoutineBtn) {
+                duplicateRoutineBtn.addEventListener('click', async () => {
+                    if (!confirm('Voulez-vous dupliquer cette routine (avec toutes ses activités) ?')) {
                         return;
                     }
+
+                    duplicateRoutineBtn.disabled = true;
+                    const originalHtml = duplicateRoutineBtn.innerHTML;
+                    duplicateRoutineBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Duplication...';
+
+                    try {
+                        const csrfToken = duplicateRoutineBtn.dataset.csrfToken;
+                        const response = await fetch('{{ path('app_routine_duplicate', {goalId: routine.goal.id, id: routine.id}) }}', {
+                            method: 'POST',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: '_token=' + encodeURIComponent(csrfToken)
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            showToast(data.message, 'success');
+                            setTimeout(() => {
+                                window.location.href = '{{ path('app_routine_index', {goalId: routine.goal.id}) }}';
+                            }, 1000);
+                        } else {
+                            showToast('Erreur: ' + (data.message || 'Impossible de dupliquer la routine'), 'error');
+                            duplicateRoutineBtn.disabled = false;
+                            duplicateRoutineBtn.innerHTML = originalHtml;
+                        }
+                    } catch (error) {
+                        console.error('Erreur:', error);
+                        showToast('Erreur lors de la duplication: ' + error.message, 'error');
+                        duplicateRoutineBtn.disabled = false;
+                        duplicateRoutineBtn.innerHTML = originalHtml;
+                    }
+                });
+            }
+
+            // Delete routine button with modal confirmation
+            const deleteRoutineModal = new bootstrap.Modal(document.getElementById('deleteRoutineModal'));
+            const confirmDeleteRoutineBtn = document.getElementById('confirmDeleteRoutineBtn');
+            const deleteRoutineName = document.getElementById('deleteRoutineName');
+            
+            const deleteRoutineBtn = document.getElementById('deleteRoutineBtn');
+            if (deleteRoutineBtn) {
+                deleteRoutineBtn.addEventListener('click', () => {
+                    // Set the routine name in modal
+                    deleteRoutineName.textContent = '{{ routine.title }}';
+                    
+                    // Show modal
+                    deleteRoutineModal.show();
+                });
+            }
+
+            // Handle confirm delete routine button click
+            if (confirmDeleteRoutineBtn) {
+                confirmDeleteRoutineBtn.addEventListener('click', async () => {
+                    confirmDeleteRoutineBtn.disabled = true;
+                    confirmDeleteRoutineBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Suppression...';
 
                     try {
                         const response = await fetch('{{ path('app_routine_delete', {goalId: routine.goal.id, id: routine.id}) }}', {
@@ -614,18 +954,29 @@
 
                         if (data.success) {
                             showToast(data.message, 'success');
+                            deleteRoutineModal.hide();
                             setTimeout(() => {
                                 window.location.href = '{{ path('app_routine_index', {goalId: routine.goal.id}) }}';
                             }, 1000);
                         } else {
                             showToast('Erreur: ' + (data.message || 'Impossible de supprimer la routine'), 'error');
+                            confirmDeleteRoutineBtn.disabled = false;
+                            confirmDeleteRoutineBtn.innerHTML = '<i class="bi bi-trash me-1"></i>Supprimer';
                         }
                     } catch (error) {
                         console.error('Erreur:', error);
                         showToast('Erreur lors de la suppression: ' + error.message, 'error');
+                        confirmDeleteRoutineBtn.disabled = false;
+                        confirmDeleteRoutineBtn.innerHTML = '<i class="bi bi-trash me-1"></i>Supprimer';
                     }
                 });
             }
+
+            // Reset button state when modal is hidden
+            document.getElementById('deleteRoutineModal').addEventListener('hidden.bs.modal', () => {
+                confirmDeleteRoutineBtn.disabled = false;
+                confirmDeleteRoutineBtn.innerHTML = '<i class="bi bi-trash me-1"></i>Supprimer';
+            });
 
             // Routine modal functions
             const routineModal = new bootstrap.Modal(document.getElementById('routineModal'));
@@ -716,6 +1067,43 @@
             // Gérer la fermeture de la modal routine
             document.getElementById('routineModal').addEventListener('hidden.bs.modal', function () {
                 document.body.style.overflow = '';
+            });
+
+            // Layout toggle functionality
+            const layoutToggles = document.querySelectorAll('.layout-toggle');
+            const activitiesContainer = document.getElementById('activitiesContainer');
+            
+            // Load saved layout preference
+            const savedLayout = localStorage.getItem('activitiesLayout') || 'grid';
+            if (savedLayout === 'list') {
+                activitiesContainer.classList.add('list-view');
+                layoutToggles.forEach(btn => {
+                    if (btn.dataset.layout === 'list') {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+
+            layoutToggles.forEach(button => {
+                button.addEventListener('click', function() {
+                    const layout = this.dataset.layout;
+                    
+                    // Update active state
+                    layoutToggles.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Toggle layout
+                    if (layout === 'list') {
+                        activitiesContainer.classList.add('list-view');
+                    } else {
+                        activitiesContainer.classList.remove('list-view');
+                    }
+                    
+                    // Save preference
+                    localStorage.setItem('activitiesLayout', layout);
+                });
             });
         });
     </script>

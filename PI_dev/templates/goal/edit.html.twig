@@ -1,0 +1,49 @@
+{% extends 'base_modern.html.twig' %}
+
+{% block title %}Modifier {{ goal.title }}{% endblock %}
+
+{% block navbar_actions %}
+    <a href="{{ path('app_goal_show', {id: goal.id}) }}" class="btn-modern btn-modern-secondary">
+        <i class="bi bi-arrow-left"></i> Retour
+    </a>
+{% endblock %}
+
+{% block body %}
+    <!-- Page Header -->
+    <div class="page-header-modern">
+        <h1 class="page-header-modern-title">
+            <i class="bi bi-pencil" style="color: var(--primary-color);"></i>
+            Modifier l'objectif
+        </h1>
+        <p class="page-header-modern-subtitle">
+            {{ goal.title }}
+        </p>
+    </div>
+
+    <!-- Form Card -->
+    <div class="card-modern" style="max-width: 800px; margin: 0 auto;">
+        <div class="card-modern-header">
+            <h2 style="font-size: var(--font-size-xl); font-weight: 700; margin: 0; color: var(--gray-900);">
+                <i class="bi bi-bullseye"></i> Informations de l'objectif
+            </h2>
+        </div>
+
+        {{ include('goal/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
+    </div>
+
+    <!-- Delete Section -->
+    <div class="card-modern" style="max-width: 800px; margin: var(--space-xl) auto 0; border-left: 4px solid var(--danger);">
+        <h3 style="font-size: var(--font-size-lg); font-weight: 700; margin-bottom: var(--space-md); color: var(--danger);">
+            <i class="bi bi-exclamation-triangle"></i> Zone dangereuse
+        </h3>
+        <p style="color: var(--gray-600); margin-bottom: var(--space-lg);">
+            La suppression de cet objectif supprimera également toutes les routines et activités associées. Cette action est irréversible.
+        </p>
+        <form method="post" action="{{ path('app_goal_delete', {'id': goal.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet objectif ?');">
+            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ goal.id) }}">
+            <button type="submit" class="btn-modern btn-modern-sm" style="background: var(--danger); color: white;">
+                <i class="bi bi-trash"></i> Supprimer l'objectif
+            </button>
+        </form>
+    </div>
+{% endblock %}

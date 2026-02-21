@@ -1,56 +1,62 @@
-{% extends 'base.html.twig' %}
-
-{% block body %}
-
 {{ form_start(form, {
-    'action': (goal is defined and goal.id) 
-        ? path('app_goal_edit', {id: goal.id}) 
-        : path('app_goal_new'),
-    'method': 'POST',
     'attr': {'class': 'needs-validation', 'novalidate': ''}
 }) }}
 
-<div class="row g-3">
-    <div class="col-12">
-        {{ form_label(form.title, null, {'label_attr': {'class': 'form-label'}}) }}
-        {{ form_widget(form.title, {'attr': {'class': 'form-control form-control-lg', 'placeholder': 'Ex: Perdre 5 kg'}}) }}
-        {{ form_errors(form.title) }}
-    </div>
+<div class="form-group-modern">
+    {{ form_label(form.title, 'Titre', {'label_attr': {'class': 'form-label-modern'}}) }}
+    {{ form_widget(form.title, {'attr': {'class': 'form-control-modern', 'placeholder': 'Ex: Perdre 5 kg'}}) }}
+    {{ form_errors(form.title) }}
+</div>
 
-    <div class="col-12">
-        {{ form_label(form.description, null, {'label_attr': {'class': 'form-label'}}) }}
-        {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 4, 'placeholder': 'Décrivez votre objectif...'}}) }}
-        {{ form_errors(form.description) }}
-    </div>
+<div class="form-group-modern">
+    {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label-modern'}}) }}
+    {{ form_widget(form.description, {'attr': {'class': 'form-control-modern', 'rows': 4, 'placeholder': 'Décrivez votre objectif...'}}) }}
+    {{ form_errors(form.description) }}
+</div>
 
-    <div class="col-md-6">
-        {{ form_label(form.startDate, null, {'label_attr': {'class': 'form-label'}}) }}
-        {{ form_widget(form.startDate, {'attr': {'class': 'form-control form-control-lg'}}) }}
+<div class="grid-modern grid-modern-2">
+    <div class="form-group-modern">
+        {{ form_label(form.startDate, 'Date de début', {'label_attr': {'class': 'form-label-modern'}}) }}
+        {{ form_widget(form.startDate, {'attr': {'class': 'form-control-modern'}}) }}
         {{ form_errors(form.startDate) }}
     </div>
 
-    <div class="col-md-6">
-        {{ form_label(form.endDate, null, {'label_attr': {'class': 'form-label'}}) }}
-        {{ form_widget(form.endDate, {'attr': {'class': 'form-control form-control-lg'}}) }}
+    <div class="form-group-modern">
+        {{ form_label(form.endDate, 'Date de fin', {'label_attr': {'class': 'form-label-modern'}}) }}
+        {{ form_widget(form.endDate, {'attr': {'class': 'form-control-modern'}}) }}
         {{ form_errors(form.endDate) }}
-    </div>
-
-    <div class="col-12">
-        {{ form_label(form.status, null, {'label_attr': {'class': 'form-label'}}) }}
-        {{ form_widget(form.status, {'attr': {'class': 'form-select form-select-lg'}}) }}
-        {{ form_errors(form.status) }}
     </div>
 </div>
 
-<div class="d-flex gap-3 mt-4 pt-4 border-top">
-    <button type="submit" class="btn btn-orange flex-grow-1">
-        Enregistrer
+<div class="form-group-modern">
+    {{ form_label(form.status, 'Statut', {'label_attr': {'class': 'form-label-modern'}}) }}
+    {{ form_widget(form.status, {'attr': {'class': 'form-control-modern form-select-modern'}}) }}
+    {{ form_errors(form.status) }}
+</div>
+
+{% if form.priority is defined %}
+<div class="form-group-modern">
+    {{ form_label(form.priority, 'Priorité', {'label_attr': {'class': 'form-label-modern'}}) }}
+    {{ form_widget(form.priority, {'attr': {'class': 'form-control-modern form-select-modern'}}) }}
+    {{ form_errors(form.priority) }}
+</div>
+{% endif %}
+
+{% if form.deadline is defined %}
+<div class="form-group-modern">
+    {{ form_label(form.deadline, 'Deadline', {'label_attr': {'class': 'form-label-modern'}}) }}
+    {{ form_widget(form.deadline, {'attr': {'class': 'form-control-modern'}}) }}
+    {{ form_errors(form.deadline) }}
+</div>
+{% endif %}
+
+<div class="d-flex gap-md" style="margin-top: var(--space-xl); padding-top: var(--space-lg); border-top: 1px solid var(--gray-200);">
+    <button type="submit" class="btn-modern btn-modern-primary" style="flex: 1;">
+        <i class="bi bi-check-circle"></i> Enregistrer
     </button>
-    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-        Annuler
-    </button>
+    <a href="{{ path('app_goal_index') }}" class="btn-modern btn-modern-outline" style="flex: 1;">
+        <i class="bi bi-x-circle"></i> Annuler
+    </a>
 </div>
 
 {{ form_end(form) }}
-
-{% endblock %}

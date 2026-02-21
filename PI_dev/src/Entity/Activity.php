@@ -60,6 +60,29 @@ class Activity
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
+    #[ORM\Column(length: 20, nullable: true)]
+    #[Assert\Choice(
+        choices: ['low', 'medium', 'high'],
+        message: 'La priorité doit être : low, medium ou high.'
+    )]
+    private ?string $priority = null;
+
+    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    #[Assert\Type(\DateTimeInterface::class, message: 'La deadline doit être une date valide.')]
+    private ?\DateTimeInterface $deadline = null;
+
+    #[ORM\Column]
+    private ?bool $isFavorite = false;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $completedAt = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $actualDurationMinutes = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $plannedDurationMinutes = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -203,5 +226,154 @@ class Activity
         $this->updatedAt = $updatedAt;
 
         return $this;
+    }
+
+    public function getPriority(): ?string
+    {
+        return $this->priority;
+    }
+
+    public function setPriority(?string $priority): static
+    {
+        $this->priority = $priority;
+        return $this;
+    }
+
+    public function getDeadline(): ?\DateTimeInterface
+    {
+        return $this->deadline;
+    }
+
+    public function setDeadline(?\DateTimeInterface $deadline): static
+    {
+        $this->deadline = $deadline;
+        return $this;
+    }
+
+    /**
+     * Calculate urgency score based on priority and deadline proximity
+     */
+    public function getUrgencyScore(): int
+    {
+        $score = 0;
+
+        if ($this->priority === 'high') {
+            $score += 30;
+        } elseif ($this->priority === 'medium') {
+            $score += 20;
+        } elseif ($this->priority === 'low') {
+            $score += 10;
+        }
+
+        if ($this->deadline) {
+            $now = new \DateTime();
+            $deadline = \DateTime::createFromInterface($this->deadline);
+            $daysUntilDeadline = $now->diff($deadline)->days;
+            $isPast = $now > $deadline;
+
+            if ($isPast) {
+                $score += 70;
+            } elseif ($daysUntilDeadline <= 1) {
+                $score += 60;
+            } elseif ($daysUntilDeadline <= 3) {
+                $score += 50;
+            } elseif ($daysUntilDeadline <= 7) {
+                $score += 40;
+            } elseif ($daysUntilDeadline <= 14) {
+                $score += 30;
+            } elseif ($daysUntilDeadline <= 30) {
+                $score += 20;
+            } else {
+                $score += 10;
+            }
+        }
+
+        return $score;
+    }
+
+    /**
+     * Check if deadline is approaching (within 7 days)
+     */
+    public function isDeadlineNear(): bool
+    {
+        if (!$this->deadline) {
+            return false;
+        }
+
+        $now = new \DateTime();
+        $deadline = \DateTime::createFromInterface($this->deadline);
+        $daysUntilDeadline = $now->diff($deadline)->days;
+        $isPast = $now > $deadline;
+
+        return !$isPast && $daysUntilDeadline <= 7;
+    }
+    public function isFavorite(): ?bool
+    {
+        return $this->isFavorite;
+    }
+
+    public function setIsFavorite(bool $isFavorite): static
+    {
+        $this->isFavorite = $isFavorite;
+        return $this;
+    }
+
+    public function getCompletedAt(): ?\DateTimeInterface
+    {
+        return $this->completedAt;
+    }
+
+    public function setCompletedAt(?\DateTimeInterface $completedAt): static
+    {
+        $this->completedAt = $completedAt;
+        return $this;
+    }
+
+    public function getActualDurationMinutes(): ?int
+    {
+        return $this->actualDurationMinutes;
+    }
+
+    public function setActualDurationMinutes(?int $actualDurationMinutes): static
+    {
+        $this->actualDurationMinutes = $actualDurationMinutes;
+        return $this;
+    }
+
+    public function getPlannedDurationMinutes(): ?int
+    {
+        return $this->plannedDurationMinutes;
+    }
+
+    public function setPlannedDurationMinutes(?int $plannedDurationMinutes): static
+    {
+        $this->plannedDurationMinutes = $plannedDurationMinutes;
+        return $this;
+    }
+
+    /**
+     * Calculate time efficiency (actual vs planned)
+     * Returns percentage: 100% = on time, >100% = took longer, <100% = finished faster
+     */
+    public function getTimeEfficiency(): ?float
+    {
+        if (!$this->plannedDurationMinutes || $this->plannedDurationMinutes === 0) {
+            return null;
+        }
+
+        if (!$this->actualDurationMinutes) {
+            return null;
+        }
+
+        return round(($this->actualDurationMinutes / $this->plannedDurationMinutes) * 100, 2);
+    }
+
+    /**
+     * Check if activity was completed efficiently (within 110% of planned time)
+     */
+    public function isCompletedEfficiently(): bool
+    {
+        $efficiency = $this->getTimeEfficiency();
+        return $efficiency !== null && $efficiency <= 110;
     }
 }

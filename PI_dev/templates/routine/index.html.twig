@@ -72,6 +72,9 @@
         }
         .visibility-public { background-color: #d1fae5; color: #065f46; }
         .visibility-private { background-color: #fef3c7; color: #92400e; }
+        .priority-high { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; }
+        .priority-medium { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
+        .priority-low { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; }
         .empty-state {
             padding: 80px 20px;
             text-align: center;
@@ -129,6 +132,96 @@
             background-color: #dc3545;
             color: white;
         }
+        .btn-outline-info {
+            border-color: #0dcaf0;
+            color: #0dcaf0;
+        }
+        .btn-outline-info:hover {
+            background-color: #0dcaf0;
+            color: white;
+        }
+        /* List view styles */
+        .list-view .routine-card {
+            border-radius: 15px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 2rem;
+            min-height: 90px;
+        }
+        .list-view .row {
+            display: block;
+        }
+        .list-view .col-md-6,
+        .list-view .col-lg-4 {
+            width: 100%;
+            max-width: 100%;
+        }
+        .list-view .routine-card .routine-header {
+            flex: 0 0 350px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .list-view .routine-card .routine-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            padding: 0 1rem;
+        }
+        .list-view .routine-card .routine-meta {
+            flex: 0 0 200px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .list-view .routine-card .routine-actions {
+            flex: 0 0 auto;
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        .list-view .routine-card .visibility-badge,
+        .list-view .routine-card .badge {
+            margin: 0;
+        }
+        .list-view .routine-card h5 {
+            margin-bottom: 0.25rem;
+            font-size: 1.1rem;
+        }
+        .list-view .routine-card p {
+            margin: 0;
+            font-size: 0.85rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .list-view .routine-card .d-flex.justify-content-between {
+            display: contents !important;
+        }
+        .list-view .routine-card .d-flex.flex-column.gap-2 {
+            display: flex !important;
+            flex-direction: row !important;
+            gap: 0.5rem !important;
+            flex-wrap: wrap;
+        }
+        .list-view .routine-card .d-flex.gap-2 {
+            gap: 0.5rem !important;
+        }
+        .layout-toggle {
+            transition: all 0.3s ease;
+        }
+        .layout-toggle.active {
+            background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%) !important;
+            color: #6b21a8 !important;
+        }
+        .layout-toggle:not(.active):hover {
+            background: #f3f4f6 !important;
+        }
     </style>
 {% endblock %}
 
@@ -145,6 +238,11 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link active fw-bold" style="color: var(--orange-primary);" href="{{ path('app_goal_index') }}">Mes Objectifs</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_calendar') }}">
+                            <i class="bi bi-calendar3 me-1"></i>Calendrier
+                        </a>
                     </li>
                 </ul>
             </div>
@@ -169,7 +267,25 @@
 
             <!-- Filters and Sort -->
             <div class="row g-3 mb-4">
-                <div class="col-md-6">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text" style="background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%); border: 1px solid #9333ea; color: #6b21a8;">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" id="searchInput" class="form-control" placeholder="Rechercher une routine..." value="{{ searchQuery }}" style="border-left: none;">
+                    </div>
+                </div>
+                <div class="col-md-1">
+                    <div class="btn-group w-100" role="group" style="border-radius: 50px; overflow: hidden; border: 2px solid #e9ecef;">
+                        <button type="button" class="btn btn-outline-secondary layout-toggle" data-layout="list" title="Vue liste" style="border: none; background: white;">
+                            <i class="bi bi-list-ul"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary layout-toggle active" data-layout="grid" title="Vue grille" style="border: none; background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%); color: #6b21a8;">
+                            <i class="bi bi-grid-3x3-gap"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-3">
                     <div class="d-flex gap-2 align-items-center">
                         <label class="text-muted fw-semibold me-2">Trier par:</label>
                         <select id="sortSelect" class="form-select form-select-sm" style="width: auto;">
@@ -180,7 +296,7 @@
                         </select>
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <div class="d-flex gap-2 align-items-center justify-content-md-end">
                         <label class="text-muted fw-semibold me-2">Filtrer par visibilité:</label>
                         <select id="visibilityFilter" class="form-select form-select-sm" style="width: auto;">
@@ -193,37 +309,86 @@
             </div>
 
             {% if routines|length > 0 %}
-                <div class="row g-4">
+                <div class="row g-4" id="routinesContainer">
                     {% for routine in routines %}
                         <div class="col-md-6 col-lg-4">
-                            <div class="routine-card">
-                                <div class="d-flex justify-content-between align-items-start mb-3">
-                                    <h5 class="fw-bold mb-0">{{ routine.title }}</h5>
-                                    <span class="visibility-badge visibility-{{ routine.visibility }}">{{ routine.visibility|upper }}</span>
+                            <a href="{{ path('app_routine_show', {goalId: goal.id, id: routine.id}) }}" class="text-decoration-none">
+                                <div class="routine-card" style="cursor: pointer;">
+                                    <!-- Routine Header -->
+                                    <div class="routine-header">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <h5 class="fw-bold mb-0 text-dark">{{ routine.title }}</h5>
+                                        </div>
+                                        <div class="d-flex flex-wrap gap-2 align-items-center">
+                                            <span class="visibility-badge visibility-{{ routine.visibility }}">{{ routine.visibility|upper }}</span>
+                                            {% if routine.getPriority() %}
+                                                <span class="badge priority-{{ routine.getPriority() }}" style="font-size: 0.7rem;">
+                                                    {% if routine.getPriority() == 'high' %}🔴 HAUTE
+                                                    {% elseif routine.getPriority() == 'medium' %}🟡 MOYENNE
+                                                    {% else %}🟢 BASSE{% endif %}
+                                                </span>
+                                            {% endif %}
+                                            {% if routine.isDeadlineNear() %}
+                                                <span class="badge bg-warning text-dark" style="font-size: 0.7rem;">
+                                                    <i class="bi bi-alarm me-1"></i>Deadline proche!
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+
+                                    <!-- Description -->
+                                    {% if routine.description %}
+                                        <p class="text-muted mb-3" style="min-height: 60px;">{{ routine.description|slice(0, 100) }}{% if routine.description|length > 100 %}...{% endif %}</p>
+                                    {% else %}
+                                        <p class="text-muted mb-3" style="min-height: 60px;">Aucune description</p>
+                                    {% endif %}
+
+                                    <!-- Meta Info -->
+                                    <div class="routine-meta">
+                                        <div class="d-flex justify-content-between align-items-center mb-3 pt-3 border-top">
+                                            <div class="d-flex flex-column gap-1">
+                                                <span class="text-muted small">
+                                                    <i class="bi bi-list-task me-1"></i>{{ routine.activities|length }} Activité(s)
+                                                </span>
+                                                {% if routine.deadline %}
+                                                    <span class="text-muted small">
+                                                        <i class="bi bi-calendar-event me-1"></i>Deadline: {{ routine.deadline|date('d/m/Y') }}
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Actions -->
+                                    <div class="routine-actions">
+                                        <div class="d-flex gap-2 w-100" onclick="event.preventDefault(); event.stopPropagation();">
+                                            <button class="btn btn-outline-primary edit-routine-btn flex-fill" data-routine-id="{{ routine.id }}" title="Modifier">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-outline-info duplicate-routine-btn" 
+                                                    data-routine-id="{{ routine.id }}" 
+                                                    data-routine-title="{{ routine.title }}"
+                                                    data-csrf-token="{{ csrf_token('duplicate' ~ routine.id) }}"
+                                                    title="Dupliquer">
+                                                <i class="bi bi-files"></i>
+                                            </button>
+                                            {% if goal.routines|length > 1 %}
+                                                <button class="btn btn-outline-danger delete-routine-btn" 
+                                                        data-routine-id="{{ routine.id }}" 
+                                                        data-routine-title="{{ routine.title }}"
+                                                        data-csrf-token="{{ csrf_token('delete' ~ routine.id) }}"
+                                                        title="Supprimer">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            {% else %}
+                                                <button class="btn btn-outline-secondary" disabled title="Un objectif doit avoir au moins une routine">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            {% endif %}
+                                        </div>
+                                    </div>
                                 </div>
-                                {% if routine.description %}
-                                    <p class="text-muted mb-3" style="min-height: 60px;">{{ routine.description|slice(0, 100) }}{% if routine.description|length > 100 %}...{% endif %}</p>
-                                {% else %}
-                                    <p class="text-muted mb-3" style="min-height: 60px;">Aucune description</p>
-                                {% endif %}
-                                <div class="d-flex justify-content-between align-items-center mb-3 pt-3 border-top">
-                                    <span class="text-muted">
-                                        <i class="bi bi-list-task me-1"></i>{{ routine.activities|length }} Activité(s)
-                                    </span>
-                                </div>
-                                <div class="d-flex gap-2">
-                                    <a href="{{ path('app_routine_show', {goalId: goal.id, id: routine.id}) }}" class="btn btn-orange flex-fill">
-                                        <i class="bi bi-eye me-2"></i>Voir détails
-                                    </a>
-                                    <button class="btn btn-outline-primary edit-routine-btn" data-routine-id="{{ routine.id }}" title="Modifier">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <button class="btn btn-outline-danger delete-routine-btn" data-routine-id="{{ routine.id }}" data-routine-title="{{ routine.title }}" title="Supprimer">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                    <input type="hidden" name="csrf_token_{{ routine.id }}" value="{{ csrf_token('delete' ~ routine.id) }}">
-                                </div>
-                            </div>
+                            </a>
                         </div>
                     {% endfor %}
                 </div>
@@ -251,6 +416,36 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body" id="routineModalContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 20px; border: none; overflow: hidden;">
+                <div class="modal-header" style="background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%); color: white; border: none; padding: 1.5rem;">
+                    <h5 class="modal-title" style="font-weight: 700;">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Confirmer la suppression
+                    </h5>
+                    <button type="button" class="btn-close" style="filter: brightness(0) invert(1);" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" style="padding: 2rem;">
+                    <p class="mb-3" style="font-size: 1.1rem; color: #374151;">Êtes-vous sûr de vouloir supprimer cette routine ?</p>
+                    <div class="alert" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b; border-radius: 15px; padding: 1.25rem;">
+                        <i class="bi bi-info-circle me-2" style="color: #d97706; font-size: 1.2rem;"></i>
+                        <strong id="deleteItemName" style="color: #92400e; font-size: 1.05rem;"></strong>
+                        <p class="mb-0 mt-2 small" style="color: #78350f;">Cette action est irréversible et supprimera également toutes les activités associées.</p>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid #e5e7eb; padding: 1.25rem;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="background: #6b7280; border: none; padding: 0.75rem 1.5rem; border-radius: 10px; font-weight: 600;">
+                        <i class="bi bi-x-circle me-1"></i>Annuler
+                    </button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); border: none; padding: 0.75rem 1.5rem; border-radius: 10px; font-weight: 600; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);">
+                        <i class="bi bi-trash me-1"></i>Supprimer
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -355,6 +550,8 @@
             // Sort and Filter handlers
             const sortSelect = document.getElementById('sortSelect');
             const visibilityFilter = document.getElementById('visibilityFilter');
+            const searchInput = document.getElementById('searchInput');
+            let searchTimeout;
 
             if (sortSelect) {
                 sortSelect.addEventListener('change', function() {
@@ -368,9 +565,19 @@
                 });
             }
 
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        applyFilters();
+                    }, 500); // Debounce 500ms
+                });
+            }
+
             function applyFilters() {
                 const sortValue = sortSelect ? sortSelect.value : 'createdAt-DESC';
                 const visibilityValue = visibilityFilter ? visibilityFilter.value : 'all';
+                const searchValue = searchInput ? searchInput.value : '';
                 
                 const [sort, order] = sortValue.split('-');
                 
@@ -378,6 +585,12 @@
                 url.searchParams.set('sort', sort);
                 url.searchParams.set('order', order);
                 url.searchParams.set('visibility', visibilityValue);
+                
+                if (searchValue) {
+                    url.searchParams.set('search', searchValue);
+                } else {
+                    url.searchParams.delete('search');
+                }
                 
                 window.location.href = url.toString();
             }
@@ -391,43 +604,153 @@
                 });
             });
 
-            // Delete routine buttons
-            document.querySelectorAll('.delete-routine-btn').forEach(btn => {
+            // Duplicate routine buttons
+            document.querySelectorAll('.duplicate-routine-btn').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
                     e.preventDefault();
                     const routineId = btn.dataset.routineId;
                     const routineTitle = btn.dataset.routineTitle;
+                    const csrfToken = btn.dataset.csrfToken;
                     
-                    if (!confirm(`Êtes-vous sûr de vouloir supprimer la routine "${routineTitle}" ?`)) {
+                    if (!confirm(`Voulez-vous dupliquer la routine "${routineTitle}" (avec toutes ses activités) ?`)) {
                         return;
                     }
 
-                    try {
-                        // Generate CSRF token dynamically
-                        const csrfTokenElement = document.querySelector(`input[name="csrf_token_${routineId}"]`);
-                        const csrfToken = csrfTokenElement ? csrfTokenElement.value : '';
+                    btn.disabled = true;
+                    const originalHtml = btn.innerHTML;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
 
-                        const response = await fetch(`/goals/{{ goal.id }}/routines/${routineId}`, {
-                            method: 'DELETE',
+                    try {
+                        const response = await fetch(`/goals/{{ goal.id }}/routines/${routineId}/duplicate`, {
+                            method: 'POST',
                             headers: {
                                 'X-Requested-With': 'XMLHttpRequest',
-                                'Accept': 'application/json',
                                 'Content-Type': 'application/x-www-form-urlencoded',
                             },
                             body: `_token=${encodeURIComponent(csrfToken)}`
                         });
 
                         const data = await response.json();
-
                         if (data.success) {
-                            location.reload();
+                            alert(data.message);
+                            setTimeout(() => location.reload(), 500);
                         } else {
-                            alert('Erreur: ' + (data.message || 'Impossible de supprimer la routine'));
+                            alert('Erreur: ' + (data.message || 'Impossible de dupliquer la routine'));
+                            btn.disabled = false;
+                            btn.innerHTML = originalHtml;
                         }
                     } catch (error) {
                         console.error('Erreur:', error);
-                        alert('Erreur lors de la suppression: ' + error.message);
+                        alert('Erreur lors de la duplication: ' + error.message);
+                        btn.disabled = false;
+                        btn.innerHTML = originalHtml;
                     }
+                });
+            });
+
+            // Delete routine buttons with modal confirmation
+            const deleteConfirmModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+            const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+            const deleteItemName = document.getElementById('deleteItemName');
+            let currentDeleteAction = null;
+
+            document.querySelectorAll('.delete-routine-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const routineId = btn.dataset.routineId;
+                    const routineTitle = btn.dataset.routineTitle;
+                    const csrfToken = btn.dataset.csrfToken;
+                    
+                    // Set the item name in modal
+                    deleteItemName.textContent = routineTitle;
+                    
+                    // Store the delete action
+                    currentDeleteAction = async () => {
+                        confirmDeleteBtn.disabled = true;
+                        confirmDeleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Suppression...';
+
+                        try {
+                            const response = await fetch(`/goals/{{ goal.id }}/routines/${routineId}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Accept': 'application/json',
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                },
+                                body: `_token=${encodeURIComponent(csrfToken)}`
+                            });
+
+                            const data = await response.json();
+
+                            if (data.success) {
+                                deleteConfirmModal.hide();
+                                setTimeout(() => location.reload(), 300);
+                            } else {
+                                alert('Erreur: ' + (data.message || 'Impossible de supprimer la routine'));
+                                confirmDeleteBtn.disabled = false;
+                                confirmDeleteBtn.innerHTML = '<i class="bi bi-trash me-1"></i>Supprimer';
+                            }
+                        } catch (error) {
+                            console.error('Erreur:', error);
+                            alert('Erreur lors de la suppression: ' + error.message);
+                            confirmDeleteBtn.disabled = false;
+                            confirmDeleteBtn.innerHTML = '<i class="bi bi-trash me-1"></i>Supprimer';
+                        }
+                    };
+                    
+                    // Show modal
+                    deleteConfirmModal.show();
+                });
+            });
+
+            // Handle confirm delete button click
+            confirmDeleteBtn.addEventListener('click', () => {
+                if (currentDeleteAction) {
+                    currentDeleteAction();
+                }
+            });
+
+            // Reset button state when modal is hidden
+            document.getElementById('deleteConfirmModal').addEventListener('hidden.bs.modal', () => {
+                confirmDeleteBtn.disabled = false;
+                confirmDeleteBtn.innerHTML = '<i class="bi bi-trash me-1"></i>Supprimer';
+                currentDeleteAction = null;
+            });
+
+            // Layout toggle functionality
+            const layoutToggles = document.querySelectorAll('.layout-toggle');
+            const routinesContainer = document.getElementById('routinesContainer');
+            
+            // Load saved layout preference
+            const savedLayout = localStorage.getItem('routinesLayout') || 'grid';
+            if (savedLayout === 'list') {
+                routinesContainer.classList.add('list-view');
+                layoutToggles.forEach(btn => {
+                    if (btn.dataset.layout === 'list') {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+
+            layoutToggles.forEach(button => {
+                button.addEventListener('click', function() {
+                    const layout = this.dataset.layout;
+                    
+                    // Update active state
+                    layoutToggles.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Toggle layout
+                    if (layout === 'list') {
+                        routinesContainer.classList.add('list-view');
+                    } else {
+                        routinesContainer.classList.remove('list-view');
+                    }
+                    
+                    // Save preference
+                    localStorage.setItem('routinesLayout', layout);
                 });
             });
         });

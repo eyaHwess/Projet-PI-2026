@@ -1,0 +1,209 @@
+{% extends 'base_modern.html.twig' %}
+
+{% block title %}Goal Tracker - Accueil{% endblock %}
+
+{% block body %}
+    <!-- Hero Section -->
+    <div class="hero-modern">
+        <div class="text-center">
+            <div class="d-flex align-items-center justify-content-center gap-sm mb-lg" style="flex-wrap: wrap;">
+                <div class="badge-modern badge-modern-primary">
+                    <i class="bi bi-check-circle-fill"></i> Suivi d'objectifs
+                </div>
+                <div class="badge-modern badge-modern-success">
+                    <i class="bi bi-star-fill"></i> 4.9/5
+                </div>
+            </div>
+            
+            <h1 class="hero-modern-title">
+                Atteignez vos objectifs de <span style="color: var(--primary-color);">fitness</span> et <span style="color: var(--accent-teal);">bien-être</span>
+            </h1>
+            
+            <p class="hero-modern-subtitle">
+                Gérez vos objectifs, routines et activités avec un suivi détaillé de vos progrès. 
+                Visualisez votre consistance et optimisez votre temps.
+            </p>
+            
+            <div class="d-flex align-items-center justify-content-center gap-md" style="flex-wrap: wrap;">
+                <a href="{{ path('app_goal_index') }}" class="btn-modern btn-modern-primary btn-modern-lg">
+                    <i class="bi bi-bullseye"></i> Mes Objectifs
+                </a>
+                <a href="#features" class="btn-modern btn-modern-secondary btn-modern-lg">
+                    <i class="bi bi-arrow-down-circle"></i> Découvrir
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="grid-modern grid-modern-3 mb-xl">
+        <div class="stat-card-modern">
+            <div class="stat-card-modern-value">3x</div>
+            <div class="stat-card-modern-label">Plus rapide pour atteindre vos objectifs</div>
+        </div>
+        <div class="stat-card-modern" style="border-left-color: var(--accent-teal);">
+            <div class="stat-card-modern-value" style="color: var(--accent-teal);">60%</div>
+            <div class="stat-card-modern-label">Réduction du temps de planification</div>
+        </div>
+        <div class="stat-card-modern" style="border-left-color: var(--accent-green);">
+            <div class="stat-card-modern-value" style="color: var(--accent-green);">99.9%</div>
+            <div class="stat-card-modern-label">Satisfaction utilisateur</div>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div id="features" class="mb-xl">
+        <div class="text-center mb-xl">
+            <div class="avatar-modern avatar-modern-lg" style="width: 80px; height: 80px; margin: 0 auto var(--space-lg); font-size: 2rem;">
+                <i class="bi bi-stars"></i>
+            </div>
+            <h2 style="font-size: var(--font-size-3xl); margin-bottom: var(--space-md);">Fonctionnalités principales</h2>
+            <p style="font-size: var(--font-size-lg); color: var(--gray-600); max-width: 600px; margin: 0 auto;">
+                Tout ce dont vous avez besoin pour gérer vos objectifs et suivre vos progrès efficacement
+            </p>
+        </div>
+
+        <div class="grid-modern grid-modern-3">
+            <!-- Feature 1 -->
+            <div class="card-modern">
+                <div class="avatar-modern mb-md" style="background: linear-gradient(135deg, #E9D5FF 0%, #D8B4FE 100%);">
+                    <i class="bi bi-bullseye"></i>
+                </div>
+                <h3 style="font-size: var(--font-size-xl); margin-bottom: var(--space-sm);">Gestion d'objectifs</h3>
+                <p style="color: var(--gray-600);">
+                    Créez et suivez vos objectifs avec des routines et activités structurées. 
+                    Visualisez votre progression en temps réel.
+                </p>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="card-modern">
+                <div class="avatar-modern mb-md" style="background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%); color: var(--accent-teal);">
+                    <i class="bi bi-calendar3"></i>
+                </div>
+                <h3 style="font-size: var(--font-size-xl); margin-bottom: var(--space-sm);">Calendrier intelligent</h3>
+                <p style="color: var(--gray-600);">
+                    Planifiez vos activités et visualisez toutes vos deadlines dans un calendrier interactif.
+                </p>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="card-modern">
+                <div class="avatar-modern mb-md" style="background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%); color: #1E40AF;">
+                    <i class="bi bi-graph-up"></i>
+                </div>
+                <h3 style="font-size: var(--font-size-xl); margin-bottom: var(--space-sm);">Heatmap de consistance</h3>
+                <p style="color: var(--gray-600);">
+                    Visualisez votre productivité quotidienne avec un heatmap style GitHub. 
+                    Suivez vos streaks et statistiques.
+                </p>
+            </div>
+
+            <!-- Feature 4 -->
+            <div class="card-modern">
+                <div class="avatar-modern mb-md" style="background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%); color: #F59E0B;">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+                <h3 style="font-size: var(--font-size-xl); margin-bottom: var(--space-sm);">Analyse du temps</h3>
+                <p style="color: var(--gray-600);">
+                    Mesurez votre investissement temps par objectif. Détectez les déséquilibres et optimisez votre productivité.
+                </p>
+            </div>
+
+            <!-- Feature 5 -->
+            <div class="card-modern">
+                <div class="avatar-modern mb-md" style="background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%); color: var(--danger);">
+                    <i class="bi bi-heart-fill"></i>
+                </div>
+                <h3 style="font-size: var(--font-size-xl); margin-bottom: var(--space-sm);">Favoris</h3>
+                <p style="color: var(--gray-600);">
+                    Marquez vos objectifs, routines et activités préférés pour un accès rapide.
+                </p>
+            </div>
+
+            <!-- Feature 6 -->
+            <div class="card-modern">
+                <div class="avatar-modern mb-md" style="background: linear-gradient(135deg, #E0F2F1 0%, #B2DFDB 100%); color: var(--accent-teal);">
+                    <i class="bi bi-speedometer2"></i>
+                </div>
+                <h3 style="font-size: var(--font-size-xl); margin-bottom: var(--space-sm);">Efficacité</h3>
+                <p style="color: var(--gray-600);">
+                    Comparez le temps planifié vs réel. Identifiez les opportunités d'amélioration.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="card-modern text-center" style="background: linear-gradient(135deg, var(--primary-lightest) 0%, var(--primary-lighter) 100%); padding: var(--space-2xl);">
+        <div class="avatar-modern avatar-modern-lg" style="width: 100px; height: 100px; margin: 0 auto var(--space-xl); font-size: 2.5rem;">
+            <i class="bi bi-rocket-takeoff"></i>
+        </div>
+        <h2 style="font-size: var(--font-size-3xl); margin-bottom: var(--space-md);">Prêt à commencer?</h2>
+        <p style="font-size: var(--font-size-lg); color: var(--gray-700); margin-bottom: var(--space-xl); max-width: 600px; margin-left: auto; margin-right: auto;">
+            Créez votre premier objectif et commencez à suivre vos progrès dès aujourd'hui
+        </p>
+        <a href="{{ path('app_goal_index') }}" class="btn-modern btn-modern-primary btn-modern-lg">
+            <i class="bi bi-plus-circle"></i> Créer mon premier objectif
+        </a>
+    </div>
+
+    <!-- FAQ Section -->
+    <div class="mt-xl">
+        <div class="text-center mb-xl">
+            <div class="avatar-modern avatar-modern-lg" style="width: 80px; height: 80px; margin: 0 auto var(--space-lg); font-size: 2rem;">
+                <i class="bi bi-question-circle"></i>
+            </div>
+            <h2 style="font-size: var(--font-size-3xl); margin-bottom: var(--space-md);">Questions fréquentes</h2>
+            <p style="font-size: var(--font-size-lg); color: var(--gray-600);">
+                Tout ce que vous devez savoir sur Goal Tracker
+            </p>
+        </div>
+
+        <div class="grid-modern grid-modern-2">
+            <div class="card-modern">
+                <h3 style="font-size: var(--font-size-lg); margin-bottom: var(--space-sm);">
+                    <i class="bi bi-check-circle" style="color: var(--accent-teal);"></i>
+                    Qu'est-ce que Goal Tracker?
+                </h3>
+                <p style="color: var(--gray-600);">
+                    Goal Tracker est une plateforme complète pour gérer vos objectifs de fitness et bien-être. 
+                    Elle vous aide à structurer vos objectifs en routines et activités, tout en suivant vos progrès.
+                </p>
+            </div>
+
+            <div class="card-modern">
+                <h3 style="font-size: var(--font-size-lg); margin-bottom: var(--space-sm);">
+                    <i class="bi bi-check-circle" style="color: var(--accent-teal);"></i>
+                    Comment fonctionne le système de consistance?
+                </h3>
+                <p style="color: var(--gray-600);">
+                    Le heatmap de consistance visualise votre activité quotidienne sur l'année. 
+                    Plus vous complétez d'activités, plus la couleur est intense. Suivez vos streaks et statistiques.
+                </p>
+            </div>
+
+            <div class="card-modern">
+                <h3 style="font-size: var(--font-size-lg); margin-bottom: var(--space-sm);">
+                    <i class="bi bi-check-circle" style="color: var(--accent-teal);"></i>
+                    Puis-je suivre plusieurs objectifs?
+                </h3>
+                <p style="color: var(--gray-600);">
+                    Oui! Vous pouvez créer autant d'objectifs que vous le souhaitez. 
+                    Chaque objectif peut contenir plusieurs routines, et chaque routine plusieurs activités.
+                </p>
+            </div>
+
+            <div class="card-modern">
+                <h3 style="font-size: var(--font-size-lg); margin-bottom: var(--space-sm);">
+                    <i class="bi bi-check-circle" style="color: var(--accent-teal);"></i>
+                    Comment fonctionne l'analyse du temps?
+                </h3>
+                <p style="color: var(--gray-600);">
+                    L'analyse du temps mesure combien de temps vous investissez dans chaque objectif. 
+                    Elle détecte les déséquilibres et vous aide à optimiser votre productivité.
+                </p>
+            </div>
+        </div>
+    </div>
+{% endblock %}

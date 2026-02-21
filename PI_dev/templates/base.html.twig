@@ -81,6 +81,20 @@
                                 <div class="p-3 border-b border-gray-200 flex justify-between items-center">
                                     <h3 class="font-semibold text-gray-800">Notifications</h3>
                                     <button type="button" id="markAllRead">Tout marquer lu</button>
+        <nav class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-14 items-center">
+                    <a href="{{ path('app_home') }}" class="flex items-center gap-2 text-gray-800 font-semibold hover:text-orange-500 transition">
+                        <img src="/images/logo.svg" alt="Logo" class="h-8 w-auto" onerror="this.style.display='none'">
+                        <span>Buildify</span>
+                    </a>
+                    <div class="flex items-center flex-wrap gap-3 sm:gap-5">
+                        {% if app.user %}
+                            {# Badge de notifications #}
+                            <div class="notification-badge relative">
+                                <div id="notificationBtn" onclick="window.toggleNotifications(event)" class="text-gray-600 hover:text-orange-500 text-lg relative cursor-pointer inline-block">
+                                    <i class="bi bi-bell"></i>
+                                    <span id="notificationCount" class="badge-count hidden">0</span>
                                 </div>
                                 <div id="notificationList">
                                     <div class="p-4 text-center text-gray-500 text-sm">

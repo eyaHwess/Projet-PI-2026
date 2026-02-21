@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Form\GoalType;
 use App\Repository\GoalRepository;
 use App\Repository\UserRepository;
+use App\Service\StatusManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -14,6 +15,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Knp\Component\Pager\PaginatorInterface;
 
 #[Route('/goals', name: 'app_goal_')]
 class GoalController extends AbstractController
@@ -23,7 +25,10 @@ class GoalController extends AbstractController
         private GoalRepository $goalRepository,
         private UserRepository $userRepository,
         private UserPasswordHasherInterface $passwordHasher,
-    ) {}
+        private StatusManager $statusManager,
+    ) {
+        
+    }
 
     // 👇 USER STATIQUE
     private function getStaticUser(): User
@@ -48,39 +53,53 @@ class GoalController extends AbstractController
     }
 
     // 👇 INDEX
-    #[Route('/', name: 'index', methods: ['GET'])]
-    public function index(Request $request): Response
-    {
-        $sortBy = $request->query->get('sort', 'createdAt'); // Default sort by creation date
-        $sortOrder = $request->query->get('order', 'DESC'); // Default descending
-        $filterStatus = $request->query->get('status', 'all'); // Default show all
+#[Route('/', name: 'index', methods: ['GET'])]
+public function index(Request $request, PaginatorInterface $paginator): Response
+{
+    $sortBy = $request->query->get('sort', 'createdAt');
+    $sortOrder = $request->query->get('order', 'DESC');
+    $filterStatus = $request->query->get('status', 'all');
+    $searchQuery = $request->query->get('search', '');
 
-        // Build query
-        $queryBuilder = $this->goalRepository->createQueryBuilder('g');
+    $queryBuilder = $this->goalRepository->createQueryBuilder('g');
 
-        // Apply status filter
-        if ($filterStatus !== 'all') {
-            $queryBuilder->andWhere('g.status = :status')
-                        ->setParameter('status', $filterStatus);
-        }
-
-        // Apply sorting
-        $validSortFields = ['createdAt', 'startDate', 'endDate', 'title'];
-        if (in_array($sortBy, $validSortFields)) {
-            $queryBuilder->orderBy('g.' . $sortBy, $sortOrder);
-        } else {
-            $queryBuilder->orderBy('g.createdAt', 'DESC');
-        }
-
-        $goals = $queryBuilder->getQuery()->getResult();
-
-        return $this->render('goal/index.html.twig', [
-            'goals' => $goals,
-            'currentSort' => $sortBy,
-            'currentOrder' => $sortOrder,
-            'currentStatus' => $filterStatus,
-        ]);
+    if (!empty($searchQuery)) {
+        $queryBuilder->andWhere('g.title LIKE :search OR g.description LIKE :search')
+                     ->setParameter('search', '%' . $searchQuery . '%');
     }
+
+    if ($filterStatus !== 'all') {
+        $queryBuilder->andWhere('g.status = :status')
+                     ->setParameter('status', $filterStatus);
+    }
+
+    $validSortFields = ['createdAt', 'startDate', 'endDate', 'title', 'priority', 'deadline'];
+
+    if ($sortBy !== 'urgency' && in_array($sortBy, $validSortFields)) {
+        $queryBuilder->orderBy('g.' . $sortBy, $sortOrder);
+    } else {
+        $queryBuilder->orderBy('g.createdAt', 'DESC');
+    }
+
+    $pagination = $paginator->paginate(
+        $queryBuilder,
+        $request->query->getInt('page', 1),
+        4
+    );
+
+    // Mise à jour statuts uniquement sur la page actuelle
+    foreach ($pagination as $goal) {
+        $this->statusManager->updateGoalStatuses($goal);
+    }
+
+    return $this->render('goal/index_modern.html.twig', [
+        'pagination' => $pagination,
+        'currentSort' => $sortBy,
+        'currentOrder' => $sortOrder,
+        'currentStatus' => $filterStatus,
+        'searchQuery' => $searchQuery,
+    ]);
+}
 
     // 👇 CREATE
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
@@ -120,7 +139,7 @@ class GoalController extends AbstractController
             return $this->redirectToRoute('app_goal_index');
         }
 
-        return $this->render('goal/_form.html.twig', [
+        return $this->render('goal/new.html.twig', [
             'form' => $form,
             'goal' => $goal,
         ]);
@@ -137,33 +156,62 @@ class GoalController extends AbstractController
 
     // 👇 EDIT
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Goal $goal): JsonResponse|Response
+    public function edit(Request $request, Goal $goal): Response
     {
         $form = $this->createForm(GoalType::class, $goal);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $this->entityManager->flush();
 
+            // Add flash message for success feedback
+            $this->addFlash('success', 'Objectif modifié avec succès !');
+
+            // Redirect to the goals index page
+            return $this->redirectToRoute('app_goal_index');
+        }
+
+        return $this->render('goal/edit.html.twig', [
+            'form' => $form,
+            'goal' => $goal,
+        ]);
+    }
+
+    // 👇 DUPLICATE
+    #[Route('/{id}/duplicate', name: 'duplicate', methods: ['POST'])]
+    public function duplicate(Request $request, Goal $goal): JsonResponse
+    {
+        if ($this->isCsrfTokenValid('duplicate' . $goal->getId(), $request->request->get('_token'))) {
+            // Create a new goal with the same properties
+            $duplicatedGoal = new Goal();
+            $duplicatedGoal->setTitle($goal->getTitle() . ' (Copie)');
+            $duplicatedGoal->setDescription($goal->getDescription());
+            $duplicatedGoal->setStartDate(clone $goal->getStartDate());
+            $duplicatedGoal->setEndDate(clone $goal->getEndDate());
+            $duplicatedGoal->setStatus('active'); // Reset to active
+            $duplicatedGoal->setUser($goal->getUser());
+            $duplicatedGoal->setPriority($goal->getPriority());
+            if ($goal->getDeadline()) {
+                $duplicatedGoal->setDeadline(clone $goal->getDeadline());
+            }
+
+            $this->entityManager->persist($duplicatedGoal);
             $this->entityManager->flush();
 
             return new JsonResponse([
                 'success' => true,
-                'message' => 'Objectif modifié avec succès !',
+                'message' => 'Objectif dupliqué avec succès !',
                 'goal' => [
-                    'id' => $goal->getId(),
-                    'title' => $goal->getTitle(),
-                    'description' => $goal->getDescription(),
-                    'status' => $goal->getStatus(),
-                    'startDate' => $goal->getStartDate()?->format('Y-m-d'),
-                    'endDate' => $goal->getEndDate()?->format('Y-m-d'),
+                    'id' => $duplicatedGoal->getId(),
+                    'title' => $duplicatedGoal->getTitle(),
                 ]
             ]);
         }
 
-        return $this->render('goal/_form.html.twig', [
-            'form' => $form,
-            'goal' => $goal,
-        ]);
+        return new JsonResponse([
+            'success' => false,
+            'message' => 'Token CSRF invalide'
+        ], 403);
     }
 
     // 👇 DELETE

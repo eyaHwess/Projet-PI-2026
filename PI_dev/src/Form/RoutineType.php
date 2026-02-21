@@ -5,6 +5,7 @@ namespace App\Form;
 use App\Entity\Routine;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -53,6 +54,26 @@ class RoutineType extends AbstractType
                     'Privé' => 'private',
                     'Public' => 'public'
                 ],
+                'attr' => [
+                    'class' => 'w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500'
+                ]
+            ])
+            ->add('priority', ChoiceType::class, [
+                'label' => 'Priorité',
+                'choices' => [
+                    'Basse' => 'low',
+                    'Moyenne' => 'medium',
+                    'Haute' => 'high'
+                ],
+                'required' => false,
+                'attr' => [
+                    'class' => 'w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500'
+                ]
+            ])
+            ->add('deadline', DateType::class, [
+                'label' => 'Deadline',
+                'widget' => 'single_text',
+                'required' => false,
                 'attr' => [
                     'class' => 'w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500'
                 ]

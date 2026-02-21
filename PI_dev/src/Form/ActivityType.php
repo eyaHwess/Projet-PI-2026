@@ -69,6 +69,26 @@ class ActivityType extends AbstractType
                     'class' => 'w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500'
                 ]
             ])
+            ->add('priority', ChoiceType::class, [
+                'label' => 'Priorité',
+                'choices' => [
+                    'Basse' => 'low',
+                    'Moyenne' => 'medium',
+                    'Haute' => 'high'
+                ],
+                'required' => false,
+                'attr' => [
+                    'class' => 'w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500'
+                ]
+            ])
+            ->add('deadline', DateTimeType::class, [
+                'label' => 'Deadline',
+                'widget' => 'single_text',
+                'required' => false,
+                'attr' => [
+                    'class' => 'w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500'
+                ]
+            ])
             ->add('hasReminder', CheckboxType::class, [
                 'label' => 'Activer le rappel',
                 'required' => false,

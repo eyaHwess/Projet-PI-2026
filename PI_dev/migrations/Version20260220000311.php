@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20260215235152 extends AbstractMigration
+final class Version20260220000311 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -20,13 +20,16 @@ final class Version20260215235152 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE coaching_request ADD priority VARCHAR(20) DEFAULT \'standard\' NOT NULL');
-        $this->addSql('UPDATE coaching_request SET priority = \'standard\' WHERE priority IS NULL');
+        $this->addSql('ALTER TABLE goal ADD progress INT DEFAULT NULL');
+        $this->addSql('ALTER TABLE goal ADD required_tasks INT DEFAULT NULL');
+        $this->addSql('ALTER TABLE goal ADD trello_board_id VARCHAR(255) DEFAULT NULL');
     }
 
     public function down(Schema $schema): void
     {
         // this down() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE coaching_request DROP priority');
+        $this->addSql('ALTER TABLE goal DROP progress');
+        $this->addSql('ALTER TABLE goal DROP required_tasks');
+        $this->addSql('ALTER TABLE goal DROP trello_board_id');
     }
 }
