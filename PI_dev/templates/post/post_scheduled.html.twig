@@ -1,0 +1,54 @@
+{# Partial template for scheduled posts list - can be used standalone or via AJAX #}
+{% if scheduled is defined and scheduled|length > 0 %}
+    {% for post in scheduled %}
+        <div class="draft-item">
+            <div class="d-flex align-items-center gap-3 flex-grow-1">
+                {% if '<img' in post.content %}
+                    {% set imgSrc = post.content|split('src="')[1]|split('"')[0] %}
+                    <img src="{{ imgSrc }}" class="draft-thumbnail" alt="Post thumbnail">
+                {% else %}
+                    <div class="draft-placeholder">
+                        <i class="bi bi-clock" style="font-size: 2rem; color: #a855f7;"></i>
+                    </div>
+                {% endif %}
+                
+                <div class="draft-content">
+                    <div class="draft-title">{{ post.title ?: 'Untitled Post' }}</div>
+                    <div class="draft-preview">{{ post.content|striptags|slice(0, 100) }}...</div>
+                    <small class="text-muted">
+                        <i class="bi bi-clock me-1"></i>
+                        Scheduled for: {{ post.scheduledAt ? post.scheduledAt|date('d/m/Y H:i') : 'Not set' }}
+                    </small>
+                </div>
+                <span class="draft-badge" style="background: rgba(124, 58, 237, 0.1); color: #7c3aed;">
+                    <i class="bi bi-clock me-1"></i>Scheduled
+                </span>
+            </div>
+            
+            <div class="dropdown">
+                <button class="btn btn-link text-secondary p-0" type="button" data-bs-toggle="dropdown" aria-expanded="false" onclick="event.stopPropagation()">
+                    <i class="bi bi-three-dots"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <a class="dropdown-item text-success" href="#" onclick="publishScheduledPost({{ post.id }}); return false;">
+                            <i class="bi bi-send me-2"></i> Publish Now
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item text-danger" href="#" onclick="deleteScheduledPost({{ post.id }}); return false;">
+                            <i class="bi bi-trash me-2"></i> Delete
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-clock-history" style="font-size: 3rem; color: #cbd5e0;"></i>
+        <p class="text-muted mt-3 mb-0">No scheduled posts yet</p>
+        <small class="text-muted">Your scheduled posts will appear here</small>
+    </div>
+{% endif %}
+

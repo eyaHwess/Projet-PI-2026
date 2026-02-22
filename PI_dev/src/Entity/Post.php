@@ -41,6 +41,9 @@ class Post
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $scheduledAt = null;
+
     #[ORM\Column(length: 255, options: ["default" => "active"])]
     private string $status = PostStatus::PUBLISHED->value;
 
@@ -223,6 +226,21 @@ class Post
         return $this->status === PostStatus::HIDDEN->value;
     }
 
+    public function getScheduledAt(): ?\DateTimeImmutable
+    {
+        return $this->scheduledAt;
+    }
+
+    public function setScheduledAt(?\DateTimeImmutable $scheduledAt): static
+    {
+        $this->scheduledAt = $scheduledAt;
+        return $this;
+    }
+
+    public function isScheduled(): bool
+    {
+        return $this->status === PostStatus::SCHEDULED->value;
+    }
 
 
     /**

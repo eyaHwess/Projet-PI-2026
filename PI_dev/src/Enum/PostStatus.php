@@ -6,6 +6,7 @@ enum PostStatus: string
 {
     case DRAFT = 'draft';
     case PUBLISHED = 'published';
+    case SCHEDULED = 'scheduled';
     case HIDDEN = 'hidden';
 
     public function label(): string
@@ -13,6 +14,7 @@ enum PostStatus: string
         return match($this) {
             self::DRAFT => 'Draft',
             self::PUBLISHED => 'Published',
+            self::SCHEDULED => 'Scheduled',
             self::HIDDEN => 'Hidden',
         };
     }

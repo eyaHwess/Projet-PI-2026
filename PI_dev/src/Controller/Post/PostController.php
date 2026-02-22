@@ -8,6 +8,7 @@ use App\Service\Post\CommentLikeService;
 use App\Service\Post\SavedPostService;
 use App\Repository\PostRepository;
 use App\Enum\PostStatus;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -191,18 +192,88 @@ class PostController extends AbstractController
             ->getQuery()
             ->getResult();
 
-        // Convert to array for JSON response
-        $draftsArray = array_map(function($draft) {
-            return [
-                'id' => $draft->getId(),
-                'title' => $draft->getTitle(),
-                'content' => $draft->getContent(),
-                'createdAt' => $draft->getCreatedAt()->format('Y-m-d H:i:s')
-            ];
-        }, $drafts);
-
-        return $this->json(['drafts' => $draftsArray]);
+        // Return rendered HTML
+        return $this->render('post/post_drafts.html.twig', [
+            'drafts' => $drafts
+        ]);
     }
+
+    #[Route('/posts/{id}/edit-data', name: 'post_edit_data', methods: ['GET'])]
+    public function getPostEditData(int $id, PostRepository $postRepository): Response
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        
+        $currentUser = $this->getUser();
+        
+        $post = $postRepository->find($id);
+        
+        if (!$post) {
+            return $this->json(['error' => 'Post not found'], Response::HTTP_NOT_FOUND);
+        }
+        
+        // Check if user owns the post
+        if ($post->getCreatedBy() !== $currentUser) {
+            return $this->json(['error' => 'Unauthorized'], Response::HTTP_FORBIDDEN);
+        }
+        
+        return $this->json([
+            'id' => $post->getId(),
+            'title' => $post->getTitle(),
+            'content' => $post->getContent(),
+            'status' => $post->getStatus()
+        ]);
+    }
+
+    #[Route('/posts/scheduled/list', name: 'post_scheduled_list', methods: ['GET'])]
+    public function scheduledList(PostRepository $postRepository): Response
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        
+        $currentUser = $this->getUser();
+        
+        // Get only scheduled posts for current user
+        $scheduled = $postRepository->createQueryBuilder('p')
+            ->where('p.status = :status')
+            ->andWhere('p.createdBy = :user')
+            ->setParameter('status', PostStatus::SCHEDULED->value)
+            ->setParameter('user', $currentUser)
+            ->orderBy('p.scheduledAt', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        // Return rendered HTML
+        return $this->render('post/post_scheduled.html.twig', [
+            'scheduled' => $scheduled
+        ]);
+    }
+
+    #[Route('/posts/{id}/publish', name: 'post_publish', methods: ['POST'])]
+    public function publishNow(int $id, PostRepository $postRepository, EntityManagerInterface $em): Response
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        
+        $currentUser = $this->getUser();
+        
+        $post = $postRepository->find($id);
+        
+        if (!$post) {
+            return $this->json(['error' => 'Post not found'], Response::HTTP_NOT_FOUND);
+        }
+        
+        // Check if user owns the post
+        if ($post->getCreatedBy() !== $currentUser) {
+            return $this->json(['error' => 'Unauthorized'], Response::HTTP_FORBIDDEN);
+        }
+        
+        // Publish the post immediately
+        $post->setStatus(PostStatus::PUBLISHED->value);
+        $post->setScheduledAt(null); // Clear scheduled time since we're publishing now
+        
+        $em->flush();
+        
+        return $this->json(['success' => true]);
+    }
+
 
     #[Route('/posts/create', name: 'post_create_ajax', methods: ['POST'])]
     public function createFromList(Request $request, PostService $postService): Response
@@ -213,9 +284,20 @@ class PostController extends AbstractController
         $title = $request->request->get('title');
         $content = $request->request->get('content');
         $status = $request->request->get('status', PostStatus::PUBLISHED->value);
+        $scheduledAtStr = $request->request->get('scheduledAt');
+        
+        // Parse scheduled date if provided
+        $scheduledAt = null;
+        if ($scheduledAtStr) {
+            try {
+                $scheduledAt = new \DateTimeImmutable($scheduledAtStr);
+            } catch (\Exception $e) {
+                // Invalid date format, ignore
+            }
+        }
 
         // No separate image handling - images are inline in content
-        $postService->createPost($title, $content, $user, $status, []);
+        $postService->createPost($title, $content, $user, $status, [], $scheduledAt);
 
         // Redirect back to post list
         return $this->redirectToRoute('post_list_view');

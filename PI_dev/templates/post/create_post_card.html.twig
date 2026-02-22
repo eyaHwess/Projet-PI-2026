@@ -1,137 +1,171 @@
 <!-- Create Post Glass Card (Hidden by default with animation) -->
 <div class="create-post-glass-container mb-4" id="createPostCard" style="display: none; opacity: 0;">
-    <!-- Create Post Form -->
-    <div id="createPostFormContainer">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h5 class="mb-0" style="color: #2d3748; font-weight: 600;">Create New Post</h5>
-            <button class="btn btn-drafts btn-sm" type="button" onclick="toggleDraftsView()">
-                <i class="bi bi-file-earmark-text me-1"></i>
-                View Drafts
+    <!-- Tabbed Navigation -->
+    <ul class="nav nav-tabs-custom mb-4" id="createPostTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link-custom active" id="create-tab" data-bs-toggle="tab" data-bs-target="#create-panel" type="button" role="tab" aria-controls="create-panel" aria-selected="true">
+                <i class="bi bi-plus-circle me-2"></i>
+                Create Post
             </button>
-        </div>
-        
-        <form id="createPostForm" method="POST" action="{{ path('post_create_ajax') }}" enctype="multipart/form-data">
-        <h5 class="mb-4" style="color: #2d3748; font-weight: 600;">Create New Post</h5>
-        <!-- Title Input -->
-        <div class="mb-4">
-            <label for="postTitle" class="form-label" style="color: #4a5568; font-weight: 500;">Title</label>
-            <input type="text" 
-                   class="form-control input-glass" 
-                   id="postTitle" 
-                   name="title"
-                   placeholder="Enter your post title" 
-                   required>
-        </div>
-        
-        <!-- Content Input with CKEditor -->
-        <div class="mb-4">
-            <label for="postContent" class="form-label" style="color: #4a5568; font-weight: 500;">Content</label>
-            <div id="editor" style="min-height: 250px;"></div>
-            <textarea id="postContent" name="content" style="display: none;" required></textarea>
-        </div>
-
-        <!-- Status Selection -->
-        <div class="mb-4">
-            <label for="postStatus" class="form-label" style="color: #4a5568; font-weight: 500;">Status</label>
-            <select class="form-select input-glass" id="postStatus" name="status">
-                <option value="published" selected>Publish Now</option>
-                <option value="draft">Save as Draft</option>
-            </select>
-        </div>
-        
-        <!-- Action Buttons -->
-        <div class="d-flex gap-3 justify-content-end mt-4 pt-3 border-top" style="border-color: rgba(168, 85, 247, 0.1) !important;">
-            <button type="button" 
-                    class="btn btn-glass px-5 py-2" 
-                    onclick="toggleCreatePost()"
-                    style="font-size: 1rem;">
-                <i class="bi bi-x-circle me-2"></i>
-                Cancel
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link-custom" id="drafts-tab" data-bs-toggle="tab" data-bs-target="#drafts-panel" type="button" role="tab" aria-controls="drafts-panel" aria-selected="false" onclick="loadDraftsOnTabClick()">
+                <i class="bi bi-file-earmark-text me-2"></i>
+                Drafts
             </button>
-            <button type="submit" class="btn btn-primary-glass px-5 py-2" style="font-size: 1rem;">
-                <i class="bi bi-send me-2"></i> 
-                Publish
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link-custom" id="scheduled-tab" data-bs-toggle="tab" data-bs-target="#scheduled-panel" type="button" role="tab" aria-controls="scheduled-panel" aria-selected="false" onclick="loadScheduledOnTabClick()">
+                <i class="bi bi-clock me-2"></i>
+                Scheduled Posts
             </button>
-        </div>
-    </form>
-    </div>
+        </li>
+    </ul>
     
-    <!-- Drafts List View (Hidden by default) -->
-    <div id="draftsListContainer" style="display: none;">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h5 class="mb-0" style="color: #2d3748; font-weight: 600;">My Drafts</h5>
-            <button class="btn btn-glass btn-sm" type="button" onclick="toggleDraftsView()">
-                <i class="bi bi-arrow-left me-1"></i>
-                Back to Create
-            </button>
+    <!-- Tab Content -->
+    <div class="tab-content" id="createPostTabContent">
+        <!-- Create Post Tab Panel -->
+        <div class="tab-pane fade show active" id="create-panel" role="tabpanel" aria-labelledby="create-tab">
+            <form id="createPostForm" method="POST" action="{{ path('post_create_ajax') }}" enctype="multipart/form-data">
+                <!-- Title Input -->
+                <div class="mb-4">
+                    <label for="postTitle" class="form-label" style="color: #4a5568; font-weight: 500;">Title</label>
+                    <input type="text" 
+                           class="form-control input-glass" 
+                           id="postTitle" 
+                           name="title"
+                           placeholder="Enter your post title" 
+                           required>
+                </div>
+                
+                <!-- Content Input with CKEditor -->
+                <div class="mb-4">
+                    <label for="postContent" class="form-label" style="color: #4a5568; font-weight: 500;">Content</label>
+                    <div id="editor" style="min-height: 250px;"></div>
+                    <textarea id="postContent" name="content" style="display: none;" required></textarea>
+                </div>
+
+                <!-- Status Selection -->
+                <div class="mb-4">
+                    <label for="postStatus" class="form-label" style="color: #4a5568; font-weight: 500;">Status</label>
+                    <select class="form-select input-glass" id="postStatus" name="status" onchange="toggleScheduleField()">
+                        <option value="published" selected>Publish Now</option>
+                        <option value="scheduled">Schedule for Later</option>
+                        <option value="draft">Save as Draft</option>
+                    </select>
+                </div>
+                
+                <!-- Schedule Date/Time (Hidden by default) -->
+                <div class="mb-4" id="scheduleField" style="display: none;">
+                    <label for="scheduledAt" class="form-label" style="color: #4a5568; font-weight: 500;">Schedule Date & Time</label>
+                    <input type="datetime-local" 
+                           class="form-control input-glass" 
+                           id="scheduledAt" 
+                           name="scheduledAt">
+                    <small class="text-muted">Post will be automatically published at this time</small>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="d-flex gap-3 justify-content-end mt-4 pt-3 border-top" style="border-color: rgba(168, 85, 247, 0.1) !important;">
+                    <button type="button" 
+                            class="btn btn-glass px-5 py-2" 
+                            onclick="toggleCreatePost()"
+                            style="font-size: 1rem;">
+                        <i class="bi bi-x-circle me-2"></i>
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary-glass px-5 py-2" style="font-size: 1rem;">
+                        <i class="bi bi-send me-2"></i> 
+                        Publish
+                    </button>
+                </div>
+            </form>
         </div>
         
-        <div id="draftsList" class="vstack gap-3">
-            <!-- Drafts will be loaded here via AJAX -->
-            <div class="text-center py-4">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
+        <!-- Drafts Tab Panel -->
+        <div class="tab-pane fade" id="drafts-panel" role="tabpanel" aria-labelledby="drafts-tab">
+            <!-- Drafts List View -->
+            <div id="draftsListContainer">
+                <div id="draftsList" class="vstack gap-3">
+                    <!-- Drafts will be loaded here via AJAX -->
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Edit Draft View (Hidden by default) -->
+            <div id="editDraftContainer" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <button class="btn btn-glass btn-sm" type="button" onclick="backToDraftsList()">
+                        <i class="bi bi-arrow-left me-1"></i>
+                        Back to Drafts
+                    </button>
+                    <h5 class="mb-0" style="color: #2d3748; font-weight: 600;">Edit Draft</h5>
+                    <div style="width: 100px;"></div> <!-- Spacer for centering -->
+                </div>
+                
+                <form id="editDraftForm" method="POST" action="{{ path('post_create_ajax') }}">
+                    <input type="hidden" id="editDraftId" name="id">
+                    
+                    <!-- Title Input -->
+                    <div class="mb-4">
+                        <label for="editDraftTitle" class="form-label" style="color: #4a5568; font-weight: 500;">Title</label>
+                        <input type="text" 
+                               class="form-control input-glass" 
+                               id="editDraftTitle" 
+                               name="title"
+                               placeholder="Enter your post title" 
+                               required>
+                    </div>
+                    
+                    <!-- Content Input with CKEditor -->
+                    <div class="mb-4">
+                        <label for="editDraftContent" class="form-label" style="color: #4a5568; font-weight: 500;">Content</label>
+                        <div id="editDraftEditor" style="min-height: 250px;"></div>
+                        <textarea id="editDraftContent" name="content" style="display: none;" required></textarea>
+                    </div>
+
+                    <!-- Status Selection -->
+                    <div class="mb-4">
+                        <label for="editDraftStatus" class="form-label" style="color: #4a5568; font-weight: 500;">Status</label>
+                        <select class="form-select input-glass" id="editDraftStatus" name="status">
+                            <option value="published">Publish Now</option>
+                            <option value="draft">Keep as Draft</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="d-flex gap-3 justify-content-end mt-4 pt-3 border-top" style="border-color: rgba(168, 85, 247, 0.1) !important;">
+                        <button type="button" 
+                                class="btn btn-glass px-5 py-2" 
+                                onclick="cancelEditDraft()"
+                                style="font-size: 1rem;">
+                            <i class="bi bi-x-circle me-2"></i>
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary-glass px-5 py-2" style="font-size: 1rem;">
+                            <i class="bi bi-save me-2"></i> 
+                            Save
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Scheduled Posts Tab Panel (Placeholder) -->
+        <div class="tab-pane fade" id="scheduled-panel" role="tabpanel" aria-labelledby="scheduled-tab">
+            <div id="scheduledPostsList" class="vstack gap-3">
+                <!-- Scheduled posts will be loaded here via AJAX -->
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <!-- Edit Draft View (Hidden by default) -->
-    <div id="editDraftContainer" style="display: none;">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <button class="btn btn-glass btn-sm" type="button" onclick="backToDraftsList()">
-                <i class="bi bi-arrow-left me-1"></i>
-                Back to Drafts
-            </button>
-            <h5 class="mb-0" style="color: #2d3748; font-weight: 600;">Edit Draft</h5>
-            <div style="width: 100px;"></div> <!-- Spacer for centering -->
-        </div>
-        
-        <form id="editDraftForm" method="POST" action="{{ path('post_create_ajax') }}">
-            <input type="hidden" id="editDraftId" name="id">
-            
-            <!-- Title Input -->
-            <div class="mb-4">
-                <label for="editDraftTitle" class="form-label" style="color: #4a5568; font-weight: 500;">Title</label>
-                <input type="text" 
-                       class="form-control input-glass" 
-                       id="editDraftTitle" 
-                       name="title"
-                       placeholder="Enter your post title" 
-                       required>
-            </div>
-            
-            <!-- Content Input with CKEditor -->
-            <div class="mb-4">
-                <label for="editDraftContent" class="form-label" style="color: #4a5568; font-weight: 500;">Content</label>
-                <div id="editDraftEditor" style="min-height: 250px;"></div>
-                <textarea id="editDraftContent" name="content" style="display: none;" required></textarea>
-            </div>
-
-            <!-- Status Selection -->
-            <div class="mb-4">
-                <label for="editDraftStatus" class="form-label" style="color: #4a5568; font-weight: 500;">Status</label>
-                <select class="form-select input-glass" id="editDraftStatus" name="status">
-                    <option value="published">Publish Now</option>
-                    <option value="draft">Keep as Draft</option>
-                </select>
-            </div>
-            
-            <!-- Action Buttons -->
-            <div class="d-flex gap-3 justify-content-end mt-4 pt-3 border-top" style="border-color: rgba(168, 85, 247, 0.1) !important;">
-                <button type="button" 
-                        class="btn btn-glass px-5 py-2" 
-                        onclick="cancelEditDraft()"
-                        style="font-size: 1rem;">
-                    <i class="bi bi-x-circle me-2"></i>
-                    Cancel
-                </button>
-                <button type="submit" class="btn btn-primary-glass px-5 py-2" style="font-size: 1rem;">
-                    <i class="bi bi-save me-2"></i> 
-                    Save
-                </button>
-            </div>
-        </form>
     </div>
 </div>
 
@@ -212,23 +246,40 @@
 let draftsLoaded = false;
 let draftsData = []; // Store drafts globally
 
-function toggleDraftsView() {
-    const formContainer = document.getElementById('createPostFormContainer');
-    const draftsContainer = document.getElementById('draftsListContainer');
+function toggleScheduleField() {
+    const status = document.getElementById('postStatus').value;
+    const scheduleField = document.getElementById('scheduleField');
+    const scheduledAtInput = document.getElementById('scheduledAt');
     
-    if (draftsContainer.style.display === 'none') {
-        // Show drafts
-        formContainer.style.display = 'none';
-        draftsContainer.style.display = 'block';
+    if (status === 'scheduled') {
+        scheduleField.style.display = 'block';
+        scheduledAtInput.required = true;
         
-        // Load drafts if not already loaded
-        if (!draftsLoaded) {
-            loadDrafts();
-        }
+        // Set minimum date to current time
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        scheduledAtInput.min = now.toISOString().slice(0, 16);
     } else {
-        // Show form
-        draftsContainer.style.display = 'none';
-        formContainer.style.display = 'block';
+        scheduleField.style.display = 'none';
+        scheduledAtInput.required = false;
+        scheduledAtInput.value = '';
+    }
+}
+
+// Load drafts when Drafts tab is clicked
+function loadDraftsOnTabClick() {
+    if (!draftsLoaded) {
+        loadDrafts();
+    }
+}
+
+// Load scheduled posts when Scheduled tab is clicked
+let scheduledLoaded = false;
+let scheduledData = []; // Store scheduled posts globally
+
+function loadScheduledOnTabClick() {
+    if (!scheduledLoaded) {
+        loadScheduledPosts();
     }
 }
 
@@ -236,107 +287,27 @@ async function loadDrafts() {
     const draftsList = document.getElementById('draftsList');
     
     try {
-        const response = await fetch('{{ path('post_drafts_list') }}', {
-            headers: {
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        });
+        const response = await fetch('{{ path('post_drafts_list') }}');
         
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-            throw new Error('Response is not JSON');
-        }
+        const html = await response.text();
+        draftsList.innerHTML = html;
+        draftsLoaded = true;
         
-        const data = await response.json();
-        draftsData = data.drafts || []; // Store drafts globally
+        // Store draft IDs for edit functionality
+        const draftItems = draftsList.querySelectorAll('.draft-item');
+        draftsData = Array.from(draftItems).map(item => {
+            const onclick = item.querySelector('[onclick*="editDraft"]');
+            if (onclick) {
+                const match = onclick.getAttribute('onclick').match(/editDraft\((\d+)\)/);
+                return match ? { id: parseInt(match[1]) } : null;
+            }
+            return null;
+        }).filter(d => d !== null);
         
-        if (draftsData.length > 0) {
-            draftsList.innerHTML = data.drafts.map(draft => {
-                // Extract first image from content if exists
-                const imgMatch = draft.content.match(/<img[^>]+src="([^">]+)"/);
-                const thumbnail = imgMatch ? imgMatch[1] : null;
-                
-                // Get text preview
-                const textPreview = draft.content.replace(/<[^>]*>/g, '').substring(0, 100);
-                
-                return `
-                    <div class="draft-item">
-                        <div class="d-flex align-items-center gap-3 flex-grow-1" onclick="editDraft(${draft.id})" style="cursor: pointer;">
-                            ${thumbnail ? 
-                                `<img src="${thumbnail}" class="draft-thumbnail" alt="Draft thumbnail">` :
-                                `<div class="draft-placeholder">
-                                    <i class="bi bi-file-earmark-text" style="font-size: 2rem; color: #a855f7;"></i>
-                                </div>`
-                            }
-                            <div class="draft-content">
-                                <div class="draft-title">${draft.title || 'Untitled Draft'}</div>
-                                <div class="draft-preview">${textPreview}...</div>
-                            </div>
-                            <span class="draft-badge">Draft</span>
-                        </div>
-                        
-                        <div class="dropdown">
-                            <button class="btn btn-link text-secondary p-0" type="button" data-bs-toggle="dropdown" aria-expanded="false" onclick="event.stopPropagation()">
-                                <i class="bi bi-three-dots"></i>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li>
-                                    <a class="dropdown-item" href="#" onclick="editDraft(${draft.id}); return false;">
-                                        <i class="bi bi-pencil me-2"></i> Edit
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item text-danger" href="#" data-bs-toggle="modal" data-bs-target="#deleteDraftModal${draft.id}" onclick="event.stopPropagation()">
-                                        <i class="bi bi-trash me-2"></i> Delete
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    
-                    <!-- Delete Confirmation Modal for Draft ${draft.id} -->
-                    <div class="modal fade" id="deleteDraftModal${draft.id}" tabindex="-1" aria-hidden="true" data-bs-backdrop="true">
-                        <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content" style="background: white; border-radius: 20px; border: none; box-shadow: 0 8px 32px rgba(31, 38, 135, 0.3); z-index: 1060;">
-                                <div class="modal-header border-0 pb-0">
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body text-center px-4 pb-4">
-                                    <div class="mb-3">
-                                        <i class="bi bi-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
-                                    </div>
-                                    <h5 class="modal-title mb-2" style="color: #2d3748; font-weight: 600;">Delete Draft?</h5>
-                                    <p class="text-muted mb-4">
-                                        Are you sure you want to delete this draft? This action cannot be undone.
-                                    </p>
-                                    <div class="d-flex gap-2 justify-content-center">
-                                        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal" style="border-radius: 20px;">Cancel</button>
-                                        <button type="button" class="btn btn-danger px-4" onclick="confirmDeleteDraft(${draft.id})" data-bs-dismiss="modal" style="border-radius: 20px;">
-                                            <i class="bi bi-trash me-1"></i> Delete
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            
-            draftsLoaded = true;
-        } else {
-            draftsList.innerHTML = `
-                <div class="text-center py-5">
-                    <i class="bi bi-file-earmark-text" style="font-size: 3rem; color: #cbd5e0;"></i>
-                    <p class="text-muted mt-3 mb-0">No drafts yet</p>
-                    <small class="text-muted">Your draft posts will appear here</small>
-                </div>
-            `;
-        }
     } catch (error) {
         console.error('Error loading drafts:', error);
         draftsList.innerHTML = `
@@ -348,39 +319,47 @@ async function loadDrafts() {
     }
 }
 
-function editDraft(draftId) {
+async function editDraft(draftId) {
     console.log('Editing draft:', draftId);
-    console.log('Available drafts:', draftsData);
     
-    // Find draft from stored data
-    const draft = draftsData.find(d => d.id === draftId);
-    
-    if (!draft) {
-        console.error('Draft not found:', draftId);
-        alert('Draft not found');
-        return;
-    }
-    
-    console.log('Found draft:', draft);
-    
-    // Show edit view
-    document.getElementById('draftsListContainer').style.display = 'none';
-    document.getElementById('editDraftContainer').style.display = 'block';
-    
-    // Populate form
-    document.getElementById('editDraftId').value = draft.id;
-    document.getElementById('editDraftTitle').value = draft.title || '';
-    document.getElementById('editDraftStatus').value = 'draft';
-    document.getElementById('editDraftContent').value = draft.content;
-    
-    // Initialize CKEditor if not already initialized
-    if (!window.editDraftEditorInstance) {
-        console.log('Initializing new editor with content');
-        initializeEditDraftEditorAsync(draft.content);
-    } else {
-        console.log('Updating existing editor with content');
-        window.editDraftEditorInstance.setData(draft.content);
+    try {
+        // Fetch the draft data
+        const response = await fetch(`/posts/${draftId}/edit-data`, {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to fetch draft data');
+        }
+        
+        const draft = await response.json();
+        console.log('Found draft:', draft);
+        
+        // Show edit view
+        document.getElementById('draftsListContainer').style.display = 'none';
+        document.getElementById('editDraftContainer').style.display = 'block';
+        
+        // Populate form
+        document.getElementById('editDraftId').value = draft.id;
+        document.getElementById('editDraftTitle').value = draft.title || '';
+        document.getElementById('editDraftStatus').value = 'draft';
         document.getElementById('editDraftContent').value = draft.content;
+        
+        // Initialize CKEditor if not already initialized
+        if (!window.editDraftEditorInstance) {
+            console.log('Initializing new editor with content');
+            initializeEditDraftEditorAsync(draft.content);
+        } else {
+            console.log('Updating existing editor with content');
+            window.editDraftEditorInstance.setData(draft.content);
+            document.getElementById('editDraftContent').value = draft.content;
+        }
+    } catch (error) {
+        console.error('Error loading draft:', error);
+        alert('Failed to load draft data');
     }
 }
 
@@ -442,6 +421,84 @@ async function confirmDeleteDraft(draftId) {
     } catch (error) {
         console.error('Error deleting draft:', error);
         alert('Failed to delete draft');
+    }
+}
+
+async function loadScheduledPosts() {
+    const scheduledList = document.getElementById('scheduledPostsList');
+    
+    try {
+        const response = await fetch('{{ path('post_scheduled_list') }}');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const html = await response.text();
+        scheduledList.innerHTML = html;
+        scheduledLoaded = true;
+        
+    } catch (error) {
+        console.error('Error loading scheduled posts:', error);
+        scheduledList.innerHTML = `
+            <div class="text-center py-4 text-danger">
+                <i class="bi bi-exclamation-circle me-2"></i>
+                Failed to load scheduled posts: ${error.message}
+            </div>
+        `;
+    }
+}
+
+async function publishScheduledPost(postId) {
+    if (!confirm('Are you sure you want to publish this post now?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/posts/${postId}/publish`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        
+        if (response.ok) {
+            // Reload page to show published post
+            window.location.reload();
+        } else {
+            alert('Failed to publish post');
+        }
+    } catch (error) {
+        console.error('Error publishing post:', error);
+        alert('Failed to publish post');
+    }
+}
+
+async function deleteScheduledPost(postId) {
+    if (!confirm('Are you sure you want to delete this scheduled post?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/posts/${postId}/delete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        
+        if (response.ok) {
+            // Reload scheduled posts list
+            scheduledLoaded = false;
+            loadScheduledPosts();
+        } else {
+            alert('Failed to delete post');
+        }
+    } catch (error) {
+        console.error('Error deleting post:', error);
+        alert('Failed to delete post');
     }
 }
 </script>
