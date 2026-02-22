@@ -5,6 +5,7 @@ use App\Service\Post\PostService;
 use App\Service\Post\PostLikeService;
 use App\Service\Post\CommentService;
 use App\Service\Post\CommentLikeService;
+use App\Service\Post\SavedPostService;
 use App\Repository\PostRepository;
 use App\Enum\PostStatus;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -51,9 +52,10 @@ class PostController extends AbstractController
 
         $title = $request->request->get('title');
         $content = $request->request->get('content');
+        $status = $request->request->get('status');
 
         try {
-            $postService->editPost($id, $title, $content, $user);
+            $postService->editPost($id, $title, $content, $user, $status);
             return $this->json(['success' => true]);
         } catch (\Exception $e) {
             return $this->json(['error' => $e->getMessage()], 403);
@@ -109,7 +111,7 @@ class PostController extends AbstractController
     }
 
     #[Route('/posts', name: 'post_list_view', methods: ['GET'])]
-    public function adminList(Request $request, PostRepository $postRepository, PostLikeService $postLikeService, CommentLikeService $commentLikeService): Response
+    public function adminList(Request $request, PostRepository $postRepository, PostLikeService $postLikeService, CommentLikeService $commentLikeService, SavedPostService $savedPostService): Response
     {
         // Get filter and sort parameters from request
         $sortBy = $request->query->get('sort', 'newest'); // newest, oldest, most_liked, most_commented
@@ -153,12 +155,13 @@ class PostController extends AbstractController
         
         $posts = $queryBuilder->getQuery()->getResult();
 
-        // Add like status for each post
+        // Add like and save status for each post
         $postsWithLikeStatus = [];
         foreach ($posts as $post) {
             $postsWithLikeStatus[] = [
                 'post' => $post,
-                'isLikedByCurrentUser' => $postLikeService->hasUserLikedPost($post, $currentUser)
+                'isLikedByCurrentUser' => $postLikeService->hasUserLikedPost($post, $currentUser),
+                'isSavedByCurrentUser' => $savedPostService->hasUserSavedPost($post, $currentUser)
             ];
         }
 
@@ -171,6 +174,36 @@ class PostController extends AbstractController
         ]);
     }
 
+    #[Route('/posts/drafts/list', name: 'post_drafts_list', methods: ['GET'])]
+    public function draftsList(PostRepository $postRepository): Response
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        
+        $currentUser = $this->getUser();
+        
+        // Get only draft posts for current user
+        $drafts = $postRepository->createQueryBuilder('p')
+            ->where('p.status = :status')
+            ->andWhere('p.createdBy = :user')
+            ->setParameter('status', PostStatus::DRAFT->value)
+            ->setParameter('user', $currentUser)
+            ->orderBy('p.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        // Convert to array for JSON response
+        $draftsArray = array_map(function($draft) {
+            return [
+                'id' => $draft->getId(),
+                'title' => $draft->getTitle(),
+                'content' => $draft->getContent(),
+                'createdAt' => $draft->getCreatedAt()->format('Y-m-d H:i:s')
+            ];
+        }, $drafts);
+
+        return $this->json(['drafts' => $draftsArray]);
+    }
+
     #[Route('/posts/create', name: 'post_create_ajax', methods: ['POST'])]
     public function createFromList(Request $request, PostService $postService): Response
     {
@@ -181,47 +214,46 @@ class PostController extends AbstractController
         $content = $request->request->get('content');
         $status = $request->request->get('status', PostStatus::PUBLISHED->value);
 
-        // Handle image uploads
-        $images = [];
-        $uploadedFiles = $request->files->get('images', []);
-        
-        if (!empty($uploadedFiles)) {
-            $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/posts';
-            
-            // Create directory if it doesn't exist
-            if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0777, true);
-            }
-
-            $maxImages = 3;
-            $count = 0;
-            
-            foreach ($uploadedFiles as $uploadedFile) {
-                if ($count >= $maxImages) {
-                    break;
-                }
-                
-                if ($uploadedFile) {
-                    $originalFilename = pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME);
-                    // Simple sanitization: remove special characters
-                    $safeFilename = preg_replace('/[^A-Za-z0-9_\-]/', '_', $originalFilename);
-                    $newFilename = $safeFilename . '_' . uniqid() . '.' . $uploadedFile->guessExtension();
-                    
-                    try {
-                        $uploadedFile->move($uploadDir, $newFilename);
-                        $images[] = '/uploads/posts/' . $newFilename;
-                        $count++;
-                    } catch (\Exception $e) {
-                        // Handle upload error silently or log it
-                    }
-                }
-            }
-        }
-
-        $postService->createPost($title, $content, $user, $status, $images);
+        // No separate image handling - images are inline in content
+        $postService->createPost($title, $content, $user, $status, []);
 
         // Redirect back to post list
         return $this->redirectToRoute('post_list_view');
+    }
+
+    #[Route('/posts/upload-image', name: 'post_upload_image', methods: ['POST'])]
+    public function uploadImage(Request $request): Response
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+
+        $uploadedFile = $request->files->get('upload');
+        
+        if (!$uploadedFile) {
+            return $this->json(['error' => ['message' => 'No file uploaded']], 400);
+        }
+
+        $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/posts/inline';
+        
+        // Create directory if it doesn't exist
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+
+        $originalFilename = pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME);
+        $safeFilename = preg_replace('/[^A-Za-z0-9_\-]/', '_', $originalFilename);
+        $newFilename = $safeFilename . '_' . uniqid() . '.' . $uploadedFile->guessExtension();
+        
+        try {
+            $uploadedFile->move($uploadDir, $newFilename);
+            $url = '/uploads/posts/inline/' . $newFilename;
+            
+            // Return CKEditor expected format
+            return $this->json([
+                'url' => $url
+            ]);
+        } catch (\Exception $e) {
+            return $this->json(['error' => ['message' => 'Upload failed: ' . $e->getMessage()]], 500);
+        }
     }
 
     #[Route('/posts/{id}/like', name: 'post_like', methods: ['POST'])]
@@ -233,6 +265,17 @@ class PostController extends AbstractController
         $result = $postLikeService->toggleLike($id, $user);
 
         // Return JSON response for AJAX
+        return $this->json($result);
+    }
+
+    #[Route('/posts/{id}/save', name: 'post_save', methods: ['POST'])]
+    public function savePost(int $id, SavedPostService $savedPostService): Response
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+
+        $user = $this->getUser();
+        $result = $savedPostService->toggleSave($id, $user);
+
         return $this->json($result);
     }
 

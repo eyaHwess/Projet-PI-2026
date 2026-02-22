@@ -43,7 +43,7 @@ class PostService
         return $post;
     }
 
-    public function editPost(int $postId, string $title, string $content, User $user): Post
+    public function editPost(int $postId, string $title, string $content, User $user, string $status = null): Post
     {
         $post = $this->postRepository->find($postId);
 
@@ -57,6 +57,11 @@ class PostService
 
         $post->setTitle($title);
         $post->setContent($content);
+        
+        // Update status if provided
+        if ($status && in_array($status, [PostStatus::DRAFT->value, PostStatus::PUBLISHED->value])) {
+            $post->setStatus($status);
+        }
 
         $this->em->flush();
 

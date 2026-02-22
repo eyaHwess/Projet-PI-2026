@@ -164,38 +164,44 @@ body.posts-page {
 
 /* Buttons - Glass Style */
 .btn-glass {
-    background: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.4);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.5);
     border-radius: 20px;
-    color: #2d3748;
+    color: #4a5568;
+    font-weight: 500;
     padding: 0.5rem 1.25rem;
     transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(31, 38, 135, 0.1);
 }
 
 .btn-glass:hover {
-    background: rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.5);
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(31, 38, 135, 0.15);
+    color: #2d3748;
 }
 
 /* Primary Button - Glass */
 .btn-primary-glass {
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.8), rgba(118, 75, 162, 0.8));
+    background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.4);
+    border: none;
     border-radius: 20px;
     color: white;
+    font-weight: 600;
     padding: 0.5rem 1.25rem;
     transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
 }
 
 .btn-primary-glass:hover {
-    background: linear-gradient(135deg, rgba(102, 126, 234, 1), rgba(118, 75, 162, 1));
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 6px 16px rgba(124, 58, 237, 0.4);
+    color: white;
 }
 
 /* Input Fields - Glass */
@@ -372,6 +378,134 @@ body.posts-page {
     }
 }
 
+/* Post Content Styling for CKEditor HTML */
+.post-content {
+    line-height: 1.7;
+    color: #2d3748;
+}
+
+.post-content h2 {
+    font-size: 1.5rem;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.post-content h3 {
+    font-size: 1.25rem;
+    margin-top: 1.25rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.post-content p {
+    margin-bottom: 1rem;
+    font-size: 1rem;
+}
+
+/* CKEditor Image Styles - Grid Layout for Display */
+.post-content figure.image {
+    display: inline-block;
+    width: calc(33.333% - 0.5rem);
+    margin: 0.25rem;
+    vertical-align: top;
+}
+
+/* 1 image = full width */
+.post-content figure.image:first-child:nth-last-child(1) {
+    width: 100%;
+}
+
+/* 2 images = 50% each */
+.post-content figure.image:first-child:nth-last-child(2),
+.post-content figure.image:first-child:nth-last-child(2) ~ figure.image {
+    width: calc(50% - 0.5rem);
+}
+
+/* 3 images = 33% each */
+.post-content figure.image:first-child:nth-last-child(3),
+.post-content figure.image:first-child:nth-last-child(3) ~ figure.image {
+    width: calc(33.333% - 0.5rem);
+}
+
+/* Image element styling */
+.post-content figure.image img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(31, 38, 135, 0.1);
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    display: block;
+}
+
+.post-content figure.image img:hover {
+    transform: scale(1.02);
+}
+
+/* Image captions */
+.post-content figure.image figcaption {
+    display: block;
+    text-align: center;
+    font-size: 0.875rem;
+    color: #718096;
+    margin-top: 0.5rem;
+    font-style: italic;
+    padding: 0.25rem 0.5rem;
+}
+
+/* Standalone images (not in figure) */
+.post-content img:not(figure.image img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    margin: 1.5rem 0;
+    box-shadow: 0 4px 12px rgba(31, 38, 135, 0.1);
+}
+
+.post-content a {
+    color: #7c3aed;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.post-content a:hover {
+    text-decoration: underline;
+    color: #6d28d9;
+}
+
+.post-content ul, .post-content ol {
+    margin-bottom: 1rem;
+    padding-left: 2rem;
+}
+
+.post-content li {
+    margin-bottom: 0.5rem;
+}
+
+.post-content blockquote {
+    border-left: 4px solid #e879f9;
+    padding-left: 1.5rem;
+    margin: 1.5rem 0;
+    font-style: italic;
+    color: #4a5568;
+    background: rgba(232, 121, 249, 0.05);
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+}
+
+.post-content strong {
+    font-weight: 600;
+    color: #1a202c;
+}
+
+.post-content em {
+    font-style: italic;
+}
+
 
 
 /* Filter and Sort Bar Styling */
@@ -501,11 +635,6 @@ body.posts-page {
     font-size: 1.1rem;
 }
 
-/* Hide the old create post button inside the card */
-.create-post-glass .d-flex.justify-content-end {
-    display: none !important;
-}
-
 /* Create Post Glass Container */
 .create-post-glass {
     margin-bottom: 2rem;
@@ -518,4 +647,176 @@ body.posts-page {
     padding: 2rem;
     box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
     transition: opacity 0.3s ease, transform 0.3s ease;
+    max-height: 90vh;
+    overflow-y: auto;
 }
+
+.create-post-glass-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.create-post-glass-container::-webkit-scrollbar-track {
+    background: rgba(168, 85, 247, 0.05);
+    border-radius: 10px;
+}
+
+.create-post-glass-container::-webkit-scrollbar-thumb {
+    background: rgba(168, 85, 247, 0.3);
+    border-radius: 10px;
+}
+
+.create-post-glass-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(168, 85, 247, 0.5);
+}
+
+/* Avatar Styling */
+.avatar {
+    position: relative;
+    display: inline-block;
+}
+
+.avatar-md {
+    width: 48px;
+    height: 48px;
+}
+
+.avatar-sm {
+    width: 32px;
+    height: 32px;
+}
+
+.avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* CKEditor Custom Pink/Purple Styling */
+.ck.ck-editor__main > .ck-editor__editable {
+    min-height: 250px;
+    border-radius: 16px;
+    border: 2px solid rgba(168, 85, 247, 0.2);
+    background: rgba(255, 255, 255, 0.95);
+}
+
+.ck.ck-editor__main > .ck-editor__editable:focus {
+    border-color: rgba(168, 85, 247, 0.5);
+    box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
+}
+
+.ck.ck-toolbar {
+    background: linear-gradient(135deg, rgba(232, 121, 249, 0.1) 0%, rgba(192, 132, 252, 0.1) 100%) !important;
+    border: 2px solid rgba(168, 85, 247, 0.2) !important;
+    border-radius: 16px 16px 0 0 !important;
+    padding: 0.75rem !important;
+}
+
+.ck.ck-button:not(.ck-disabled):hover {
+    background: rgba(168, 85, 247, 0.15) !important;
+}
+
+.ck.ck-button.ck-on {
+    background: rgba(168, 85, 247, 0.2) !important;
+    color: #7c3aed !important;
+}
+
+.ck.ck-dropdown__panel {
+    background: white;
+    border: 2px solid rgba(168, 85, 247, 0.2);
+    border-radius: 12px;
+}
+
+.ck.ck-editor__main > .ck-editor__editable {
+    border-radius: 0 0 16px 16px !important;
+}
+
+/* Image resize handles */
+.ck-widget__resizer__handle {
+    background: #a855f7;
+    border: 2px solid white;
+}
+
+/* Image toolbar */
+.ck.ck-toolbar.ck-toolbar_floating {
+    background: linear-gradient(135deg, #e879f9 0%, #c084fc 100%) !important;
+    border: none !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3) !important;
+}
+
+.ck-toolbar.ck-toolbar_floating .ck-button {
+    color: white !important;
+}
+
+.ck-toolbar.ck-toolbar_floating .ck-button:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+}
+
+.ck-toolbar.ck-toolbar_floating .ck-button.ck-on {
+    background: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* CKEditor inline editable */
+.ck-editor__editable_inline {
+    min-height: 300px;
+    background: rgba(255, 255, 255, 0.95) !important;
+    border-radius: 16px !important;
+}
+
+/* Drafts Button Styling */
+.btn-drafts {
+    background: linear-gradient(135deg, #c084fc 0%, #a855f7 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 20px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(192, 132, 252, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-drafts:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(192, 132, 252, 0.4);
+    color: white;
+    background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+}
+
+.btn-drafts i {
+    font-size: 1.1rem;
+}
+
+/* Modal Z-index Fix - Make backdrop non-blocking */
+.modal-backdrop {
+    z-index: 1040 !important;
+    pointer-events: none !important;
+}
+
+.modal {
+    z-index: 2050 !important;
+}
+
+.modal-dialog {
+    z-index: 1050 !important;
+}
+
+.modal-content {
+    background: white !important;
+    border: none !important;
+    border-radius: 20px !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Ensure all modal elements are clickable */
+.modal .btn {
+    cursor: pointer !important;
+}
+
+.modal .btn-close {
+    cursor: pointer !important;
+}
+
+

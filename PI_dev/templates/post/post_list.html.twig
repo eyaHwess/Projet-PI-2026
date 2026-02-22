@@ -10,26 +10,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <!-- Posts Custom CSS -->
     <link rel="stylesheet" href="{{ asset('post/posts.css') }}">
-    
-    <style>
-        .avatar {
-            position: relative;
-            display: inline-block;
-        }
-        .avatar-md {
-            width: 48px;
-            height: 48px;
-        }
-        .avatar-sm {
-            width: 32px;
-            height: 32px;
-        }
-        .avatar-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-    </style>
+    <!-- CKEditor 5 CSS -->
+    <link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/41.1.0/ckeditor5.css">
 {% endblock %}
 
 {% block body %}
@@ -132,6 +114,7 @@
             {% include 'post/post_card.html.twig' with {
                 'post': item.post, 
                 'isLikedByCurrentUser': item.isLikedByCurrentUser,
+                'isSavedByCurrentUser': item.isSavedByCurrentUser,
                 'currentUser': currentUser
             } %}
         {% else %}
@@ -151,4 +134,13 @@
     {{ parent() }}
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- CKEditor 5 with Image Upload -->
+    <link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/43.3.1/ckeditor5.css" />
+    <script>
+        document.addEventListener('hidden.bs.modal', function () {
+            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.removeProperty('padding-right');
+        });
+    </script>
 {% endblock %}
