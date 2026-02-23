@@ -188,6 +188,30 @@ public function index(Request $request, PaginatorInterface $paginator): Response
         $aiText = $latestSuggestion->getContent();
     }
 
+    // Calculate statistics for all goals (not just current page)
+    $allGoals = $this->goalRepository->findBy(['user' => $user]);
+    $statsActiveCount = 0;
+    $statsCompletedCount = 0;
+    $statsPausedCount = 0;
+    $statsFailedCount = 0;
+    
+    foreach ($allGoals as $goal) {
+        switch ($goal->getStatus()) {
+            case 'active':
+                $statsActiveCount++;
+                break;
+            case 'completed':
+                $statsCompletedCount++;
+                break;
+            case 'paused':
+                $statsPausedCount++;
+                break;
+            case 'failed':
+                $statsFailedCount++;
+                break;
+        }
+    }
+
     // Decode JSON if it's a valid JSON string
     $aiSuggestions = null;
     if ($aiText) {
@@ -204,7 +228,11 @@ public function index(Request $request, PaginatorInterface $paginator): Response
         'currentStatus' => $filterStatus,
         'searchQuery' => $searchQuery,
         'aiSuggestion' => $aiText,
-        'aiSuggestions' => $aiSuggestions
+        'aiSuggestions' => $aiSuggestions,
+        'statsActiveCount' => $statsActiveCount,
+        'statsCompletedCount' => $statsCompletedCount,
+        'statsPausedCount' => $statsPausedCount,
+        'statsFailedCount' => $statsFailedCount,
      ]);
 }
 
@@ -307,7 +335,6 @@ public function index(Request $request, PaginatorInterface $paginator): Response
                 ], 201);
             }
 
-            $this->addFlash('success', 'Objectif créé avec succès à partir de la suggestion IA !');
             return $this->redirectToRoute('app_goal_index');
         }
 

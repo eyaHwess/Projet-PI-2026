@@ -520,39 +520,34 @@
 
 {% block body %}
     <!-- Stats Overview -->
-    {% set activeCount = pagination|filter(g => g.status == 'active')|length %}
-    {% set completedCount = pagination|filter(g => g.status == 'completed')|length %}
-    {% set pausedCount = pagination|filter(g => g.status == 'paused')|length %}
-    {% set failedCount = pagination|filter(g => g.status == 'failed')|length %}
-    
     {% if pagination|length > 0 %}
     <div class="stats-overview">
         <div class="stat-card-enhanced active">
             <div class="stat-icon">
                 <i class="bi bi-play-circle-fill"></i>
             </div>
-            <div class="stat-value">{{ activeCount }}</div>
+            <div class="stat-value">{{ statsActiveCount }}</div>
             <div class="stat-label">Actifs</div>
         </div>
         <div class="stat-card-enhanced completed">
             <div class="stat-icon">
                 <i class="bi bi-check-circle-fill"></i>
             </div>
-            <div class="stat-value">{{ completedCount }}</div>
+            <div class="stat-value">{{ statsCompletedCount }}</div>
             <div class="stat-label">Terminés</div>
         </div>
         <div class="stat-card-enhanced paused">
             <div class="stat-icon">
                 <i class="bi bi-pause-circle-fill"></i>
             </div>
-            <div class="stat-value">{{ pausedCount }}</div>
+            <div class="stat-value">{{ statsPausedCount }}</div>
             <div class="stat-label">En pause</div>
         </div>
         <div class="stat-card-enhanced failed">
             <div class="stat-icon">
                 <i class="bi bi-x-circle-fill"></i>
             </div>
-            <div class="stat-value">{{ failedCount }}</div>
+            <div class="stat-value">{{ statsFailedCount }}</div>
             <div class="stat-label">Échoués</div>
         </div>
     </div>
