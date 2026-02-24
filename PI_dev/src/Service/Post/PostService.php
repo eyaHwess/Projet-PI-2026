@@ -23,7 +23,7 @@ class PostService
         $post->setTitle($title);
         $post->setContent($content);
         $post->setCreatedBy($user);
-        $post->setCreatedAt(new \DateTimeImmutable());
+        // createdAt is now automatically set by Gedmo\Timestampable
         
         // Set status (default to published if not specified)
         if ($status && in_array($status, [PostStatus::DRAFT->value, PostStatus::PUBLISHED->value, PostStatus::SCHEDULED->value])) {
@@ -62,6 +62,7 @@ class PostService
 
         $post->setTitle($title);
         $post->setContent($content);
+        // updatedAt is now automatically set by Gedmo\Timestampable
         
         // Update status if provided
         if ($status && in_array($status, [PostStatus::DRAFT->value, PostStatus::PUBLISHED->value])) {

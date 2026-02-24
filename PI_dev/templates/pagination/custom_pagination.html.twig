@@ -1,0 +1,72 @@
+{# Custom pagination template with pink/purple theme #}
+<div class="d-flex justify-content-between align-items-center mt-4">
+    <div class="text-muted" style="font-size: 0.875rem;">
+        Showing {{ first }} to {{ last }} of {{ totalCount }} entries
+    </div>
+    <nav aria-label="Posts pagination">
+        <ul class="pagination mb-0" style="gap: 4px;">
+            {% if previous is defined %}
+            <li class="page-item">
+                <a class="page-link" href="{{ path(route, query|merge({(pageParameterName): previous})) }}" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 1px solid #e2e8f0; border-radius: 6px; color: #64748b; background: white; padding: 0;">
+                    <i class="bi bi-chevron-left" style="font-size: 0.75rem;"></i>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 1px solid #e2e8f0; border-radius: 6px; color: #cbd5e0; background: white; padding: 0;">
+                    <i class="bi bi-chevron-left" style="font-size: 0.75rem;"></i>
+                </span>
+            </li>
+            {% endif %}
+
+            {% if startPage > 1 %}
+            <li class="page-item">
+                <a class="page-link" href="{{ path(route, query|merge({(pageParameterName): 1})) }}" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 1px solid #e2e8f0; border-radius: 6px; color: #64748b; background: white; padding: 0; font-size: 0.875rem;">1</a>
+            </li>
+            {% if startPage > 2 %}
+            <li class="page-item disabled">
+                <span class="page-link" style="border: none; background: transparent; color: #cbd5e0; padding: 0 4px;">...</span>
+            </li>
+            {% endif %}
+            {% endif %}
+
+            {% for page in pagesInRange %}
+            {% if page == current %}
+            <li class="page-item active">
+                <span class="page-link" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: #3b82f6; border: 1px solid #3b82f6; border-radius: 6px; color: white; padding: 0; font-size: 0.875rem; font-weight: 500;">{{ page }}</span>
+            </li>
+            {% else %}
+            <li class="page-item">
+                <a class="page-link" href="{{ path(route, query|merge({(pageParameterName): page})) }}" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 1px solid #e2e8f0; border-radius: 6px; color: #64748b; background: white; padding: 0; font-size: 0.875rem;">{{ page }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+
+            {% if endPage < pageCount %}
+            {% if endPage < pageCount - 1 %}
+            <li class="page-item disabled">
+                <span class="page-link" style="border: none; background: transparent; color: #cbd5e0; padding: 0 4px;">...</span>
+            </li>
+            {% endif %}
+            <li class="page-item">
+                <a class="page-link" href="{{ path(route, query|merge({(pageParameterName): pageCount})) }}" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 1px solid #e2e8f0; border-radius: 6px; color: #64748b; background: white; padding: 0; font-size: 0.875rem;">{{ pageCount }}</a>
+            </li>
+            {% endif %}
+
+            {% if next is defined %}
+            <li class="page-item">
+                <a class="page-link" href="{{ path(route, query|merge({(pageParameterName): next})) }}" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 1px solid #e2e8f0; border-radius: 6px; color: #64748b; background: white; padding: 0;">
+                    <i class="bi bi-chevron-right" style="font-size: 0.75rem;"></i>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 1px solid #e2e8f0; border-radius: 6px; color: #cbd5e0; background: white; padding: 0;">
+                    <i class="bi bi-chevron-right" style="font-size: 0.75rem;"></i>
+                </span>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+

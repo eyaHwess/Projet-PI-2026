@@ -11,7 +11,13 @@
                 <!-- Info -->
                 <div>
                     <h6 class="mb-0">{{ post.createdBy.firstName }} {{ post.createdBy.lastName }}</h6>
-                    <small class="text-muted">{{ post.createdAt|date('d M Y, H:i') }}</small>
+                    <small class="text-muted">
+                        {% if post.updatedAt %}
+                            Edited {{ post.updatedAt|date('d M Y, H:i') }}
+                        {% else %}
+                            {{ post.createdAt|date('d M Y, H:i') }}
+                        {% endif %}
+                    </small>
                 </div>
             </div>
             

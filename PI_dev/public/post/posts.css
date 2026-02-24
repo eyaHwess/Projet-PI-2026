@@ -872,4 +872,226 @@ body.posts-page {
     cursor: pointer !important;
 }
 
+/* ==================== ADMIN COMMENT SECTION ==================== */
 
+.admin-comments-section {
+    margin-top: 3rem;
+}
+
+.admin-comments-title {
+    color: #2d3748;
+    font-weight: 600;
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.admin-comments-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-comment-item {
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-comment-content {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.admin-comment-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #e879f9 0%, #c084fc 100%);
+    border-radius: 50%;
+    color: white;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.admin-comment-body {
+    flex-grow: 1;
+}
+
+.admin-comment-header {
+    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.admin-comment-author {
+    color: #2d3748;
+    font-weight: 600;
+    font-size: 0.9375rem;
+}
+
+.admin-comment-date {
+    color: #94a3b8;
+    font-size: 0.8125rem;
+}
+
+.admin-comment-delete-btn {
+    background: none;
+    border: none;
+    padding: 0.25rem 0.5rem;
+    color: #ef4444;
+    cursor: pointer;
+    font-size: 0.875rem;
+    margin-left: auto;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.admin-comment-delete-btn:hover {
+    opacity: 1;
+}
+
+.admin-comment-text {
+    color: #4a5568;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    margin-bottom: 0.5rem;
+}
+
+.admin-replies-toggle {
+    margin-left: 3.5rem;
+    margin-top: 0.5rem;
+    display: block;
+}
+
+.admin-replies-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    color: #7c3aed;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.admin-replies-btn:hover {
+    color: #6d28d9;
+}
+
+.admin-replies-dash {
+    margin-right: 4px;
+}
+
+.admin-replies-container {
+    margin-left: 3.5rem;
+    margin-top: 0.75rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-reply-item {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.admin-reply-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #c084fc 0%, #a855f7 100%);
+    border-radius: 50%;
+    color: white;
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+
+.admin-reply-body {
+    flex-grow: 1;
+}
+
+.admin-reply-header {
+    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.admin-reply-author {
+    color: #2d3748;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.admin-reply-date {
+    color: #94a3b8;
+    font-size: 0.75rem;
+}
+
+.admin-reply-delete-btn {
+    background: none;
+    border: none;
+    padding: 0.25rem 0.5rem;
+    color: #ef4444;
+    cursor: pointer;
+    font-size: 0.75rem;
+    margin-left: auto;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.admin-reply-delete-btn:hover {
+    opacity: 1;
+}
+
+.admin-reply-text {
+    color: #4a5568;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    margin-bottom: 0;
+}
+
+.admin-load-more-replies {
+    background: none;
+    border: none;
+    padding: 0;
+    color: #7c3aed;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    display: block;
+    margin-top: 0.5rem;
+}
+
+.admin-load-more-replies:hover {
+    color: #6d28d9;
+}
+
+.admin-load-more-comments {
+    background: rgba(168, 85, 247, 0.1);
+    color: #7c3aed;
+    border: none;
+    border-radius: 12px;
+    padding: 0.75rem 2rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.admin-load-more-comments:hover {
+    background: rgba(168, 85, 247, 0.15);
+}
+
+.admin-no-comments {
+    text-align: center;
+    padding: 3rem 0;
+}

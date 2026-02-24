@@ -1,0 +1,172 @@
+{% extends 'admin/base_admin.html.twig' %}
+{% block title %}All Posts - Admin{% endblock %}
+
+{% block content %}
+    <div class="container-fluid px-4 py-4">
+        <!-- Header -->
+        <div class="mb-4">
+            <h2 class="mb-0" style="color: #2d3748; font-weight: 600;">All Posts</h2>
+        </div>
+
+        <!-- Filters and Sort -->
+        <div class="mb-4">
+            <form method="get" action="{{ path('admin_posts') }}" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label for="userName" class="form-label" style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.5rem;">
+                        <i class="bi bi-person" style="font-size: 0.875rem;"></i> User Name
+                    </label>
+                    <input type="text" class="form-control" id="userName" name="userName" value="{{ filter_userName }}" placeholder="Search by first or last name..." style="border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.875rem; padding: 0.5rem 0.75rem;">
+                </div>
+                <div class="col-md-3">
+                    <label for="userEmail" class="form-label" style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.5rem;">
+                        <i class="bi bi-envelope" style="font-size: 0.875rem;"></i> User Email
+                    </label>
+                    <input type="email" class="form-control" id="userEmail" name="userEmail" value="{{ filter_userEmail }}" placeholder="Search by email..." style="border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.875rem; padding: 0.5rem 0.75rem;">
+                </div>
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn" style="background: #a855f7; color: white; border: none; border-radius: 8px; padding: 0.5rem 1.5rem; font-size: 0.875rem;">
+                        <i class="bi bi-search" style="font-size: 0.875rem;"></i> Filter
+                    </button>
+                    {% if filter_userName or filter_userEmail %}
+                    <a href="{{ path('admin_posts') }}" class="btn" style="background: transparent; color: #64748b; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.5rem 1rem; font-size: 0.875rem;">
+                        <i class="bi bi-x-lg" style="font-size: 0.75rem;"></i>
+                    </a>
+                    {% endif %}
+                </div>
+                <div class="col-md-3">
+                    <label for="sortBy" class="form-label" style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.5rem;">
+                        Sort by
+                    </label>
+                    <select class="form-select" id="sortBy" name="sortBy" onchange="this.form.submit()" style="border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.875rem; padding: 0.5rem 0.75rem;">
+                        <option value="newest" {{ sortBy == 'newest' ? 'selected' : '' }}>Newest</option>
+                        <option value="oldest" {{ sortBy == 'oldest' ? 'selected' : '' }}>Oldest</option>
+                        <option value="most_liked" {{ sortBy == 'most_liked' ? 'selected' : '' }}>Most Liked</option>
+                        <option value="most_commented" {{ sortBy == 'most_commented' ? 'selected' : '' }}>Most Commented</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+
+        <!-- Posts Table Card -->
+        <div class="card" style="border-radius: 24px; border: none; box-shadow: 0 4px 20px rgba(168, 85, 247, 0.1);">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0" style="min-width: 100%;">
+                        <thead style="background: linear-gradient(135deg, rgba(232, 121, 249, 0.05) 0%, rgba(192, 132, 252, 0.05) 100%); border-bottom: 2px solid rgba(168, 85, 247, 0.1);">
+                            <tr>
+                                <th class="px-4 py-3" style="color: #4a5568; font-weight: 600; border: none;">
+                                    <i class="bi bi-file-text me-2"></i>Title
+                                </th>
+                                <th class="px-4 py-3" style="color: #4a5568; font-weight: 600; border: none;">
+                                    <i class="bi bi-person me-2"></i>Author
+                                </th>
+                                <th class="px-4 py-3" style="color: #4a5568; font-weight: 600; border: none;">
+                                    <i class="bi bi-calendar me-2"></i>Published At
+                                </th>
+                                <th class="px-4 py-3 text-center" style="color: #4a5568; font-weight: 600; border: none;">
+                                    <i class="bi bi-heart me-2"></i>Likes
+                                </th>
+                                <th class="px-4 py-3 text-center" style="color: #4a5568; font-weight: 600; border: none;">
+                                    <i class="bi bi-chat me-2"></i>Comments
+                                </th>
+                                <th class="px-4 py-3 text-center" style="color: #4a5568; font-weight: 600; border: none;">Status</th>
+                                <th class="px-4 py-3 text-center" style="color: #4a5568; font-weight: 600; border: none;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if posts|length > 0 %}
+                                {% for item in posts %}
+                                    {% set post = item.post %}
+                                    {% set likesCount = item.likesCount %}
+                                    {% set commentsCount = item.commentsCount %}
+                                    <tr style="border-bottom: 1px solid rgba(168, 85, 247, 0.05);">
+                                        <td class="px-4 py-3" style="border: none;">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background: linear-gradient(135deg, #e9d5f5 0%, #f3e7f9 100%); border-radius: 12px;">
+                                                    <i class="bi bi-file-text" style="font-size: 1.5rem; color: #a855f7;"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="fw-semibold" style="color: #2d3748;">{{ post.title }}</div>
+                                                    <small class="text-muted">{{ post.content|striptags|slice(0, 50) }}...</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-3" style="border: none;">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: linear-gradient(135deg, #e879f9 0%, #c084fc 100%); border-radius: 50%; color: white; font-weight: 600; font-size: 0.875rem;">
+                                                    {{ post.createdBy.firstName|slice(0, 1) }}{{ post.createdBy.lastName|slice(0, 1) }}
+                                                </div>
+                                                <div>
+                                                    <div style="color: #2d3748; font-weight: 500;">{{ post.createdBy.firstName }} {{ post.createdBy.lastName }}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-3" style="border: none; color: #718096;">
+                                            {{ post.createdAt|date('M d, Y') }}
+                                        </td>
+                                        <td class="px-4 py-3 text-center" style="border: none;">
+                                            <span class="badge" style="background: rgba(236, 72, 153, 0.1); color: #ec4899; padding: 0.5rem 1rem; border-radius: 12px; font-weight: 500;">
+                                                <i class="bi bi-heart-fill me-1"></i>{{ likesCount }}
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-3 text-center" style="border: none;">
+                                            <span class="badge" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; padding: 0.5rem 1rem; border-radius: 12px; font-weight: 500;">
+                                                <i class="bi bi-chat-fill me-1"></i>{{ commentsCount }}
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-3 text-center" style="border: none;">
+                                            {% if post.status == 'published' %}
+                                                <span class="badge" style="background: rgba(34, 197, 94, 0.1); color: #22c55e; padding: 0.5rem 1rem; border-radius: 12px; font-weight: 500;">Published</span>
+                                            {% elseif post.status == 'draft' %}
+                                                <span class="badge" style="background: rgba(168, 85, 247, 0.1); color: #a855f7; padding: 0.5rem 1rem; border-radius: 12px; font-weight: 500;">Draft</span>
+                                            {% elseif post.status == 'scheduled' %}
+                                                <span class="badge" style="background: rgba(251, 146, 60, 0.1); color: #fb923c; padding: 0.5rem 1rem; border-radius: 12px; font-weight: 500;">Scheduled</span>
+                                            {% else %}
+                                                <span class="badge" style="background: rgba(107, 114, 128, 0.1); color: #6b7280; padding: 0.5rem 1rem; border-radius: 12px; font-weight: 500;">Hidden</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="px-4 py-3 text-center" style="border: none;">
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm" type="button" data-bs-toggle="dropdown" style="background: rgba(168, 85, 247, 0.1); color: #a855f7; border: none; border-radius: 8px; padding: 0.5rem 0.75rem;">
+                                                    <i class="bi bi-three-dots"></i>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end" style="border-radius: 12px; border: 2px solid rgba(168, 85, 247, 0.1); box-shadow: 0 4px 12px rgba(168, 85, 247, 0.15);">
+                                                    <li>
+                                                        <a class="dropdown-item" href="{{ path('admin_post_detail', {id: post.id}) }}" style="border-radius: 8px;">
+                                                            <i class="bi bi-eye me-2"></i>View
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item" href="#" style="border-radius: 8px;">
+                                                            <i class="bi bi-pencil me-2"></i>Edit
+                                                        </a>
+                                                    </li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li>
+                                                        <a class="dropdown-item text-danger" href="#" style="border-radius: 8px;">
+                                                            <i class="bi bi-trash me-2"></i>Delete
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-5">
+                                        <i class="bi bi-inbox" style="font-size: 3rem; color: #cbd5e0;"></i>
+                                        <p class="text-muted mt-3 mb-0">No posts found</p>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {{ knp_pagination_render(pagination, 'pagination/custom_pagination.html.twig') }}
+</div>
+{% endblock %}

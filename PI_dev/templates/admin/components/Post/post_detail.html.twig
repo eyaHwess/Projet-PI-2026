@@ -1,0 +1,336 @@
+{% extends 'admin/base_admin.html.twig' %}
+{% block title %}Post Details - Admin{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('post/posts.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <a href="{{ path('admin_posts') }}" class="btn btn-link text-decoration-none p-0" style="color: #64748b;">
+                <i class="bi bi-arrow-left" style="font-size: 1.5rem;"></i>
+            </a>
+            <h4 class="mb-0" style="color: #64748b; font-weight: 500;">All Posts</h4>
+        </div>
+        <div>
+            <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deletePostModal" style="border-radius: 8px; padding: 0.5rem 1rem; font-size: 0.875rem;">
+                <i class="bi bi-trash me-1"></i> Delete Post
+            </button>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deletePostModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 16px; border: none;">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title" style="color: #2d3748; font-weight: 600;">Delete Post</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p style="color: #64748b;">Are you sure you want to delete this post? This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="border-radius: 8px; padding: 0.5rem 1rem; font-size: 0.875rem;">Cancel</button>
+                    <form method="post" action="{{ path('admin_post_delete', {id: post.id}) }}" style="display: inline;">
+                        <button type="submit" class="btn btn-danger" style="border-radius: 8px; padding: 0.5rem 1rem; font-size: 0.875rem;">
+                            <i class="bi bi-trash me-1"></i> Delete
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Left Column - Post Content -->
+        <div class="col-lg-8">
+            <div class="card" style="border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: none;">
+                <div class="card-body p-4">
+                    <!-- Author Info -->
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="d-flex align-items-center justify-content-center" style="width: 56px; height: 56px; background: linear-gradient(135deg, #e879f9 0%, #c084fc 100%); border-radius: 50%; color: white; font-weight: 600; font-size: 1.25rem;">
+                            {{ post.createdBy.firstName|slice(0, 1) }}{{ post.createdBy.lastName|slice(0, 1) }}
+                        </div>
+                        <div>
+                            <h5 class="mb-0" style="color: #2d3748; font-weight: 600;">{{ post.createdBy.firstName }} {{ post.createdBy.lastName }}</h5>
+                            <p class="mb-0 text-muted" style="font-size: 0.875rem;">{{ post.createdBy.email }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Post Title -->
+                    <h3 class="mb-3" style="color: #2d3748; font-weight: 600;">{{ post.title }}</h3>
+
+                    <!-- Post Content -->
+                    <div class="post-content">
+                        {{ post.content|raw }}
+                    </div>
+
+                    <!-- Comments Section -->
+                    <div class="mt-5 admin-comments-section">
+                        <h5 class="mb-4 admin-comments-title">Comments ({{ commentsCount }})</h5>
+                        
+                        {% if post.comments|length > 0 %}
+                            <div class="admin-comments-list">
+                                {% set displayedComments = 0 %}
+                                {% for comment in post.comments %}
+                                    {% if not comment.parentComment %}
+                                        {% set displayedComments = displayedComments + 1 %}
+                                        <div class="mb-4 admin-comment-item comment-item" {% if displayedComments > 3 %}style="display: none;"{% endif %}>
+                                            <!-- Comment -->
+                                            <div class="admin-comment-content">
+                                                <div class="admin-comment-avatar">
+                                                    {% if comment.commenter %}
+                                                        {{ comment.commenter.firstName|slice(0, 1) }}{{ comment.commenter.lastName|slice(0, 1) }}
+                                                    {% else %}
+                                                        ?
+                                                    {% endif %}
+                                                </div>
+                                                <div class="admin-comment-body">
+                                                    <div class="admin-comment-header">
+                                                        <span class="admin-comment-author">
+                                                            {% if comment.commenter %}
+                                                                {{ comment.commenter.firstName }} {{ comment.commenter.lastName }}
+                                                            {% else %}
+                                                                Unknown User
+                                                            {% endif %}
+                                                        </span>
+                                                        <span class="admin-comment-date">{{ comment.createdAt|date('d M Y, H:i') }}</span>
+                                                        <button class="admin-comment-delete-btn" onclick="deleteComment({{ comment.id }})" title="Delete comment">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                    <p class="admin-comment-text">{{ comment.content }}</p>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- View Replies Button -->
+                                            {% if comment.replies|length > 0 %}
+                                                <div class="admin-replies-toggle">
+                                                    <button class="admin-replies-btn" onclick="toggleReplies({{ comment.id }})">
+                                                        <span class="admin-replies-dash">—</span>
+                                                        <span class="reply-text-{{ comment.id }}">View {{ comment.replies|length }} {{ comment.replies|length == 1 ? 'reply' : 'replies' }}</span>
+                                                    </button>
+                                                </div>
+                                            {% endif %}
+
+                                            <!-- Replies -->
+                                            {% if comment.replies|length > 0 %}
+                                                <div id="replies-{{ comment.id }}" class="admin-replies-container" style="display: none;">
+                                                    {% set displayedReplies = 0 %}
+                                                    {% for reply in comment.replies %}
+                                                        {% set displayedReplies = displayedReplies + 1 %}
+                                                        <div class="admin-reply-item reply-item-{{ comment.id }}" {% if displayedReplies > 2 %}style="display: none !important;"{% endif %}>
+                                                            <div class="admin-reply-avatar">
+                                                                {% if reply.commenter %}
+                                                                    {{ reply.commenter.firstName|slice(0, 1) }}{{ reply.commenter.lastName|slice(0, 1) }}
+                                                                {% else %}
+                                                                    ?
+                                                                {% endif %}
+                                                            </div>
+                                                            <div class="admin-reply-body">
+                                                                <div class="admin-reply-header">
+                                                                    <span class="admin-reply-author">
+                                                                        {% if reply.commenter %}
+                                                                            {{ reply.commenter.firstName }} {{ reply.commenter.lastName }}
+                                                                        {% else %}
+                                                                            Unknown User
+                                                                        {% endif %}
+                                                                    </span>
+                                                                    <span class="admin-reply-date">{{ reply.createdAt|date('d M Y, H:i') }}</span>
+                                                                    <button class="admin-reply-delete-btn" onclick="deleteComment({{ reply.id }})" title="Delete reply">
+                                                                        <i class="bi bi-trash"></i>
+                                                                    </button>
+                                                                </div>
+                                                                <p class="admin-reply-text">{{ reply.content }}</p>
+                                                            </div>
+                                                        </div>
+                                                    {% endfor %}
+                                                    
+                                                    <!-- Load More Replies -->
+                                                    {% if comment.replies|length > 2 %}
+                                                        <button class="admin-load-more-replies load-more-replies-{{ comment.id }}" onclick="loadMoreReplies({{ comment.id }})">
+                                                            View more replies ({{ comment.replies|length - 2 }} more)
+                                                        </button>
+                                                    {% endif %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                <!-- Load More Comments -->
+                                {% set totalTopLevelComments = 0 %}
+                                {% for comment in post.comments %}
+                                    {% if not comment.parentComment %}
+                                        {% set totalTopLevelComments = totalTopLevelComments + 1 %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% if totalTopLevelComments > 3 %}
+                                    <div class="text-center mt-4">
+                                        <button class="admin-load-more-comments" onclick="loadMoreComments()">
+                                            View more comments ({{ totalTopLevelComments - 3 }} more)
+                                        </button>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <div class="admin-no-comments">
+                                <i class="bi bi-chat" style="font-size: 3rem; color: #cbd5e0;"></i>
+                                <p class="text-muted mt-3 mb-0">No comments yet</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Information & Comments -->
+        <div class="col-lg-4">
+            <!-- General Information -->
+            <div class="card mb-4" style="border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: none;">
+                <div class="card-body p-4">
+                    <h6 class="mb-3" style="color: #64748b; font-weight: 600; font-size: 0.875rem;">General Information</h6>
+                    
+                    <div class="mb-3">
+                        <div class="text-muted mb-1" style="font-size: 0.8125rem;">Author Name</div>
+                        <div style="color: #2d3748; font-size: 0.875rem; font-weight: 500;">{{ post.createdBy.firstName }} {{ post.createdBy.lastName }}</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="text-muted mb-1" style="font-size: 0.8125rem;">Author Email</div>
+                        <div style="color: #2d3748; font-size: 0.875rem; font-weight: 500;">{{ post.createdBy.email }}</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="text-muted mb-1" style="font-size: 0.8125rem;">Created at</div>
+                        <div style="color: #2d3748; font-size: 0.875rem; font-weight: 500;">{{ post.createdAt|date('M d, Y') }}</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="text-muted mb-1" style="font-size: 0.8125rem;">Last Updated</div>
+                        <div style="color: #2d3748; font-size: 0.875rem; font-weight: 500;">{{ post.updatedAt ? post.updatedAt|date('M d, Y') : post.createdAt|date('M d, Y') }}</div>
+                    </div>
+
+                    <div>
+                        <div class="text-muted mb-1" style="font-size: 0.8125rem;">Status</div>
+                        {% if post.status == 'published' %}
+                            <span class="badge" style="background: #22c55e; color: white; padding: 0.375rem 0.75rem; border-radius: 6px; font-weight: 500; font-size: 0.75rem;">Published</span>
+                        {% elseif post.status == 'draft' %}
+                            <span class="badge" style="background: #a855f7; color: white; padding: 0.375rem 0.75rem; border-radius: 6px; font-weight: 500; font-size: 0.75rem;">Draft</span>
+                        {% elseif post.status == 'scheduled' %}
+                            <span class="badge" style="background: #fb923c; color: white; padding: 0.375rem 0.75rem; border-radius: 6px; font-weight: 500; font-size: 0.75rem;">Scheduled</span>
+                        {% else %}
+                            <span class="badge" style="background: #6b7280; color: white; padding: 0.375rem 0.75rem; border-radius: 6px; font-weight: 500; font-size: 0.75rem;">Hidden</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Post Metrics -->
+            <div class="card mb-4" style="border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: none;">
+                <div class="card-body p-4">
+                    <h6 class="mb-3" style="color: #64748b; font-weight: 600; font-size: 0.875rem;">Post Metrics</h6>
+                    
+                    <div class="row g-3">
+                        <div class="col-4">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-heart-fill" style="color: #ec4899; font-size: 1.25rem;"></i>
+                                <div>
+                                    <div style="color: #2d3748; font-weight: 600; font-size: 1.125rem;">{{ likesCount }}</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">Likes</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-chat" style="color: #3b82f6; font-size: 1.25rem;"></i>
+                                <div>
+                                    <div style="color: #2d3748; font-weight: 600; font-size: 1.125rem;">{{ commentsCount }}</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">Comments</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-bookmark-fill" style="color: #f59e0b; font-size: 1.25rem;"></i>
+                                <div>
+                                    <div style="color: #2d3748; font-weight: 600; font-size: 1.125rem;">{{ post.savedByUsers is defined ? post.savedByUsers|length : 0 }}</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">Saves</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleReplies(commentId) {
+    const repliesDiv = document.getElementById('replies-' + commentId);
+    const text = document.querySelector('.reply-text-' + commentId);
+    
+    if (repliesDiv.style.display === 'none') {
+        repliesDiv.style.display = 'block';
+        text.textContent = 'Hide replies';
+    } else {
+        repliesDiv.style.display = 'none';
+        const replyCount = document.querySelectorAll('.reply-item-' + commentId).length;
+        text.textContent = 'View ' + replyCount + (replyCount === 1 ? ' reply' : ' replies');
+    }
+}
+
+function loadMoreReplies(commentId) {
+    const hiddenReplies = document.querySelectorAll('.reply-item-' + commentId + '[style*="display: none"]');
+    hiddenReplies.forEach(reply => {
+        reply.style.display = '';
+        reply.classList.add('d-flex');
+    });
+    
+    const loadMoreBtn = document.querySelector('.load-more-replies-' + commentId);
+    if (loadMoreBtn) {
+        loadMoreBtn.style.display = 'none';
+    }
+}
+
+function loadMoreComments() {
+    const hiddenComments = document.querySelectorAll('.comment-item[style*="display: none"]');
+    hiddenComments.forEach(comment => {
+        comment.style.display = 'block';
+    });
+    
+    event.target.style.display = 'none';
+}
+
+function deleteComment(commentId) {
+    if (confirm('Are you sure you want to delete this comment? This action cannot be undone.')) {
+        const url = '/admin/comments/' + commentId + '/delete';
+        
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error deleting comment: ' + (data.message || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            alert('Error deleting comment: ' + error.message);
+        });
+    }
+}
+</script>
+{% endblock %}
+
