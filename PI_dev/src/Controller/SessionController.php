@@ -17,6 +17,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Knp\Component\Pager\PaginatorInterface;
 
 #[Route('/sessions', name: 'app_session_')]
 class SessionController extends AbstractController
@@ -54,17 +55,31 @@ class SessionController extends AbstractController
         return $user ?? $this->getOrCreateDefaultUser();
     }
 
-    #[Route('', name: 'index', methods: ['GET'])]
-    public function index(): Response
-    {
-        $currentUser = $this->getCurrentUser();
-        $sessions = $this->sessionRepository->findAllForUser($currentUser);
+   #[Route('', name: 'index', methods: ['GET'])]
+public function index(Request $request, PaginatorInterface $paginator): Response
+{
+    $currentUser = $this->getCurrentUser();
 
-        return $this->render('session/index.html.twig', [
-            'sessions' => $sessions,
-            'currentUser' => $currentUser,
-        ]);
-    }
+    // On récupère la requête de tes sessions
+    $query = $this->sessionRepository->createQueryBuilder('s')
+        ->join('s.coachingRequest', 'cr')
+        ->where('cr.user = :user OR cr.coach = :user')
+        ->setParameter('user', $currentUser)
+        ->orderBy('s.updatedAt', 'DESC')
+        ->getQuery();
+
+    // Pagination : 5 éléments par page
+    $sessions = $paginator->paginate(
+        $query,
+        $request->query->getInt('page', 1),
+        1
+    );
+
+    return $this->render('session/index.html.twig', [
+        'sessions' => $sessions,
+        'currentUser' => $currentUser,
+    ]);
+}
 
     #[Route('/{id}/schedule', name: 'schedule', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function schedule(Session $session, Request $request): Response

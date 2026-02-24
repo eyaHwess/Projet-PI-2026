@@ -10,8 +10,10 @@ use App\Repository\CoachingRequestRepository;
 use App\Repository\SessionRepository;
 use App\Repository\TimeSlotRepository;
 use App\Repository\UserRepository;
+use App\AI\CompatibilityScoreEngine;
 use App\Service\CoachRecommendationService;
 use App\Service\DemoUserContext;
+use App\Service\OpenAIService;
 use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -36,7 +38,9 @@ class CoachController extends AbstractController
         private DemoUserContext $demoUserContext,
         private CoachRecommendationService $recommendationService,
         private NotificationService $notificationService,
-        private TimeSlotRepository $timeSlotRepository
+        private TimeSlotRepository $timeSlotRepository,
+        private OpenAIService $openAIService,
+        private CompatibilityScoreEngine $compatibilityScoreEngine,
     ) {
     }
 
@@ -366,33 +370,83 @@ class CoachController extends AbstractController
         $data = json_decode($request->getContent(), true);
         $message = $data['message'] ?? '';
 
-        if (strlen($message) < 10) {
+        if (\strlen($message) < 10) {
             return $this->json([
                 'success' => false,
-                'message' => 'Le message doit contenir au moins 10 caractères pour obtenir des recommandations.'
-            ]);
+                'message' => 'Le message doit contenir au moins 10 caractères pour obtenir des recommandations.',
+            ], 400);
         }
 
+        $message = substr(trim($message), 0, 1000);
+
+        $analysis = $this->openAIService->analyzeMessage($message);
+        $categories = $analysis['categories'];
+        $emotion = $analysis['emotion'];
+
         $coaches = $this->userRepository->findCoaches();
-        $recommendations = $this->recommendationService->recommendCoaches($message, $coaches);
+
+        $scored = [];
+        foreach ($coaches as $coach) {
+            $score = $this->compatibilityScoreEngine->calculate($coach, $categories, $emotion);
+            $scored[] = ['coach' => $coach, 'score' => $score];
+        }
+
+        usort($scored, fn($a, $b) => $b['score'] <=> $a['score']);
+
+        $maxScore = 0;
+        foreach ($scored as $item) {
+            if ($item['score'] > $maxScore) {
+                $maxScore = $item['score'];
+            }
+        }
+
+        $recommendations = [];
+        foreach ($scored as $item) {
+            $coach = $item['coach'];
+            $rawScore = $item['score'];
+            $percent = $maxScore > 0 ? (int) round(($rawScore / $maxScore) * 100) : 0;
+
+            $reasons = $this->buildReasons($coach, $categories, $emotion, $percent);
+
+            $recommendations[] = [
+                'id' => $coach->getId(),
+                'firstName' => $coach->getFirstName(),
+                'lastName' => $coach->getLastName(),
+                'email' => $coach->getEmail(),
+                'speciality' => $coach->getSpeciality(),
+                'rating' => $coach->getRating(),
+                'pricePerSession' => $coach->getPricePerSession(),
+                'availability' => $coach->getAvailability(),
+                'score' => $percent,
+                'reasons' => $reasons,
+            ];
+        }
 
         return $this->json([
             'success' => true,
-            'recommendations' => array_map(function($rec) {
-                $coach = $rec['coach'];
-                return [
-                    'id' => $coach->getId(),
-                    'firstName' => $coach->getFirstName(),
-                    'lastName' => $coach->getLastName(),
-                    'email' => $coach->getEmail(),
-                    'speciality' => $coach->getSpeciality(),
-                    'rating' => $coach->getRating(),
-                    'pricePerSession' => $coach->getPricePerSession(),
-                    'availability' => $coach->getAvailability(),
-                    'score' => $rec['score'],
-                    'reasons' => $rec['reasons']
-                ];
-            }, $recommendations)
+            'recommendations' => array_slice($recommendations, 0, 15),
         ]);
+    }
+
+    private function buildReasons($coach, array $categories, ?string $emotion, int $percent): array
+    {
+        $reasons = [];
+        $coachCategories = $this->compatibilityScoreEngine->getCoachCategories($coach);
+
+        foreach ($categories as $cat) {
+            if (\in_array($cat, $coachCategories, true)) {
+                $reasons[] = 'Spécialiste en ' . $cat;
+            }
+        }
+        if ($emotion === 'stress' && \in_array('mental', $coachCategories, true)) {
+            $reasons[] = 'Idéal pour gérer le stress';
+        }
+        if ($coach->getRating() && $coach->getRating() >= 4) {
+            $reasons[] = 'Bien noté (' . $coach->getRating() . '/5)';
+        }
+        if (empty($reasons)) {
+            $reasons[] = 'Recommandé par notre IA (' . $percent . '%)';
+        }
+        return $reasons;
     }
 }

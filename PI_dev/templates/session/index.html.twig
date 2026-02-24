@@ -349,6 +349,114 @@
             margin-bottom: 1.5rem;
         }
         
+        /* Pagination Styles */
+        .navigation {
+            margin-top: 2.5rem;
+            display: flex;
+            justify-content: center;
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        .navigation .pagination {
+            display: flex;
+            gap: 0.5rem;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .navigation .pagination li {
+            margin: 0;
+        }
+        
+        .navigation .pagination a,
+        .navigation .pagination span {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 45px;
+            height: 45px;
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--pastel-blue-light);
+            border-radius: 0.75rem;
+            background: white;
+            color: #5A7C8F;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(168, 216, 234, 0.1);
+        }
+        
+        .navigation .pagination a:hover {
+            background: linear-gradient(135deg, var(--pastel-blue-light), #F0F8FF);
+            border-color: var(--pastel-blue);
+            color: #2C5F7F;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(168, 216, 234, 0.25);
+        }
+        
+        .navigation .pagination .current,
+        .navigation .pagination .active span {
+            background: linear-gradient(135deg, var(--pastel-blue), #B8E6F0);
+            border-color: var(--pastel-blue);
+            color: white;
+            box-shadow: 0 4px 16px rgba(168, 216, 234, 0.35);
+            font-weight: 700;
+        }
+        
+        .navigation .pagination .disabled span {
+            background: #F8F9FA;
+            border-color: #E9ECEF;
+            color: #ADB5BD;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        
+        .navigation .pagination .previous a,
+        .navigation .pagination .next a {
+            background: linear-gradient(135deg, var(--pastel-pink), #FFD1DC);
+            border-color: var(--pastel-pink);
+            color: #8B5F7A;
+            font-weight: 700;
+        }
+        
+        .navigation .pagination .previous a:hover,
+        .navigation .pagination .next a:hover {
+            background: linear-gradient(135deg, var(--pastel-pink-dark), var(--pastel-pink));
+            border-color: var(--pastel-pink-dark);
+            color: white;
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 6px 20px rgba(255, 179, 193, 0.4);
+        }
+        
+        .navigation .pagination .first a,
+        .navigation .pagination .last a {
+            background: linear-gradient(135deg, var(--pastel-green-light), var(--pastel-green));
+            border-color: var(--pastel-green);
+            color: #2D6A5C;
+            font-weight: 700;
+        }
+        
+        .navigation .pagination .first a:hover,
+        .navigation .pagination .last a:hover {
+            background: linear-gradient(135deg, var(--pastel-green), #A0DCC8);
+            border-color: #A0DCC8;
+            color: white;
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 6px 20px rgba(181, 234, 215, 0.4);
+        }
+        
+        /* Pagination info text */
+        .navigation .pagination-info {
+            text-align: center;
+            margin-top: 1rem;
+            color: #8B9DAF;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
             .page-title {
@@ -361,6 +469,14 @@
             
             .filter-tab {
                 min-width: 100px;
+                font-size: 0.875rem;
+            }
+            
+            .navigation .pagination a,
+            .navigation .pagination span {
+                min-width: 40px;
+                height: 40px;
+                padding: 0.375rem 0.75rem;
                 font-size: 0.875rem;
             }
         }
@@ -508,6 +624,9 @@
                         </div>
                     </div>
                 {% endfor %}
+                <div class="navigation">
+    {{ knp_pagination_render(sessions) }}
+</div>
             </div>
         {% else %}
             <div class="empty-state">

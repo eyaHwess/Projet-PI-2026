@@ -62,6 +62,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 200, nullable: true)]
     private ?string $speciality = null;
 
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $specialities = null;
+
     #[ORM\Column(length: 200, nullable: true)]
     private ?string $availability = null;
 
@@ -246,6 +249,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setSpeciality(?string $speciality): static
     {
         $this->speciality = $speciality;
+
+        return $this;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getSpecialities(): array
+    {
+        return $this->specialities ?? [];
+    }
+
+    /**
+     * @param string[] $specialities
+     */
+    public function setSpecialities(array $specialities): static
+    {
+        $this->specialities = $specialities;
 
         return $this;
     }

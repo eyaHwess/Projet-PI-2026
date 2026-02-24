@@ -6,59 +6,251 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
     <style>
-        :root { --orange-primary: #f97316; }
-        .navbar-custom { background-color: #fff !important; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .navbar-custom .nav-link { color: #212529 !important; }
-        .navbar-custom .nav-link:hover { color: var(--orange-primary) !important; }
-        .navbar-custom .navbar-brand { color: #212529 !important; }
-        .btn-orange { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); border: none; color: white; border-radius: 50px; font-weight: 600; }
-        .table-custom { border-radius: 15px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .badge-scheduling { background: #fef3c7; color: #92400e; }
-        .badge-confirmed { background: #d1fae5; color: #065f46; }
-        .badge-completed { background: #dbeafe; color: #1e40af; }
-        .badge-cancelled { background: #fee2e2; color: #991b1b; }
+        :root {
+            --pastel-blue: #A8D8EA;
+            --pastel-blue-light: #E8F6F9;
+            --pastel-blue-dark: #5A7C8F;
+            --pastel-pink: #FFE4E9;
+            --pastel-pink-dark: #FFB3C1;
+            --pastel-mint: #B5EAD7;
+            --pastel-mint-light: #E8F8F2;
+            --pastel-lavender: #D4C4EC;
+            --pastel-lavender-light: #F0EBF8;
+            --pastel-peach: #FFDAB9;
+            --pastel-peach-light: #FFF5EB;
+            --pastel-text: #2C5F7F;
+            --pastel-text-muted: #6B8A9E;
+        }
+        body { background: linear-gradient(180deg, #F8FCFE 0%, #F0F8FF 50%, #FDF8FC 100%); min-height: 100vh; }
+        .manage-header {
+            background: linear-gradient(135deg, var(--pastel-blue-light) 0%, #F0F8FF 45%, var(--pastel-pink) 100%);
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-radius: 0 0 2rem 2rem;
+            box-shadow: 0 8px 32px rgba(168, 216, 234, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        .manage-header::before {
+            content: '';
+            position: absolute;
+            top: -30%; right: -5%;
+            width: 280px; height: 280px;
+            background: radial-gradient(circle, rgba(255, 179, 193, 0.25) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .manage-header .title-icon {
+            width: 3rem; height: 3rem;
+            border-radius: 1rem;
+            background: linear-gradient(135deg, var(--pastel-blue), #B8E6F0);
+            display: inline-flex; align-items: center; justify-content: center;
+            color: white;
+            box-shadow: 0 4px 16px rgba(168, 216, 234, 0.4);
+        }
+        .manage-header .page-title { color: var(--pastel-text); font-weight: 800; }
+        .manage-header .page-subtitle { color: var(--pastel-text-muted); font-size: 0.95rem; }
+        .btn-pastel-primary {
+            background: linear-gradient(135deg, var(--pastel-blue) 0%, #B8E6F0 100%);
+            border: none; color: #2C5F7F;
+            padding: 0.6rem 1.25rem; border-radius: 0.75rem;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-pastel-primary:hover {
+            color: #2C5F7F;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(168, 216, 234, 0.4);
+        }
+        .sessions-card {
+            border: 2px solid var(--pastel-blue-light);
+            border-radius: 1.25rem;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(168, 216, 234, 0.12);
+            background: white;
+        }
+        .sessions-card .card-header-custom {
+            background: linear-gradient(135deg, var(--pastel-blue-light) 0%, #F0F8FF 100%);
+            padding: 1rem 1.5rem;
+            border-bottom: 2px solid var(--pastel-blue-light);
+            font-weight: 700;
+            color: var(--pastel-text);
+        }
+        .sessions-card .table { margin: 0; }
+        .sessions-card .table thead th {
+            background: rgba(232, 246, 249, 0.8);
+            color: var(--pastel-text);
+            font-weight: 700;
+            border-bottom: 2px solid var(--pastel-blue-light);
+            padding: 1rem;
+        }
+        .sessions-card .table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+            color: var(--pastel-text-muted);
+        }
+        .sessions-card .table tbody tr:hover {
+            background: var(--pastel-blue-light);
+        }
+        .sessions-card .table tbody tr td:first-child { font-weight: 600; color: var(--pastel-text); }
+        .badge-pastel-scheduling { background: var(--pastel-peach-light); color: #8B6914; }
+        .badge-pastel-confirmed { background: var(--pastel-mint-light); color: #2D6A4F; }
+        .badge-pastel-completed { background: var(--pastel-lavender-light); color: #5A4D7A; }
+        .badge-pastel-cancelled { background: var(--pastel-pink); color: #8B5F6A; }
+        .badge-pastel-proposed { background: #E8F4FD; color: var(--pastel-blue-dark); }
+        .badge-prio-high { background: var(--pastel-pink); color: #8B5F6A; }
+        .badge-prio-medium { background: var(--pastel-mint-light); color: #2D6A4F; }
+        .badge-prio-low { background: var(--pastel-lavender-light); color: #5A4D7A; }
+        .btn-pastel-edit {
+            background: var(--pastel-mint-light);
+            border: 1px solid var(--pastel-mint);
+            color: #2D6A4F;
+            padding: 0.35rem 0.65rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+        }
+        .btn-pastel-edit:hover { background: var(--pastel-mint); color: #1B4332; }
+        .btn-pastel-delete-trigger {
+            background: var(--pastel-pink);
+            border: 1px solid var(--pastel-pink-dark);
+            color: #8B5F6A;
+            padding: 0.35rem 0.65rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+        }
+        .btn-pastel-delete-trigger:hover { background: var(--pastel-pink-dark); color: #fff; }
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+        }
+        .empty-state-icon {
+            width: 5rem; height: 5rem;
+            background: linear-gradient(135deg, var(--pastel-blue-light) 0%, var(--pastel-pink) 100%);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2.5rem; color: var(--pastel-blue-dark);
+            margin: 0 auto 1.25rem;
+            box-shadow: 0 8px 24px rgba(168, 216, 234, 0.3);
+        }
+        .empty-state h3 { color: var(--pastel-text); font-weight: 700; }
+        .empty-state p { color: var(--pastel-text-muted); }
+        /* Modal de confirmation professionnelle */
+        .modal-pastel .modal-content {
+            border: 2px solid var(--pastel-blue-light);
+            border-radius: 1.25rem;
+            overflow: hidden;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+        }
+        .modal-pastel .modal-header {
+            background: linear-gradient(135deg, var(--pastel-pink) 0%, #FFF5F7 100%);
+            border-bottom: 2px solid var(--pastel-pink-dark);
+            padding: 1.25rem 1.5rem;
+        }
+        .modal-pastel .modal-title {
+            color: var(--pastel-text);
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .modal-pastel .modal-title i { color: var(--pastel-pink-dark); }
+        .modal-pastel .modal-body {
+            padding: 1.5rem;
+            color: var(--pastel-text-muted);
+            font-size: 1.05rem;
+            line-height: 1.6;
+        }
+        .modal-pastel .modal-body .confirm-question {
+            color: var(--pastel-text);
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        .modal-pastel .modal-footer {
+            border-top: 2px solid var(--pastel-blue-light);
+            padding: 1rem 1.5rem;
+            gap: 0.75rem;
+        }
+        .modal-pastel .btn-cancel-pastel {
+            background: white;
+            border: 2px solid var(--pastel-blue-light);
+            color: var(--pastel-blue-dark);
+            border-radius: 0.75rem;
+            font-weight: 600;
+        }
+        .modal-pastel .btn-cancel-pastel:hover {
+            background: var(--pastel-blue-light);
+            border-color: var(--pastel-blue);
+            color: #2C5F7F;
+        }
+        .modal-pastel .btn-confirm-delete {
+            background: linear-gradient(135deg, var(--pastel-pink-dark) 0%, #E8A0B0 100%);
+            border: none;
+            color: white;
+            border-radius: 0.75rem;
+            font-weight: 600;
+        }
+        .modal-pastel .btn-confirm-delete:hover {
+            background: linear-gradient(135deg, #E8A0B0 0%, var(--pastel-pink-dark) 100%);
+            color: white;
+            transform: translateY(-1px);
+        }
+        .alert-pastel-success { border-radius: 0.75rem; border: 2px solid var(--pastel-mint); background: var(--pastel-mint-light); color: #2D6A4F; }
+        .alert-pastel-danger { border-radius: 0.75rem; border: 2px solid var(--pastel-pink-dark); background: var(--pastel-pink); color: #8B5F6A; }
     </style>
 {% endblock %}
 
 {% block body %}
-    <section class="pt-5 pb-5">
-        <div class="container">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="mb-0">
-                    <i class="bi bi-calendar-event me-2" style="color: var(--orange-primary);"></i>
-                    Gestion des Sessions
-                </h1>
-                <a href="{{ path('app_session_crud_new') }}" class="btn btn-orange">
+    <div class="manage-header position-relative">
+        <div class="container position-relative">
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="title-icon">
+                        <i class="bi bi-calendar-event"></i>
+                    </div>
+                    <div>
+                        <h1 class="h2 page-title mb-1">Gestion des sessions</h1>
+                        <p class="page-subtitle mb-0">Planifiez et gérez vos sessions de coaching.</p>
+                    </div>
+                </div>
+                <a href="{{ path('app_session_crud_new') }}" class="btn btn-pastel-primary">
                     <i class="bi bi-plus-circle me-2"></i>Ajouter une session
                 </a>
             </div>
+        </div>
+    </div>
 
+    <section class="pb-5">
+        <div class="container">
             {% for message in app.flashes('success') %}
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <div class="alert alert-pastel-success alert-dismissible fade show" role="alert">
                     <i class="bi bi-check-circle me-2"></i>{{ message }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             {% endfor %}
 
             {% for message in app.flashes('error') %}
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <div class="alert alert-pastel-danger alert-dismissible fade show" role="alert">
                     <i class="bi bi-exclamation-circle me-2"></i>{{ message }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             {% endfor %}
 
             {% if sessions|length > 0 %}
-                <div class="card border-0 table-custom">
+                <div class="sessions-card card">
+                    <div class="card-header-custom">
+                        <i class="bi bi-list-ul me-2"></i>Liste des sessions
+                    </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
                             <table class="table table-hover mb-0">
-                                <thead class="table-light">
+                                <thead>
                                     <tr>
-                                        <th>ID</th>
-                                        <th>Date et Heure</th>
+                                        <th>#</th>
+                                        <th>Date et heure</th>
                                         <th>Durée</th>
                                         <th>Coach</th>
                                         <th>Utilisateur</th>
+                                        <th>Priorité</th>
+                                        <th>Objectif</th>
                                         <th>Statut</th>
                                         <th class="text-center">Actions</th>
                                     </tr>
@@ -91,12 +283,25 @@
                                                 {{ session.coachingRequest.user.firstName }} {{ session.coachingRequest.user.lastName }}
                                             </td>
                                             <td>
-                                                <span class="badge 
-                                                    {% if session.status == 'scheduling' %}badge-scheduling
-                                                    {% elseif session.status == 'confirmed' %}badge-confirmed
-                                                    {% elseif session.status == 'completed' %}badge-completed
-                                                    {% elseif session.status == 'cancelled' %}badge-cancelled
-                                                    {% else %}bg-secondary{% endif %} rounded-pill px-3 py-1">
+                                                {% set prio = session.priority ?? 'medium' %}
+                                                <span class="badge rounded-pill px-3 py-1 {% if prio == 'high' %}badge-prio-high{% elseif prio == 'low' %}badge-prio-low{% else %}badge-prio-medium{% endif %}">
+                                                    {% if prio == 'high' %}Haute{% elseif prio == 'low' %}Faible{% else %}Moyenne{% endif %}
+                                                </span>
+                                            </td>
+                                            <td class="text-break" style="max-width: 200px;">
+                                                {% if session.objective %}
+                                                    <span title="{{ session.objective|e('html_attr') }}">{{ session.objective|length > 60 ? session.objective|slice(0, 60) ~ '…' : session.objective }}</span>
+                                                {% else %}
+                                                    <span class="text-muted">—</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="badge rounded-pill px-3 py-1
+                                                    {% if session.status == 'scheduling' %}badge-pastel-scheduling
+                                                    {% elseif session.status == 'confirmed' %}badge-pastel-confirmed
+                                                    {% elseif session.status == 'completed' %}badge-pastel-completed
+                                                    {% elseif session.status == 'cancelled' %}badge-pastel-cancelled
+                                                    {% else %}badge-pastel-proposed{% endif %}">
                                                     {% if session.status == 'scheduling' %}En planification
                                                     {% elseif session.status == 'proposed_by_user' %}Proposé par utilisateur
                                                     {% elseif session.status == 'proposed_by_coach' %}Proposé par coach
@@ -108,38 +313,46 @@
                                             </td>
                                             <td class="text-center">
                                                 <div class="btn-group" role="group">
-                                                    <a href="{{ path('app_session_crud_edit', {id: session.id}) }}" 
-                                                       class="btn btn-sm btn-outline-primary" 
+                                                    <a href="{{ path('app_session_crud_edit', {id: session.id}) }}"
+                                                       class="btn btn-pastel-edit btn-sm"
                                                        title="Modifier">
                                                         <i class="bi bi-pencil"></i>
                                                     </a>
-                                                    <button type="button" 
-                                                            class="btn btn-sm btn-outline-danger" 
-                                                            data-bs-toggle="modal" 
+                                                    <button type="button"
+                                                            class="btn btn-pastel-delete-trigger btn-sm"
+                                                            data-bs-toggle="modal"
                                                             data-bs-target="#deleteModal{{ session.id }}"
                                                             title="Supprimer">
                                                         <i class="bi bi-trash"></i>
                                                     </button>
                                                 </div>
 
-                                                <!-- Modal de confirmation de suppression -->
-                                                <div class="modal fade" id="deleteModal{{ session.id }}" tabindex="-1">
-                                                    <div class="modal-dialog">
+                                                <!-- Modal de confirmation : suppression professionnelle -->
+                                                <div class="modal fade modal-pastel" id="deleteModal{{ session.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ session.id }}" aria-hidden="true">
+                                                    <div class="modal-dialog modal-dialog-centered">
                                                         <div class="modal-content">
                                                             <div class="modal-header">
-                                                                <h5 class="modal-title">Confirmer la suppression</h5>
-                                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                                <h5 class="modal-title" id="deleteModalLabel{{ session.id }}">
+                                                                    <i class="bi bi-exclamation-triangle-fill"></i>
+                                                                    Confirmation de suppression
+                                                                </h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
                                                             </div>
                                                             <div class="modal-body">
-                                                                Êtes-vous sûr de vouloir supprimer cette session?
-                                                                <br><strong>Coach:</strong> {{ session.coachingRequest.coach.firstName }} {{ session.coachingRequest.coach.lastName }}
-                                                                <br><strong>Date:</strong> {{ session.scheduledAt ? session.scheduledAt|date('d/m/Y à H:i') : 'Non planifiée' }}
+                                                                <p class="confirm-question">Êtes-vous sûr de vouloir supprimer cette session ?</p>
+                                                                <p class="mb-0 small">
+                                                                    <strong>Coach :</strong> {{ session.coachingRequest.coach.firstName }} {{ session.coachingRequest.coach.lastName }}<br>
+                                                                    <strong>Client :</strong> {{ session.coachingRequest.user.firstName }} {{ session.coachingRequest.user.lastName }}<br>
+                                                                    <strong>Date :</strong> {{ session.scheduledAt ? session.scheduledAt|date('d/m/Y à H:i') : 'Non planifiée' }}
+                                                                </p>
                                                             </div>
                                                             <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                                                <button type="button" class="btn btn-cancel-pastel" data-bs-dismiss="modal">Annuler</button>
                                                                 <form method="post" action="{{ path('app_session_crud_delete', {id: session.id}) }}" class="d-inline session-delete-form" data-session-id="{{ session.id }}">
                                                                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ session.id) }}">
-                                                                    <button type="submit" class="btn btn-danger btn-delete-session">Supprimer</button>
+                                                                    <button type="submit" class="btn btn-confirm-delete btn-delete-session">
+                                                                        <i class="bi bi-trash me-1"></i>Supprimer
+                                                                    </button>
                                                                 </form>
                                                             </div>
                                                         </div>
@@ -154,13 +367,19 @@
                     </div>
                 </div>
             {% else %}
-                <div class="text-center py-5">
-                    <i class="bi bi-calendar-x" style="font-size: 4rem; color: #ccc;"></i>
-                    <h3 class="mt-3">Aucune session</h3>
-                    <p class="text-muted">Commencez par ajouter une nouvelle session</p>
-                    <a href="{{ path('app_session_crud_new') }}" class="btn btn-orange mt-3">
-                        <i class="bi bi-plus-circle me-2"></i>Ajouter une session
-                    </a>
+                <div class="sessions-card card">
+                    <div class="card-body">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <i class="bi bi-calendar-x"></i>
+                            </div>
+                            <h3>Aucune session</h3>
+                            <p class="mb-4">Commencez par ajouter une nouvelle session à partir d'une demande acceptée.</p>
+                            <a href="{{ path('app_session_crud_new') }}" class="btn btn-pastel-primary">
+                                <i class="bi bi-plus-circle me-2"></i>Ajouter une session
+                            </a>
+                        </div>
+                    </div>
                 </div>
             {% endif %}
         </div>
@@ -171,30 +390,31 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.querySelectorAll('.session-delete-form').forEach(function(form) {
-            form.addEventListener('submit', async function(e) {
+            form.addEventListener('submit', function(e) {
                 e.preventDefault();
-                var btn = this.querySelector('.btn-delete-session');
-                var sessionId = this.getAttribute('data-session-id');
-                btn.disabled = true;
-                var formData = new FormData(this);
-                try {
-                    var res = await fetch(this.action, { method: 'POST', body: formData, headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-                    var data = await res.json();
-                    if (data.success) {
-                        var modal = document.getElementById('deleteModal' + sessionId);
-                        if (modal && window.bootstrap) {
-                            var m = bootstrap.Modal.getInstance(modal);
-                            if (m) m.hide();
+                var btn = form.querySelector('.btn-delete-session');
+                var sessionId = form.getAttribute('data-session-id');
+                if (btn) btn.disabled = true;
+                var formData = new FormData(form);
+                fetch(form.action, { method: 'POST', body: formData, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                    .then(function(res) { return res.json(); })
+                    .then(function(data) {
+                        if (data.success) {
+                            var modalEl = document.getElementById('deleteModal' + sessionId);
+                            if (modalEl && typeof bootstrap !== 'undefined') {
+                                var modal = bootstrap.Modal.getInstance(modalEl);
+                                if (modal) modal.hide();
+                            }
+                            location.reload();
+                        } else {
+                            alert(data.message || 'Erreur lors de la suppression.');
+                            if (btn) btn.disabled = false;
                         }
-                        location.reload();
-                    } else {
-                        alert(data.message || 'Erreur.');
-                        btn.disabled = false;
-                    }
-                } catch (err) {
-                    alert('Erreur réseau.');
-                    btn.disabled = false;
-                }
+                    })
+                    .catch(function() {
+                        alert('Erreur réseau.');
+                        if (btn) btn.disabled = false;
+                    });
             });
         });
     </script>

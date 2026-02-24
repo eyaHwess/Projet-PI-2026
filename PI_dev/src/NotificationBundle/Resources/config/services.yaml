@@ -1,0 +1,32 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    # Manager principal des notifications
+    App\NotificationBundle\Service\NotificationManager:
+        arguments:
+            $entityManager: '@doctrine.orm.entity_manager'
+        public: true
+
+    # Service de notification (legacy support)
+    App\NotificationBundle\Service\NotificationService:
+        arguments:
+            $entityManager: '@doctrine.orm.entity_manager'
+        public: true
+
+    # Repository
+    App\NotificationBundle\Repository\NotificationRepository:
+        factory: ['@doctrine.orm.entity_manager', 'getRepository']
+        arguments:
+            - 'App\NotificationBundle\Entity\Notification'
+        public: true
+
+    # Controller
+    App\NotificationBundle\Controller\NotificationController:
+        arguments:
+            $notificationRepository: '@App\NotificationBundle\Repository\NotificationRepository'
+            $entityManager: '@doctrine.orm.entity_manager'
+        tags: ['controller.service_arguments']
+        public: true

@@ -10,9 +10,14 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'coaching_request')]
 class CoachingRequest
 {
-    public const STATUS_PENDING = 'pending';
-    public const STATUS_ACCEPTED = 'accepted';
-    public const STATUS_DECLINED = 'declined';
+    // États du workflow
+    public const STATUS_PENDING = 'pending';      // En attente de réponse du coach
+    public const STATUS_ACCEPTED = 'accepted';    // Acceptée par le coach
+    public const STATUS_PAID = 'paid';            // Paiement effectué
+    public const STATUS_CONFIRMED = 'confirmed';  // Session confirmée
+    public const STATUS_COMPLETED = 'completed';  // Session terminée
+    public const STATUS_CANCELLED = 'cancelled';  // Annulée
+    public const STATUS_DECLINED = 'declined';    // Refusée (ancien statut, conservé pour compatibilité)
 
     public const PRIORITY_NORMAL = 'normal';
     public const PRIORITY_MEDIUM = 'medium';
@@ -45,7 +50,15 @@ class CoachingRequest
 
     #[ORM\Column(length: 20)]
     #[Assert\Choice(
-        choices: [self::STATUS_PENDING, self::STATUS_ACCEPTED, self::STATUS_DECLINED],
+        choices: [
+            self::STATUS_PENDING,
+            self::STATUS_ACCEPTED,
+            self::STATUS_PAID,
+            self::STATUS_CONFIRMED,
+            self::STATUS_COMPLETED,
+            self::STATUS_CANCELLED,
+            self::STATUS_DECLINED
+        ],
         message: "Le statut de la demande est invalide."
     )]
     private string $status = self::STATUS_PENDING;

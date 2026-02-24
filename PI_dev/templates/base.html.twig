@@ -77,6 +77,33 @@
             .notification-item:last-child {
                 border-bottom: none;
             }
+            .notification-toast {
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                background: white;
+                border-left: 4px solid #f97316;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                border-radius: 8px;
+                padding: 15px 20px;
+                z-index: 9999;
+                opacity: 0;
+                transform: translateX(120%);
+                transition: all 0.3s ease;
+            }
+            .notification-toast.show {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            .notification-toast-content {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+            .notification-toast-content i {
+                font-size: 24px;
+                color: #f97316;
+            }
         </style>
     </head>
     <body class="min-h-screen bg-gray-50 antialiased">
@@ -168,8 +195,8 @@
                     dropdown.classList.add('show');
                     dropdown.style.display = 'block';
                     console.log('✅ Dropdown affiché');
-                    if (typeof loadNotifications === 'function') {
-                        loadNotifications();
+                    if (typeof window.loadNotifications === 'function') {
+                        window.loadNotifications();
                     }
                 } else {
                     dropdown.classList.remove('show');
@@ -231,30 +258,39 @@
                     e.stopPropagation();
                 });
                 
-                // Charger le compteur de notifications
+                // Charger le compteur de notifications (avec détection des nouvelles pour toast)
+                let lastNotificationCount = -1;
                 async function loadNotificationCount() {
                     try {
-                        console.log('📊 Chargement du compteur...');
                         const res = await fetch('{{ path('app_notifications_unread_count') }}');
-                        if (!res.ok) {
-                            console.error('❌ Erreur HTTP:', res.status);
-                            throw new Error('Erreur réseau');
-                        }
+                        if (!res.ok) throw new Error('Erreur réseau');
                         const data = await res.json();
-                        console.log('✅ Compteur reçu:', data.count);
+                        const count = data.count || 0;
                         
-                        if (data.count > 0) {
-                            notificationCount.textContent = data.count > 99 ? '99+' : data.count;
+                        if (count > 0) {
+                            notificationCount.textContent = count > 99 ? '99+' : count;
                             notificationCount.classList.remove('hidden');
+                            if (lastNotificationCount >= 0 && count > lastNotificationCount) {
+                                showNewNotificationToast(count - lastNotificationCount);
+                            }
                         } else {
                             notificationCount.classList.add('hidden');
                         }
+                        lastNotificationCount = count;
                     } catch (err) {
-                        console.error('❌ Erreur lors du chargement du compteur:', err);
+                        console.error('Erreur compteur notifications:', err);
                     }
                 }
+                function showNewNotificationToast(n) {
+                    const toast = document.createElement('div');
+                    toast.className = 'notification-toast';
+                    toast.innerHTML = '<div class="notification-toast-content"><i class="bi bi-bell-fill"></i><span>Vous avez ' + n + ' nouvelle(s) notification(s)</span></div>';
+                    document.body.appendChild(toast);
+                    setTimeout(() => toast.classList.add('show'), 50);
+                    setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 4000);
+                }
                 
-                // Charger les notifications
+                // Charger les notifications (exposée globalement pour être appelée au clic)
                 async function loadNotifications() {
                     try {
                         console.log('📥 Chargement des notifications...');
@@ -326,6 +362,9 @@
                         notificationList.innerHTML = '<div class="p-4 text-center text-red-500 text-sm"><i class="bi bi-exclamation-triangle"></i> Erreur de chargement</div>';
                     }
                 }
+                
+                // Exposer loadNotifications pour toggleNotifications (sinon jamais appelée au clic !)
+                window.loadNotifications = loadNotifications;
                 
                 // Marquer une notification comme lue et rediriger
                 async function markAsReadAndRedirect(id, sessionId) {
@@ -432,8 +471,8 @@
                 console.log('🚀 Chargement initial du compteur');
                 loadNotificationCount();
                 
-                // Rafraîchir le compteur toutes les 30 secondes
-                setInterval(loadNotificationCount, 30000);
+                // Temps réel : rafraîchir le compteur toutes les 10 secondes
+                setInterval(loadNotificationCount, 10000);
                 
                 console.log('✅ Initialisation terminée');
             } // Fin de initNotifications
