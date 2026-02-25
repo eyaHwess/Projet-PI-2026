@@ -1,0 +1,126 @@
+nav:
+  brand: "Buildify"
+  home: "Accueil"
+  posts: "Posts"
+  my_requests: "Mes demandes"
+  manage_sessions: "Gérer sessions"
+  request_coaching: "Demander coaching"
+  my_sessions: "Mes sessions"
+  admin: "Admin"
+  login: "Connexion"
+  register: "Inscription"
+  logout: "Déconnexion"
+
+notifications:
+  title: "Notifications"
+  mark_all_read: "Tout marquer lu"
+  empty: "Aucune notification"
+  view_all: "Voir toutes les notifications"
+  loading: "Chargement..."
+  error_loading: "Erreur de chargement"
+  moment_ago: "À l'instant"
+  minutes_ago: "Il y a %%count%% min"
+  hours_ago: "Il y a %%count%%h"
+  days_ago: "Il y a %%count%%j"
+  page_title: "Mes Notifications"
+  center_title: "Centre de Notifications"
+  center_subtitle: "Suivez l'évolution de vos demandes de coaching en temps réel"
+  stats:
+    total: "Total notifications"
+    unread: "Non lues"
+    read: "Lues"
+  filters:
+    all: "Toutes"
+    unread: "Non lues"
+    accepted: "Acceptées"
+    declined: "Refusées"
+  visible_count: "notification(s) affichée(s)"
+  type:
+    request_accepted:
+      title: "🎉 Demande acceptée !"
+      badge: "Acceptée"
+    request_declined:
+      title: "Demande refusée"
+      badge: "Refusée"
+    request_pending:
+      title: "Demande en attente"
+      badge: "En attente"
+    default:
+      title: "Nouvelle notification"
+  badge:
+    new: "Nouveau"
+  meta:
+    coach: "Coach :"
+  actions:
+    view_requests: "Voir mes demandes"
+    mark_read: "Marquer comme lu"
+  empty_title: "Aucune notification"
+  empty_description: "Vous n'avez pas encore de notifications.<br>Elles apparaîtront ici lorsque vos coaches répondront à vos demandes."
+  empty_cta: "Trouver un coach"
+  processing: "Traitement..."
+  error_generic: "Une erreur est survenue"
+
+notification:
+  request_accepted: "Bonne nouvelle ! %coach% a accepté votre demande de coaching."
+  request_declined: "%coach% a décliné votre demande de coaching. N'hésitez pas à contacter un autre coach."
+  request_pending: "%coach% a mis votre demande en attente. Le coach reviendra vers vous prochainement."
+  coach_new_request: "%user% vous a envoyé une nouvelle demande de coaching."
+  coach_new_request_urgent: "🔴 URGENT : %user% vous a envoyé une demande de coaching URGENTE."
+  user_request_sent: "Votre demande de coaching a été envoyée à %coach%. Vous recevrez une réponse prochainement."
+
+form:
+  user:
+    preferred_language: "Langue préférée"
+    preferred_language_help: "Cette langue sera utilisée pour l'interface, les notifications et les suggestions IA."
+    language:
+      en: "Anglais"
+      fr: "Français"
+      ar: "Arabe"
+  save: "Enregistrer"
+
+ai:
+  suggestions_title: "Suggestions IA"
+  suggestions_subtitle: "Recommandations personnalisées selon vos objectifs et votre progression."
+  suggestion: "Suggestion"
+  days: "jours"
+  unavailable_title: "Coaching IA temporairement indisponible"
+  unavailable_body: "Nous avons atteint la limite de requêtes API. Votre suggestion personnalisée sera générée dans quelques instants."
+  unavailable_hint: "En attendant : continuez votre excellent travail ! Vous avez %completed% objectifs complétés sur %total% (%rate%%)."
+  fallback_title: "Continuez votre excellent travail !"
+  fallback_body: "Vous avez %completed% objectifs complétés sur %total%. Restez concentré sur vos priorités et vous atteindrez vos objectifs !"
+
+modern:
+  brand: "Goal Tracker"
+  nav:
+    home: "Accueil"
+    goals: "Mes Objectifs"
+    calendar: "Calendrier"
+    favorites: "Favoris"
+    consistency: "Consistency"
+    time_analytics: "Time Analytics"
+  footer:
+    rights: "Tous droits réservés."
+
+calendar:
+  page_title: "Calendrier de planification"
+  breadcrumb: "Calendrier"
+  subtitle: "Visualisez toutes vos deadlines et activités en un coup d'œil"
+  actions:
+    goals: "Objectifs"
+    favorites: "Favoris"
+    consistency: "Consistency"
+    time_analytics: "Time Analytics"
+  stats:
+    active_goals: "Objectifs actifs"
+    active_routines: "Routines en cours"
+    planned_activities: "Activités planifiées"
+    upcoming_deadlines: "Deadlines à venir"
+  legend:
+    goals: "Objectifs"
+    routines: "Routines"
+    activities: "Activités"
+  fc:
+    today: "Aujourd'hui"
+    month: "Mois"
+    week: "Semaine"
+    day: "Jour"

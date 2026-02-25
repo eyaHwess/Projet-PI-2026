@@ -2,6 +2,198 @@
 
 {% block title %}Nouvel Objectif{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .goal-new-root {
+            --ai-accent: #6366f1;
+            --ai-accent-light: #eef2ff;
+            --ai-surface: #fafbff;
+            --radius: 16px;
+            --radius-sm: 12px;
+            --shadow: 0 4px 24px rgba(0,0,0,0.06);
+            --shadow-hover: 0 8px 32px rgba(0,0,0,0.08);
+        }
+
+        .goal-new-header {
+            margin-bottom: 2rem;
+        }
+        .goal-new-header h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--gray-900);
+            margin: 0 0 0.35rem 0;
+            letter-spacing: -0.02em;
+        }
+        .goal-new-header p {
+            font-size: 1rem;
+            color: var(--gray-600);
+            margin: 0;
+        }
+
+        .goal-new-layout {
+            display: grid;
+            gap: 1.5rem;
+            align-items: start;
+        }
+        @media (min-width: 992px) {
+            .goal-new-layout {
+                grid-template-columns: 380px 1fr;
+                gap: 2rem;
+                max-width: 1100px;
+                margin: 0 auto;
+            }
+        }
+
+        /* —— Suggestions sidebar —— */
+        .ai-sidebar {
+            background: var(--ai-surface);
+            border: 1px solid rgba(99, 102, 241, 0.12);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        .ai-sidebar-header {
+            padding: 1.25rem 1.5rem;
+            background: linear-gradient(135deg, var(--ai-accent-light) 0%, #fff 100%);
+            border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .ai-sidebar-header-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: var(--ai-accent);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+        .ai-sidebar-header-text h2 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin: 0;
+        }
+        .ai-sidebar-header-text p {
+            font-size: 0.8125rem;
+            color: var(--gray-600);
+            margin: 0.2rem 0 0 0;
+        }
+        .ai-sidebar-body {
+            padding: 1rem 1.25rem;
+            max-height: 420px;
+            overflow-y: auto;
+        }
+        .ai-suggestions-grid {
+            display: grid;
+            gap: 0.75rem;
+        }
+        .ai-card {
+            background: #fff;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-sm);
+            padding: 1rem 1.25rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .ai-card:hover {
+            border-color: rgba(99, 102, 241, 0.35);
+            box-shadow: var(--shadow-hover);
+        }
+        .ai-card-num {
+            font-size: 0.6875rem;
+            font-weight: 700;
+            color: var(--ai-accent);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.35rem;
+        }
+        .ai-card-title {
+            font-size: 0.9375rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 0.4rem;
+            line-height: 1.3;
+        }
+        .ai-card-desc {
+            font-size: 0.8125rem;
+            color: var(--gray-600);
+            line-height: 1.45;
+            margin-bottom: 0.75rem;
+        }
+        .ai-card-meta {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .ai-pill {
+            padding: 0.25rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.6875rem;
+            font-weight: 700;
+        }
+        .ai-pill.high { background: #fce7f3; color: #be185d; }
+        .ai-pill.medium { background: #ffedd5; color: #c2410c; }
+        .ai-pill.low { background: #d1fae5; color: #047857; }
+        .ai-days {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .ai-empty {
+            text-align: center;
+            padding: 1.5rem 1rem;
+            background: linear-gradient(180deg, #fffbeb 0%, #fff 100%);
+            border: 1px dashed var(--gray-300);
+            border-radius: var(--radius-sm);
+        }
+        .ai-empty h3 { font-size: 0.9375rem; font-weight: 700; color: var(--gray-800); margin: 0 0 0.5rem 0; }
+        .ai-empty p { font-size: 0.8125rem; color: var(--gray-600); margin: 0; line-height: 1.5; }
+
+        /* —— Form card —— */
+        .goal-form-wrap {
+            background: #fff;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        .goal-form-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--gray-100);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .goal-form-header-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: var(--primary-lighter, #e0f2fe);
+            color: var(--primary-color, #0284c7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+        .goal-form-header h2 {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin: 0;
+        }
+        .goal-form-body {
+            padding: 1.5rem 1.5rem 2rem;
+        }
+    </style>
+{% endblock %}
+
 {% block navbar_actions %}
     <a href="{{ path('app_goal_index') }}" class="btn-modern btn-modern-secondary">
         <i class="bi bi-arrow-left"></i> Retour
@@ -9,25 +201,65 @@
 {% endblock %}
 
 {% block body %}
-    <!-- Page Header -->
-    <div class="page-header-modern">
-        <h1 class="page-header-modern-title">
-            <i class="bi bi-plus-circle" style="color: var(--primary-color);"></i>
-            Nouvel Objectif
-        </h1>
-        <p class="page-header-modern-subtitle">
-            Créez un nouvel objectif de fitness et bien-être
-        </p>
-    </div>
-
-    <!-- Form Card -->
-    <div class="card-modern" style="max-width: 800px; margin: 0 auto;">
-        <div class="card-modern-header">
-            <h2 style="font-size: var(--font-size-xl); font-weight: 700; margin: 0; color: var(--gray-900);">
-                <i class="bi bi-bullseye"></i> Informations de l'objectif
-            </h2>
+    <div class="goal-new-root">
+        <div class="goal-new-header">
+            <h1>Nouvel objectif</h1>
+            <p>Inspirez-vous des suggestions puis complétez le formulaire.</p>
         </div>
 
-        {{ include('goal/_form.html.twig') }}
+        <div class="goal-new-layout">
+            <!-- Colonne gauche : Suggestions IA -->
+            <aside class="ai-sidebar">
+                <div class="ai-sidebar-header">
+                    <div class="ai-sidebar-header-icon"><i class="bi bi-magic"></i></div>
+                    <div class="ai-sidebar-header-text">
+                        <h2>{{ 'ai.suggestions_title'|trans({}, 'messages') }}</h2>
+                        <p>{{ 'ai.suggestions_subtitle'|trans({}, 'messages') }}</p>
+                    </div>
+                </div>
+                <div class="ai-sidebar-body">
+                    {% if aiSuggestions|length > 0 %}
+                        <div class="ai-suggestions-grid">
+                            {% for item in aiSuggestions %}
+                            <div class="ai-card">
+                                <div class="ai-card-num">{{ 'ai.suggestion'|trans({}, 'messages') }} {{ loop.index }}</div>
+                                <div class="ai-card-title">{{ item.title|default('') }}</div>
+                                <div class="ai-card-desc">{{ item.description|default('') }}</div>
+                                <div class="ai-card-meta">
+                                    {% set priority = (item.priority|default('medium'))|lower %}
+                                    <span class="ai-pill {{ priority }}">{{ priority|capitalize }}</span>
+                                    {% if item.duration_days is defined %}
+                                    <span class="ai-days"><i class="bi bi-calendar3"></i> {{ item.duration_days }} {{ 'ai.days'|trans({}, 'messages') }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% elseif aiUnavailable %}
+                        <div class="ai-empty">
+                            <h3>{{ 'ai.unavailable_title'|trans({}, 'messages') }}</h3>
+                            <p>{{ 'ai.unavailable_body'|trans({}, 'messages') }}</p>
+                            <p style="margin-top: 0.75rem;">{{ 'ai.unavailable_hint'|trans({'%completed%': aiUserStats.completed_goals, '%total%': aiUserStats.total_goals, '%rate%': aiUserStats.completion_rate}, 'messages') }}</p>
+                        </div>
+                    {% else %}
+                        <div class="ai-empty">
+                            <h3>{{ 'ai.fallback_title'|trans({}, 'messages') }}</h3>
+                            <p>{{ 'ai.fallback_body'|trans({'%completed%': aiUserStats.completed_goals, '%total%': aiUserStats.total_goals}, 'messages') }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </aside>
+
+            <!-- Colonne droite : Formulaire -->
+            <div class="goal-form-wrap">
+                <div class="goal-form-header">
+                    <div class="goal-form-header-icon"><i class="bi bi-bullseye"></i></div>
+                    <h2>Informations de l'objectif</h2>
+                </div>
+                <div class="goal-form-body">
+                    {{ include('goal/_form.html.twig') }}
+                </div>
+            </div>
+        </div>
     </div>
 {% endblock %}

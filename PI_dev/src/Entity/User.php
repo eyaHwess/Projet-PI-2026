@@ -41,13 +41,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     private ?string $email = null;
 
-    #[ORM\Column(length: 255)]
-    #[Assert\NotBlank(message: "Le mot de passe est obligatoire")]
+    #[ORM\Column(length: 255, nullable: true)]
     #[Assert\Length(
         min: 8,
         minMessage: "Le mot de passe doit contenir au moins 8 caractères"
     )]
     private ?string $password = null;
+
+    #[ORM\Column(length: 255, unique: true, nullable: true)]
+    private ?string $googleId = null;
 
     #[ORM\Column]
     private array $roles = [];
@@ -102,6 +104,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $lastActivityAt = null;
+
+    #[ORM\Column(length: 10, nullable: true)]
+    private ?string $preferredLanguage = null;
 
     /**
      * @var Collection<int, Post>
@@ -177,10 +182,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->password;
     }
 
-    public function setPassword(string $password): static
+    public function setPassword(?string $password): static
     {
         $this->password = $password;
 
+        return $this;
+    }
+
+    public function getGoogleId(): ?string
+    {
+        return $this->googleId;
+    }
+
+    public function setGoogleId(?string $googleId): static
+    {
+        $this->googleId = $googleId;
         return $this;
     }
     public function getRoles(): array
@@ -191,6 +207,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setRole(UserRole $role): self
     {
         $this->roles = [$role->value];
+        return $this;
+    }
+
+    /**
+     * @param string[] $roles
+     */
+    public function setRoles(array $roles): self
+    {
+        $this->roles = array_values(array_unique($roles));
         return $this;
     }
 
@@ -537,6 +562,17 @@ public function getOnlineStatus(): string
     } else {
         return 'offline';
     }
+}
+
+public function getPreferredLanguage(): ?string
+{
+    return $this->preferredLanguage;
+}
+
+public function setPreferredLanguage(?string $preferredLanguage): static
+{
+    $this->preferredLanguage = $preferredLanguage;
+    return $this;
 }
 
 }

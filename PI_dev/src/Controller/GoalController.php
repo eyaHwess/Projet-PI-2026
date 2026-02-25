@@ -3,10 +3,13 @@
 namespace App\Controller;
 
 use App\Entity\Goal;
+use App\Entity\Suggestion;
 use App\Entity\User;
 use App\Form\GoalType;
 use App\Repository\GoalRepository;
+use App\Repository\SuggestionRepository;
 use App\Repository\UserRepository;
+use App\Service\AiAssistantService;
 use App\Service\StatusManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,91 +18,73 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Knp\Component\Pager\PaginatorInterface;
 
 #[Route('/goals', name: 'app_goal_')]
+#[IsGranted('ROLE_USER')]
 class GoalController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
         private GoalRepository $goalRepository,
+        private SuggestionRepository $suggestionRepository,
         private UserRepository $userRepository,
         private UserPasswordHasherInterface $passwordHasher,
         private StatusManager $statusManager,
+        private AiAssistantService $aiAssistantService,
     ) {
-        
     }
 
-    // 👇 USER STATIQUE
-    private function getStaticUser(): User
+    // 👇 INDEX — objectifs de l'utilisateur connecté uniquement
+    #[Route('/', name: 'index', methods: ['GET'])]
+    public function index(Request $request, PaginatorInterface $paginator): Response
     {
-        $user = $this->userRepository->findOneBy(['email' => 'static@example.com']);
+        $user = $this->getUser();
+        $sortBy = $request->query->get('sort', 'createdAt');
+        $sortOrder = $request->query->get('order', 'DESC');
+        $filterStatus = $request->query->get('status', 'all');
+        $searchQuery = $request->query->get('search', '');
 
-        if (!$user) {
-            $user = new User();
-            $user->setEmail('static@example.com');
-            $user->setFirstName('Static');
-            $user->setLastName('User');
-            $user->setStatus('active');
-            $user->setPassword(
-                $this->passwordHasher->hashPassword($user, 'password123')
-            );
+        $queryBuilder = $this->goalRepository->createQueryBuilder('g')
+            ->andWhere('g.user = :user')
+            ->setParameter('user', $user);
 
-            $this->entityManager->persist($user);
-            $this->entityManager->flush();
+        if (!empty($searchQuery)) {
+            $queryBuilder->andWhere('g.title LIKE :search OR g.description LIKE :search')
+                ->setParameter('search', '%' . $searchQuery . '%');
         }
 
-        return $user;
+        if ($filterStatus !== 'all') {
+            $queryBuilder->andWhere('g.status = :status')
+                ->setParameter('status', $filterStatus);
+        }
+
+        $validSortFields = ['createdAt', 'startDate', 'endDate', 'title', 'priority', 'deadline'];
+        if ($sortBy !== 'urgency' && in_array($sortBy, $validSortFields)) {
+            $queryBuilder->orderBy('g.' . $sortBy, $sortOrder);
+        } else {
+            $queryBuilder->orderBy('g.createdAt', 'DESC');
+        }
+
+        $pagination = $paginator->paginate(
+            $queryBuilder,
+            $request->query->getInt('page', 1),
+            4
+        );
+
+        foreach ($pagination as $goal) {
+            $this->statusManager->updateGoalStatuses($goal);
+        }
+
+        return $this->render('goal/index_modern.html.twig', [
+            'pagination' => $pagination,
+            'currentSort' => $sortBy,
+            'currentOrder' => $sortOrder,
+            'currentStatus' => $filterStatus,
+            'searchQuery' => $searchQuery,
+        ]);
     }
-
-    // 👇 INDEX
-#[Route('/', name: 'index', methods: ['GET'])]
-public function index(Request $request, PaginatorInterface $paginator): Response
-{
-    $sortBy = $request->query->get('sort', 'createdAt');
-    $sortOrder = $request->query->get('order', 'DESC');
-    $filterStatus = $request->query->get('status', 'all');
-    $searchQuery = $request->query->get('search', '');
-
-    $queryBuilder = $this->goalRepository->createQueryBuilder('g');
-
-    if (!empty($searchQuery)) {
-        $queryBuilder->andWhere('g.title LIKE :search OR g.description LIKE :search')
-                     ->setParameter('search', '%' . $searchQuery . '%');
-    }
-
-    if ($filterStatus !== 'all') {
-        $queryBuilder->andWhere('g.status = :status')
-                     ->setParameter('status', $filterStatus);
-    }
-
-    $validSortFields = ['createdAt', 'startDate', 'endDate', 'title', 'priority', 'deadline'];
-
-    if ($sortBy !== 'urgency' && in_array($sortBy, $validSortFields)) {
-        $queryBuilder->orderBy('g.' . $sortBy, $sortOrder);
-    } else {
-        $queryBuilder->orderBy('g.createdAt', 'DESC');
-    }
-
-    $pagination = $paginator->paginate(
-        $queryBuilder,
-        $request->query->getInt('page', 1),
-        4
-    );
-
-    // Mise à jour statuts uniquement sur la page actuelle
-    foreach ($pagination as $goal) {
-        $this->statusManager->updateGoalStatuses($goal);
-    }
-
-    return $this->render('goal/index_modern.html.twig', [
-        'pagination' => $pagination,
-        'currentSort' => $sortBy,
-        'currentOrder' => $sortOrder,
-        'currentStatus' => $filterStatus,
-        'searchQuery' => $searchQuery,
-    ]);
-}
 
     // 👇 CREATE
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
@@ -114,9 +99,7 @@ public function index(Request $request, PaginatorInterface $paginator): Response
             || str_contains($request->headers->get('Accept', ''), 'application/json');
 
         if ($form->isSubmitted() && $form->isValid()) {
-
-            // Associer toujours le user statique
-            $goal->setUser($this->getStaticUser());
+            $goal->setUser($this->getUser());
 
             $this->entityManager->persist($goal);
             $this->entityManager->flush();
@@ -139,16 +122,89 @@ public function index(Request $request, PaginatorInterface $paginator): Response
             return $this->redirectToRoute('app_goal_index');
         }
 
+        $ai = $this->getAiSuggestionsForNewGoal($request);
+
         return $this->render('goal/new.html.twig', [
             'form' => $form,
             'goal' => $goal,
+            'aiSuggestions' => $ai['aiSuggestions'],
+            'aiUnavailable' => $ai['aiUnavailable'],
+            'aiUserStats' => $ai['aiUserStats'],
         ]);
+    }
+
+    /**
+     * Suggestions IA pour la page "Nouvel objectif" (objectifs similaires à ceux de l'utilisateur).
+     */
+    private function getAiSuggestionsForNewGoal(Request $request): array
+    {
+        $user = $this->getUser();
+        $allGoals = $this->goalRepository->findBy(['user' => $user], ['createdAt' => 'DESC']);
+        $totalGoals = \count($allGoals);
+        $completedGoals = \count(array_filter($allGoals, fn (Goal $g) => $g->getStatus() === 'completed'));
+        $now = new \DateTimeImmutable('today');
+        $overdueGoals = \count(array_filter($allGoals, function (Goal $g) use ($now) {
+            if ($g->getStatus() !== 'active' && $g->getStatus() !== 'paused') {
+                return false;
+            }
+            $d = $g->getDeadline() ?? $g->getEndDate();
+            return $d && $d < $now;
+        }));
+        $completionRate = $totalGoals > 0 ? (int) round($completedGoals / $totalGoals * 100) : 0;
+        $userGoalsForAi = array_map(function (Goal $g) {
+            return [
+                'title' => $g->getTitle(),
+                'description' => $g->getDescription() ? mb_substr($g->getDescription(), 0, 200) : null,
+            ];
+        }, $allGoals);
+        $userData = [
+            'total_goals' => $totalGoals,
+            'completed_goals' => $completedGoals,
+            'overdue_goals' => $overdueGoals,
+            'completion_rate' => $completionRate,
+            'user_goals' => $userGoalsForAi,
+        ];
+        $locale = $user instanceof User && method_exists($user, 'getPreferredLanguage') ? ($user->getPreferredLanguage() ?? 'fr') : ($request->getLocale() ?: 'fr');
+
+        $aiSuggestions = [];
+        $cached = $this->suggestionRepository->findLatestForUser($user, 24);
+        if ($cached && $cached->getContent()) {
+            $decoded = json_decode($cached->getContent(), true);
+            if (\is_array($decoded)) {
+                $aiSuggestions = $decoded;
+            }
+        }
+        if ($aiSuggestions === []) {
+            $json = $this->aiAssistantService->generateSuggestion($userData, $locale);
+            if ($json !== null) {
+                $decoded = json_decode($json, true);
+                if (\is_array($decoded)) {
+                    $aiSuggestions = $decoded;
+                    $suggestion = new Suggestion();
+                    $suggestion->setUser($user);
+                    $suggestion->setContent($json);
+                    $suggestion->setType('goal_coaching');
+                    $suggestion->setCreatedAt(new \DateTime());
+                    $this->entityManager->persist($suggestion);
+                    $this->entityManager->flush();
+                }
+            }
+        }
+
+        return [
+            'aiSuggestions' => $aiSuggestions,
+            'aiUnavailable' => $aiSuggestions === [],
+            'aiUserStats' => $userData,
+        ];
     }
 
     // 👇 SHOW
     #[Route('/{id}', name: 'show', methods: ['GET'])]
     public function show(Goal $goal): Response
     {
+        if ($goal->getUser() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('Cet objectif ne vous appartient pas.');
+        }
         return $this->render('goal/show.html.twig', [
             'goal' => $goal,
         ]);
@@ -158,6 +214,9 @@ public function index(Request $request, PaginatorInterface $paginator): Response
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Goal $goal): Response
     {
+        if ($goal->getUser() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('Cet objectif ne vous appartient pas.');
+        }
         $form = $this->createForm(GoalType::class, $goal);
         $form->handleRequest($request);
 
@@ -181,15 +240,17 @@ public function index(Request $request, PaginatorInterface $paginator): Response
     #[Route('/{id}/duplicate', name: 'duplicate', methods: ['POST'])]
     public function duplicate(Request $request, Goal $goal): JsonResponse
     {
+        if ($goal->getUser() !== $this->getUser()) {
+            return new JsonResponse(['success' => false, 'message' => 'Accès refusé.'], 403);
+        }
         if ($this->isCsrfTokenValid('duplicate' . $goal->getId(), $request->request->get('_token'))) {
-            // Create a new goal with the same properties
             $duplicatedGoal = new Goal();
             $duplicatedGoal->setTitle($goal->getTitle() . ' (Copie)');
             $duplicatedGoal->setDescription($goal->getDescription());
             $duplicatedGoal->setStartDate(clone $goal->getStartDate());
             $duplicatedGoal->setEndDate(clone $goal->getEndDate());
-            $duplicatedGoal->setStatus('active'); // Reset to active
-            $duplicatedGoal->setUser($goal->getUser());
+            $duplicatedGoal->setStatus('active');
+            $duplicatedGoal->setUser($this->getUser());
             $duplicatedGoal->setPriority($goal->getPriority());
             if ($goal->getDeadline()) {
                 $duplicatedGoal->setDeadline(clone $goal->getDeadline());
@@ -218,6 +279,9 @@ public function index(Request $request, PaginatorInterface $paginator): Response
     #[Route('/{id}', name: 'delete', methods: ['POST'])]
     public function delete(Request $request, Goal $goal): JsonResponse
     {
+        if ($goal->getUser() !== $this->getUser()) {
+            return new JsonResponse(['success' => false, 'message' => 'Accès refusé.'], 403);
+        }
         if ($this->isCsrfTokenValid('delete' . $goal->getId(), $request->request->get('_token'))) {
             $this->entityManager->remove($goal);
             $this->entityManager->flush();

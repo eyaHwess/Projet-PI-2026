@@ -17,6 +17,7 @@ security:
         main:
             lazy: true
             provider: app_user_provider
+            user_checker: App\Security\AppUserChecker
 
             form_login:
                 login_path: app_login
@@ -25,6 +26,7 @@ security:
                 password_parameter: password
                 enable_csrf: true
                 success_handler: App\Security\LoginSuccessHandler
+                failure_handler: App\Security\LoginFailureHandler
 
             logout:
                 path: app_logout
@@ -34,6 +36,7 @@ security:
         # Public routes (no authentication required)
         - { path: ^/$, roles: PUBLIC_ACCESS }
         - { path: ^/login, roles: PUBLIC_ACCESS }
+        - { path: ^/connect, roles: PUBLIC_ACCESS }
         - { path: ^/user/add, roles: PUBLIC_ACCESS }
         - { path: ^/register, roles: PUBLIC_ACCESS }
         - { path: ^/demo, roles: PUBLIC_ACCESS }
@@ -53,8 +56,8 @@ security:
         # Admin routes (require ROLE_ADMIN)
         - { path: ^/admin, roles: ROLE_ADMIN }
         
-        # Coach routes (require ROLE_COACH)
-        - { path: ^/coach, roles: ROLE_COACH }
+        # Coach management routes (coaches only: manage requests, etc.)
+        - { path: ^/coach/, roles: ROLE_COACH }
         - { path: ^/sessions/manage, roles: ROLE_COACH }
         
         # User dashboard and other authenticated routes

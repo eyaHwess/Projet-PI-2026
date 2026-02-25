@@ -1,0 +1,126 @@
+nav:
+  brand: "Buildify"
+  home: "Home"
+  posts: "Posts"
+  my_requests: "My requests"
+  manage_sessions: "Manage sessions"
+  request_coaching: "Request coaching"
+  my_sessions: "My sessions"
+  admin: "Admin"
+  login: "Login"
+  register: "Register"
+  logout: "Logout"
+
+notifications:
+  title: "Notifications"
+  mark_all_read: "Mark all as read"
+  empty: "No notifications"
+  view_all: "View all notifications"
+  loading: "Loading..."
+  error_loading: "Error while loading"
+  moment_ago: "Just now"
+  minutes_ago: "%%count%% min ago"
+  hours_ago: "%%count%%h ago"
+  days_ago: "%%count%%d ago"
+  page_title: "My notifications"
+  center_title: "Notification Center"
+  center_subtitle: "Track the status of your coaching requests in real time"
+  stats:
+    total: "Total notifications"
+    unread: "Unread"
+    read: "Read"
+  filters:
+    all: "All"
+    unread: "Unread"
+    accepted: "Accepted"
+    declined: "Declined"
+  visible_count: "notification(s) shown"
+  type:
+    request_accepted:
+      title: "🎉 Request accepted!"
+      badge: "Accepted"
+    request_declined:
+      title: "Request declined"
+      badge: "Declined"
+    request_pending:
+      title: "Request pending"
+      badge: "Pending"
+    default:
+      title: "New notification"
+  badge:
+    new: "New"
+  meta:
+    coach: "Coach:"
+  actions:
+    view_requests: "View my requests"
+    mark_read: "Mark as read"
+  empty_title: "No notifications"
+  empty_description: "You don't have any notifications yet.<br>They will appear here when coaches respond to your requests."
+  empty_cta: "Find a coach"
+  processing: "Processing..."
+  error_generic: "An error occurred"
+
+notification:
+  request_accepted: "Good news! %coach% has accepted your coaching request."
+  request_declined: "%coach% has declined your coaching request. Feel free to contact another coach."
+  request_pending: "%coach% has put your request on hold. The coach will get back to you soon."
+  coach_new_request: "%user% has sent you a new coaching request."
+  coach_new_request_urgent: "🔴 URGENT: %user% has sent you an URGENT coaching request."
+  user_request_sent: "Your coaching request has been sent to %coach%. You will receive a reply soon."
+
+form:
+  user:
+    preferred_language: "Preferred language"
+    preferred_language_help: "This language will be used for the interface, notifications and AI suggestions."
+    language:
+      en: "English"
+      fr: "French"
+      ar: "Arabic"
+  save: "Save"
+
+ai:
+  suggestions_title: "AI Suggestions"
+  suggestions_subtitle: "Personalised recommendations based on your goals and progress."
+  suggestion: "Suggestion"
+  days: "days"
+  unavailable_title: "AI coaching temporarily unavailable"
+  unavailable_body: "We have reached the API request limit. Your personalised suggestion will be generated shortly."
+  unavailable_hint: "In the meantime: keep up the great work! You have %completed% completed goals out of %total% (%rate%%)."
+  fallback_title: "Keep up the great work!"
+  fallback_body: "You have %completed% completed goals out of %total%. Stay focused on your priorities and you will reach your goals!"
+
+modern:
+  brand: "Goal Tracker"
+  nav:
+    home: "Home"
+    goals: "My goals"
+    calendar: "Calendar"
+    favorites: "Favorites"
+    consistency: "Consistency"
+    time_analytics: "Time analytics"
+  footer:
+    rights: "All rights reserved."
+
+calendar:
+  page_title: "Planning calendar"
+  breadcrumb: "Calendar"
+  subtitle: "See all your deadlines and activities at a glance"
+  actions:
+    goals: "Goals"
+    favorites: "Favorites"
+    consistency: "Consistency"
+    time_analytics: "Time analytics"
+  stats:
+    active_goals: "Active goals"
+    active_routines: "Ongoing routines"
+    planned_activities: "Planned activities"
+    upcoming_deadlines: "Upcoming deadlines"
+  legend:
+    goals: "Goals"
+    routines: "Routines"
+    activities: "Activities"
+  fc:
+    today: "Today"
+    month: "Month"
+    week: "Week"
+    day: "Day"
