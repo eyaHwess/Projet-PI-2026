@@ -147,7 +147,7 @@ class PostController extends AbstractController
     }
 
     #[Route('/posts', name: 'post_list_view', methods: ['GET'])]
-    public function adminList(
+    public function postListView(
         Request $request, 
         PostRepository $postRepository, 
         TagRepository $tagRepository,
@@ -155,10 +155,16 @@ class PostController extends AbstractController
         CommentLikeService $commentLikeService, 
         SavedPostService $savedPostService
     ): Response {
+        $perPage = 10;
+
         // Get filter and sort parameters from request
         $sortBy = $request->query->get('sort', 'newest'); // newest, oldest, most_liked, most_commented
         $filterBy = $request->query->get('filter', 'all'); // all, following, my_posts
         $tagSlug = $request->query->get('tag'); // tag slug for filtering
+        $page = max(1, (int) $request->query->get('page', 1));
+        $offset = ($page - 1) * $perPage;
+
+        $isAjax = $request->query->getBoolean('ajax') || $request->isXmlHttpRequest();
         
         // Base query - only published posts
         $queryBuilder = $postRepository->createQueryBuilder('p')
@@ -205,8 +211,16 @@ class PostController extends AbstractController
                 $queryBuilder->orderBy('p.createdAt', 'DESC');
                 break;
         }
-        
-        $posts = $queryBuilder->getQuery()->getResult();
+
+        // Pagination: fetch one extra record to detect if there's more to load
+        $postsResult = $queryBuilder
+            ->setFirstResult($offset)
+            ->setMaxResults($perPage + 1)
+            ->getQuery()
+            ->getResult();
+
+        $hasMore = count($postsResult) > $perPage;
+        $posts = array_slice($postsResult, 0, $perPage);
 
         // Add like and save status for each post
         $postsWithLikeStatus = [];
@@ -221,6 +235,20 @@ class PostController extends AbstractController
         // Fetch available tags for filter dropdown
         $availableTags = $tagRepository->findAvailableTags();
 
+        if ($isAjax) {
+            $html = $this->renderView('post/_post_cards.html.twig', [
+                'postsWithLikeStatus' => $postsWithLikeStatus,
+                'currentUser' => $currentUser,
+                'commentLikeService' => $commentLikeService,
+            ]);
+
+            return $this->json([
+                'html' => $html,
+                'hasMore' => $hasMore,
+                'nextPage' => $page + 1,
+            ]);
+        }
+
         return $this->render('post/post_list.html.twig', [
             'postsWithLikeStatus' => $postsWithLikeStatus,
             'currentUser' => $currentUser,
@@ -228,7 +256,10 @@ class PostController extends AbstractController
             'currentSort' => $sortBy,
             'currentFilter' => $filterBy,
             'currentTag' => $tagSlug,
-            'availableTags' => $availableTags
+            'availableTags' => $availableTags,
+            'currentPage' => $page,
+            'hasMorePosts' => $hasMore,
+            'perPage' => $perPage,
         ]);
     }
 

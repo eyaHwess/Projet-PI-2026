@@ -442,34 +442,52 @@ function deleteComment(commentId) {
 }
 
 // Vanilla JS Tab Switching - NO Bootstrap
-document.addEventListener('DOMContentLoaded', function() {
+// Note: This page can be loaded via Turbo; DOMContentLoaded may not fire on navigation.
+function setPostDetailActiveTab(targetTab) {
     const tabButtons = document.querySelectorAll('.floating-tab-btn');
     const tabContents = document.querySelectorAll('.sidebar-tab-content');
-    
-    tabButtons.forEach(function(button) {
-        button.addEventListener('click', function() {
-            const targetTab = this.getAttribute('data-tab');
-            
-            // Remove active class from all buttons
-            tabButtons.forEach(function(btn) {
-                btn.classList.remove('active');
-            });
-            
-            // Add active class to clicked button
-            this.classList.add('active');
-            
-            // Hide all tab contents
-            tabContents.forEach(function(content) {
-                content.classList.remove('active');
-            });
-            
-            // Show the target tab content
-            const targetContent = document.querySelector('.sidebar-tab-content[data-tab="' + targetTab + '"]');
-            if (targetContent) {
-                targetContent.classList.add('active');
-            }
-        });
+
+    tabButtons.forEach((btn) => {
+        btn.classList.toggle('active', btn.getAttribute('data-tab') === targetTab);
     });
-});
+
+    tabContents.forEach((content) => {
+        const isActive = content.getAttribute('data-tab') === targetTab;
+        content.classList.toggle('active', isActive);
+        // Force visibility to match requirement: only one section visible.
+        content.style.display = isActive ? 'block' : 'none';
+    });
+}
+
+function syncPostDetailTabsInitialState() {
+    const activeButton = document.querySelector('.floating-tab-btn.active');
+    const fallbackTab = document.querySelector('.floating-tab-btn')?.getAttribute('data-tab') || 'general';
+    const targetTab = activeButton?.getAttribute('data-tab') || fallbackTab;
+    setPostDetailActiveTab(targetTab);
+}
+
+function bindPostDetailTabClicksOnce() {
+    if (document.documentElement.dataset.postDetailTabsBound === '1') {
+        return;
+    }
+    document.documentElement.dataset.postDetailTabsBound = '1';
+
+    document.addEventListener('click', (event) => {
+        const button = event.target.closest('.floating-tab-btn');
+        if (!button) return;
+
+        event.preventDefault();
+        const targetTab = button.getAttribute('data-tab') || 'general';
+        setPostDetailActiveTab(targetTab);
+    });
+}
+
+function initPostDetailTabs() {
+    bindPostDetailTabClicksOnce();
+    syncPostDetailTabsInitialState();
+}
+
+document.addEventListener('DOMContentLoaded', initPostDetailTabs);
+document.addEventListener('turbo:load', initPostDetailTabs);
 </script>
 {% endblock %}

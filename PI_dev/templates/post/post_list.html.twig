@@ -121,8 +121,9 @@
                                 <li>
                                     <a class="dropdown-item {{ currentTag == tag.slug ? 'active' : '' }}" 
                                        href="{{ path('post_list_view', {'sort': currentSort, 'filter': currentFilter, 'tag': tag.slug}) }}">
-                                        <i class="bi bi-tag-fill"></i> {{ tag.name }}
-                                        <span class="badge bg-secondary ms-2">{{ tag.usageCount }}</span>
+                                        <i class="bi bi-tag-fill"></i>
+                                        <span class="tag-name">{{ tag.name }}</span>
+                                        <span class="tag-count">{{ tag.usageCount }}</span>
                                     </a>
                                 </li>
                                 {% endfor %}
@@ -148,21 +149,33 @@
 
     
     <!-- Posts List -->
-    <div class="vstack gap-4">
-        {% for item in postsWithLikeStatus %}
-            {% include 'post/post_card.html.twig' with {
-                'post': item.post, 
-                'isLikedByCurrentUser': item.isLikedByCurrentUser,
-                'isSavedByCurrentUser': item.isSavedByCurrentUser,
-                'currentUser': currentUser
+    <div class="vstack gap-4" id="postsContainer"
+         data-next-page="{{ (currentPage|default(1)) + 1 }}"
+         data-has-more="{{ hasMorePosts ? '1' : '0' }}">
+        {% if postsWithLikeStatus is not empty %}
+            {% include 'post/_post_cards.html.twig' with {
+                'postsWithLikeStatus': postsWithLikeStatus,
+                'currentUser': currentUser,
+                'commentLikeService': commentLikeService
             } %}
         {% else %}
             <div class="text-center py-5">
                 <i class="bi bi-inbox display-1 text-muted"></i>
                 <p class="text-muted mt-3">No posts found</p>
             </div>
-        {% endfor %}
+        {% endif %}
     </div>
+
+    <!-- Infinite scroll loading indicator -->
+    <div class="text-center py-4" id="infiniteLoader" style="display: none;">
+        <div class="spinner-border text-secondary" role="status" style="width: 1.5rem; height: 1.5rem;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <div class="text-muted small mt-2">Loading more posts…</div>
+    </div>
+
+    <!-- Sentinel element observed for infinite loading -->
+    <div id="infiniteSentinel" style="height: 1px;"></div>
 </div>
 
 <!-- Include Image Lightbox -->
@@ -273,6 +286,88 @@ document.getElementById('confirmDeleteBtn').addEventListener('click', function()
         deleteItemType = null;
     }
 });
+</script>
+
+<script>
+(function() {
+    const container = document.getElementById('postsContainer');
+    const loader = document.getElementById('infiniteLoader');
+    const sentinel = document.getElementById('infiniteSentinel');
+
+    if (!container || !sentinel) return;
+
+    let loading = false;
+
+    function getBaseParams() {
+        const params = new URLSearchParams(window.location.search);
+        // Keep existing filters/sort/tag, but never propagate ajax param
+        params.delete('ajax');
+        return params;
+    }
+
+    async function loadNextPage() {
+        const hasMore = container.dataset.hasMore === '1';
+        if (!hasMore || loading) return;
+
+        loading = true;
+        if (loader) loader.style.display = 'block';
+
+        try {
+            const nextPage = parseInt(container.dataset.nextPage || '2', 10);
+            const params = getBaseParams();
+            params.set('page', String(nextPage));
+            params.set('ajax', '1');
+
+            const response = await fetch(`{{ path('post_list_view') }}?${params.toString()}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to load posts');
+            }
+
+            const data = await response.json();
+            const html = (data && data.html) ? data.html : '';
+
+            if (html.trim() !== '') {
+                container.insertAdjacentHTML('beforeend', html);
+            }
+
+            container.dataset.hasMore = data.hasMore ? '1' : '0';
+            container.dataset.nextPage = String(data.nextPage || (nextPage + 1));
+
+            // If nothing was returned, stop further requests.
+            if (html.trim() === '' || !data.hasMore) {
+                observer.disconnect();
+            }
+        } catch (e) {
+            // Stop infinite loop on repeated failures
+            observer.disconnect();
+            console.error(e);
+        } finally {
+            loading = false;
+            if (loader) loader.style.display = 'none';
+        }
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+        const entry = entries[0];
+        if (entry && entry.isIntersecting) {
+            loadNextPage();
+        }
+    }, {
+        root: null,
+        rootMargin: '800px 0px',
+        threshold: 0
+    });
+
+    // Only start observing if there are more posts
+    if (container.dataset.hasMore === '1') {
+        observer.observe(sentinel);
+    }
+})();
 </script>
 {% endblock %}
 
