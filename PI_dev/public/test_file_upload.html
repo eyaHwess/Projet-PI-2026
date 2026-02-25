@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Upload Fichier</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 2px solid #e4e6eb;
+            border-radius: 12px;
+        }
+        .test-section h2 {
+            margin-top: 0;
+            color: #050505;
+        }
+        .input-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: #f0f2f5;
+            border-radius: 50%;
+            color: #050505;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            margin: 10px;
+        }
+        .input-btn:hover {
+            background: #e4e6eb;
+        }
+        .input-btn i {
+            font-size: 18px;
+        }
+        .file-info {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f0f2f5;
+            border-radius: 8px;
+            display: none;
+        }
+        .file-info.show {
+            display: block;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Upload de Fichier</h1>
+    
+    <!-- Test 1: Label + Input caché -->
+    <div class="test-section">
+        <h2>Test 1: Label + Input Caché (Méthode Actuelle)</h2>
+        <p>Cliquez sur le bouton 📎 pour sélectionner un fichier:</p>
+        
+        <label for="fileTest1" class="input-btn" title="Joindre un fichier" style="cursor: pointer;">
+            <i class="fas fa-paperclip"></i>
+        </label>
+        <input type="file" id="fileTest1" style="display: none;" accept="image/*,video/*,audio/*,.pdf,.doc,.docx" onchange="handleFileTest1(this)">
+        
+        <div class="file-info" id="infoTest1">
+            <strong>Fichier sélectionné:</strong>
+            <div id="fileNameTest1"></div>
+            <div id="fileSizeTest1"></div>
+            <div id="fileTypeTest1"></div>
+        </div>
+    </div>
+    
+    <!-- Test 2: Bouton avec onclick -->
+    <div class="test-section">
+        <h2>Test 2: Bouton avec onclick</h2>
+        <p>Cliquez sur le bouton 📎 pour sélectionner un fichier:</p>
+        
+        <button type="button" class="input-btn" onclick="document.getElementById('fileTest2').click()" title="Joindre un fichier">
+            <i class="fas fa-paperclip"></i>
+        </button>
+        <input type="file" id="fileTest2" style="display: none;" accept="image/*,video/*,audio/*,.pdf,.doc,.docx" onchange="handleFileTest2(this)">
+        
+        <div class="file-info" id="infoTest2">
+            <strong>Fichier sélectionné:</strong>
+            <div id="fileNameTest2"></div>
+            <div id="fileSizeTest2"></div>
+            <div id="fileTypeTest2"></div>
+        </div>
+    </div>
+    
+    <!-- Test 3: Input visible -->
+    <div class="test-section">
+        <h2>Test 3: Input Visible (Contrôle)</h2>
+        <p>Sélectionnez un fichier directement:</p>
+        
+        <input type="file" id="fileTest3" accept="image/*,video/*,audio/*,.pdf,.doc,.docx" onchange="handleFileTest3(this)">
+        
+        <div class="file-info" id="infoTest3">
+            <strong>Fichier sélectionné:</strong>
+            <div id="fileNameTest3"></div>
+            <div id="fileSizeTest3"></div>
+            <div id="fileTypeTest3"></div>
+        </div>
+    </div>
+    
+    <!-- Diagnostic -->
+    <div class="test-section">
+        <h2>🔍 Diagnostic</h2>
+        <button onclick="runDiagnostic()" style="padding: 10px 20px; background: #0084ff; color: white; border: none; border-radius: 8px; cursor: pointer;">
+            Exécuter le diagnostic
+        </button>
+        <div id="diagnosticResult" style="margin-top: 15px;"></div>
+    </div>
+
+    <script>
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        function handleFileTest1(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            document.getElementById('infoTest1').classList.add('show');
+            document.getElementById('fileNameTest1').innerHTML = `<span class="success">✅ ${file.name}</span>`;
+            document.getElementById('fileSizeTest1').textContent = `Taille: ${formatFileSize(file.size)}`;
+            document.getElementById('fileTypeTest1').textContent = `Type: ${file.type}`;
+        }
+
+        function handleFileTest2(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            document.getElementById('infoTest2').classList.add('show');
+            document.getElementById('fileNameTest2').innerHTML = `<span class="success">✅ ${file.name}</span>`;
+            document.getElementById('fileSizeTest2').textContent = `Taille: ${formatFileSize(file.size)}`;
+            document.getElementById('fileTypeTest2').textContent = `Type: ${file.type}`;
+        }
+
+        function handleFileTest3(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            document.getElementById('infoTest3').classList.add('show');
+            document.getElementById('fileNameTest3').innerHTML = `<span class="success">✅ ${file.name}</span>`;
+            document.getElementById('fileSizeTest3').textContent = `Taille: ${formatFileSize(file.size)}`;
+            document.getElementById('fileTypeTest3').textContent = `Type: ${file.type}`;
+        }
+
+        function runDiagnostic() {
+            const result = document.getElementById('diagnosticResult');
+            let html = '<h3>Résultats du diagnostic:</h3>';
+            
+            // Test 1: Vérifier que les inputs existent
+            const input1 = document.getElementById('fileTest1');
+            const input2 = document.getElementById('fileTest2');
+            const input3 = document.getElementById('fileTest3');
+            
+            html += '<p><strong>1. Inputs existent:</strong></p>';
+            html += `<p>Input Test 1: ${input1 ? '<span class="success">✅ Trouvé</span>' : '<span class="error">❌ Non trouvé</span>'}</p>`;
+            html += `<p>Input Test 2: ${input2 ? '<span class="success">✅ Trouvé</span>' : '<span class="error">❌ Non trouvé</span>'}</p>`;
+            html += `<p>Input Test 3: ${input3 ? '<span class="success">✅ Trouvé</span>' : '<span class="error">❌ Non trouvé</span>'}</p>`;
+            
+            // Test 2: Vérifier les labels
+            const label1 = document.querySelector('label[for="fileTest1"]');
+            html += '<p><strong>2. Label existe:</strong></p>';
+            html += `<p>Label Test 1: ${label1 ? '<span class="success">✅ Trouvé</span>' : '<span class="error">❌ Non trouvé</span>'}</p>`;
+            
+            // Test 3: Vérifier les attributs
+            if (input1) {
+                html += '<p><strong>3. Attributs Input Test 1:</strong></p>';
+                html += `<p>ID: ${input1.id}</p>`;
+                html += `<p>Type: ${input1.type}</p>`;
+                html += `<p>Display: ${window.getComputedStyle(input1).display}</p>`;
+                html += `<p>Accept: ${input1.accept}</p>`;
+            }
+            
+            // Test 4: Simuler un clic
+            html += '<p><strong>4. Test de clic programmatique:</strong></p>';
+            try {
+                input1.click();
+                html += '<p><span class="success">✅ Clic simulé avec succès</span></p>';
+            } catch (e) {
+                html += `<p><span class="error">❌ Erreur: ${e.message}</span></p>`;
+            }
+            
+            result.innerHTML = html;
+        }
+
+        // Auto-diagnostic au chargement
+        window.addEventListener('load', function() {
+            console.log('🧪 Page de test chargée');
+            console.log('Input Test 1:', document.getElementById('fileTest1'));
+            console.log('Input Test 2:', document.getElementById('fileTest2'));
+            console.log('Input Test 3:', document.getElementById('fileTest3'));
+            console.log('Label Test 1:', document.querySelector('label[for="fileTest1"]'));
+        });
+    </script>
+</body>
+</html>

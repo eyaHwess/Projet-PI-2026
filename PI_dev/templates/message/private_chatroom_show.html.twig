@@ -1,0 +1,532 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ privateChatroom.name }} - Chatroom Privé{% endblock %}
+
+{% block body %}
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: #f0f2f5;
+        overflow: hidden;
+    }
+
+    .chat-app {
+        display: flex;
+        height: 100vh;
+        max-width: 1920px;
+        margin: 0 auto;
+    }
+
+    /* MAIN CHAT AREA */
+    .chat-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background: #ffffff;
+    }
+
+    .chat-header {
+        padding: 16px 24px;
+        border-bottom: 1px solid #e4e6eb;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #ffffff;
+    }
+
+    .chat-header-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .chat-header-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+    }
+
+    .chat-header-info h3 {
+        font-size: 16px;
+        font-weight: 600;
+        color: #050505;
+        margin-bottom: 2px;
+    }
+
+    .chat-header-info p {
+        font-size: 13px;
+        color: #65676b;
+    }
+
+    .chat-header-actions {
+        display: flex;
+        gap: 12px;
+    }
+
+    .header-btn {
+        width: 36px;
+        height: 36px;
+        border: none;
+        background: #f0f2f5;
+        border-radius: 50%;
+        color: #050505;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        text-decoration: none;
+    }
+
+    .header-btn:hover {
+        background: #e4e6eb;
+    }
+
+    .header-btn i {
+        font-size: 16px;
+    }
+
+    .messages-container {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px 24px;
+        background: #f0f2f5;
+    }
+
+    .message-group {
+        margin-bottom: 20px;
+    }
+
+    .message {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 4px;
+    }
+
+    .message.own {
+        flex-direction: row-reverse;
+    }
+
+    .message-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 13px;
+        flex-shrink: 0;
+    }
+
+    .message-content {
+        max-width: 60%;
+    }
+
+    .message-author {
+        font-size: 13px;
+        font-weight: 600;
+        color: #050505;
+        margin-bottom: 4px;
+        padding: 0 12px;
+    }
+
+    .message.own .message-author {
+        text-align: right;
+    }
+
+    .message-bubble {
+        padding: 10px 16px;
+        border-radius: 18px;
+        word-wrap: break-word;
+        position: relative;
+    }
+
+    .message:not(.own) .message-bubble {
+        background: #ffffff;
+        border: 1px solid #e4e6eb;
+        border-bottom-left-radius: 4px;
+    }
+
+    .message.own .message-bubble {
+        background: #0084ff;
+        color: white;
+        border-bottom-right-radius: 4px;
+    }
+
+    .message-time {
+        font-size: 11px;
+        color: #65676b;
+        margin-top: 4px;
+        padding: 0 12px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .message.own .message-time {
+        justify-content: flex-end;
+        color: rgba(255,255,255,0.7);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #65676b;
+    }
+
+    .empty-state i {
+        font-size: 64px;
+        margin-bottom: 16px;
+        opacity: 0.3;
+    }
+
+    .empty-state h3 {
+        font-size: 18px;
+        margin-bottom: 8px;
+        color: #050505;
+    }
+
+    /* INPUT AREA */
+    .chat-input-area {
+        padding: 16px 24px;
+        border-top: 1px solid #e4e6eb;
+        background: #ffffff;
+    }
+
+    .chat-input-wrapper {
+        display: flex;
+        align-items: flex-end;
+        gap: 8px;
+        background: #f0f2f5;
+        border-radius: 24px;
+        padding: 8px 12px;
+    }
+
+    .input-actions-left {
+        display: flex;
+        gap: 4px;
+    }
+
+    .input-btn {
+        width: 32px;
+        height: 32px;
+        border: none;
+        background: transparent;
+        color: #0084ff;
+        cursor: pointer;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+
+    .input-btn:hover {
+        background: rgba(0, 132, 255, 0.1);
+    }
+
+    .chat-input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        padding: 8px 12px;
+        font-size: 15px;
+        outline: none;
+        resize: none;
+        max-height: 120px;
+        font-family: inherit;
+    }
+
+    .send-btn {
+        width: 32px;
+        height: 32px;
+        border: none;
+        background: #0084ff;
+        color: white;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+
+    .send-btn:hover {
+        background: #0073e6;
+        transform: scale(1.05);
+    }
+
+    .send-btn:disabled {
+        background: #e4e6eb;
+        color: #bcc0c4;
+        cursor: not-allowed;
+    }
+
+    /* RIGHT SIDEBAR - Members */
+    .members-sidebar {
+        width: 300px;
+        background: #ffffff;
+        border-left: 1px solid #e4e6eb;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+    }
+
+    .members-header {
+        padding: 20px;
+        border-bottom: 1px solid #e4e6eb;
+    }
+
+    .members-header h3 {
+        font-size: 18px;
+        font-weight: 700;
+        color: #050505;
+        margin-bottom: 4px;
+    }
+
+    .members-count {
+        font-size: 13px;
+        color: #65676b;
+    }
+
+    .members-list {
+        padding: 16px;
+    }
+
+    .member-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        transition: background 0.2s;
+    }
+
+    .member-item:hover {
+        background: #f0f2f5;
+    }
+
+    .member-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+
+    .member-info {
+        flex: 1;
+    }
+
+    .member-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: #050505;
+    }
+
+    .member-status {
+        font-size: 12px;
+        color: #65676b;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .badge.creator {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #bcc0c4;
+        border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #8e9297;
+    }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+        .members-sidebar {
+            display: none;
+        }
+    }
+</style>
+
+<div class="chat-app">
+    <!-- MAIN CHAT AREA -->
+    <div class="chat-main">
+        <!-- Header -->
+        <div class="chat-header">
+            <div class="chat-header-left">
+                <div class="chat-header-avatar">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <div class="chat-header-info">
+                    <h3>{{ privateChatroom.name }}</h3>
+                    <p>{{ privateChatroom.members|length }} membres • Chatroom privé</p>
+                </div>
+            </div>
+            <div class="chat-header-actions">
+                <a href="{{ path('message_chatroom', {goalId: privateChatroom.parentGoal.id}) }}" class="header-btn" title="Retour au chatroom principal">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <button class="header-btn" title="Plus d'options">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div class="messages-container" id="messagesContainer">
+            {% if privateChatroom.messages|length > 0 %}
+                {% for message in privateChatroom.messages %}
+                    <div class="message-group">
+                        <div class="message {% if app.user and message.author.id == app.user.id %}own{% endif %}" data-message-id="{{ message.id }}">
+                            <div class="message-avatar">
+                                {{ message.author.firstName|first }}{{ message.author.lastName|first }}
+                            </div>
+                            <div class="message-content">
+                                {% if app.user and message.author.id != app.user.id %}
+                                    <div class="message-author">{{ message.author.firstName }} {{ message.author.lastName }}</div>
+                                {% endif %}
+                                
+                                {% if message.content %}
+                                    <div class="message-bubble">
+                                        {{ message.content }}
+                                    </div>
+                                {% endif %}
+
+                                <div class="message-time">
+                                    {{ message.createdAt|date('H:i') }}
+                                    {% if app.user and message.author.id == app.user.id %}
+                                        <i class="fas fa-check-double"></i>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-comments"></i>
+                    <h3>Aucun message</h3>
+                    <p>Commencez la conversation dans ce chatroom privé!</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Input Area -->
+        <div class="chat-input-area">
+            {% if form is not null %}
+                {{ form_start(form, {'attr': {'id': 'chatForm'}}) }}
+                    <div class="chat-input-wrapper">
+                        <div class="input-actions-left">
+                            <button type="button" class="input-btn" title="Joindre un fichier">
+                                <i class="fas fa-paperclip"></i>
+                            </button>
+                            <button type="button" class="input-btn" title="Emoji">
+                                <i class="fas fa-smile"></i>
+                            </button>
+                        </div>
+                        {{ form_widget(form.content, {
+                            'attr': {
+                                'class': 'chat-input',
+                                'placeholder': 'Votre message',
+                                'rows': 1
+                            }
+                        }) }}
+                        <button type="submit" class="send-btn" id="sendBtn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                {{ form_end(form) }}
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- RIGHT SIDEBAR - Members -->
+    <div class="members-sidebar">
+        <div class="members-header">
+            <h3>Membres</h3>
+            <div class="members-count">{{ privateChatroom.members|length }} membres</div>
+        </div>
+        <div class="members-list">
+            {% for member in privateChatroom.members %}
+                <div class="member-item">
+                    <div class="member-avatar">
+                        {{ member.firstName|first }}{{ member.lastName|first }}
+                    </div>
+                    <div class="member-info">
+                        <div class="member-name">
+                            {{ member.firstName }} {{ member.lastName }}
+                            {% if member.id == privateChatroom.creator.id %}
+                                <span class="badge creator">Créateur</span>
+                            {% endif %}
+                        </div>
+                        <div class="member-status">En ligne</div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+    // Auto-scroll to bottom on page load
+    const messagesContainer = document.getElementById('messagesContainer');
+    if (messagesContainer) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    // Handle form submission
+    const chatForm = document.getElementById('chatForm');
+    if (chatForm) {
+        chatForm.addEventListener('submit', function(e) {
+            const input = this.querySelector('.chat-input');
+            if (!input.value.trim()) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    }
+</script>
+{% endblock %}

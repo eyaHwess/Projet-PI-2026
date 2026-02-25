@@ -1,0 +1,6 @@
+[23-Feb-2026 20:07:33 Europe/Berlin] Form submitted. Has attachment: NO
+[23-Feb-2026 20:13:11 Europe/Berlin] Form submitted. Has attachment: NO
+[23-Feb-2026 21:02:05 Europe/Berlin] Form submitted. Has attachment: NO
+[23-Feb-2026 21:10:29 Europe/Berlin] Form submitted. Has attachment: NO
+[25-Feb-2026 17:07:46 Europe/Berlin] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 247463968 bytes) in C:\Users\Mariem&Islem\Documents\GitHub\Projet-PI-2026\PI_dev\vendor\symfony\http-foundation\Request.php on line 1573
+[25-Feb-2026 17:08:58 Europe/Berlin] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 247463968 bytes) in C:\Users\Mariem&Islem\Documents\GitHub\Projet-PI-2026\PI_dev\vendor\symfony\http-foundation\Request.php on line 1573

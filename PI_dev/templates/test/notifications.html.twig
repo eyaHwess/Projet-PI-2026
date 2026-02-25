@@ -1,0 +1,268 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Test Notifications{% endblock %}
+
+{% block stylesheets %}
+<style>
+    body {
+        background: linear-gradient(135deg, #8b9dc3 0%, #dfe3ee 100%);
+        min-height: 100vh;
+        padding: 40px 20px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .test-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        padding: 40px;
+    }
+
+    .test-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .test-header h1 {
+        font-size: 32px;
+        color: #1f2937;
+        margin: 0 0 12px 0;
+    }
+
+    .test-header p {
+        font-size: 16px;
+        color: #6b7280;
+        margin: 0;
+    }
+
+    .test-section {
+        margin-bottom: 32px;
+        padding: 24px;
+        background: #f9fafb;
+        border-radius: 16px;
+    }
+
+    .test-section h2 {
+        font-size: 20px;
+        color: #1f2937;
+        margin: 0 0 16px 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .test-section-icon {
+        font-size: 24px;
+    }
+
+    .test-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+    }
+
+    .test-card {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        border: 2px solid #e8ecf1;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: center;
+    }
+
+    .test-card:hover {
+        border-color: #8b9dc3;
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(139, 157, 195, 0.2);
+    }
+
+    .test-card-icon {
+        font-size: 48px;
+        margin-bottom: 12px;
+    }
+
+    .test-card-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 8px;
+    }
+
+    .test-card-desc {
+        font-size: 13px;
+        color: #6b7280;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-top: 8px;
+    }
+
+    .status-granted {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .status-denied {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .status-default {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .info-box {
+        background: #eef2f8;
+        border-left: 4px solid #8b9dc3;
+        padding: 16px;
+        border-radius: 8px;
+        margin-top: 16px;
+    }
+
+    .info-box h3 {
+        margin: 0 0 8px 0;
+        font-size: 14px;
+        color: #1f2937;
+        font-weight: 600;
+    }
+
+    .info-box p {
+        margin: 0;
+        font-size: 13px;
+        color: #6b7280;
+        line-height: 1.6;
+    }
+
+    .info-box ul {
+        margin: 8px 0 0 0;
+        padding-left: 20px;
+    }
+
+    .info-box li {
+        font-size: 13px;
+        color: #6b7280;
+        margin-bottom: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="test-container">
+    <div class="test-header">
+        <h1>🧪 Test des Notifications</h1>
+        <p>Testez le système de notifications sans configuration Firebase</p>
+        <div id="permission-status-display"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>
+            <span class="test-section-icon">🔔</span>
+            Types de Notifications
+        </h2>
+        <div class="test-grid">
+            <div class="test-card" onclick="testNotifications.testNewMessage()">
+                <div class="test-card-icon">💬</div>
+                <div class="test-card-title">Nouveau Message</div>
+                <div class="test-card-desc">Notification pour un nouveau message dans le chatroom</div>
+            </div>
+
+            <div class="test-card" onclick="testNotifications.testMention()">
+                <div class="test-card-icon">📢</div>
+                <div class="test-card-title">Mention @user</div>
+                <div class="test-card-desc">Notification quand quelqu'un vous mentionne</div>
+            </div>
+
+            <div class="test-card" onclick="testNotifications.testNewMember()">
+                <div class="test-card-icon">👤</div>
+                <div class="test-card-title">Nouveau Membre</div>
+                <div class="test-card-desc">Notification quand un membre rejoint le goal</div>
+            </div>
+
+            <div class="test-card" onclick="testNotifications.testMultiple()">
+                <div class="test-card-icon">🔔</div>
+                <div class="test-card-title">Plusieurs Notifications</div>
+                <div class="test-card-desc">Envoyer 3 notifications successives</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>
+            <span class="test-section-icon">ℹ️</span>
+            Informations
+        </h2>
+        <div class="info-box">
+            <h3>Comment ça marche?</h3>
+            <p>Ce système de test utilise les notifications natives du navigateur pour simuler les notifications Firebase.</p>
+            <ul>
+                <li>Cliquez sur "Activer" pour autoriser les notifications</li>
+                <li>Cliquez sur une carte pour tester un type de notification</li>
+                <li>Les notifications apparaîtront en haut à droite de votre écran</li>
+                <li>Cliquez sur une notification pour la fermer</li>
+            </ul>
+        </div>
+
+        <div class="info-box" style="margin-top: 16px;">
+            <h3>Prochaines étapes</h3>
+            <p>Pour utiliser Firebase en production:</p>
+            <ul>
+                <li>Suivez le guide <strong>FIREBASE_SETUP_GUIDE.md</strong></li>
+                <li>Configurez votre projet Firebase</li>
+                <li>Ajoutez vos clés dans les fichiers de configuration</li>
+                <li>Intégrez dans les contrôleurs (MessageController, GoalController)</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>
+            <span class="test-section-icon">🔧</span>
+            Console de Debug
+        </h2>
+        <div class="info-box">
+            <h3>Ouvrez la console (F12)</h3>
+            <p>Vous verrez les logs détaillés de chaque notification envoyée.</p>
+        </div>
+    </div>
+</div>
+
+<script src="{{ asset('test-notifications.js') }}"></script>
+
+<script>
+// Mettre à jour l'affichage du statut de permission
+function updatePermissionStatus() {
+    const statusDisplay = document.getElementById('permission-status-display');
+    const permission = Notification.permission;
+    
+    let badgeClass = 'status-default';
+    let statusText = 'En attente';
+    
+    if (permission === 'granted') {
+        badgeClass = 'status-granted';
+        statusText = '✅ Activées';
+    } else if (permission === 'denied') {
+        badgeClass = 'status-denied';
+        statusText = '❌ Refusées';
+    }
+    
+    statusDisplay.innerHTML = `<span class="status-badge ${badgeClass}">${statusText}</span>`;
+}
+
+// Mettre à jour au chargement
+document.addEventListener('DOMContentLoaded', () => {
+    updatePermissionStatus();
+    
+    // Mettre à jour toutes les 2 secondes
+    setInterval(updatePermissionStatus, 2000);
+});
+</script>
+{% endblock %}

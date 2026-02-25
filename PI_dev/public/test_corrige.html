@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Traduction - Corrigé</title>
+    <style>
+        body { font-family: Arial; max-width: 800px; margin: 20px auto; padding: 20px; }
+        .success { background: #d4edda; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .error { background: #f8d7da; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .info { background: #d1ecf1; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px; }
+        input { padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>🌍 Test de Traduction (Corrigé)</h1>
+    
+    <div class="info">
+        <strong>Configuration détectée:</strong><br>
+        Serveur: http://localhost:8000<br>
+        Port: 8000
+    </div>
+    
+    <h3>Test Rapide</h3>
+    <p>ID du message: <input type="number" id="msgId" value="1"></p>
+    <button onclick="testTranslation()">Tester la Traduction</button>
+    <div id="result"></div>
+    
+    <h3>Instructions</h3>
+    <ol>
+        <li>Se connecter: <a href="http://localhost:8000/login" target="_blank">Connexion</a></li>
+        <li>Aller dans un chatroom: <a href="http://localhost:8000/goals" target="_blank">Goals</a></li>
+        <li>Envoyer un message "hello"</li>
+        <li>Noter l'ID du message</li>
+        <li>Revenir ici et tester</li>
+    </ol>
+    
+    <script src="http://localhost:8000/js/translation.js"></script>
+    <script>
+        const SERVER_URL = "http://localhost:8000";
+        
+        async function testTranslation() {
+            const msgId = document.getElementById("msgId").value;
+            const resultDiv = document.getElementById("result");
+            
+            resultDiv.innerHTML = "<div class=\"info\">⏳ Test en cours...</div>";
+            
+            try {
+                const response = await fetch(`${SERVER_URL}/message/${msgId}/translate`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                        "X-Requested-With": "XMLHttpRequest"
+                    },
+                    body: "lang=fr"
+                });
+                
+                const contentType = response.headers.get("content-type");
+                
+                if (contentType && contentType.includes("application/json")) {
+                    const data = await response.json();
+                    
+                    if (data.translation) {
+                        resultDiv.innerHTML = `<div class="success">
+                            ✅ <strong>Traduction réussie!</strong><br>
+                            Traduction: ${data.translation}<br>
+                            Langue: ${data.targetLanguage}
+                        </div>`;
+                    } else if (data.error) {
+                        resultDiv.innerHTML = `<div class="error">
+                            ❌ Erreur: ${data.error}
+                        </div>`;
+                    }
+                } else {
+                    const text = await response.text();
+                    resultDiv.innerHTML = `<div class="error">
+                        ❌ Erreur: Réponse non-JSON<br>
+                        Status: ${response.status}<br>
+                        <details><summary>Voir la réponse</summary><pre>${text.substring(0, 500)}</pre></details>
+                    </div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">
+                    ❌ Erreur réseau: ${error.message}<br><br>
+                    <strong>Vérifications:</strong><br>
+                    1. Le serveur est-il démarré?<br>
+                    2. Êtes-vous connecté?<br>
+                    3. Le message existe-t-il?
+                </div>`;
+            }
+        }
+        
+        // Vérifier les fonctions au chargement
+        window.addEventListener("load", () => {
+            setTimeout(() => {
+                const functions = ["toggleTranslateMenu", "translateMessage"];
+                const allLoaded = functions.every(f => typeof window[f] === "function");
+                
+                if (allLoaded) {
+                    console.log("✅ Toutes les fonctions sont chargées");
+                } else {
+                    console.warn("⚠️ Certaines fonctions manquent");
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

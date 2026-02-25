@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Interactif - Traduction de Messages</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+        }
+
+        .test-section {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .test-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .test-section h2 i {
+            color: #667eea;
+        }
+
+        .test-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .test-item h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .test-item p {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .result.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+
+        .code {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+
+        .progress {
+            width: 100%;
+            height: 4px;
+            background: #e9ecef;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-card h4 {
+            font-size: 32px;
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-language"></i> Test Interactif - Traduction de Messages</h1>
+            <p>Testez toutes les fonctionnalités de traduction du chatroom</p>
+        </div>
+
+        <!-- Test 1: Vérifier les fonctions JavaScript -->
+        <div class="test-section">
+            <h2><i class="fas fa-code"></i> Test 1: Fonctions JavaScript</h2>
+            <div class="test-item">
+                <h3>Vérifier que les fonctions de traduction sont chargées</h3>
+                <p>Ce test vérifie que le fichier <code>translation.js</code> est chargé et que toutes les fonctions sont disponibles.</p>
+                <button class="btn btn-primary" onclick="testJavaScriptFunctions()">
+                    <i class="fas fa-play"></i> Lancer le test
+                </button>
+                <div id="result1" class="result"></div>
+            </div>
+        </div>
+
+        <!-- Test 2: Vérifier le DOM -->
+        <div class="test-section">
+            <h2><i class="fas fa-file-code"></i> Test 2: Éléments DOM</h2>
+            <div class="test-item">
+                <h3>Vérifier que les boutons et menus existent dans le DOM</h3>
+                <p>Ce test simule la structure HTML du chatroom et vérifie que tous les éléments nécessaires sont présents.</p>
+                <button class="btn btn-primary" onclick="testDOMElements()">
+                    <i class="fas fa-play"></i> Lancer le test
+                </button>
+                <div id="result2" class="result"></div>
+            </div>
+        </div>
+
+        <!-- Test 3: Test du menu de traduction -->
+        <div class="test-section">
+            <h2><i class="fas fa-list"></i> Test 3: Menu de Traduction</h2>
+            <div class="test-item">
+                <h3>Tester l'ouverture et la fermeture du menu</h3>
+                <p>Ce test vérifie que le menu de traduction s'ouvre et se ferme correctement.</p>
+                
+                <!-- Simulation d'un message -->
+                <div style="background: #f0f2f5; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <div style="margin-bottom: 10px;">
+                        <strong>Message de test:</strong> Bonjour, comment allez-vous?
+                    </div>
+                    <div class="translate-wrapper" style="position: relative; display: inline-block;">
+                        <button class="btn btn-primary" onclick="window.toggleTranslateMenu ? toggleTranslateMenu(999) : alert('Fonction non chargée')">
+                            <i class="fas fa-language"></i> Traduire
+                        </button>
+                        <div class="translate-menu" id="translateMenu999" style="display: none; position: absolute; top: 40px; left: 0; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 8px 0; min-width: 140px; z-index: 1000;">
+                            <a href="#" style="display: block; padding: 10px 16px; color: #333; text-decoration: none;" onclick="return testTranslation(event, 999, 'en', 'English')">
+                                🇬🇧 English
+                            </a>
+                            <a href="#" style="display: block; padding: 10px 16px; color: #333; text-decoration: none;" onclick="return testTranslation(event, 999, 'fr', 'Français')">
+                                🇫🇷 Français
+                            </a>
+                            <a href="#" style="display: block; padding: 10px 16px; color: #333; text-decoration: none;" onclick="return testTranslation(event, 999, 'ar', 'العربية')">
+                                🇸🇦 العربية
+                            </a>
+                        </div>
+                    </div>
+                    <div id="translated-text-999" style="display: none; margin-top: 10px;"></div>
+                </div>
+                
+                <button class="btn btn-primary" onclick="testTranslationMenu()">
+                    <i class="fas fa-play"></i> Lancer le test automatique
+                </button>
+                <div id="result3" class="result"></div>
+            </div>
+        </div>
+
+        <!-- Test 4: Test de l'API de traduction -->
+        <div class="test-section">
+            <h2><i class="fas fa-server"></i> Test 4: API de Traduction</h2>
+            <div class="test-item">
+                <h3>Tester l'appel à l'API de traduction</h3>
+                <p>Ce test vérifie que l'API de traduction répond correctement. <strong>Note:</strong> Nécessite un message réel dans la base de données.</p>
+                <div style="margin: 15px 0;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">ID du message à traduire:</label>
+                    <input type="number" id="messageId" placeholder="Ex: 123" style="padding: 10px; border: 1px solid #ddd; border-radius: 6px; width: 200px;">
+                </div>
+                <button class="btn btn-primary" onclick="testTranslationAPI()">
+                    <i class="fas fa-play"></i> Tester l'API
+                </button>
+                <div id="result4" class="result"></div>
+            </div>
+        </div>
+
+        <!-- Statistiques -->
+        <div class="test-section">
+            <h2><i class="fas fa-chart-bar"></i> Statistiques des Tests</h2>
+            <div class="stats">
+                <div class="stat-card">
+                    <h4 id="totalTests">0</h4>
+                    <p>Tests Exécutés</p>
+                </div>
+                <div class="stat-card">
+                    <h4 id="passedTests">0</h4>
+                    <p>Tests Réussis</p>
+                </div>
+                <div class="stat-card">
+                    <h4 id="failedTests">0</h4>
+                    <p>Tests Échoués</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/translation.js"></script>
+    <script>
+        let stats = {
+            total: 0,
+            passed: 0,
+            failed: 0
+        };
+
+        function updateStats() {
+            document.getElementById('totalTests').textContent = stats.total;
+            document.getElementById('passedTests').textContent = stats.passed;
+            document.getElementById('failedTests').textContent = stats.failed;
+        }
+
+        function showResult(elementId, success, message) {
+            const result = document.getElementById(elementId);
+            result.className = 'result show ' + (success ? 'success' : 'error');
+            result.innerHTML = '<strong>' + (success ? '✅ Succès' : '❌ Échec') + ':</strong> ' + message;
+            
+            stats.total++;
+            if (success) stats.passed++;
+            else stats.failed++;
+            updateStats();
+        }
+
+        function testJavaScriptFunctions() {
+            const functions = {
+                'toggleTranslateMenu': typeof window.toggleTranslateMenu,
+                'translateMessageTo': typeof window.translateMessageTo,
+                'translateMessage': typeof window.translateMessage,
+                'closeTranslation': typeof window.closeTranslation
+            };
+
+            let allDefined = true;
+            let details = '<div class="code">';
+            
+            for (const [name, type] of Object.entries(functions)) {
+                const isDefined = type === 'function';
+                details += name + ': ' + (isDefined ? '✅ function' : '❌ ' + type) + '<br>';
+                if (!isDefined) allDefined = false;
+            }
+            
+            details += '</div>';
+
+            if (allDefined) {
+                showResult('result1', true, 'Toutes les fonctions sont chargées correctement!' + details);
+            } else {
+                showResult('result1', false, 'Certaines fonctions ne sont pas chargées.' + details);
+            }
+        }
+
+        function testDOMElements() {
+            const elements = {
+                'Bouton traduire': document.querySelector('.translate-btn'),
+                'Menu de traduction': document.getElementById('translateMenu999'),
+                'Conteneur de traduction': document.getElementById('translated-text-999')
+            };
+
+            let allPresent = true;
+            let details = '<div class="code">';
+            
+            for (const [name, element] of Object.entries(elements)) {
+                const isPresent = element !== null;
+                details += name + ': ' + (isPresent ? '✅ Présent' : '❌ Absent') + '<br>';
+                if (!isPresent) allPresent = false;
+            }
+            
+            details += '</div>';
+
+            if (allPresent) {
+                showResult('result2', true, 'Tous les éléments DOM sont présents!' + details);
+            } else {
+                showResult('result2', false, 'Certains éléments DOM sont manquants.' + details);
+            }
+        }
+
+        function testTranslationMenu() {
+            if (typeof window.toggleTranslateMenu !== 'function') {
+                showResult('result3', false, 'La fonction toggleTranslateMenu n\'est pas chargée.');
+                return;
+            }
+
+            const menu = document.getElementById('translateMenu999');
+            if (!menu) {
+                showResult('result3', false, 'Le menu de traduction n\'existe pas dans le DOM.');
+                return;
+            }
+
+            // Test d'ouverture
+            toggleTranslateMenu(999);
+            const isOpen = menu.style.display !== 'none' || menu.classList.contains('show');
+            
+            if (isOpen) {
+                // Test de fermeture
+                setTimeout(() => {
+                    toggleTranslateMenu(999);
+                    const isClosed = menu.style.display === 'none' || !menu.classList.contains('show');
+                    
+                    if (isClosed) {
+                        showResult('result3', true, 'Le menu s\'ouvre et se ferme correctement!');
+                    } else {
+                        showResult('result3', false, 'Le menu ne se ferme pas correctement.');
+                    }
+                }, 500);
+            } else {
+                showResult('result3', false, 'Le menu ne s\'ouvre pas.');
+            }
+        }
+
+        function testTranslation(event, messageId, lang, langName) {
+            event.preventDefault();
+            
+            const container = document.getElementById('translated-text-' + messageId);
+            if (!container) return false;
+            
+            container.style.display = 'block';
+            container.innerHTML = '<div style="padding: 10px; background: #d1ecf1; border-radius: 6px; color: #0c5460;">' +
+                '<strong>' + langName + ':</strong> [Traduction simulée - Hello, how are you?]' +
+                '</div>';
+            
+            // Fermer le menu
+            const menu = document.getElementById('translateMenu' + messageId);
+            if (menu) {
+                menu.style.display = 'none';
+                menu.classList.remove('show');
+            }
+            
+            return false;
+        }
+
+        async function testTranslationAPI() {
+            const messageId = document.getElementById('messageId').value;
+            
+            if (!messageId) {
+                showResult('result4', false, 'Veuillez entrer un ID de message.');
+                return;
+            }
+
+            const result = document.getElementById('result4');
+            result.className = 'result show info';
+            result.innerHTML = '<div class="spinner"></div> Test en cours...';
+
+            try {
+                const params = new URLSearchParams();
+                params.append('lang', 'en');
+
+                const response = await fetch('/message/' + messageId + '/translate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: params.toString()
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    showResult('result4', false, 'Erreur API: ' + data.error);
+                } else if (data.translation) {
+                    showResult('result4', true, 'Traduction reçue: "' + data.translation + '"');
+                } else {
+                    showResult('result4', false, 'Réponse API invalide: ' + JSON.stringify(data));
+                }
+            } catch (error) {
+                showResult('result4', false, 'Erreur: ' + error.message);
+            }
+        }
+
+        // Ajouter le style pour le menu show
+        const style = document.createElement('style');
+        style.textContent = '.translate-menu.show { display: block !important; }';
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

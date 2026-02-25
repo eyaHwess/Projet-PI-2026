@@ -546,7 +546,7 @@
                     </div>
                     <h3 class="action-title">Mes objectifs</h3>
                     <p class="action-description">Suivez vos progrès et définissez de nouveaux objectifs à atteindre</p>
-                    <a href="{{ path('app_goal_index') }}" class="action-btn" style="--card-color-1: #E2C2E8; --card-color-2: #EDD5F0;">
+                    <a href="{{ path('goal_list') }}" class="action-btn" style="--card-color-1: #E2C2E8; --card-color-2: #EDD5F0;">
                         <i class="bi bi-flag-fill"></i>
                         Gérer mes objectifs
                     </a>
@@ -628,7 +628,7 @@
                                     <i class="bi bi-flag"></i>
                                 </div>
                                 <p class="mb-3">Aucun objectif pour le moment</p>
-                                <a href="{{ path('app_goal_index') }}" class="btn-view-all">
+                                <a href="{{ path('goal_list') }}" class="btn-view-all">
                                     <i class="bi bi-plus-circle"></i>
                                     Créer un objectif
                                 </a>
@@ -656,7 +656,7 @@
                                 </div>
                             {% endfor %}
                             <div class="p-3 text-center border-top">
-                                <a href="{{ path('app_goal_index') }}" class="btn-view-all">
+                                <a href="{{ path('goal_list') }}" class="btn-view-all">
                                     Voir tous les objectifs
                                     <i class="bi bi-arrow-right"></i>
                                 </a>
@@ -681,7 +681,7 @@
                                 <i class="bi bi-repeat"></i>
                             </div>
                             <p class="mb-3">{{ routinesCount }} routine(s) associée(s) à vos objectifs</p>
-                            <a href="{{ path('app_goal_index') }}" class="btn-view-all">
+                            <a href="{{ path('goal_list') }}" class="btn-view-all">
                                 <i class="bi bi-eye"></i>
                                 Voir mes objectifs
                             </a>

@@ -318,6 +318,9 @@ class CoachingRequestController extends AbstractController
             $this->entityManager->persist($coachingRequest);
             $this->entityManager->flush();
 
+            // Notifier le coach de la nouvelle demande
+            $this->notificationService->notifyCoachNewRequest($coachingRequest);
+
             return new JsonResponse([
                 'success' => true,
                 'message' => 'Votre demande a été envoyée avec succès !',

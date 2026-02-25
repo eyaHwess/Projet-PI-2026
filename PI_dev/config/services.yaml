@@ -1,10 +1,23 @@
+# This file is the entry point to configure your own services.
+# Files in the packages/ subdirectory configure your dependencies.
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    firebase.server_key: '%env(FIREBASE_SERVER_KEY)%'
+    # Provider de traduction : valeur lue depuis .env (TRANSLATION_PROVIDER=mymemory / deepl / google / libretranslate)
+    translation.provider: '%env(TRANSLATION_PROVIDER)%'
+    translation.deepl_api_key: '%env(DEEPL_API_KEY)%'
+    translation.google_api_key: '%env(GOOGLE_API_KEY)%'
 
 services:
+    # default configuration for services in *this* file
     _defaults:
-        autowire: true
-        autoconfigure: true
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
 
+    # makes classes in src/ available to be used as services
+    # this creates a service per class whose id is the fully-qualified class name
     App\:
         resource: '../src/'
         exclude:
@@ -12,7 +25,21 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
-    App\Repository\:
-        resource: '../src/Repository'
+    # add more service definitions when explicit configuration is needed
+    # please note that last definitions always *replace* previous ones
+
+    # Firebase Notification Service
+    App\Service\FirebaseNotificationService:
+        arguments:
+            $firebaseServerKey: '%firebase.server_key%'
+
+    # Mention Detector Service
+    App\Service\MentionDetector:
         autowire: true
-        autoconfigure: true
+
+    # Translation Service
+    App\Service\TranslationService:
+        arguments:
+            $translationProvider: '%translation.provider%'
+            $deeplApiKey: '%translation.deepl_api_key%'
+            $googleApiKey: '%translation.google_api_key%'
