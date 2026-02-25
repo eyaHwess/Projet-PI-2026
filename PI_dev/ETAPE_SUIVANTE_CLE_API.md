@@ -1,4 +1,163 @@
-# 🔑 Étape Suivante: Récupérer Votre Clé API DeepL
+Symfony Workflow pour Chatroom
+
+(architecture propre + règles métier avancées)
+
+Je vais te donner un guide structuré clair étape par étape.
+
+🟢 ÉTAPE 1 — Installer le composant Workflow
+composer require symfony/workflow
+🟢 ÉTAPE 2 — Ajouter un champ state dans Chatroom
+
+Dans ton entity Chatroom, ajoute un champ :
+
+state (string)
+
+valeur par défaut : active
+
+Puis migration :
+
+php bin/console make:migration
+php bin/console doctrine:migrations:migrate
+🟢 ÉTAPE 3 — Configurer le Workflow
+
+Créer (ou modifier) :
+
+config/packages/workflow.yaml
+
+Ajouter :
+
+Type : state_machine
+
+Supports : App\Entity\Chatroom
+
+Marking store : state
+
+Places :
+
+active
+
+locked
+
+archived
+
+deleted
+
+Transitions :
+
+lock
+
+unlock
+
+archive
+
+delete
+
+🟢 ÉTAPE 4 — Définir les transitions métier
+Transition lock
+
+active → locked
+
+Transition unlock
+
+locked → active
+
+Transition archive
+
+active → archived
+
+Transition delete
+
+active / locked / archived → deleted
+
+🟢 ÉTAPE 5 — Utiliser Workflow dans le contrôleur
+
+Injecter :
+
+WorkflowInterface $chatroomStateMachine
+
+Puis :
+
+Vérifier si transition autorisée
+
+Appliquer la transition
+
+Flush
+
+🟢 ÉTAPE 6 — Bloquer l’envoi de message si verrouillé
+
+Dans ton contrôleur Message :
+
+Avant d’enregistrer :
+
+Vérifier état
+
+Si locked → refuser
+
+Si archived → lecture seule
+
+Si deleted → accès interdit
+
+🟢 ÉTAPE 7 — Adapter l’interface Twig
+
+Dans chatroom.html.twig :
+
+Afficher badge selon état :
+
+active → 🟢 Active
+
+locked → 🔒 Verrouillé
+
+archived → 📦 Archivé
+
+deleted → ❌ Supprimé
+
+Désactiver input message si :
+
+locked
+
+archived
+
+🟢 ÉTAPE 8 — Ajouter boutons admin
+
+Dans interface :
+
+Bouton "Verrouiller"
+
+Bouton "Déverrouiller"
+
+Bouton "Archiver"
+
+Bouton "Supprimer"
+
+Chaque bouton appelle une route :
+
+/chatroom/{id}/lock
+
+/chatroom/{id}/archive
+
+etc.
+
+🟢 ÉTAPE 9 — Sécuriser transitions
+
+Ajouter règles :
+
+Seul admin peut lock
+
+Seul créateur peut delete
+
+Auto-archive si date dépassée
+
+🟢 ÉTAPE 10 — Test complet
+
+Tester :
+
+Chatroom active → envoyer message ✔
+
+Lock → envoyer message ❌
+
+Archive → lecture seule ✔
+
+Delete → invisible ✔# 🔑 Étape Suivante: Récupérer Votre Clé API DeepL
 
 ## ✅ Compte créé avec succès!
 

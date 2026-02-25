@@ -110,6 +110,14 @@
         font-size: 20px;
         margin-right: 12px;
         flex-shrink: 0;
+        object-fit: cover;
+        overflow: hidden;
+    }
+
+    .conversation-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
     }
 
     .conversation-info {
@@ -187,6 +195,14 @@
         justify-content: center;
         color: white;
         font-weight: 600;
+        object-fit: cover;
+        overflow: hidden;
+    }
+
+    .chat-header-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
     }
 
     .chat-header-info h3 {
@@ -528,6 +544,14 @@
         font-weight: 600;
         font-size: 13px;
         flex-shrink: 0;
+        object-fit: cover;
+        overflow: hidden;
+    }
+
+    .message-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
     }
 
     .message-content {
@@ -2605,6 +2629,14 @@
         font-weight: 600;
         font-size: 14px;
         flex-shrink: 0;
+        object-fit: cover;
+        overflow: hidden;
+    }
+
+    .member-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
     }
 
     .member-info {
@@ -2725,6 +2757,223 @@
         background: #f5f5f5;
         border: 2px dashed #ccc;
     }
+
+    /* Workflow State Badges */
+    .chatroom-state-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        animation: fadeIn 0.3s ease-in;
+    }
+
+    .chatroom-state-badge.state-active {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        border: 2px solid #28a745;
+        box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+    }
+
+    .chatroom-state-badge.state-locked {
+        background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+        color: #000;
+        border: 2px solid #ffc107;
+        box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+    }
+
+    .chatroom-state-badge.state-archived {
+        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        color: white;
+        border: 2px solid #6c757d;
+        box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
+    }
+
+    .chatroom-state-badge.state-deleted {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: white;
+        border: 2px solid #dc3545;
+        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+    }
+
+    .chatroom-state-badge i {
+        font-size: 14px;
+    }
+
+    /* Workflow Action Buttons */
+    .workflow-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .workflow-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 2px solid;
+        text-decoration: none;
+    }
+
+    .workflow-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .workflow-btn-lock {
+        background: #fff9e6;
+        color: #ffc107;
+        border-color: #ffc107;
+    }
+
+    .workflow-btn-lock:hover {
+        background: #ffc107;
+        color: #000;
+    }
+
+    .workflow-btn-unlock {
+        background: #d4edda;
+        color: #28a745;
+        border-color: #28a745;
+    }
+
+    .workflow-btn-unlock:hover {
+        background: #28a745;
+        color: white;
+    }
+
+    .workflow-btn-archive {
+        background: #e2e3e5;
+        color: #6c757d;
+        border-color: #6c757d;
+    }
+
+    .workflow-btn-archive:hover {
+        background: #6c757d;
+        color: white;
+    }
+
+    .workflow-btn-delete {
+        background: #f8d7da;
+        color: #dc3545;
+        border-color: #dc3545;
+    }
+
+    .workflow-btn-delete:hover {
+        background: #dc3545;
+        color: white;
+    }
+
+    .workflow-btn-restore {
+        background: #d1ecf1;
+        color: #0c5460;
+        border-color: #17a2b8;
+    }
+
+    .workflow-btn-restore:hover {
+        background: #17a2b8;
+        color: white;
+    }
+
+    .workflow-btn i {
+        font-size: 14px;
+    }
+
+    /* State Banner */
+    .state-banner {
+        padding: 16px 24px;
+        background: linear-gradient(135deg, #fff9e6 0%, #fffbf0 100%);
+        border-bottom: 3px solid #ffc107;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+    }
+
+    .state-banner.locked {
+        background: linear-gradient(135deg, #fff9e6 0%, #fffbf0 100%);
+        border-bottom-color: #ffc107;
+    }
+
+    .state-banner.archived {
+        background: linear-gradient(135deg, #e2e3e5 0%, #f8f9fa 100%);
+        border-bottom-color: #6c757d;
+    }
+
+    .state-banner.deleted {
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+        border-bottom-color: #dc3545;
+    }
+
+    .state-banner-content {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex: 1;
+    }
+
+    .state-banner-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+    .state-banner.locked .state-banner-icon {
+        background: #ffc107;
+        color: #000;
+    }
+
+    .state-banner.archived .state-banner-icon {
+        background: #6c757d;
+        color: white;
+    }
+
+    .state-banner.deleted .state-banner-icon {
+        background: #dc3545;
+        color: white;
+    }
+
+    .state-banner-text {
+        flex: 1;
+    }
+
+    .state-banner-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #050505;
+        margin-bottom: 4px;
+    }
+
+    .state-banner-description {
+        font-size: 13px;
+        color: #65676b;
+    }
+
+    /* Disable input when locked/archived */
+    .chat-input-area.disabled {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+
+    .chat-input-area.disabled .chat-input-wrapper {
+        background: #e4e6eb;
+    }
+
 </style>
 
 <div class="chat-app">
@@ -2769,6 +3018,64 @@
                 </div>
             </div>
             <div class="chat-header-actions">
+                {# Workflow State Badge #}
+                {% set userParticipation = goal.getUserParticipation(app.user) %}
+                {% if chatroom.state != 'active' %}
+                    <span class="chatroom-state-badge state-{{ chatroom.state }}">
+                        {% if chatroom.state == 'locked' %}
+                            <i class="fas fa-lock"></i> Verrouillé
+                        {% elseif chatroom.state == 'archived' %}
+                            <i class="fas fa-archive"></i> Archivé
+                        {% elseif chatroom.state == 'deleted' %}
+                            <i class="fas fa-trash"></i> Supprimé
+                        {% endif %}
+                    </span>
+                {% endif %}
+
+                {# Workflow Action Buttons (only for admins/moderators/owner) #}
+                {% if userParticipation and (userParticipation.canModerate() or userParticipation.getRole() == 'OWNER') %}
+                    <div class="workflow-actions">
+                        {% if chatroom.state == 'active' %}
+                            <form method="post" action="{{ path('chatroom_lock', {id: chatroom.id}) }}" style="display: inline;">
+                                <button type="submit" class="workflow-btn workflow-btn-lock" title="Verrouiller le chatroom" onclick="return confirm('Verrouiller ce chatroom ? Les membres ne pourront plus envoyer de messages.')">
+                                    <i class="fas fa-lock"></i> Verrouiller
+                                </button>
+                            </form>
+                            <form method="post" action="{{ path('chatroom_archive', {id: chatroom.id}) }}" style="display: inline;">
+                                <button type="submit" class="workflow-btn workflow-btn-archive" title="Archiver le chatroom" onclick="return confirm('Archiver ce chatroom ? Il passera en lecture seule.')">
+                                    <i class="fas fa-archive"></i> Archiver
+                                </button>
+                            </form>
+                        {% elseif chatroom.state == 'locked' %}
+                            <form method="post" action="{{ path('chatroom_unlock', {id: chatroom.id}) }}" style="display: inline;">
+                                <button type="submit" class="workflow-btn workflow-btn-unlock" title="Déverrouiller le chatroom">
+                                    <i class="fas fa-unlock"></i> Déverrouiller
+                                </button>
+                            </form>
+                            <form method="post" action="{{ path('chatroom_archive', {id: chatroom.id}) }}" style="display: inline;">
+                                <button type="submit" class="workflow-btn workflow-btn-archive" title="Archiver le chatroom" onclick="return confirm('Archiver ce chatroom ? Il passera en lecture seule.')">
+                                    <i class="fas fa-archive"></i> Archiver
+                                </button>
+                            </form>
+                        {% endif %}
+                        
+                        {# Only owner can delete #}
+                        {% if userParticipation.getRole() == 'OWNER' and chatroom.state != 'deleted' %}
+                            <form method="post" action="{{ path('chatroom_delete', {id: chatroom.id}) }}" style="display: inline;">
+                                <button type="submit" class="workflow-btn workflow-btn-delete" title="Supprimer le chatroom" onclick="return confirm('Supprimer ce chatroom ? Il ne sera plus accessible (soft delete).')">
+                                    <i class="fas fa-trash"></i> Supprimer
+                                </button>
+                            </form>
+                        {% elseif userParticipation.getRole() == 'OWNER' and chatroom.state == 'deleted' %}
+                            <form method="post" action="{{ path('chatroom_restore', {id: chatroom.id}) }}" style="display: inline;">
+                                <button type="submit" class="workflow-btn workflow-btn-restore" title="Restaurer le chatroom">
+                                    <i class="fas fa-undo"></i> Restaurer
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
                 <a href="{{ path('message_private_chatrooms_list', {goalId: goal.id}) }}" class="header-btn" title="Voir les sous-groupes privés">
                     <i class="fas fa-users"></i>
                 </a>
@@ -2808,6 +3115,45 @@
                 {% endfor %}
             {% endfor %}
         </div>
+
+        {# Workflow State Banner #}
+        {% if chatroom.state == 'locked' %}
+            <div class="state-banner locked">
+                <div class="state-banner-content">
+                    <div class="state-banner-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <div class="state-banner-text">
+                        <div class="state-banner-title">🔒 Chatroom Verrouillé</div>
+                        <div class="state-banner-description">Ce chatroom est verrouillé. Vous ne pouvez plus envoyer de messages.</div>
+                    </div>
+                </div>
+            </div>
+        {% elseif chatroom.state == 'archived' %}
+            <div class="state-banner archived">
+                <div class="state-banner-content">
+                    <div class="state-banner-icon">
+                        <i class="fas fa-archive"></i>
+                    </div>
+                    <div class="state-banner-text">
+                        <div class="state-banner-title">📦 Chatroom Archivé</div>
+                        <div class="state-banner-description">Ce chatroom est archivé. Lecture seule, aucun nouveau message ne peut être envoyé.</div>
+                    </div>
+                </div>
+            </div>
+        {% elseif chatroom.state == 'deleted' %}
+            <div class="state-banner deleted">
+                <div class="state-banner-content">
+                    <div class="state-banner-icon">
+                        <i class="fas fa-trash"></i>
+                    </div>
+                    <div class="state-banner-text">
+                        <div class="state-banner-title">🔴 Chatroom Supprimé</div>
+                        <div class="state-banner-description">Ce chatroom a été supprimé. Seul le propriétaire peut le restaurer.</div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
 
         <!-- Search Bar -->
         <div class="search-bar" id="searchBar">
@@ -2858,7 +3204,11 @@
                     <div class="message-group">
                         <div class="message {% if app.user and message.author.id == app.user.id %}own{% endif %} {% if message.isPinned %}pinned{% endif %} {% if message.isHidden %}moderated-hidden{% endif %}" data-message-id="{{ message.id }}">
                             <div class="message-avatar">
-                                {{ message.author.firstName|first }}{{ message.author.lastName|first }}
+                                {% if message.author.hasProfilePicture() %}
+                                    <img src="{{ vich_uploader_asset(message.author, 'profilePictureFile') }}" alt="{{ message.author.firstName }} {{ message.author.lastName }}">
+                                {% else %}
+                                    {{ message.author.firstName|first }}{{ message.author.lastName|first }}
+                                {% endif %}
                             </div>
                             <div class="message-content">
                                 {% if message.isPinned %}
@@ -3157,7 +3507,20 @@
         </div>
 
         <!-- Input Area -->
-        <div class="chat-input-area">
+        <div class="chat-input-area {% if chatroom.state in ['locked', 'archived', 'deleted'] %}disabled{% endif %}">
+            {% if chatroom.state in ['locked', 'archived', 'deleted'] %}
+                {# Show disabled message #}
+                <div style="text-align: center; padding: 16px; color: #65676b; font-size: 14px;">
+                    {% if chatroom.state == 'locked' %}
+                        <i class="fas fa-lock"></i> Ce chatroom est verrouillé. Vous ne pouvez pas envoyer de messages.
+                    {% elseif chatroom.state == 'archived' %}
+                        <i class="fas fa-archive"></i> Ce chatroom est archivé. Lecture seule.
+                    {% elseif chatroom.state == 'deleted' %}
+                        <i class="fas fa-trash"></i> Ce chatroom a été supprimé.
+                    {% endif %}
+                </div>
+            {% else %}
+                {# Normal input area when active #}
             {# Reply Preview #}
             <div class="reply-preview" id="replyPreview">
                 <div class="reply-preview-content">
@@ -3344,6 +3707,7 @@
                 {{ form_widget(form._token) }}
                 {{ form_end(form, {'render_rest': false}) }}
             {% endif %}
+            {% endif %} {# End of active state check #}
         </div>
     </div>
 
