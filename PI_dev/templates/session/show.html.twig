@@ -476,20 +476,45 @@
                             </div>
                         {% endif %}
 
-                        {% if session.status not in ['confirmed', 'completed', 'cancelled'] %}
+                        {% set sessionPrice = session.price ?? session.coachingRequest.budget ?? 50 %}
+                        <div class="info-row">
+                            <div class="info-icon" style="background: linear-gradient(135deg, #9AE6B0, #C8F2E3); color: white;">
+                                <i class="bi bi-currency-euro"></i>
+                            </div>
+                            <span class="info-label">Prix :</span>
+                            <span class="info-value">
+                                {% if session.isPaid %}
+                                    <span class="text-success fw-bold"><i class="bi bi-check-circle-fill"></i> Payé</span> ({{ sessionPrice|number_format(2, ',', ' ') }} €)
+                                {% else %}
+                                    {{ sessionPrice|number_format(2, ',', ' ') }} €
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        {% set showPayBtn = not isCoach and not session.isPaid and session.status not in ['cancelled'] %}
+                        {% set showScheduleBtns = session.status not in ['confirmed', 'completed', 'cancelled'] %}
+                        {% if showPayBtn or showScheduleBtns %}
                             <div class="action-buttons">
-                                <a href="{{ path('app_session_schedule', { id: session.id }) }}" class="btn-action btn-primary-action">
-                                    <i class="bi bi-calendar-event"></i>
-                                    {% if session.status == 'scheduling' %}Proposer un créneau{% else %}Modifier le créneau{% endif %}
-                                </a>
-                                {% if (session.status == 'proposed_by_coach' and isCoach) or (session.status == 'proposed_by_user' and not isCoach) %}
-                                    <form method="post" action="{{ path('app_session_clear_slot', { id: session.id }) }}" class="d-inline" onsubmit="return confirm('Supprimer le créneau proposé ?');">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('clear-slot' ~ session.id) }}">
-                                        <button type="submit" class="btn-action btn-danger-action">
-                                            <i class="bi bi-trash"></i>
-                                            Supprimer le créneau
-                                        </button>
-                                    </form>
+                                {% if showPayBtn %}
+                                    <a href="{{ path('app_payment_checkout', { id: session.id }) }}" class="btn-action btn-primary-action" style="background: linear-gradient(135deg, #22c55e, #16a34a); border-color: #22c55e;">
+                                        <i class="bi bi-credit-card"></i>
+                                        Payer la session ({{ sessionPrice|number_format(2, ',', ' ') }} €)
+                                    </a>
+                                {% endif %}
+                                {% if showScheduleBtns %}
+                                    <a href="{{ path('app_session_schedule', { id: session.id }) }}" class="btn-action btn-primary-action">
+                                        <i class="bi bi-calendar-event"></i>
+                                        {% if session.status == 'scheduling' %}Proposer un créneau{% else %}Modifier le créneau{% endif %}
+                                    </a>
+                                    {% if (session.status == 'proposed_by_coach' and isCoach) or (session.status == 'proposed_by_user' and not isCoach) %}
+                                        <form method="post" action="{{ path('app_session_clear_slot', { id: session.id }) }}" class="d-inline" onsubmit="return confirm('Supprimer le créneau proposé ?');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('clear-slot' ~ session.id) }}">
+                                            <button type="submit" class="btn-action btn-danger-action">
+                                                <i class="bi bi-trash"></i>
+                                                Supprimer le créneau
+                                            </button>
+                                        </form>
+                                    {% endif %}
                                 {% endif %}
                             </div>
                         {% endif %}

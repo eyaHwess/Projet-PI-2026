@@ -69,6 +69,19 @@
                                     <small class="text-muted">Durée en minutes (ex: 60 pour 1 heure)</small>
                                 </div>
 
+                                <div class="mb-3">
+                                    {{ form_label(form.priority, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                                    {{ form_widget(form.priority) }}
+                                    {{ form_errors(form.priority) }}
+                                </div>
+
+                                <div class="mb-3">
+                                    {{ form_label(form.objective, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                                    {{ form_widget(form.objective) }}
+                                    {{ form_errors(form.objective) }}
+                                    <small class="text-muted">Objectif ou thème principal de cette session</small>
+                                </div>
+
                                 <div class="mb-4">
                                     {{ form_label(form.status, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
                                     {{ form_widget(form.status) }}

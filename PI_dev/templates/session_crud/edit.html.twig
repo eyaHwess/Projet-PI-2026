@@ -1,71 +1,148 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Modifier Session{% endblock %}
+{% block title %}Modifier la session{% endblock %}
 
 {% block stylesheets %}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
     <style>
-        :root { --orange-primary: #f97316; }
-        .btn-orange { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); border: none; color: white; border-radius: 50px; font-weight: 600; }
-        .form-card { border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        :root {
+            --pastel-blue: #A8D8EA;
+            --pastel-blue-light: #E8F6F9;
+            --pastel-blue-dark: #5A7C8F;
+            --pastel-pink: #FFE4E9;
+            --pastel-mint: #B5EAD7;
+            --pastel-mint-light: #E8F8F2;
+            --pastel-text: #2C5F7F;
+            --pastel-text-muted: #6B8A9E;
+        }
+        body { background: linear-gradient(180deg, #F8FCFE 0%, #F0F8FF 100%); min-height: 100vh; }
+        .edit-header {
+            background: linear-gradient(135deg, var(--pastel-blue-light) 0%, #F0F8FF 100%);
+            padding: 1.5rem 0;
+            margin-bottom: 2rem;
+            border-radius: 0 0 1.5rem 1.5rem;
+            box-shadow: 0 4px 20px rgba(168, 216, 234, 0.2);
+        }
+        .btn-back-pastel {
+            background: white;
+            border: 2px solid var(--pastel-blue-light);
+            color: var(--pastel-blue-dark);
+            padding: 0.5rem 1rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-back-pastel:hover { background: var(--pastel-blue-light); border-color: var(--pastel-blue); color: #2C5F7F; }
+        .form-card-pastel {
+            border: 2px solid var(--pastel-blue-light);
+            border-radius: 1.25rem;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(168, 216, 234, 0.12);
+            background: white;
+        }
+        .form-card-pastel .card-header-pastel {
+            background: linear-gradient(135deg, var(--pastel-blue-light) 0%, #F0F8FF 100%);
+            padding: 1rem 1.5rem;
+            border-bottom: 2px solid var(--pastel-blue-light);
+            font-weight: 700;
+            color: var(--pastel-text);
+        }
+        .form-card-pastel .form-control, .form-card-pastel .form-select {
+            border: 2px solid var(--pastel-blue-light);
+            border-radius: 0.75rem;
+        }
+        .form-card-pastel .form-control:focus, .form-card-pastel .form-select:focus {
+            border-color: var(--pastel-blue);
+            box-shadow: 0 0 0 4px rgba(168, 216, 234, 0.2);
+            outline: none;
+        }
+        .form-card-pastel .form-label { color: var(--pastel-text); font-weight: 600; }
+        .info-box-pastel {
+            background: var(--pastel-mint-light);
+            border: 2px solid var(--pastel-mint);
+            border-radius: 1rem;
+            padding: 1rem 1.25rem;
+            color: var(--pastel-text-muted);
+        }
+        .btn-save-pastel {
+            background: linear-gradient(135deg, var(--pastel-blue) 0%, #B8E6F0 100%);
+            border: none;
+            color: #2C5F7F;
+            padding: 0.6rem 1.25rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+        }
+        .btn-save-pastel:hover { color: #2C5F7F; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(168, 216, 234, 0.4); }
     </style>
 {% endblock %}
 
 {% block body %}
-    <section class="pt-5 pb-5">
+    <div class="edit-header">
+        <div class="container">
+            <a href="{{ path('app_session_crud_index') }}" class="btn btn-back-pastel">
+                <i class="bi bi-arrow-left me-2"></i>Retour à la liste
+            </a>
+        </div>
+    </div>
+
+    <section class="pb-5">
         <div class="container">
             <div class="row">
                 <div class="col-lg-8 mx-auto">
-                    <div class="mb-4">
-                        <a href="{{ path('app_session_crud_index') }}" class="btn btn-outline-secondary">
-                            <i class="bi bi-arrow-left me-2"></i>Retour à la liste
-                        </a>
-                    </div>
-
-                    <div class="card border-0 form-card">
+                    <div class="form-card-pastel card">
+                        <div class="card-header-pastel">
+                            <i class="bi bi-pencil-square me-2"></i>Modifier la session #{{ session.id }}
+                        </div>
                         <div class="card-body p-4">
-                            <h2 class="mb-4">
-                                <i class="bi bi-pencil me-2" style="color: var(--orange-primary);"></i>
-                                Modifier Session #{{ session.id }}
-                            </h2>
-
-                            <div class="alert alert-info mb-4">
+                            <div class="info-box-pastel mb-4">
                                 <i class="bi bi-info-circle me-2"></i>
-                                <strong>Coach:</strong> {{ session.coachingRequest.coach.firstName }} {{ session.coachingRequest.coach.lastName }}
-                                <br>
-                                <strong>Utilisateur:</strong> {{ session.coachingRequest.user.firstName }} {{ session.coachingRequest.user.lastName }}
+                                <strong>Coach :</strong> {{ session.coachingRequest.coach.firstName }} {{ session.coachingRequest.coach.lastName }}
+                                &nbsp;·&nbsp;
+                                <strong>Client :</strong> {{ session.coachingRequest.user.firstName }} {{ session.coachingRequest.user.lastName }}
                             </div>
 
                             <div id="session-edit-alert" class="alert d-none mb-3"></div>
                             {{ form_start(form, { attr: { id: 'session-edit-form' } }) }}
                                 <div class="mb-3">
-                                    {{ form_label(form.scheduledAt, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                                    {{ form_widget(form.scheduledAt) }}
+                                    {{ form_label(form.scheduledAt, null, {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.scheduledAt, { attr: { class: 'form-control' } }) }}
                                     {{ form_errors(form.scheduledAt) }}
                                     <small class="text-muted">Sélectionnez la date et l'heure de la session</small>
                                 </div>
 
                                 <div class="mb-3">
-                                    {{ form_label(form.duration, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                                    {{ form_widget(form.duration) }}
+                                    {{ form_label(form.duration, null, {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.duration, { attr: { class: 'form-control' } }) }}
                                     {{ form_errors(form.duration) }}
-                                    <small class="text-muted">Durée en minutes (ex: 60 pour 1 heure)</small>
+                                    <small class="text-muted">Durée en minutes (ex. 60 pour 1 heure)</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    {{ form_label(form.priority, null, {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.priority, { attr: { class: 'form-select' } }) }}
+                                    {{ form_errors(form.priority) }}
+                                    <small class="text-muted">Haute, Moyenne ou Faible — pour organiser votre travail</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    {{ form_label(form.objective, null, {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.objective, { attr: { class: 'form-control' } }) }}
+                                    {{ form_errors(form.objective) }}
+                                    <small class="text-muted">Objectif ou thème principal de cette session</small>
                                 </div>
 
                                 <div class="mb-4">
-                                    {{ form_label(form.status, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                                    {{ form_widget(form.status) }}
+                                    {{ form_label(form.status, null, {'label_attr': {'class': 'form-label'}}) }}
+                                    {{ form_widget(form.status, { attr: { class: 'form-select' } }) }}
                                     {{ form_errors(form.status) }}
                                 </div>
 
                                 <div class="d-flex gap-2">
-                                    <button type="submit" id="btn-edit-submit" class="btn btn-orange">
+                                    <button type="submit" id="btn-edit-submit" class="btn btn-save-pastel">
                                         <i class="bi bi-check-circle me-2"></i>Enregistrer les modifications
                                     </button>
-                                    <a href="{{ path('app_session_crud_index') }}" class="btn btn-outline-secondary">
-                                        Annuler
-                                    </a>
+                                    <a href="{{ path('app_session_crud_index') }}" class="btn btn-outline-secondary">Annuler</a>
                                 </div>
                             {{ form_end(form) }}
                         </div>

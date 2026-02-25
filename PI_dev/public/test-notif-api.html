@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Test API Notifications</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test API Notifications</h1>
+    
+    <div class="section">
+        <h2>1. Test Compteur de notifications non lues</h2>
+        <button onclick="testUnreadCount()">Tester /notifications/unread-count</button>
+        <pre id="unreadCountResult"></pre>
+    </div>
+    
+    <div class="section">
+        <h2>2. Test Liste des notifications non lues</h2>
+        <button onclick="testUnreadList()">Tester /notifications/unread</button>
+        <pre id="unreadListResult"></pre>
+    </div>
+    
+    <div class="section">
+        <h2>3. Test Page complète des notifications</h2>
+        <button onclick="window.location.href='/notifications'">Aller à /notifications</button>
+    </div>
+
+    <script>
+        async function testUnreadCount() {
+            const resultEl = document.getElementById('unreadCountResult');
+            resultEl.textContent = 'Chargement...';
+            
+            try {
+                const response = await fetch('/notifications/unread-count');
+                const data = await response.json();
+                
+                resultEl.innerHTML = `<span class="success">✓ Succès</span>\n\nStatus: ${response.status}\n\nRéponse:\n${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                resultEl.innerHTML = `<span class="error">✗ Erreur</span>\n\n${error.message}`;
+            }
+        }
+        
+        async function testUnreadList() {
+            const resultEl = document.getElementById('unreadListResult');
+            resultEl.textContent = 'Chargement...';
+            
+            try {
+                const response = await fetch('/notifications/unread');
+                const data = await response.json();
+                
+                resultEl.innerHTML = `<span class="success">✓ Succès</span>\n\nStatus: ${response.status}\n\nNombre de notifications: ${data.notifications ? data.notifications.length : 0}\n\nRéponse:\n${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                resultEl.innerHTML = `<span class="error">✗ Erreur</span>\n\n${error.message}`;
+            }
+        }
+        
+        // Test automatique au chargement
+        window.addEventListener('load', () => {
+            console.log('Page de test chargée');
+            testUnreadCount();
+            testUnreadList();
+        });
+    </script>
+</body>
+</html>

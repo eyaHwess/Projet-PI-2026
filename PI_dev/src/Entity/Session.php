@@ -11,12 +11,21 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: '`session`')]
 class Session
 {
+    // Constantes de statut
     public const STATUS_SCHEDULING = 'scheduling';
     public const STATUS_PROPOSED_BY_USER = 'proposed_by_user';
     public const STATUS_PROPOSED_BY_COACH = 'proposed_by_coach';
     public const STATUS_CONFIRMED = 'confirmed';
     public const STATUS_COMPLETED = 'completed';
     public const STATUS_CANCELLED = 'cancelled';
+
+    // Constantes de priorité
+    public const PRIORITY_LOW = 'low';
+    public const PRIORITY_MEDIUM = 'medium';
+    public const PRIORITY_HIGH = 'high';
+
+    public const PAYMENT_STATUS_PENDING = 'pending';
+    public const PAYMENT_STATUS_PAID = 'paid';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -55,6 +64,16 @@ class Session
     #[Assert\Positive(message: "La durée doit être positive")]
     private ?int $duration = null; // Durée en minutes
 
+    #[ORM\Column(length: 20, nullable: true)]
+    #[Assert\Choice(
+        choices: [self::PRIORITY_LOW, self::PRIORITY_MEDIUM, self::PRIORITY_HIGH],
+        message: "La priorité de la session est invalide."
+    )]
+    private ?string $priority = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $objective = null; // Objectif de la session
+
     #[ORM\Column]
     #[Assert\NotNull(message: "La date de création de la session est obligatoire.")]
     private ?\DateTimeImmutable $createdAt = null;
@@ -62,9 +81,21 @@ class Session
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
+    #[ORM\Column(nullable: true)]
+    #[Assert\PositiveOrZero(message: 'Le prix doit être positif ou nul')]
+    private ?float $price = null;
+
+    #[ORM\Column(length: 20, nullable: true)]
+    #[Assert\Choice(
+        choices: [self::PAYMENT_STATUS_PENDING, self::PAYMENT_STATUS_PAID],
+        message: 'Le statut de paiement est invalide.'
+    )]
+    private ?string $paymentStatus = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
+        $this->paymentStatus = self::PAYMENT_STATUS_PENDING;
     }
 
     public function getId(): ?int
@@ -172,5 +203,58 @@ class Session
         $this->updatedAt = $updatedAt;
 
         return $this;
+    }
+
+    public function getPriority(): ?string
+    {
+        return $this->priority;
+    }
+
+    public function setPriority(?string $priority): static
+    {
+        $this->priority = $priority;
+
+        return $this;
+    }
+
+    public function getObjective(): ?string
+    {
+        return $this->objective;
+    }
+
+    public function setObjective(?string $objective): static
+    {
+        $this->objective = $objective;
+
+        return $this;
+    }
+
+    public function getPrice(): ?float
+    {
+        return $this->price;
+    }
+
+    public function setPrice(?float $price): static
+    {
+        $this->price = $price;
+
+        return $this;
+    }
+
+    public function getPaymentStatus(): ?string
+    {
+        return $this->paymentStatus;
+    }
+
+    public function setPaymentStatus(?string $paymentStatus): static
+    {
+        $this->paymentStatus = $paymentStatus;
+
+        return $this;
+    }
+
+    public function isPaid(): bool
+    {
+        return $this->paymentStatus === self::PAYMENT_STATUS_PAID;
     }
 }

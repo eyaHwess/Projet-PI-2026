@@ -2,11 +2,20 @@ parameters:
     profile_photos_directory: '%kernel.project_dir%/public/uploads/profiles'
     openai.api_key: '%env(OPENAI_API_KEY)%'
     openai.use_mock: '%env(bool:OPENAI_USE_MOCK)%'
+    openAiApiKey: '%env(OPENAI_API_KEY)%'
 
 services:
     _defaults:
         autowire: true
         autoconfigure: true
+
+    # Client HTTP natif pour Stripe (évite ext-curl)
+    stripe.http_client:
+        class: Symfony\Component\HttpClient\NativeHttpClient
+
+    App\HttpClient\StripeSymfonyHttpClient:
+        arguments:
+            $httpClient: '@stripe.http_client'
 
     App\:
         resource: '../src/'

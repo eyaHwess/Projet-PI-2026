@@ -70,6 +70,33 @@
             .notification-item.unread {
                 background: #fef3c7;
             }
+            .notification-toast {
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                background: white;
+                border-left: 4px solid #f97316;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                border-radius: 8px;
+                padding: 15px 20px;
+                z-index: 9999;
+                opacity: 0;
+                transform: translateX(120%);
+                transition: all 0.3s ease;
+            }
+            .notification-toast.show {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            .notification-toast-content {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+            .notification-toast-content i {
+                font-size: 24px;
+                color: #f97316;
+            }
         </style>
     </head>
     <body class="min-h-screen bg-gray-50 antialiased">
@@ -241,6 +268,18 @@
                     e.stopPropagation();
                 });
                 
+                // Toast pour nouvelles notifications
+                function showNewNotificationToast(n) {
+                    const toast = document.createElement('div');
+                    toast.className = 'notification-toast';
+                    toast.innerHTML = '<div class="notification-toast-content"><i class="bi bi-bell-fill"></i><span>Vous avez ' + n + ' nouvelle(s) notification(s)</span></div>';
+                    document.body.appendChild(toast);
+                    setTimeout(() => toast.classList.add('show'), 50);
+                    setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 4000);
+                }
+
+                let lastNotificationCount = 0;
+
                 // Charger le compteur de notifications
                 async function loadNotificationCount() {
                     try {
@@ -259,8 +298,9 @@
                         } else {
                             notificationCount.classList.add('hidden');
                         }
+                        lastNotificationCount = data.count;
                     } catch (err) {
-                        console.error('❌ Erreur lors du chargement du compteur:', err);
+                        console.error('Erreur lors du chargement du compteur:', err);
                     }
                 }
                 
