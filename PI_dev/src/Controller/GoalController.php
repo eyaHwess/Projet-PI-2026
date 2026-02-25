@@ -10,6 +10,7 @@ use App\Repository\GoalRepository;
 use App\Repository\SuggestionRepository;
 use App\Repository\UserRepository;
 use App\Service\AiAssistantService;
+use App\Service\ChartService;
 use App\Service\StatusManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -33,6 +34,7 @@ class GoalController extends AbstractController
         private UserPasswordHasherInterface $passwordHasher,
         private StatusManager $statusManager,
         private AiAssistantService $aiAssistantService,
+        private ChartService $chartService,
     ) {
     }
 
@@ -77,12 +79,26 @@ class GoalController extends AbstractController
             $this->statusManager->updateGoalStatuses($goal);
         }
 
+        $overviewChart = $this->chartService->createUserOverviewChart($this->getUser());
+
+        // All goals of user (for accurate status counts, not just paginated page)
+        $allUserGoals = $this->goalRepository->findBy(['user' => $this->getUser()]);
+        $allActiveCount     = count(array_filter($allUserGoals, fn ($g) => $g->getStatus() === 'active'));
+        $allCompletedCount  = count(array_filter($allUserGoals, fn ($g) => $g->getStatus() === 'completed'));
+        $allPausedCount     = count(array_filter($allUserGoals, fn ($g) => $g->getStatus() === 'paused'));
+        $allFailedCount     = count(array_filter($allUserGoals, fn ($g) => $g->getStatus() === 'failed'));
+
         return $this->render('goal/index_modern.html.twig', [
             'pagination' => $pagination,
             'currentSort' => $sortBy,
             'currentOrder' => $sortOrder,
             'currentStatus' => $filterStatus,
             'searchQuery' => $searchQuery,
+            'overviewChart' => $overviewChart,
+            'allActiveCount' => $allActiveCount,
+            'allCompletedCount' => $allCompletedCount,
+            'allPausedCount' => $allPausedCount,
+            'allFailedCount' => $allFailedCount,
         ]);
     }
 
@@ -205,8 +221,14 @@ class GoalController extends AbstractController
         if ($goal->getUser() !== $this->getUser()) {
             throw $this->createAccessDeniedException('Cet objectif ne vous appartient pas.');
         }
+
+        $progressChart = $this->chartService->createGoalProgressChart($goal);
+        $burndownChart = $this->chartService->createBurndownChart($goal);
+
         return $this->render('goal/show.html.twig', [
             'goal' => $goal,
+            'progressChart' => $progressChart,
+            'burndownChart' => $burndownChart,
         ]);
     }
 

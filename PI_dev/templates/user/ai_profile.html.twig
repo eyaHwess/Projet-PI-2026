@@ -1,0 +1,373 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Profil IA — {{ user.firstName }}{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .aip-root {
+        min-height: 100vh;
+        background: linear-gradient(140deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+        padding: 2rem 1rem 4rem;
+        font-family: 'Inter', -apple-system, sans-serif;
+    }
+
+    /* ── Back nav ── */
+    .aip-back {
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        color: rgba(255,255,255,.55);
+        font-size: .875rem;
+        font-weight: 500;
+        text-decoration: none;
+        margin-bottom: 2rem;
+        transition: color .2s;
+    }
+    .aip-back:hover { color: rgba(255,255,255,.9); }
+
+    /* ── Hero card ── */
+    .aip-hero {
+        max-width: 760px;
+        margin: 0 auto 2rem;
+        background: linear-gradient(135deg, rgba(139,92,246,.35) 0%, rgba(99,102,241,.25) 100%);
+        border: 1px solid rgba(167,139,250,.3);
+        border-radius: 1.5rem;
+        padding: 2.5rem 2rem 2rem;
+        text-align: center;
+        backdrop-filter: blur(16px);
+        position: relative;
+        overflow: hidden;
+    }
+    .aip-hero::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 60% 10%, rgba(236,72,153,.12) 0%, transparent 60%);
+        pointer-events: none;
+    }
+    .aip-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 1.25rem;
+        background: linear-gradient(135deg, #7c3aed, #ec4899);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        margin: 0 auto 1.25rem;
+        box-shadow: 0 8px 32px rgba(139,92,246,.4);
+    }
+    .aip-archetype-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        background: rgba(167,139,250,.2);
+        border: 1px solid rgba(167,139,250,.4);
+        border-radius: 999px;
+        padding: .3rem .9rem;
+        font-size: .75rem;
+        font-weight: 700;
+        color: #c4b5fd;
+        letter-spacing: .05em;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+    }
+    .aip-hero-name {
+        font-size: 2rem;
+        font-weight: 800;
+        color: white;
+        margin-bottom: .5rem;
+        letter-spacing: -.02em;
+    }
+    .aip-hero-desc {
+        font-size: 1rem;
+        color: rgba(255,255,255,.65);
+        line-height: 1.6;
+        max-width: 560px;
+        margin: 0 auto 1.25rem;
+    }
+    .aip-hero-bio {
+        font-size: .9rem;
+        color: rgba(255,255,255,.5);
+        font-style: italic;
+        line-height: 1.55;
+        border-top: 1px solid rgba(255,255,255,.1);
+        padding-top: 1.25rem;
+        max-width: 520px;
+        margin: 0 auto;
+    }
+
+    /* ── Grid ── */
+    .aip-grid {
+        max-width: 760px;
+        margin: 0 auto;
+        display: grid;
+        gap: 1.25rem;
+        grid-template-columns: 1fr;
+    }
+    @media (min-width: 640px) {
+        .aip-grid { grid-template-columns: 1fr 1fr; }
+        .aip-card-habits { grid-column: 1 / -1; }
+    }
+
+    /* ── Cards ── */
+    .aip-card {
+        background: rgba(255,255,255,.06);
+        border: 1px solid rgba(255,255,255,.1);
+        border-radius: 1.25rem;
+        padding: 1.5rem;
+        backdrop-filter: blur(8px);
+        transition: border-color .25s, background .25s;
+    }
+    .aip-card:hover {
+        border-color: rgba(167,139,250,.4);
+        background: rgba(255,255,255,.09);
+    }
+    .aip-card-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: .875rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+    }
+    .aip-card-title {
+        font-size: .7rem;
+        font-weight: 700;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+    }
+    .aip-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: .6rem;
+    }
+    .aip-list li {
+        display: flex;
+        align-items: flex-start;
+        gap: .6rem;
+        font-size: .9rem;
+        color: rgba(255,255,255,.75);
+        line-height: 1.45;
+    }
+    .aip-list-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        margin-top: .45rem;
+        flex-shrink: 0;
+    }
+
+    /* Strengths — green */
+    .aip-card-strengths .aip-card-icon { background: rgba(52,211,153,.15); color: #34d399; }
+    .aip-card-strengths .aip-card-title { color: #34d399; }
+    .aip-card-strengths .aip-list-dot { background: #34d399; }
+
+    /* Growth — amber */
+    .aip-card-growth .aip-card-icon { background: rgba(251,191,36,.15); color: #fbbf24; }
+    .aip-card-growth .aip-card-title { color: #fbbf24; }
+    .aip-card-growth .aip-list-dot { background: #fbbf24; }
+
+    /* Habits — indigo */
+    .aip-card-habits .aip-card-icon { background: rgba(129,140,248,.15); color: #818cf8; }
+    .aip-card-habits .aip-card-title { color: #818cf8; }
+    .aip-card-habits .aip-habits-grid {
+        display: grid;
+        gap: .75rem;
+        grid-template-columns: 1fr;
+    }
+    @media (min-width: 480px) {
+        .aip-card-habits .aip-habits-grid { grid-template-columns: 1fr 1fr 1fr; }
+    }
+    .aip-habit-item {
+        background: rgba(129,140,248,.08);
+        border: 1px solid rgba(129,140,248,.2);
+        border-radius: .875rem;
+        padding: .875rem 1rem;
+        font-size: .85rem;
+        color: rgba(255,255,255,.75);
+        line-height: 1.45;
+        display: flex;
+        gap: .5rem;
+        align-items: flex-start;
+    }
+    .aip-habit-num {
+        width: 1.4rem;
+        height: 1.4rem;
+        border-radius: 50%;
+        background: rgba(129,140,248,.3);
+        color: #a5b4fc;
+        font-size: .7rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        margin-top: .05rem;
+    }
+
+    /* ── Empty state ── */
+    .aip-empty {
+        max-width: 760px;
+        margin: 0 auto;
+        text-align: center;
+        padding: 3rem 2rem;
+        background: rgba(255,255,255,.05);
+        border: 1px dashed rgba(255,255,255,.15);
+        border-radius: 1.5rem;
+    }
+    .aip-empty p { color: rgba(255,255,255,.5); margin: .75rem 0 1.5rem; }
+    .aip-empty-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+
+    /* ── CTA button ── */
+    .aip-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        background: linear-gradient(135deg, #7c3aed, #6366f1);
+        color: white;
+        border: none;
+        border-radius: .875rem;
+        padding: .65rem 1.5rem;
+        font-size: .9rem;
+        font-weight: 600;
+        text-decoration: none;
+        box-shadow: 0 4px 20px rgba(124,58,237,.4);
+        transition: transform .15s, box-shadow .15s;
+    }
+    .aip-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 28px rgba(124,58,237,.5);
+        color: white;
+    }
+    .aip-btn-outline {
+        background: transparent;
+        border: 1px solid rgba(167,139,250,.4);
+        color: #c4b5fd;
+        box-shadow: none;
+        padding: .6rem 1.25rem;
+        font-size: .85rem;
+    }
+    .aip-btn-outline:hover {
+        background: rgba(167,139,250,.1);
+        box-shadow: none;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="aip-root">
+    <div style="max-width:760px;margin:0 auto;">
+        <a href="{{ path('app_user_profile') }}" class="aip-back">
+            <i class="bi bi-arrow-left"></i> Retour au profil
+        </a>
+    </div>
+
+    {% if user.archetypeName or user.archetypeShortBio %}
+
+    {# ── Hero ── #}
+    <div class="aip-hero">
+        <div class="aip-avatar"><i class="bi bi-magic"></i></div>
+        <div class="aip-archetype-badge">
+            <i class="bi bi-stars"></i> Profil de croissance personnalisé
+        </div>
+        <h1 class="aip-hero-name">
+            {{ user.archetypeName ?? 'Mon profil' }}
+        </h1>
+        {% if user.archetypeDescription %}
+        <p class="aip-hero-desc">{{ user.archetypeDescription }}</p>
+        {% endif %}
+        {% if user.archetypeShortBio %}
+        <p class="aip-hero-bio">"{{ user.archetypeShortBio }}"</p>
+        {% endif %}
+    </div>
+
+    {# ── Cards grid ── #}
+    <div class="aip-grid">
+
+        {# Strengths #}
+        {% if archetypeData.strengths is defined and archetypeData.strengths|length > 0 %}
+        <div class="aip-card aip-card-strengths">
+            <div class="aip-card-icon"><i class="bi bi-lightning-charge-fill"></i></div>
+            <div class="aip-card-title">Points forts</div>
+            <ul class="aip-list">
+                {% for s in archetypeData.strengths %}
+                <li>
+                    <span class="aip-list-dot"></span>
+                    {{ s }}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {# Growth areas #}
+        {% if archetypeData.growthAreas is defined and archetypeData.growthAreas|length > 0 %}
+        <div class="aip-card aip-card-growth">
+            <div class="aip-card-icon"><i class="bi bi-arrow-up-right-circle-fill"></i></div>
+            <div class="aip-card-title">Axes de progression</div>
+            <ul class="aip-list">
+                {% for g in archetypeData.growthAreas %}
+                <li>
+                    <span class="aip-list-dot"></span>
+                    {{ g }}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {# Habit suggestions #}
+        {% if archetypeData.habitSuggestions is defined and archetypeData.habitSuggestions|length > 0 %}
+        <div class="aip-card aip-card-habits">
+            <div class="aip-card-icon"><i class="bi bi-calendar2-check-fill"></i></div>
+            <div class="aip-card-title">Suggestions d'habitudes</div>
+            <div class="aip-habits-grid">
+                {% for h in archetypeData.habitSuggestions %}
+                <div class="aip-habit-item">
+                    <span class="aip-habit-num">{{ loop.index }}</span>
+                    {{ h }}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
+    {# ── Refresh CTA ── #}
+    <div style="max-width:760px;margin:2rem auto 0;display:flex;align-items:center;justify-content:flex-end;gap:.75rem;flex-wrap:wrap;">
+        <span style="font-size:.8rem;color:rgba(255,255,255,.35);">
+            <i class="bi bi-info-circle me-1"></i>Basé sur vos réponses d'onboarding
+        </span>
+        <a href="{{ path('app_onboarding_reset') }}" class="aip-btn aip-btn-outline">
+            <i class="bi bi-arrow-clockwise"></i> Régénérer
+        </a>
+    </div>
+
+    {% else %}
+
+    {# ── Empty state: onboarded but no AI data ── #}
+    <div class="aip-empty">
+        <div class="aip-empty-icon">🤖</div>
+        <h2 style="color:white;font-size:1.25rem;font-weight:700;margin-bottom:.5rem;">Profil IA non généré</h2>
+        <p>
+            Vos réponses d'onboarding sont enregistrées, mais le profil IA n'a pas encore été créé.<br>
+            Activez le mode mock (<code>OPENAI_USE_MOCK=true</code>) ou configurez votre clé OpenAI, puis refaites l'onboarding.
+        </p>
+        <a href="{{ path('app_onboarding_reset') }}" class="aip-btn">
+            <i class="bi bi-arrow-clockwise"></i> Refaire l'onboarding
+        </a>
+    </div>
+
+    {% endif %}
+</div>
+{% endblock %}

@@ -2,6 +2,7 @@
 
 namespace App\Security;
 
+use App\Entity\User;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -30,12 +31,15 @@ class GoogleConnectAuthenticator extends AbstractAuthenticator
 
     public function authenticate(Request $request): Passport
     {
-        // Non utilisé : on passe par authenticateUser() dans le contrôleur
         throw new \LogicException('authenticate() ne doit pas être appelé. Utiliser authenticateUser() dans GoogleController.');
     }
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
+        $user = $token->getUser();
+        if ($user instanceof User && !$user->isOnboarded()) {
+            return new RedirectResponse($this->urlGenerator->generate('app_onboarding'));
+        }
         return new RedirectResponse($this->urlGenerator->generate('user_dashboard'));
     }
 

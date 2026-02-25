@@ -32,18 +32,26 @@
     </div>
 
     <!-- Delete Section -->
-    <div class="card-modern" style="max-width: 800px; margin: var(--space-xl) auto 0; border-left: 4px solid var(--danger);">
-        <h3 style="font-size: var(--font-size-lg); font-weight: 700; margin-bottom: var(--space-md); color: var(--danger);">
-            <i class="bi bi-exclamation-triangle"></i> Zone dangereuse
-        </h3>
-        <p style="color: var(--gray-600); margin-bottom: var(--space-lg);">
-            La suppression de cet objectif supprimera également toutes les routines et activités associées. Cette action est irréversible.
-        </p>
-        <form method="post" action="{{ path('app_goal_delete', {'id': goal.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet objectif ?');">
-            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ goal.id) }}">
-            <button type="submit" class="btn-modern btn-modern-sm" style="background: var(--danger); color: white;">
-                <i class="bi bi-trash"></i> Supprimer l'objectif
-            </button>
-        </form>
+    <div class="card-modern" style="max-width: 800px; margin: var(--space-xl) auto 0; overflow: hidden; position: relative;">
+        <!-- Red gradient left border accent -->
+        <div style="position:absolute;top:0;left:0;width:5px;height:100%;background:linear-gradient(180deg,#ef4444,#dc2626);border-radius:1.25rem 0 0 1.25rem;"></div>
+        <div style="padding-left: 0.75rem;">
+            <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:var(--space-md);">
+                <div style="width:40px;height:40px;background:linear-gradient(135deg,#fef2f2,#fee2e2);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 10px rgba(239,68,68,0.18);">
+                    <i class="bi bi-exclamation-triangle-fill" style="color:#dc2626;font-size:1.1rem;"></i>
+                </div>
+                <h3 style="font-size: var(--font-size-lg); font-weight: 800; margin: 0; color: #b91c1c;">Zone dangereuse</h3>
+            </div>
+            <p style="color: var(--gray-600); margin-bottom: var(--space-lg); font-size: 0.9rem; line-height: 1.6; background: #fef2f2; border: 1px solid #fecaca; border-radius: 0.75rem; padding: 0.875rem 1rem;">
+                <i class="bi bi-info-circle me-2" style="color:#ef4444;"></i>
+                La suppression de cet objectif supprimera également <strong>toutes les routines et activités</strong> associées. Cette action est <strong>irréversible</strong>.
+            </p>
+            <form method="post" action="{{ path('app_goal_delete', {'id': goal.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet objectif ?');">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ goal.id) }}">
+                <button type="submit" style="background:linear-gradient(135deg,#ef4444,#dc2626);color:white;border:none;padding:0.65rem 1.5rem;border-radius:50px;font-weight:700;font-family:inherit;cursor:pointer;display:inline-flex;align-items:center;gap:0.4rem;box-shadow:0 4px 14px rgba(239,68,68,0.35);transition:all 0.2s;font-size:0.875rem;">
+                    <i class="bi bi-trash"></i> Supprimer l'objectif
+                </button>
+            </form>
+        </div>
     </div>
 {% endblock %}

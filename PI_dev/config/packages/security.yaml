@@ -60,6 +60,9 @@ security:
         - { path: ^/coach/, roles: ROLE_COACH }
         - { path: ^/sessions/manage, roles: ROLE_COACH }
         
+        # Onboarding (first-time users)
+        - { path: ^/onboarding, roles: ROLE_USER }
+
         # User dashboard and other authenticated routes
         - { path: ^/user, roles: ROLE_USER }
 

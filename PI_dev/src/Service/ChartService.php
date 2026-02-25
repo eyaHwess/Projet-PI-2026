@@ -334,8 +334,7 @@ class ChartService
      */
     public function createUserOverviewChart(User $user): Chart
     {
-        // Get ALL goals regardless of user
-        $goals = $this->goalRepository->findAll();
+        $goals = $this->goalRepository->findBy(['user' => $user]);
 
         $statusCounts = [
             'active' => 0,
@@ -351,7 +350,7 @@ class ChartService
             }
         }
 
-        $chart = $this->chartBuilder->createChart(Chart::TYPE_PIE);
+        $chart = $this->chartBuilder->createChart(Chart::TYPE_DOUGHNUT);
         $chart->setData([
             'labels' => ['Actifs', 'Terminés', 'En Pause', 'Échoués'],
             'datasets' => [
@@ -363,18 +362,14 @@ class ChartService
                         $statusCounts['failed'],
                     ],
                     'backgroundColor' => [
-                        'rgba(168, 216, 234, 0.8)', // blue
-                        'rgba(181, 234, 215, 0.8)', // green
-                        'rgba(226, 194, 232, 0.8)', // purple
-                        'rgba(255, 179, 217, 0.8)', // pink
+                        'rgba(96, 211, 148, 0.9)',   // vivid green  – active
+                        'rgba(96, 165, 250, 0.9)',   // vivid blue   – completed
+                        'rgba(192, 132, 252, 0.9)',  // vivid purple – paused
+                        'rgba(248, 113, 113, 0.9)',  // vivid red    – failed
                     ],
-                    'borderColor' => [
-                        'rgba(168, 216, 234, 1)',
-                        'rgba(181, 234, 215, 1)',
-                        'rgba(226, 194, 232, 1)',
-                        'rgba(255, 179, 217, 1)',
-                    ],
-                    'borderWidth' => 2,
+                    'borderColor' => 'transparent',
+                    'borderWidth' => 0,
+                    'hoverOffset' => 8,
                 ],
             ],
         ]);
@@ -382,24 +377,17 @@ class ChartService
         $chart->setOptions([
             'responsive' => true,
             'maintainAspectRatio' => true,
+            'cutout' => '68%',
             'plugins' => [
-                'legend' => [
-                    'position' => 'bottom',
-                    'labels' => [
-                        'padding' => 20,
-                        'font' => [
-                            'size' => 14,
-                        ],
-                    ],
-                ],
-                'title' => [
-                    'display' => true,
-                    'text' => 'Vue d\'ensemble des Objectifs',
-                    'font' => [
-                        'size' => 18,
-                        'weight' => 'bold',
-                    ],
-                    'padding' => 20,
+                'legend' => ['display' => false],
+                'title'  => ['display' => false],
+                'tooltip' => [
+                    'callbacks' => [],
+                    'backgroundColor' => 'rgba(30,27,75,0.92)',
+                    'titleColor' => '#fff',
+                    'bodyColor' => 'rgba(255,255,255,0.75)',
+                    'padding' => 10,
+                    'cornerRadius' => 8,
                 ],
             ],
         ]);

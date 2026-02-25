@@ -1,0 +1,452 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Votre profil IA — DayFlow{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .ob-root {
+        min-height: 100vh;
+        display: flex;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: #0f0c29;
+    }
+    /* ── Left panel ── */
+    .ob-left {
+        display: none;
+        width: 40%;
+        flex-shrink: 0;
+        background: linear-gradient(140deg, #1e1b4b 0%, #312e81 55%, #1e3a5f 100%);
+        padding: 3.5rem;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        overflow: hidden;
+    }
+    @media (min-width: 960px) { .ob-left { display: flex; } }
+    .ob-left::before {
+        content: '';
+        position: absolute;
+        top: -100px; right: -60px;
+        width: 340px; height: 340px;
+        background: radial-gradient(circle, rgba(99,102,241,0.22) 0%, transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+    .ob-left::after {
+        content: '';
+        position: absolute;
+        bottom: -80px; left: 10%;
+        width: 280px; height: 280px;
+        background: radial-gradient(circle, rgba(167,139,250,0.15) 0%, transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+    .ob-brand {
+        display: flex; align-items: center; gap: 0.75rem;
+        position: relative; z-index: 1;
+    }
+    .ob-brand-icon {
+        width: 44px; height: 44px;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.25rem;
+        box-shadow: 0 8px 24px rgba(99,102,241,0.4);
+    }
+    .ob-brand-name { font-size: 1.4rem; font-weight: 800; color: white; letter-spacing: -0.02em; }
+    .ob-left-body { position: relative; z-index: 1; }
+    .ob-left-title {
+        font-size: 2.2rem;
+        font-weight: 900;
+        color: white;
+        line-height: 1.2;
+        letter-spacing: -0.03em;
+        margin-bottom: 1rem;
+    }
+    .ob-left-title span {
+        background: linear-gradient(90deg, #a5b4fc, #e879f9);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    .ob-left-sub { font-size: 0.95rem; color: rgba(255,255,255,0.6); line-height: 1.6; margin-bottom: 2.5rem; }
+    /* Step indicators */
+    .ob-steps { display: flex; flex-direction: column; gap: 0; }
+    .ob-step {
+        display: flex;
+        gap: 1rem;
+        align-items: flex-start;
+        position: relative;
+    }
+    .ob-step:not(:last-child)::before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 32px;
+        width: 2px;
+        height: calc(100% + 0px);
+        background: rgba(255,255,255,0.1);
+    }
+    .ob-step-left { display: flex; flex-direction: column; align-items: center; padding-bottom: 1.5rem; }
+    .ob-step-dot {
+        width: 30px; height: 30px;
+        border-radius: 50%;
+        border: 2px solid rgba(255,255,255,0.15);
+        background: rgba(255,255,255,0.06);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: rgba(255,255,255,0.5);
+        flex-shrink: 0;
+    }
+    .ob-step-dot.active {
+        border-color: #818cf8;
+        background: rgba(99,102,241,0.2);
+        color: #a5b4fc;
+        box-shadow: 0 0 12px rgba(99,102,241,0.4);
+    }
+    .ob-step-info { padding-top: 0.3rem; padding-bottom: 1.5rem; }
+    .ob-step-title { font-size: 0.85rem; font-weight: 600; color: rgba(255,255,255,0.75); margin-bottom: 0.15rem; }
+    .ob-step-desc { font-size: 0.78rem; color: rgba(255,255,255,0.4); }
+    .ob-left-footer { position: relative; z-index: 1; font-size: 0.8rem; color: rgba(255,255,255,0.35); }
+    /* ── Right panel ── */
+    .ob-right {
+        flex: 1;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        background: #fafafa;
+        padding: 3rem 1.5rem;
+        overflow-y: auto;
+    }
+    .ob-form-box {
+        width: 100%;
+        max-width: 540px;
+    }
+    /* Progress bar */
+    .ob-progress-bar {
+        height: 4px;
+        background: #e5e7eb;
+        border-radius: 99px;
+        overflow: hidden;
+        margin-bottom: 2.5rem;
+    }
+    .ob-progress-fill {
+        height: 100%;
+        border-radius: 99px;
+        background: linear-gradient(90deg, #6366f1, #a78bfa);
+        width: 20%;
+        transition: width 0.6s ease;
+    }
+    .ob-form-header { margin-bottom: 2rem; }
+    .ob-step-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: #eef2ff;
+        color: #4338ca;
+        border: 1px solid #c7d2fe;
+        border-radius: 50px;
+        padding: 0.3rem 0.8rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        margin-bottom: 0.75rem;
+    }
+    .ob-form-header h1 {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #111827;
+        letter-spacing: -0.02em;
+        margin-bottom: 0.4rem;
+    }
+    .ob-form-header p { font-size: 0.9rem; color: #6b7280; margin: 0; }
+    .ob-alert {
+        border-radius: 0.75rem;
+        padding: 0.75rem 1rem;
+        font-size: 0.85rem;
+        margin-bottom: 1.25rem;
+        display: flex; align-items: flex-start; gap: 0.5rem;
+    }
+    .ob-alert-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
+    .ob-alert-error   { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; }
+    /* Field groups */
+    .ob-field-group {
+        background: white;
+        border: 2px solid #f0f0f0;
+        border-radius: 1rem;
+        padding: 1.25rem 1.5rem;
+        margin-bottom: 1rem;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .ob-field-group:focus-within {
+        border-color: #c7d2fe;
+        box-shadow: 0 0 0 3px rgba(99,102,241,0.07);
+    }
+    .ob-field-group label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+    .ob-field-group label .field-icon {
+        width: 26px; height: 26px;
+        border-radius: 7px;
+        background: #eef2ff;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.8rem;
+        color: #6366f1;
+    }
+    .ob-field-group textarea,
+    .ob-field-group select {
+        width: 100%;
+        border: none;
+        outline: none;
+        font-family: inherit;
+        font-size: 0.9rem;
+        color: #111827;
+        background: transparent;
+        resize: vertical;
+        padding: 0;
+    }
+    .ob-field-group textarea::placeholder { color: #9ca3af; }
+    .ob-field-group select {
+        cursor: pointer;
+        appearance: auto;
+    }
+    .ob-field-hint {
+        font-size: 0.75rem;
+        color: #9ca3af;
+        margin-top: 0.35rem;
+    }
+    .ob-btn-submit {
+        width: 100%;
+        padding: 0.9rem;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: white;
+        border: none;
+        border-radius: 0.875rem;
+        font-size: 1rem;
+        font-weight: 700;
+        font-family: inherit;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 4px 16px rgba(99,102,241,0.35);
+        margin-top: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    .ob-btn-submit:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 22px rgba(99,102,241,0.45);
+    }
+    .ob-privacy-note {
+        text-align: center;
+        font-size: 0.78rem;
+        color: #9ca3af;
+        margin-top: 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="ob-root">
+
+    {# ── Left panel ── #}
+    <div class="ob-left">
+        <div class="ob-brand">
+            <div class="ob-brand-icon">
+                <i class="bi bi-stars" style="color:white;"></i>
+            </div>
+            <span class="ob-brand-name">DayFlow</span>
+        </div>
+
+        <div class="ob-left-body">
+            <h2 class="ob-left-title">
+                Créez votre<br><span>profil IA</span><br>en 2 minutes.
+            </h2>
+            <p class="ob-left-sub">
+                Répondez à quelques questions et notre IA génère un archétype de croissance personnalisé rien que pour vous.
+            </p>
+
+            <div class="ob-steps">
+                <div class="ob-step">
+                    <div class="ob-step-left">
+                        <div class="ob-step-dot active">1</div>
+                    </div>
+                    <div class="ob-step-info">
+                        <div class="ob-step-title">Vos objectifs</div>
+                        <div class="ob-step-desc">Qu'est-ce que vous souhaitez accomplir ?</div>
+                    </div>
+                </div>
+                <div class="ob-step">
+                    <div class="ob-step-left">
+                        <div class="ob-step-dot active">2</div>
+                    </div>
+                    <div class="ob-step-info">
+                        <div class="ob-step-title">Vos défis</div>
+                        <div class="ob-step-desc">Ce qui vous freine au quotidien</div>
+                    </div>
+                </div>
+                <div class="ob-step">
+                    <div class="ob-step-left">
+                        <div class="ob-step-dot active">3</div>
+                    </div>
+                    <div class="ob-step-info">
+                        <div class="ob-step-title">Style de motivation</div>
+                        <div class="ob-step-desc">Comment vous vous motivez</div>
+                    </div>
+                </div>
+                <div class="ob-step">
+                    <div class="ob-step-left">
+                        <div class="ob-step-dot active">4</div>
+                    </div>
+                    <div class="ob-step-info">
+                        <div class="ob-step-title">Style de planification</div>
+                        <div class="ob-step-desc">Comment vous organisez vos journées</div>
+                    </div>
+                </div>
+                <div class="ob-step">
+                    <div class="ob-step-left">
+                        <div class="ob-step-dot active">5</div>
+                    </div>
+                    <div class="ob-step-info">
+                        <div class="ob-step-title">Vos centres d'intérêt</div>
+                        <div class="ob-step-desc">Pour des suggestions encore plus ciblées</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <p class="ob-left-footer">© {{ "now"|date("Y") }} DayFlow. Vos données restent privées.</p>
+    </div>
+
+    {# ── Right panel ── #}
+    <div class="ob-right">
+        <div class="ob-form-box">
+
+            <div class="ob-progress-bar">
+                <div class="ob-progress-fill" id="obProgressFill"></div>
+            </div>
+
+            <div class="ob-form-header">
+                <div class="ob-step-badge">
+                    <i class="bi bi-stars"></i> Profil IA
+                </div>
+                <h1>Personnalisez votre expérience</h1>
+                <p>5 questions rapides pour calibrer votre profil de croissance personnel.</p>
+            </div>
+
+            {% for message in app.flashes('success') %}
+                <div class="ob-alert ob-alert-success">
+                    <i class="bi bi-check-circle-fill" style="flex-shrink:0;margin-top:1px;"></i>
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+            {% for message in app.flashes('error') %}
+                <div class="ob-alert ob-alert-error">
+                    <i class="bi bi-exclamation-circle-fill" style="flex-shrink:0;margin-top:1px;"></i>
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+
+            {{ form_start(form, { 'attr': { 'id': 'obForm' } }) }}
+                {{ form_errors(form) }}
+
+                <div class="ob-field-group">
+                    <label>
+                        <span class="field-icon"><i class="bi bi-bullseye"></i></span>
+                        {{ form_label(form.goals) }}
+                    </label>
+                    {{ form_widget(form.goals, { 'attr': { 'rows': 3, 'placeholder': 'Ex: perdre du poids, apprendre une langue, lancer mon projet…', 'id': 'ob-goals' } }) }}
+                    {{ form_errors(form.goals) }}
+                    <div class="ob-field-hint">Soyez précis — l'IA s'en servira pour personnaliser vos suggestions.</div>
+                </div>
+
+                <div class="ob-field-group">
+                    <label>
+                        <span class="field-icon"><i class="bi bi-shield-exclamation"></i></span>
+                        {{ form_label(form.challenges) }}
+                    </label>
+                    {{ form_widget(form.challenges, { 'attr': { 'rows': 3, 'placeholder': 'Ex: procrastination, manque de temps, stress…', 'id': 'ob-challenges' } }) }}
+                    {{ form_errors(form.challenges) }}
+                </div>
+
+                <div class="ob-field-group">
+                    <label>
+                        <span class="field-icon"><i class="bi bi-lightning-charge"></i></span>
+                        {{ form_label(form.motivationStyle) }}
+                    </label>
+                    {{ form_widget(form.motivationStyle, { 'attr': { 'id': 'ob-motivation' } }) }}
+                    {{ form_errors(form.motivationStyle) }}
+                </div>
+
+                <div class="ob-field-group">
+                    <label>
+                        <span class="field-icon"><i class="bi bi-calendar-check"></i></span>
+                        {{ form_label(form.planningStyle) }}
+                    </label>
+                    {{ form_widget(form.planningStyle, { 'attr': { 'id': 'ob-planning' } }) }}
+                    {{ form_errors(form.planningStyle) }}
+                </div>
+
+                <div class="ob-field-group">
+                    <label>
+                        <span class="field-icon"><i class="bi bi-heart"></i></span>
+                        {{ form_label(form.interests) }}
+                    </label>
+                    {{ form_widget(form.interests, { 'attr': { 'rows': 2, 'placeholder': 'Ex: sport, lecture, voyages, technologie, cuisine…', 'id': 'ob-interests' } }) }}
+                    {{ form_errors(form.interests) }}
+                </div>
+
+                <button type="submit" class="ob-btn-submit">
+                    <i class="bi bi-stars"></i>
+                    Générer mon profil IA
+                </button>
+
+            {{ form_end(form) }}
+
+            <div class="ob-privacy-note">
+                <i class="bi bi-lock-fill"></i>
+                Vos réponses sont uniquement utilisées pour générer votre profil. Aucune donnée n'est partagée.
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+(function() {
+    const fields = ['ob-goals', 'ob-challenges', 'ob-motivation', 'ob-planning', 'ob-interests'];
+    const fill = document.getElementById('obProgressFill');
+    function updateProgress() {
+        let filled = 0;
+        fields.forEach(id => {
+            const el = document.getElementById(id);
+            if (el && el.value && el.value.trim() !== '') filled++;
+        });
+        if (fill) fill.style.width = Math.max(5, Math.round((filled / fields.length) * 100)) + '%';
+    }
+    fields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', updateProgress);
+        if (el) el.addEventListener('change', updateProgress);
+    });
+    updateProgress();
+})();
+</script>
+{% endblock %}

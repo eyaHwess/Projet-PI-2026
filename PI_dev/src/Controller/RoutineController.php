@@ -6,6 +6,7 @@ use App\Entity\Goal;
 use App\Entity\Routine;
 use App\Form\RoutineType;
 use App\Repository\RoutineRepository;
+use App\Service\ChartService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -18,7 +19,8 @@ class RoutineController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private RoutineRepository $routineRepository
+        private RoutineRepository $routineRepository,
+        private ChartService $chartService,
     ) {
     }
 
@@ -206,6 +208,9 @@ class RoutineController extends AbstractController
 
         $activities = $queryBuilder->getQuery()->getResult();
 
+        $weeklyChart = $this->chartService->createWeeklyActivityChart($routine);
+        $timeChart = $this->chartService->createTimeInvestmentChart($routine);
+
         return $this->render('routine/show.html.twig', [
             'routine' => $routine,
             'activities' => $activities,
@@ -213,6 +218,8 @@ class RoutineController extends AbstractController
             'currentOrder' => $sortOrder,
             'currentStatus' => $filterStatus,
             'searchQuery' => $searchQuery,
+            'weeklyChart' => $weeklyChart,
+            'timeChart' => $timeChart,
         ]);
     }
 

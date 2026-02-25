@@ -29,6 +29,11 @@ services:
             $apiKey: '%openai.api_key%'
             $useMockData: '%openai.use_mock%'
 
+    App\Service\AiProfileGenerator:
+        arguments:
+            $apiKey: '%openai.api_key%'
+            $useMock: '%openai.use_mock%'
+
     App\EventSubscriber\LocaleSubscriber:
         arguments:
             $defaultLocale: '%kernel.default_locale%'

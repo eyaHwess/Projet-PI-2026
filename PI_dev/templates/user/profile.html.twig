@@ -95,6 +95,68 @@
     .profile-link-posts:hover {
         color: #6d28d9;
     }
+    /* Sidebar nav link with hover indicator */
+    .profile-nav-link {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.75rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #475569;
+        text-decoration: none;
+        transition: all 0.2s;
+        position: relative;
+        border-left: 3px solid transparent;
+    }
+    .profile-nav-link:hover {
+        background: #f5f3ff;
+        color: #7c3aed;
+        border-left-color: #a78bfa;
+        padding-left: 1rem;
+    }
+    .profile-nav-link .nav-icon {
+        width: 28px; height: 28px;
+        border-radius: 7px;
+        background: linear-gradient(135deg, #ede9fe, #fce7f3);
+        color: #7c3aed;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.82rem;
+        flex-shrink: 0;
+        transition: all 0.2s;
+    }
+    .profile-nav-link:hover .nav-icon {
+        background: linear-gradient(135deg, #7c3aed, #6366f1);
+        color: white;
+    }
+    /* Upgraded post card */
+    .profile-post-card {
+        border-radius: 0.875rem;
+        border: 1.5px solid #e8e4f5;
+        background: white;
+        padding: 1rem 1.125rem;
+        transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+        display: block;
+        text-decoration: none;
+        color: inherit;
+    }
+    .profile-post-card:hover {
+        border-color: #a78bfa;
+        box-shadow: 0 6px 24px rgba(124,58,237,0.12);
+        transform: translateY(-2px);
+        color: inherit;
+    }
+    .profile-post-title {
+        font-size: 0.9375rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 0.3rem;
+        transition: color 0.2s;
+    }
+    .profile-post-card:hover .profile-post-title { color: #7c3aed; }
+    .profile-post-excerpt { font-size: 0.82rem; color: #64748b; line-height: 1.5; margin-bottom: 0.5rem; }
+    .profile-post-meta { font-size: 0.75rem; color: #94a3b8; display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
     .profile-cta {
         background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
         color: white;
@@ -121,6 +183,39 @@
         align-items: center;
         justify-content: center;
     }
+    .profile-ai-teaser {
+        background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+        border: 1px solid rgba(167, 139, 250, 0.3);
+        border-radius: 1.25rem;
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        text-decoration: none;
+        transition: border-color .2s, box-shadow .2s;
+    }
+    .profile-ai-teaser:hover {
+        border-color: rgba(167, 139, 250, 0.7);
+        box-shadow: 0 4px 24px rgba(124, 58, 237, 0.25);
+    }
+    .profile-ai-teaser-icon {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 0.875rem;
+        background: linear-gradient(135deg, #7c3aed, #6366f1);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        flex-shrink: 0;
+        box-shadow: 0 4px 16px rgba(124, 58, 237, 0.4);
+    }
+    .profile-ai-teaser-body { flex: 1; min-width: 0; }
+    .profile-ai-teaser-title { font-size: .9375rem; font-weight: 700; color: white; margin-bottom: .2rem; }
+    .profile-ai-teaser-sub { font-size: .8125rem; color: rgba(196, 181, 253, 0.8); }
+    .profile-ai-teaser-arrow { color: rgba(167, 139, 250, 0.6); font-size: 1.1rem; }
 </style>
 {% endblock %}
 
@@ -181,22 +276,23 @@
                             <dd class="profile-value mt-0.5">{{ user.createdAt|date('d/m/Y') }}</dd>
                         </div>
                     </dl>
-                    <div class="mt-6 pt-4 border-t border-slate-100 space-y-3">
-                        <a href="{{ path('app_login_history') }}" class="profile-link-posts text-sm inline-flex items-center gap-1.5 w-full">
-                            <span class="profile-icon-box text-sm"><i class="bi bi-shield-lock"></i></span>
-                            Historique de connexion
+                    <div class="mt-6 pt-4 border-t border-slate-100" style="display:flex;flex-direction:column;gap:0.35rem;">
+                        <a href="{{ path('app_login_history') }}" class="profile-nav-link">
+                            <span class="nav-icon"><i class="bi bi-shield-lock"></i></span>
+                            <span style="flex:1;">Historique de connexion</span>
                             {% if suspiciousLoginsCount > 0 %}
-                                <span class="ml-auto text-amber-600 font-semibold">{{ suspiciousLoginsCount }} suspecte(s)</span>
+                                <span style="background:#fef3c7;color:#b45309;font-size:.7rem;font-weight:700;padding:.15rem .5rem;border-radius:50px;">{{ suspiciousLoginsCount }}</span>
                             {% endif %}
-                            <i class="bi bi-chevron-right ml-auto"></i>
+                            <i class="bi bi-chevron-right" style="font-size:.75rem;color:#cbd5e1;"></i>
                         </a>
-                        <a href="{{ path('app_change_password') }}" class="profile-link-posts text-sm inline-flex items-center gap-1.5">
-                            <span class="profile-icon-box text-sm"><i class="bi bi-key"></i></span>
-                            Changer le mot de passe
-                            <i class="bi bi-chevron-right ml-auto"></i>
+                        <a href="{{ path('app_change_password') }}" class="profile-nav-link">
+                            <span class="nav-icon"><i class="bi bi-key"></i></span>
+                            <span style="flex:1;">Changer le mot de passe</span>
+                            <i class="bi bi-chevron-right" style="font-size:.75rem;color:#cbd5e1;"></i>
                         </a>
-                        <a href="{{ path('user_dashboard') }}" class="profile-btn-back text-sm inline-flex items-center gap-1.5">
-                            <i class="bi bi-arrow-left"></i> Retour au tableau de bord
+                        <a href="{{ path('user_dashboard') }}" class="profile-nav-link" style="color:#7c3aed;">
+                            <span class="nav-icon"><i class="bi bi-arrow-left"></i></span>
+                            Tableau de bord
                         </a>
                     </div>
                 </div>
@@ -204,6 +300,39 @@
 
             {# Colonne publications + historique connexion #}
             <div class="lg:col-span-2 order-1 lg:order-2">
+                {# Teaser Profil IA → page dédiée #}
+                {% if hasOnboarded %}
+                <a href="{{ path('app_user_ai_profile') }}" class="profile-ai-teaser">
+                    <span class="profile-ai-teaser-icon"><i class="bi bi-magic"></i></span>
+                    <div class="profile-ai-teaser-body">
+                        <div class="profile-ai-teaser-title">
+                            {% if user.archetypeName %}
+                                {{ user.archetypeName }}
+                            {% else %}
+                                Profil de croissance IA
+                            {% endif %}
+                        </div>
+                        <div class="profile-ai-teaser-sub">
+                            {% if user.archetypeDescription %}
+                                {{ user.archetypeDescription|slice(0, 80) }}…
+                            {% else %}
+                                Découvrez votre archétype, vos forces et vos suggestions d'habitudes →
+                            {% endif %}
+                        </div>
+                    </div>
+                    <span class="profile-ai-teaser-arrow"><i class="bi bi-chevron-right"></i></span>
+                </a>
+                {% else %}
+                <a href="{{ path('app_onboarding') }}" class="profile-ai-teaser" style="background: linear-gradient(135deg, #1c1917 0%, #292524 100%); border-color: rgba(120,113,108,.3);">
+                    <span class="profile-ai-teaser-icon" style="background: linear-gradient(135deg, #78716c, #57534e);"><i class="bi bi-robot"></i></span>
+                    <div class="profile-ai-teaser-body">
+                        <div class="profile-ai-teaser-title" style="color: rgba(255,255,255,.8);">Profil IA non créé</div>
+                        <div class="profile-ai-teaser-sub" style="color: rgba(255,255,255,.45);">Complétez l'onboarding pour générer votre archétype personnalisé →</div>
+                    </div>
+                    <span class="profile-ai-teaser-arrow" style="color:rgba(255,255,255,.3);"><i class="bi bi-chevron-right"></i></span>
+                </a>
+                {% endif %}
+
                 <div class="profile-card-side p-6">
                     <div class="flex items-center justify-between flex-wrap gap-3 mb-6">
                         <h2 class="text-base font-semibold text-slate-800 flex items-center gap-2">
@@ -216,27 +345,23 @@
                     </div>
 
                     {% if posts|length > 0 %}
-                        <ul class="space-y-4">
+                        <div style="display:flex;flex-direction:column;gap:0.65rem;">
                             {% for post in posts %}
-                                <li class="profile-post-item p-4">
-                                    <a href="{{ path('post_list_view', { filter: 'my_posts' }) }}" class="block group">
-                                        <h3 class="font-semibold text-slate-800 group-hover:text-violet-600 transition">
-                                            {{ post.title }}
-                                        </h3>
-                                        <p class="text-sm text-slate-500 mt-1 line-clamp-2">{{ post.content|striptags|slice(0, 120) }}{% if post.content|striptags|length > 120 %}…{% endif %}</p>
-                                        <p class="text-xs text-slate-400 mt-3 flex flex-wrap items-center gap-x-4 gap-y-1">
-                                            <span><i class="bi bi-calendar3 me-1"></i>{{ post.createdAt|date('d/m/Y à H:i') }}</span>
-                                            {% if post.postLikes|length > 0 %}
-                                                <span><i class="bi bi-heart-fill text-rose-400 me-1"></i>{{ post.postLikes|length }}</span>
-                                            {% endif %}
-                                            {% if post.comments|length > 0 %}
-                                                <span><i class="bi bi-chat-dots me-1"></i>{{ post.comments|length }}</span>
-                                            {% endif %}
-                                        </p>
-                                    </a>
-                                </li>
+                                <a href="{{ path('post_list_view', { filter: 'my_posts' }) }}" class="profile-post-card">
+                                    <div class="profile-post-title">{{ post.title }}</div>
+                                    <div class="profile-post-excerpt">{{ post.content|striptags|slice(0, 110) }}{% if post.content|striptags|length > 110 %}…{% endif %}</div>
+                                    <div class="profile-post-meta">
+                                        <span><i class="bi bi-calendar3 me-1"></i>{{ post.createdAt|date('d/m/Y') }}</span>
+                                        {% if post.postLikes|length > 0 %}
+                                            <span><i class="bi bi-heart-fill me-1" style="color:#f43f5e;"></i>{{ post.postLikes|length }}</span>
+                                        {% endif %}
+                                        {% if post.comments|length > 0 %}
+                                            <span><i class="bi bi-chat-dots me-1"></i>{{ post.comments|length }}</span>
+                                        {% endif %}
+                                    </div>
+                                </a>
                             {% endfor %}
-                        </ul>
+                        </div>
                     {% else %}
                         <div class="profile-empty-posts text-center py-12 px-6">
                             <div class="w-14 h-14 rounded-2xl bg-white/80 flex items-center justify-center mx-auto mb-4 shadow-sm">

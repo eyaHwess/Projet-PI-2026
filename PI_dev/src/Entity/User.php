@@ -108,6 +108,25 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 10, nullable: true)]
     private ?string $preferredLanguage = null;
 
+    // —— Onboarding (AI archetype profile) ——
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $archetypeShortBio = null;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $archetypeName = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $archetypeDescription = null;
+
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $archetypeData = null;
+
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $onboardingAnswers = null;
+
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $isOnboarded = false;
+
     /**
      * @var Collection<int, Post>
      */
@@ -572,6 +591,78 @@ public function getPreferredLanguage(): ?string
 public function setPreferredLanguage(?string $preferredLanguage): static
 {
     $this->preferredLanguage = $preferredLanguage;
+    return $this;
+}
+
+// —— Onboarding ——
+
+public function getArchetypeShortBio(): ?string
+{
+    return $this->archetypeShortBio;
+}
+
+public function setArchetypeShortBio(?string $archetypeShortBio): static
+{
+    $this->archetypeShortBio = $archetypeShortBio;
+    return $this;
+}
+
+public function getArchetypeName(): ?string
+{
+    return $this->archetypeName;
+}
+
+public function setArchetypeName(?string $archetypeName): static
+{
+    $this->archetypeName = $archetypeName;
+    return $this;
+}
+
+public function getArchetypeDescription(): ?string
+{
+    return $this->archetypeDescription;
+}
+
+public function setArchetypeDescription(?string $archetypeDescription): static
+{
+    $this->archetypeDescription = $archetypeDescription;
+    return $this;
+}
+
+/** @return array<string, mixed>|null */
+public function getArchetypeData(): ?array
+{
+    return $this->archetypeData;
+}
+
+/** @param array<string, mixed>|null $archetypeData */
+public function setArchetypeData(?array $archetypeData): static
+{
+    $this->archetypeData = $archetypeData;
+    return $this;
+}
+
+/** @return array<string, mixed>|null */
+public function getOnboardingAnswers(): ?array
+{
+    return $this->onboardingAnswers;
+}
+
+/** @param array<string, mixed>|null $onboardingAnswers */
+public function setOnboardingAnswers(?array $onboardingAnswers): static
+{
+    $this->onboardingAnswers = $onboardingAnswers;
+    return $this;
+}
+
+public function isOnboarded(): bool
+{
+    return $this->isOnboarded;
+}
+
+public function setIsOnboarded(bool $isOnboarded): static
+{
+    $this->isOnboarded = $isOnboarded;
     return $this;
 }
 
