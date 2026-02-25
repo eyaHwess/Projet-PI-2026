@@ -72,22 +72,28 @@
         </style>
     </head>
     <body class="min-h-screen bg-gray-50 antialiased">
+        {# Navbar globale app (coach + user) : une seule barre, onglets visibles selon le rôle #}
         <nav class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between h-14 items-center">
                     <a href="{{ path('app_home') }}" class="flex items-center gap-2 text-gray-800 font-semibold hover:text-orange-500 transition">
-                        <img src="/images/logo.svg" alt="Logo" class="h-8 w-auto" onerror="this.style.display='none'">
-                        <span>Buildify</span>
+                        <img src="{{ asset('images/logo.svg') }}" alt="DayFlow" class="h-8 w-auto" onerror="this.style.display='none'">
+                        <span>DayFlow</span>
                     </a>
                     <div class="flex items-center flex-wrap gap-3 sm:gap-5">
                         {% if app.user %}
+                            {# Commun à tous les utilisateurs connectés #}
                             <a href="{{ path('user_dashboard') }}" class="text-gray-600 hover:text-orange-500 transition">Accueil</a>
+                            <a href="{{ path('app_goal_index') }}" class="text-gray-600 hover:text-orange-500 transition">Objectifs</a>
+                            <a href="{{ path('app_calendar') }}" class="text-gray-600 hover:text-orange-500 transition">Calendrier</a>
+                            <a href="{{ path('app_favorites') }}" class="text-gray-600 hover:text-orange-500 transition">Favoris</a>
                             <a href="{{ path('post_list_view') }}" class="text-gray-600 hover:text-orange-500 transition">Posts</a>
-                            
+                            {# Coach uniquement #}
                             {% if is_granted('ROLE_COACH') %}
                                 <a href="{{ path('app_coaching_request_index') }}" class="text-gray-600 hover:text-orange-500 transition">Mes demandes</a>
                                 <a href="{{ path('app_session_crud_index') }}" class="text-gray-600 hover:text-orange-500 transition">Gérer sessions</a>
                             {% else %}
+                                {# Utilisateur (non coach) uniquement #}
                                 <a href="{{ path('app_coach_index') }}" class="text-gray-600 hover:text-orange-500 transition">Demander coaching</a>
                                 <a href="{{ path('app_session_index') }}" class="text-gray-600 hover:text-orange-500 transition">Mes sessions</a>
                             {% endif %}

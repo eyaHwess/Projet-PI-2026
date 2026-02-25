@@ -1,0 +1,61 @@
+<div class="bg-white rounded-lg shadow-md p-6">
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-800">
+            🔐 Historique de connexion
+        </h3>
+        {% if suspiciousLoginsCount > 0 %}
+            <span class="px-3 py-1 bg-red-100 text-red-800 text-xs font-semibold rounded-full">
+                {{ suspiciousLoginsCount }} suspecte(s)
+            </span>
+        {% endif %}
+    </div>
+
+    {% if recentLogins is empty %}
+        <p class="text-gray-500 text-sm">Aucune connexion enregistrée</p>
+    {% else %}
+        <div class="space-y-3">
+            {% for login in recentLogins %}
+                <div class="flex items-start gap-3 p-3 rounded-lg {% if login.isSuspicious %}bg-red-50 border border-red-200{% else %}bg-gray-50{% endif %}">
+                    <div class="flex-shrink-0 mt-1">
+                        {% if login.isSuspicious %}
+                            <span class="text-red-500 text-xl">⚠️</span>
+                        {% else %}
+                            <span class="text-green-500 text-xl">✅</span>
+                        {% endif %}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-sm font-medium text-gray-900">
+                                {{ login.browserName }}
+                            </span>
+                            <span class="text-xs text-gray-500">•</span>
+                            <span class="text-xs text-gray-600">
+                                {{ login.deviceType }}
+                            </span>
+                        </div>
+                        <div class="text-xs text-gray-600 space-y-1">
+                            <div>
+                                <span class="font-medium">IP:</span> {{ login.ipAddress }}
+                            </div>
+                            <div>
+                                <span class="font-medium">Date:</span> 
+                                {{ login.loggedAt|date('d/m/Y à H:i') }}
+                            </div>
+                        </div>
+                        {% if login.isSuspicious %}
+                            <div class="mt-2 text-xs text-red-600 font-medium">
+                                ⚠️ Nouvelle localisation détectée
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="mt-4 pt-4 border-t border-gray-200">
+            <a href="{{ path('app_login_history') }}" class="text-sm text-purple-600 hover:text-purple-700 font-medium">
+                Voir tout l'historique →
+            </a>
+        </div>
+    {% endif %}
+</div>

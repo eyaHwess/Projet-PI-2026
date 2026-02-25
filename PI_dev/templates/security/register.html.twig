@@ -2,6 +2,15 @@
 
 {% block title %}Register{% endblock %}
 
+{% block stylesheets %}
+<style>
+    .register-form .alert-error-box ul { list-style: none; padding: 0; margin: 0; }
+    .register-form .alert-error-box li { color: #b91c1c; font-size: 0.875rem; }
+    .register-form .invalid-feedback ul { list-style: none; padding: 0; margin: 0; }
+    .register-form .invalid-feedback { color: #b91c1c; font-size: 0.875rem; margin-top: 0.25rem; }
+</style>
+{% endblock %}
+
 {% block body %}
 <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-blue-100 p-6">
 
@@ -20,14 +29,20 @@
             </h2>
 
             {% for message in app.flashes('error') %}
-                <div class="mb-4 rounded-xl bg-red-100 p-3 text-sm text-red-800">
-                    {{ message }}
+                <div class="mb-4 rounded-xl bg-red-100 border border-red-200 p-3 text-sm text-red-800 flex items-start gap-2" role="alert">
+                    <i class="bi bi-exclamation-circle-fill flex-shrink-0 mt-0.5 text-red-500"></i>
+                    <span>{{ message }}</span>
                 </div>
             {% endfor %}
 
-            {{ form_errors(registrationForm) }}
+            {% if form_errors(registrationForm)|length %}
+                <div class="mb-4 rounded-xl bg-red-100 border border-red-200 p-3 text-sm text-red-800 flex items-start gap-2 alert-error-box" role="alert">
+                    <i class="bi bi-exclamation-circle-fill flex-shrink-0 mt-0.5 text-red-500"></i>
+                    <div>{{ form_errors(registrationForm) }}</div>
+                </div>
+            {% endif %}
 
-            {{ form_start(registrationForm) }}
+            {{ form_start(registrationForm, { 'attr': { 'class': 'register-form' } }) }}
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
@@ -47,7 +62,12 @@
                     }
                 }) }}
 
-                {{ form_errors(registrationForm.email) }}
+                {% if registrationForm.email.vars.errors|length > 0 %}
+                    <div class="col-span-2 mb-1 rounded-xl bg-red-100 border border-red-200 p-3 text-sm text-red-800 flex items-start gap-2 alert-error-box" role="alert">
+                        <i class="bi bi-exclamation-circle-fill flex-shrink-0 mt-0.5 text-red-500"></i>
+                        <div>{{ form_errors(registrationForm.email) }}</div>
+                    </div>
+                {% endif %}
                 {{ form_widget(registrationForm.email, {
                     'attr': {
                         'placeholder': 'Email Address',

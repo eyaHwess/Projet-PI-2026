@@ -14,11 +14,6 @@
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background-color: #ffffff;
         }
-        .navbar-custom {
-            background-color: #ffffff !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            padding: 1rem 0;
-        }
         .btn-orange {
             background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
             border: none;
@@ -36,7 +31,7 @@
         }
         .content-section {
             background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
-            padding-top: 120px;
+            padding-top: 2rem;
             padding-bottom: 60px;
             min-height: 100vh;
         }
@@ -85,33 +80,6 @@
 {% endblock %}
 
 {% block body %}
-    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
-        <div class="container-fluid px-4 px-md-5">
-            <a class="navbar-brand" href="{{ path('app_home') }}">
-            </a>
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('app_home') }}">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('app_goal_index') }}">Mes Objectifs</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('app_calendar') }}">
-                            <i class="bi bi-calendar3 me-1"></i>Calendrier
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active fw-bold text-orange" href="{{ path('app_favorites') }}">
-                            <i class="bi bi-heart-fill me-1"></i>Favoris
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-
     <div class="content-section">
         <div class="container py-5">
             <h1 class="display-5 fw-bold mb-5">

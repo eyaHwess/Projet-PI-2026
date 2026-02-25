@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Enum\UserRole;
 use App\Form\RegistrationFormType;
+use App\Service\EmailService;
 use App\Service\FileUploader;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -20,7 +21,8 @@ class RegistrationController extends AbstractController
         Request $request,
         UserPasswordHasherInterface $passwordHasher,
         EntityManagerInterface $entityManager,
-        FileUploader $fileUploader
+        FileUploader $fileUploader,
+        EmailService $emailService
     ): Response {
 
         $user = new User();
@@ -66,6 +68,12 @@ class RegistrationController extends AbstractController
             try {
                 $entityManager->persist($user);
                 $entityManager->flush();
+
+                // Envoyer l'email de confirmation
+                $emailService->sendRegistrationConfirmation(
+                    $user->getEmail(),
+                    $user->getFirstName()
+                );
             } catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e) {
                 $this->addFlash('error', 'Cet email est déjà utilisé. Utilisez un autre email ou connectez-vous.');
                 return $this->render('security/register.html.twig', [

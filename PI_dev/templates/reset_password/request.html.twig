@@ -1,0 +1,64 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mot de passe oublié{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .reset-password-form .invalid-feedback { color: #b91c1c; font-size: 0.875rem; margin-top: 0.25rem; }
+    .reset-password-form ul { list-style: none; padding: 0; margin: 0.25rem 0 0; }
+    .reset-password-form ul li { color: #b91c1c; font-size: 0.875rem; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="min-h-[calc(100vh-3.5rem)] flex items-center justify-center bg-rose-50 px-4 py-8">
+    <div class="w-full max-w-md bg-white rounded-3xl shadow-xl p-8">
+        <div class="text-center mb-6">
+            <div class="mx-auto mb-3 h-14 w-14 rounded-full bg-blue-100 flex items-center justify-center text-2xl">
+                🔑
+            </div>
+            <h1 class="text-2xl font-bold text-gray-800">
+                Mot de passe oublié ?
+            </h1>
+            <p class="text-sm text-gray-500 mt-2">
+                Saisis ton adresse email et on t’envoie un lien pour réinitialiser ton mot de passe.
+            </p>
+        </div>
+
+        {% for flash_error in app.flashes('reset_password_error') %}
+            <div class="mb-4 rounded-xl bg-rose-100 p-3 text-sm text-rose-700 flex items-start gap-2">
+                <i class="bi bi-exclamation-circle-fill flex-shrink-0 mt-0.5"></i>
+                <span>{{ flash_error }}</span>
+            </div>
+        {% endfor %}
+
+        {{ form_start(requestForm, { 'attr': { 'class': 'space-y-5 reset-password-form' } }) }}
+            <div>
+                {{ form_label(requestForm.email, null, {
+                    'label_attr': { 'class': 'block text-sm font-medium text-gray-600 mb-1' }
+                }) }}
+                {{ form_widget(requestForm.email, {
+                    'attr': {
+                        'class': 'mt-1 w-full rounded-xl border border-gray-300 px-4 py-2.5 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 outline-none transition',
+                        'placeholder': 'exemple@email.com'
+                    }
+                }) }}
+                {{ form_errors(requestForm.email) }}
+            </div>
+
+            <button
+                type="submit"
+                class="w-full rounded-xl bg-blue-400 py-2.5 text-white font-semibold hover:bg-blue-500 transition focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
+            >
+                Envoyer le lien par email
+            </button>
+        {{ form_end(requestForm) }}
+
+        <p class="mt-6 text-center">
+            <a href="{{ path('app_login') }}" class="text-sm text-blue-500 hover:text-blue-600 hover:underline">
+                <i class="bi bi-arrow-left mr-1"></i> Retour à la connexion
+            </a>
+        </p>
+    </div>
+</div>
+{% endblock %}
