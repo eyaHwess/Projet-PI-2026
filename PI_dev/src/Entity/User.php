@@ -12,10 +12,14 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use App\Enum\UserRole;
 use App\Enum\UserStatus;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
+use Symfony\Component\HttpFoundation\File\File;
+
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`', uniqueConstraints: [
     new ORM\UniqueConstraint(name: 'UNIQ_USER_EMAIL', columns: ['email'])
 ])]
+#[Vich\Uploadable]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -74,6 +78,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $photoUrl = null;
+
+    // VichUploader field for profile picture
+    #[Vich\UploadableField(mapping: 'user_profiles', fileNameProperty: 'profilePictureName', size: 'profilePictureSize')]
+    private ?File $profilePictureFile = null;
+
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $profilePictureName = null;
+
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $profilePictureSize = null;
 
     #[ORM\Column(type: 'json', nullable: true)]
     private ?array $badges = [];
@@ -406,6 +420,65 @@ public function setPhotoUrl(?string $photoUrl): static
 {
     $this->photoUrl = $photoUrl;
     return $this;
+}
+
+// VichUploader methods for profile picture
+public function setProfilePictureFile(?File $profilePictureFile = null): void
+{
+    $this->profilePictureFile = $profilePictureFile;
+
+    if (null !== $profilePictureFile) {
+        // Update updatedAt to trigger VichUploader
+        $this->updatedAt = new \DateTimeImmutable();
+    }
+}
+
+public function getProfilePictureFile(): ?File
+{
+    return $this->profilePictureFile;
+}
+
+public function setProfilePictureName(?string $profilePictureName): void
+{
+    $this->profilePictureName = $profilePictureName;
+}
+
+public function getProfilePictureName(): ?string
+{
+    return $this->profilePictureName;
+}
+
+public function setProfilePictureSize(?int $profilePictureSize): void
+{
+    $this->profilePictureSize = $profilePictureSize;
+}
+
+public function getProfilePictureSize(): ?int
+{
+    return $this->profilePictureSize;
+}
+
+public function getFormattedProfilePictureSize(): string
+{
+    if (!$this->profilePictureSize) {
+        return '0 B';
+    }
+
+    $units = ['B', 'KB', 'MB', 'GB'];
+    $size = $this->profilePictureSize;
+    $unitIndex = 0;
+
+    while ($size >= 1024 && $unitIndex < count($units) - 1) {
+        $size /= 1024;
+        $unitIndex++;
+    }
+
+    return round($size, 2) . ' ' . $units[$unitIndex];
+}
+
+public function hasProfilePicture(): bool
+{
+    return $this->profilePictureName !== null;
 }
 
 public function getBadges(): ?array
