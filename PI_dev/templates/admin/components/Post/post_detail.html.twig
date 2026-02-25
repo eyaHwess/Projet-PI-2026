@@ -59,6 +59,14 @@
                         <div>
                             <h5 class="mb-0" style="color: #2d3748; font-weight: 600;">{{ post.createdBy.firstName }} {{ post.createdBy.lastName }}</h5>
                             <p class="mb-0 text-muted" style="font-size: 0.875rem;">{{ post.createdBy.email }}</p>
+                            
+                            {% if post.tags is defined and post.tags|length > 0 %}
+                            <div class="admin-post-tags">
+                                {% for tag in post.tags %}
+                                <span class="admin-tag-badge">{{ tag.name }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
 
@@ -189,82 +197,182 @@
             </div>
         </div>
 
-        <!-- Right Column - Information & Comments -->
+        <!-- Right Column - Floating Tab Dock Design -->
         <div class="col-lg-4">
-            <!-- General Information -->
-            <div class="card mb-4" style="border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: none;">
-                <div class="card-body p-4">
-                    <h6 class="mb-3" style="color: #64748b; font-weight: 600; font-size: 0.875rem;">General Information</h6>
-                    
-                    <div class="mb-3">
-                        <div class="text-muted mb-1" style="font-size: 0.8125rem;">Author Name</div>
-                        <div style="color: #2d3748; font-size: 0.875rem; font-weight: 500;">{{ post.createdBy.firstName }} {{ post.createdBy.lastName }}</div>
+            <div class="post-sidebar-card">
+                <div class="tab-content-area">
+                    <!-- Tab 1: General Information -->
+                    <div class="sidebar-tab-content active" data-tab="general">
+                        <h6 style="color: #64748b; font-weight: 600; font-size: 0.875rem; margin-bottom: 1rem;">GENERAL INFORMATION</h6>
+                        
+                        <div class="mb-3">
+                            <label style="color: #94a3b8; font-size: 0.8125rem; font-weight: 500;">Author Name</label>
+                            <p style="color: #2d3748; font-weight: 500; margin-bottom: 0;">{{ post.createdBy.firstName }} {{ post.createdBy.lastName }}</p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label style="color: #94a3b8; font-size: 0.8125rem; font-weight: 500;">Author Email</label>
+                            <p style="color: #2d3748; font-weight: 500; margin-bottom: 0;">{{ post.createdBy.email }}</p>
+                        </div>
+                        
+                        {% if post.tags is defined and post.tags|length > 0 %}
+                        <div class="mb-3">
+                            <label style="color: #94a3b8; font-size: 0.8125rem; font-weight: 500;">Tags</label>
+                            <div class="d-flex flex-wrap gap-2 mt-2">
+                                {% for tag in post.tags %}
+                                <span class="admin-tag-badge">{{ tag.name }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mb-3">
+                            <label style="color: #94a3b8; font-size: 0.8125rem; font-weight: 500;">Created At</label>
+                            <p style="color: #2d3748; font-weight: 500; margin-bottom: 0;">{{ post.createdAt|date('d M Y, H:i') }}</p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label style="color: #94a3b8; font-size: 0.8125rem; font-weight: 500;">Last Updated</label>
+                            <p style="color: #2d3748; font-weight: 500; margin-bottom: 0;">{{ post.updatedAt|date('d M Y, H:i') }}</p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label style="color: #94a3b8; font-size: 0.8125rem; font-weight: 500;">Status</label>
+                            <p style="margin-bottom: 0;">
+                                <span class="badge" style="background: #10b981; color: white; padding: 0.375rem 0.75rem; border-radius: 8px; font-size: 0.8125rem;">Published</span>
+                            </p>
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <div class="text-muted mb-1" style="font-size: 0.8125rem;">Author Email</div>
-                        <div style="color: #2d3748; font-size: 0.875rem; font-weight: 500;">{{ post.createdBy.email }}</div>
+                    <!-- Tab 2: Metrics & Analytics -->
+                    <div class="sidebar-tab-content" data-tab="metrics">
+                        <h6 style="color: #64748b; font-weight: 600; font-size: 0.875rem; margin-bottom: 1rem;">POST METRICS</h6>
+                        
+                        <div class="row g-3 mb-4">
+                            <div class="col-6">
+                                <div style="background: rgba(168, 85, 247, 0.05); padding: 1rem; border-radius: 12px;">
+                                    <div style="color: #94a3b8; font-size: 0.75rem; font-weight: 500; margin-bottom: 0.25rem;">LIKES</div>
+                                    <div style="color: #2d3748; font-size: 1.5rem; font-weight: 600;">{{ likesCount }}</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div style="background: rgba(59, 130, 246, 0.05); padding: 1rem; border-radius: 12px;">
+                                    <div style="color: #94a3b8; font-size: 0.75rem; font-weight: 500; margin-bottom: 0.25rem;">COMMENTS</div>
+                                    <div style="color: #2d3748; font-size: 1.5rem; font-weight: 600;">{{ commentsCount }}</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div style="background: rgba(16, 185, 129, 0.05); padding: 1rem; border-radius: 12px;">
+                                    <div style="color: #94a3b8; font-size: 0.75rem; font-weight: 500; margin-bottom: 0.25rem;">VIEWS</div>
+                                    <div style="color: #2d3748; font-size: 1.5rem; font-weight: 600;">{{ post.viewCount }}</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div style="background: rgba(245, 158, 11, 0.05); padding: 1rem; border-radius: 12px;">
+                                    <div style="color: #94a3b8; font-size: 0.75rem; font-weight: 500; margin-bottom: 0.25rem;">CLICKS</div>
+                                    <div style="color: #2d3748; font-size: 1.5rem; font-weight: 600;">{{ post.clickCount }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h6 style="color: #64748b; font-weight: 600; font-size: 0.875rem; margin-bottom: 1rem; margin-top: 2rem;">ANALYTICS</h6>
+                        
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label style="color: #94a3b8; font-size: 0.8125rem; font-weight: 500;">Engagement Rate</label>
+                                <span style="color: #2d3748; font-weight: 600; font-size: 0.875rem;">{{ engagementRate }}%</span>
+                            </div>
+                            <div class="progress" style="height: 8px; border-radius: 8px; background: #e2e8f0;">
+                                <div class="progress-bar" style="width: {{ engagementRate }}%; background: linear-gradient(90deg, #a855f7 0%, #7c3aed 100%); border-radius: 8px;"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label style="color: #94a3b8; font-size: 0.8125rem; font-weight: 500;">CTR (Click-Through Rate)</label>
+                                <span style="color: #2d3748; font-weight: 600; font-size: 0.875rem;">{{ ctr }}%</span>
+                            </div>
+                            <div class="progress" style="height: 8px; border-radius: 8px; background: #e2e8f0;">
+                                <div class="progress-bar" style="width: {{ ctr }}%; background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%); border-radius: 8px;"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label style="color: #94a3b8; font-size: 0.8125rem; font-weight: 500;">Interaction Score</label>
+                            <p style="margin-bottom: 0; margin-top: 0.5rem;">
+                                {% if interactionScore == 'High' %}
+                                <span class="badge" style="background: #10b981; color: white; padding: 0.375rem 0.75rem; border-radius: 8px; font-size: 0.8125rem;">High</span>
+                                {% elseif interactionScore == 'Medium' %}
+                                <span class="badge" style="background: #3b82f6; color: white; padding: 0.375rem 0.75rem; border-radius: 8px; font-size: 0.8125rem;">Medium</span>
+                                {% else %}
+                                <span class="badge" style="background: #94a3b8; color: white; padding: 0.375rem 0.75rem; border-radius: 8px; font-size: 0.8125rem;">Low</span>
+                                {% endif %}
+                            </p>
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <div class="text-muted mb-1" style="font-size: 0.8125rem;">Created at</div>
-                        <div style="color: #2d3748; font-size: 0.875rem; font-weight: 500;">{{ post.createdAt|date('M d, Y') }}</div>
-                    </div>
-
-                    <div class="mb-3">
-                        <div class="text-muted mb-1" style="font-size: 0.8125rem;">Last Updated</div>
-                        <div style="color: #2d3748; font-size: 0.875rem; font-weight: 500;">{{ post.updatedAt ? post.updatedAt|date('M d, Y') : post.createdAt|date('M d, Y') }}</div>
-                    </div>
-
-                    <div>
-                        <div class="text-muted mb-1" style="font-size: 0.8125rem;">Status</div>
-                        {% if post.status == 'published' %}
-                            <span class="badge" style="background: #22c55e; color: white; padding: 0.375rem 0.75rem; border-radius: 6px; font-weight: 500; font-size: 0.75rem;">Published</span>
-                        {% elseif post.status == 'draft' %}
-                            <span class="badge" style="background: #a855f7; color: white; padding: 0.375rem 0.75rem; border-radius: 6px; font-weight: 500; font-size: 0.75rem;">Draft</span>
-                        {% elseif post.status == 'scheduled' %}
-                            <span class="badge" style="background: #fb923c; color: white; padding: 0.375rem 0.75rem; border-radius: 6px; font-weight: 500; font-size: 0.75rem;">Scheduled</span>
-                        {% else %}
-                            <span class="badge" style="background: #6b7280; color: white; padding: 0.375rem 0.75rem; border-radius: 6px; font-weight: 500; font-size: 0.75rem;">Hidden</span>
+                    <!-- Tab 3: Trends & Tag Performance -->
+                    <div class="sidebar-tab-content" data-tab="trends">
+                        <h6 style="color: #64748b; font-weight: 600; font-size: 0.875rem; margin-bottom: 1rem;">TREND ANALYTICS</h6>
+                        
+                        <div class="mb-3">
+                            <label style="color: #94a3b8; font-size: 0.8125rem; font-weight: 500;">Views (7 days)</label>
+                            <p style="color: #2d3748; font-weight: 600; font-size: 1.25rem; margin-bottom: 0;">{{ trendData.views7d }}</p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label style="color: #94a3b8; font-size: 0.8125rem; font-weight: 500;">Growth</label>
+                            <p style="color: #2d3748; font-weight: 600; font-size: 1.25rem; margin-bottom: 0;">{{ trendData.growth }}%</p>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label style="color: #94a3b8; font-size: 0.8125rem; font-weight: 500;">Status</label>
+                            <p style="margin-bottom: 0; margin-top: 0.5rem;">
+                                {% if trendData.statusClass == 'trending' %}
+                                <span class="badge" style="background: #ef4444; color: white; padding: 0.375rem 0.75rem; border-radius: 8px; font-size: 0.8125rem;">🔥 Trending</span>
+                                {% elseif trendData.statusClass == 'growing' %}
+                                <span class="badge" style="background: #10b981; color: white; padding: 0.375rem 0.75rem; border-radius: 8px; font-size: 0.8125rem;">⬆ Growing</span>
+                                {% elseif trendData.statusClass == 'declining' %}
+                                <span class="badge" style="background: #f59e0b; color: white; padding: 0.375rem 0.75rem; border-radius: 8px; font-size: 0.8125rem;">⬇ Declining</span>
+                                {% else %}
+                                <span class="badge" style="background: #94a3b8; color: white; padding: 0.375rem 0.75rem; border-radius: 8px; font-size: 0.8125rem;">Stable</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        
+                        {% if tagPerformance|length > 0 %}
+                        <h6 style="color: #64748b; font-weight: 600; font-size: 0.875rem; margin-bottom: 1rem; margin-top: 2rem;">TAG PERFORMANCE</h6>
+                        
+                        {% for item in tagPerformance %}
+                        <div class="mb-3 p-3" style="background: rgba(168, 85, 247, 0.05); border-radius: 12px;">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="admin-tag-badge">{{ item.tag.name }}</span>
+                                <span style="color: #94a3b8; font-size: 0.75rem;">Rank #{{ item.stats.rank }}</span>
+                            </div>
+                            <div style="color: #64748b; font-size: 0.8125rem;">
+                                <div>Popularity: {{ item.stats.popularityIndex }}%</div>
+                                <div>Usage: {{ item.stats.usageCount }} posts</div>
+                            </div>
+                        </div>
+                        {% endfor %}
                         {% endif %}
                     </div>
                 </div>
-            </div>
-
-            <!-- Post Metrics -->
-            <div class="card mb-4" style="border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: none;">
-                <div class="card-body p-4">
-                    <h6 class="mb-3" style="color: #64748b; font-weight: 600; font-size: 0.875rem;">Post Metrics</h6>
-                    
-                    <div class="row g-3">
-                        <div class="col-4">
-                            <div class="d-flex align-items-center gap-2">
-                                <i class="bi bi-heart-fill" style="color: #ec4899; font-size: 1.25rem;"></i>
-                                <div>
-                                    <div style="color: #2d3748; font-weight: 600; font-size: 1.125rem;">{{ likesCount }}</div>
-                                    <div class="text-muted" style="font-size: 0.75rem;">Likes</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="d-flex align-items-center gap-2">
-                                <i class="bi bi-chat" style="color: #3b82f6; font-size: 1.25rem;"></i>
-                                <div>
-                                    <div style="color: #2d3748; font-weight: 600; font-size: 1.125rem;">{{ commentsCount }}</div>
-                                    <div class="text-muted" style="font-size: 0.75rem;">Comments</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <div class="d-flex align-items-center gap-2">
-                                <i class="bi bi-bookmark-fill" style="color: #f59e0b; font-size: 1.25rem;"></i>
-                                <div>
-                                    <div style="color: #2d3748; font-weight: 600; font-size: 1.125rem;">{{ post.savedByUsers is defined ? post.savedByUsers|length : 0 }}</div>
-                                    <div class="text-muted" style="font-size: 0.75rem;">Saves</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                
+                <!-- Floating Tab Buttons Dock -->
+                <div class="floating-tab-buttons">
+                    <button class="floating-tab-btn active" data-tab="general" type="button">
+                        <i class="bi bi-info-circle"></i>
+                        <span class="tab-label">General</span>
+                    </button>
+                    <button class="floating-tab-btn" data-tab="metrics" type="button">
+                        <i class="bi bi-graph-up"></i>
+                        <span class="tab-label">Metrics</span>
+                    </button>
+                    <button class="floating-tab-btn" data-tab="trends" type="button">
+                        <i class="bi bi-activity"></i>
+                        <span class="tab-label">Trends</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -273,24 +381,23 @@
 
 <script>
 function toggleReplies(commentId) {
-    const repliesDiv = document.getElementById('replies-' + commentId);
-    const text = document.querySelector('.reply-text-' + commentId);
+    const repliesContainer = document.getElementById('replies-' + commentId);
+    const replyText = document.querySelector('.reply-text-' + commentId);
     
-    if (repliesDiv.style.display === 'none') {
-        repliesDiv.style.display = 'block';
-        text.textContent = 'Hide replies';
+    if (repliesContainer.style.display === 'none') {
+        repliesContainer.style.display = 'block';
+        replyText.textContent = 'Hide replies';
     } else {
-        repliesDiv.style.display = 'none';
-        const replyCount = document.querySelectorAll('.reply-item-' + commentId).length;
-        text.textContent = 'View ' + replyCount + (replyCount === 1 ? ' reply' : ' replies');
+        repliesContainer.style.display = 'none';
+        const repliesCount = document.querySelectorAll('#replies-' + commentId + ' .admin-reply-item').length;
+        replyText.textContent = 'View ' + repliesCount + (repliesCount === 1 ? ' reply' : ' replies');
     }
 }
 
 function loadMoreReplies(commentId) {
-    const hiddenReplies = document.querySelectorAll('.reply-item-' + commentId + '[style*="display: none"]');
+    const hiddenReplies = document.querySelectorAll('#replies-' + commentId + ' .reply-item-' + commentId + '[style*="display: none"]');
     hiddenReplies.forEach(reply => {
-        reply.style.display = '';
-        reply.classList.add('d-flex');
+        reply.style.display = 'flex';
     });
     
     const loadMoreBtn = document.querySelector('.load-more-replies-' + commentId);
@@ -302,17 +409,18 @@ function loadMoreReplies(commentId) {
 function loadMoreComments() {
     const hiddenComments = document.querySelectorAll('.comment-item[style*="display: none"]');
     hiddenComments.forEach(comment => {
-        comment.style.display = 'block';
+        comment.style.display = 'flex';
     });
     
-    event.target.style.display = 'none';
+    const loadMoreBtn = document.querySelector('.admin-load-more-comments');
+    if (loadMoreBtn) {
+        loadMoreBtn.parentElement.style.display = 'none';
+    }
 }
 
 function deleteComment(commentId) {
-    if (confirm('Are you sure you want to delete this comment? This action cannot be undone.')) {
-        const url = '/admin/comments/' + commentId + '/delete';
-        
-        fetch(url, {
+    if (confirm('Are you sure you want to delete this comment?')) {
+        fetch('/admin/comments/' + commentId + '/delete', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -323,14 +431,45 @@ function deleteComment(commentId) {
             if (data.success) {
                 location.reload();
             } else {
-                alert('Error deleting comment: ' + (data.message || 'Unknown error'));
+                alert('Failed to delete comment');
             }
         })
         .catch(error => {
-            alert('Error deleting comment: ' + error.message);
+            console.error('Error:', error);
+            alert('An error occurred while deleting the comment');
         });
     }
 }
+
+// Vanilla JS Tab Switching - NO Bootstrap
+document.addEventListener('DOMContentLoaded', function() {
+    const tabButtons = document.querySelectorAll('.floating-tab-btn');
+    const tabContents = document.querySelectorAll('.sidebar-tab-content');
+    
+    tabButtons.forEach(function(button) {
+        button.addEventListener('click', function() {
+            const targetTab = this.getAttribute('data-tab');
+            
+            // Remove active class from all buttons
+            tabButtons.forEach(function(btn) {
+                btn.classList.remove('active');
+            });
+            
+            // Add active class to clicked button
+            this.classList.add('active');
+            
+            // Hide all tab contents
+            tabContents.forEach(function(content) {
+                content.classList.remove('active');
+            });
+            
+            // Show the target tab content
+            const targetContent = document.querySelector('.sidebar-tab-content[data-tab="' + targetTab + '"]');
+            if (targetContent) {
+                targetContent.classList.add('active');
+            }
+        });
+    });
+});
 </script>
 {% endblock %}
-

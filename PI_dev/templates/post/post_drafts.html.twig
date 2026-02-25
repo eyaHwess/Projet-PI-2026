@@ -30,7 +30,7 @@
                         </a>
                     </li>
                     <li>
-                        <a class="dropdown-item text-danger" href="#" onclick="if(confirm('Are you sure you want to delete this draft?')) { confirmDeleteDraft({{ draft.id }}); } return false;">
+                        <a class="dropdown-item text-danger" href="#" onclick="showDeleteModal({{ draft.id }}, 'draft'); return false;">
                             <i class="bi bi-trash me-2"></i> Delete
                         </a>
                     </li>

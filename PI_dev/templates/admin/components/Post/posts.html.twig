@@ -11,29 +11,43 @@
         <!-- Filters and Sort -->
         <div class="mb-4">
             <form method="get" action="{{ path('admin_posts') }}" class="row g-3 align-items-end">
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label for="userName" class="form-label" style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.5rem;">
                         <i class="bi bi-person" style="font-size: 0.875rem;"></i> User Name
                     </label>
-                    <input type="text" class="form-control" id="userName" name="userName" value="{{ filter_userName }}" placeholder="Search by first or last name..." style="border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.875rem; padding: 0.5rem 0.75rem;">
+                    <input type="text" class="form-control" id="userName" name="userName" value="{{ filter_userName }}" placeholder="Search by name..." style="border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.875rem; padding: 0.5rem 0.75rem;">
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label for="userEmail" class="form-label" style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.5rem;">
                         <i class="bi bi-envelope" style="font-size: 0.875rem;"></i> User Email
                     </label>
                     <input type="email" class="form-control" id="userEmail" name="userEmail" value="{{ filter_userEmail }}" placeholder="Search by email..." style="border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.875rem; padding: 0.5rem 0.75rem;">
                 </div>
-                <div class="col-md-3 d-flex gap-2">
-                    <button type="submit" class="btn" style="background: #a855f7; color: white; border: none; border-radius: 8px; padding: 0.5rem 1.5rem; font-size: 0.875rem;">
-                        <i class="bi bi-search" style="font-size: 0.875rem;"></i> Filter
-                    </button>
-                    {% if filter_userName or filter_userEmail %}
-                    <a href="{{ path('admin_posts') }}" class="btn" style="background: transparent; color: #64748b; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.5rem 1rem; font-size: 0.875rem;">
-                        <i class="bi bi-x-lg" style="font-size: 0.75rem;"></i>
-                    </a>
-                    {% endif %}
+                <div class="col-md-2">
+                    <label for="tag" class="form-label" style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.5rem;">
+                        <i class="bi bi-tag" style="font-size: 0.875rem;"></i> Tag
+                    </label>
+                    <select class="form-select" id="tag" name="tag" onchange="this.form.submit()" style="border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.875rem; padding: 0.5rem 0.75rem;">
+                        <option value="">All Tags</option>
+                        {% for tag in allTags %}
+                        <option value="{{ tag.slug }}" {{ filter_tag == tag.slug ? 'selected' : '' }}>
+                            {{ tag.name }} ({{ tag.usageCount }})
+                        </option>
+                        {% endfor %}
+                    </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
+                    <label for="trend" class="form-label" style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.5rem;">
+                        <i class="bi bi-graph-up" style="font-size: 0.875rem;"></i> Trend
+                    </label>
+                    <select class="form-select" id="trend" name="trend" onchange="this.form.submit()" style="border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.875rem; padding: 0.5rem 0.75rem;">
+                        <option value="">All Posts</option>
+                        <option value="trending" {{ filter_trend == 'trending' ? 'selected' : '' }}>🔥 Trending</option>
+                        <option value="growing" {{ filter_trend == 'growing' ? 'selected' : '' }}>⬆ Growing</option>
+                        <option value="declining" {{ filter_trend == 'declining' ? 'selected' : '' }}>⬇ Declining</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
                     <label for="sortBy" class="form-label" style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.5rem;">
                         Sort by
                     </label>
@@ -43,6 +57,16 @@
                         <option value="most_liked" {{ sortBy == 'most_liked' ? 'selected' : '' }}>Most Liked</option>
                         <option value="most_commented" {{ sortBy == 'most_commented' ? 'selected' : '' }}>Most Commented</option>
                     </select>
+                </div>
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn" style="background: #a855f7; color: white; border: none; border-radius: 8px; padding: 0.5rem 1.5rem; font-size: 0.875rem;">
+                        <i class="bi bi-search" style="font-size: 0.875rem;"></i> Filter
+                    </button>
+                    {% if filter_userName or filter_userEmail or filter_tag or filter_trend %}
+                    <a href="{{ path('admin_posts') }}" class="btn" style="background: transparent; color: #64748b; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.5rem 1rem; font-size: 0.875rem;">
+                        <i class="bi bi-x-lg" style="font-size: 0.75rem;"></i>
+                    </a>
+                    {% endif %}
                 </div>
             </form>
         </div>
@@ -64,10 +88,10 @@
                                     <i class="bi bi-calendar me-2"></i>Published At
                                 </th>
                                 <th class="px-4 py-3 text-center" style="color: #4a5568; font-weight: 600; border: none;">
-                                    <i class="bi bi-heart me-2"></i>Likes
+                                    <i class="bi bi-cursor me-2"></i>CTR Score
                                 </th>
                                 <th class="px-4 py-3 text-center" style="color: #4a5568; font-weight: 600; border: none;">
-                                    <i class="bi bi-chat me-2"></i>Comments
+                                    <i class="bi bi-graph-up me-2"></i>Trend
                                 </th>
                                 <th class="px-4 py-3 text-center" style="color: #4a5568; font-weight: 600; border: none;">Status</th>
                                 <th class="px-4 py-3 text-center" style="color: #4a5568; font-weight: 600; border: none;">Actions</th>
@@ -77,8 +101,8 @@
                             {% if posts|length > 0 %}
                                 {% for item in posts %}
                                     {% set post = item.post %}
-                                    {% set likesCount = item.likesCount %}
-                                    {% set commentsCount = item.commentsCount %}
+                                    {% set ctrScore = item.ctrScore %}
+                                    {% set trendData = item.trendData %}
                                     <tr style="border-bottom: 1px solid rgba(168, 85, 247, 0.05);">
                                         <td class="px-4 py-3" style="border: none;">
                                             <div class="d-flex align-items-center gap-3">
@@ -105,14 +129,16 @@
                                             {{ post.createdAt|date('M d, Y') }}
                                         </td>
                                         <td class="px-4 py-3 text-center" style="border: none;">
-                                            <span class="badge" style="background: rgba(236, 72, 153, 0.1); color: #ec4899; padding: 0.5rem 1rem; border-radius: 12px; font-weight: 500;">
-                                                <i class="bi bi-heart-fill me-1"></i>{{ likesCount }}
-                                            </span>
+                                            {% if ctrScore == 'High' %}
+                                                <span class="ctr-badge ctr-high">High</span>
+                                            {% elseif ctrScore == 'Medium' %}
+                                                <span class="ctr-badge ctr-medium">Medium</span>
+                                            {% else %}
+                                                <span class="ctr-badge ctr-low">Low</span>
+                                            {% endif %}
                                         </td>
                                         <td class="px-4 py-3 text-center" style="border: none;">
-                                            <span class="badge" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6; padding: 0.5rem 1rem; border-radius: 12px; font-weight: 500;">
-                                                <i class="bi bi-chat-fill me-1"></i>{{ commentsCount }}
-                                            </span>
+                                            <span class="trend-badge trend-{{ trendData.statusClass }}">{{ trendData.status }}</span>
                                         </td>
                                         <td class="px-4 py-3 text-center" style="border: none;">
                                             {% if post.status == 'published' %}

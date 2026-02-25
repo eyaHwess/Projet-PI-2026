@@ -524,11 +524,19 @@ final class AdminController extends AbstractController
     }
 
     #[Route('/admin/posts', name: 'admin_posts')]
-    public function posts(PostRepository $postRepository, PaginatorInterface $paginator, Request $request): Response
+    public function posts(
+        PostRepository $postRepository, 
+        PaginatorInterface $paginator, 
+        Request $request,
+        \App\Service\Analytics\PostAnalyticsService $analyticsService,
+        EntityManagerInterface $entityManager
+    ): Response
     {
         // Get filter parameters
         $userName = trim((string) $request->query->get('userName', ''));
         $userEmail = trim((string) $request->query->get('userEmail', ''));
+        $tagSlug = trim((string) $request->query->get('tag', ''));
+        $trendFilter = trim((string) $request->query->get('trend', ''));
         $sortBy = $request->query->get('sortBy', 'newest');
         
         // Create query for posts with user data
@@ -545,6 +553,13 @@ final class AdminController extends AbstractController
         if ($userEmail !== '') {
             $qb->andWhere('LOWER(u.email) LIKE :userEmail')
                ->setParameter('userEmail', '%' . mb_strtolower($userEmail) . '%');
+        }
+        
+        // Apply tag filter
+        if ($tagSlug !== '') {
+            $qb->leftJoin('p.tags', 't')
+               ->andWhere('t.slug = :tagSlug')
+               ->setParameter('tagSlug', $tagSlug);
         }
         
         // Apply sorting
@@ -579,32 +594,60 @@ final class AdminController extends AbstractController
             6 // items per page
         );
         
-        // Add counts to each post
-        $postsWithCounts = [];
+        // Add analytics to each post
+        $postsWithAnalytics = [];
         foreach ($pagination as $post) {
-            $postsWithCounts[] = [
+            $ctrScore = $analyticsService->getCTRScore($post);
+            $trendData = $analyticsService->getTrendStatus($post);
+            
+            // Apply trend filter
+            if ($trendFilter !== '') {
+                $matchesTrend = match($trendFilter) {
+                    'trending' => $trendData['statusClass'] === 'trending',
+                    'growing' => $trendData['statusClass'] === 'growing',
+                    'declining' => $trendData['statusClass'] === 'declining',
+                    default => true
+                };
+                
+                if (!$matchesTrend) {
+                    continue;
+                }
+            }
+            
+            $postsWithAnalytics[] = [
                 'post' => $post,
-                'likesCount' => count($post->getPostLikes()),
-                'commentsCount' => count($post->getComments())
+                'ctrScore' => $ctrScore,
+                'trendData' => $trendData,
             ];
         }
         
+        // Get all tags for filter dropdown
+        $allTags = $analyticsService->getAllTagsWithStats();
+        
         return $this->render('admin/components/Post/posts.html.twig', [
-            'posts' => $postsWithCounts,
+            'posts' => $postsWithAnalytics,
             'pagination' => $pagination,
             'filter_userName' => $userName,
             'filter_userEmail' => $userEmail,
+            'filter_tag' => $tagSlug,
+            'filter_trend' => $trendFilter,
             'sortBy' => $sortBy,
+            'allTags' => $allTags,
         ]);
     }
 
     #[Route('/admin/posts/{id}', name: 'admin_post_detail', requirements: ['id' => '\d+'])]
-    public function postDetail(int $id, PostRepository $postRepository): Response
+    public function postDetail(
+        int $id, 
+        PostRepository $postRepository,
+        \App\Service\Analytics\PostAnalyticsService $analyticsService
+    ): Response
     {
         $post = $postRepository->createQueryBuilder('p')
             ->leftJoin('p.comments', 'c')
             ->leftJoin('c.commenter', 'u')
-            ->addSelect('c', 'u')
+            ->leftJoin('p.tags', 't')
+            ->addSelect('c', 'u', 't')
             ->where('p.id = :id')
             ->setParameter('id', $id)
             ->getQuery()
@@ -614,10 +657,30 @@ final class AdminController extends AbstractController
             throw $this->createNotFoundException('Post not found.');
         }
         
+        // Calculate analytics
+        $ctr = $analyticsService->calculateCTR($post);
+        $engagementRate = $analyticsService->calculateEngagementRate($post);
+        $interactionScore = $analyticsService->calculateInteractionScore($post);
+        $trendData = $analyticsService->getTrendStatus($post);
+        
+        // Get tag performance
+        $tagPerformance = [];
+        foreach ($post->getTags() as $tag) {
+            $tagPerformance[] = [
+                'tag' => $tag,
+                'stats' => $analyticsService->getTagPerformance($tag),
+            ];
+        }
+        
         return $this->render('admin/components/Post/post_detail.html.twig', [
             'post' => $post,
             'likesCount' => count($post->getPostLikes()),
             'commentsCount' => count($post->getComments()),
+            'ctr' => round($ctr, 2),
+            'engagementRate' => round($engagementRate, 2),
+            'interactionScore' => $interactionScore,
+            'trendData' => $trendData,
+            'tagPerformance' => $tagPerformance,
         ]);
     }
 

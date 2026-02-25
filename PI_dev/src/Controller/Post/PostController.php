@@ -6,7 +6,10 @@ use App\Service\Post\PostLikeService;
 use App\Service\Post\CommentService;
 use App\Service\Post\CommentLikeService;
 use App\Service\Post\SavedPostService;
+use App\Service\Moderation\ModerationService;
+use App\Service\Tagging\TaggingManager;
 use App\Repository\PostRepository;
+use App\Repository\TagRepository;
 use App\Enum\PostStatus;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -26,16 +29,35 @@ class PostController extends AbstractController
     }
 
     #[Route('/post/create', name: 'post_create', methods: ['POST'])]
-    public function create(Request $request, PostService $postService): Response
-    {
+    public function create(
+        Request $request, 
+        PostService $postService,
+        ModerationService $moderationService
+    ): Response {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
         $user = $this->getUser();
-
         $title = $request->request->get('title');
         $content = $request->request->get('content');
 
+        // Moderate title and content
+        $titleResult = $moderationService->analyzeContent($title);
+        $contentResult = $moderationService->analyzeContent($content);
+
+        // Check if either title or content is inappropriate
+        if (!$titleResult->isClean()) {
+            $this->addFlash('error', $titleResult->getMessage());
+            return $this->redirectToRoute('post_new');
+        }
+
+        if (!$contentResult->isClean()) {
+            $this->addFlash('error', $contentResult->getMessage());
+            return $this->redirectToRoute('post_new');
+        }
+
+        // Content is clean, proceed with creation
         $postService->createPost($title, $content, $user);
+        $this->addFlash('success', 'Post created successfully!');
 
         return $this->redirectToRoute('post_new');
     }
@@ -45,7 +67,8 @@ class PostController extends AbstractController
     public function editFromList(
         int $id,
         Request $request,
-        PostService $postService
+        PostService $postService,
+        ModerationService $moderationService
     ): Response {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
@@ -54,6 +77,18 @@ class PostController extends AbstractController
         $title = $request->request->get('title');
         $content = $request->request->get('content');
         $status = $request->request->get('status');
+
+        // Moderate post (title + content merged into one result)
+        $moderationResult = $moderationService->analyzePost($title, $content, $user, 'post_edit');
+
+        // Check if post content is inappropriate
+        if (!$moderationResult->isClean()) {
+            return $this->json([
+                'success' => false,
+                'error' => $moderationResult->getMessage(),
+                'moderation' => $moderationResult->toArray()
+            ], 400);
+        }
 
         try {
             $postService->editPost($id, $title, $content, $user, $status);
@@ -112,11 +147,18 @@ class PostController extends AbstractController
     }
 
     #[Route('/posts', name: 'post_list_view', methods: ['GET'])]
-    public function adminList(Request $request, PostRepository $postRepository, PostLikeService $postLikeService, CommentLikeService $commentLikeService, SavedPostService $savedPostService): Response
-    {
+    public function adminList(
+        Request $request, 
+        PostRepository $postRepository, 
+        TagRepository $tagRepository,
+        PostLikeService $postLikeService, 
+        CommentLikeService $commentLikeService, 
+        SavedPostService $savedPostService
+    ): Response {
         // Get filter and sort parameters from request
         $sortBy = $request->query->get('sort', 'newest'); // newest, oldest, most_liked, most_commented
         $filterBy = $request->query->get('filter', 'all'); // all, following, my_posts
+        $tagSlug = $request->query->get('tag'); // tag slug for filtering
         
         // Base query - only published posts
         $queryBuilder = $postRepository->createQueryBuilder('p')
@@ -125,6 +167,16 @@ class PostController extends AbstractController
         
         // Get current user
         $currentUser = $this->getUser();
+        
+        // Apply tag filter if provided
+        if ($tagSlug) {
+            $tag = $tagRepository->findBySlug($tagSlug);
+            if ($tag) {
+                $queryBuilder->innerJoin('p.tags', 't')
+                    ->andWhere('t.id = :tagId')
+                    ->setParameter('tagId', $tag->getId());
+            }
+        }
         
         // Apply filters
         if ($filterBy === 'my_posts' && $currentUser) {
@@ -166,12 +218,17 @@ class PostController extends AbstractController
             ];
         }
 
+        // Fetch available tags for filter dropdown
+        $availableTags = $tagRepository->findAvailableTags();
+
         return $this->render('post/post_list.html.twig', [
             'postsWithLikeStatus' => $postsWithLikeStatus,
             'currentUser' => $currentUser,
             'commentLikeService' => $commentLikeService,
             'currentSort' => $sortBy,
-            'currentFilter' => $filterBy
+            'currentFilter' => $filterBy,
+            'currentTag' => $tagSlug,
+            'availableTags' => $availableTags
         ]);
     }
 
@@ -276,8 +333,12 @@ class PostController extends AbstractController
 
 
     #[Route('/posts/create', name: 'post_create_ajax', methods: ['POST'])]
-    public function createFromList(Request $request, PostService $postService): Response
-    {
+    public function createFromList(
+        Request $request, 
+        PostService $postService,
+        ModerationService $moderationService,
+        TaggingManager $taggingManager
+    ): Response {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
         $user = $this->getUser();
@@ -296,10 +357,40 @@ class PostController extends AbstractController
             }
         }
 
-        // No separate image handling - images are inline in content
-        $postService->createPost($title, $content, $user, $status, [], $scheduledAt);
+        // Moderate post (title + content merged into one result)
+        $moderationResult = $moderationService->analyzePost($title, $content, $user, 'post');
 
-        // Redirect back to post list
+        // Check if post content is inappropriate
+        if (!$moderationResult->isClean()) {
+            // Return JSON for AJAX requests
+            if ($request->isXmlHttpRequest()) {
+                return $this->json([
+                    'success' => false,
+                    'error' => $moderationResult->getMessage(),
+                    'moderation' => $moderationResult->toArray()
+                ], 400);
+            }
+            $this->addFlash('error', $moderationResult->getMessage());
+            return $this->redirectToRoute('post_list_view');
+        }
+
+        // Content is clean, proceed with creation
+        $post = $postService->createPost($title, $content, $user, $status, [], $scheduledAt);
+        
+        // Generate tags automatically (only for published posts)
+        if ($post && $status === PostStatus::PUBLISHED->value) {
+            $taggingManager->generateTagsForPost($post);
+        }
+        
+        // Return JSON for AJAX requests
+        if ($request->isXmlHttpRequest()) {
+            return $this->json([
+                'success' => true,
+                'message' => 'Post created successfully!'
+            ]);
+        }
+        
+        $this->addFlash('success', 'Post created successfully!');
         return $this->redirectToRoute('post_list_view');
     }
 
@@ -362,8 +453,12 @@ class PostController extends AbstractController
     }
 
     #[Route('/posts/{id}/comment', name: 'post_comment', methods: ['POST'])]
-    public function addComment(int $id, Request $request, CommentService $commentService): Response
-    {
+    public function addComment(
+        int $id, 
+        Request $request, 
+        CommentService $commentService,
+        ModerationService $moderationService
+    ): Response {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
         $user = $this->getUser();
@@ -374,6 +469,17 @@ class PostController extends AbstractController
             return $this->json(['error' => 'Comment cannot be empty'], 400);
         }
 
+        // Moderate comment content
+        $moderationResult = $moderationService->analyzeContent($content, $user, 'comment');
+
+        if (!$moderationResult->isClean()) {
+            return $this->json([
+                'error' => $moderationResult->getMessage(),
+                'moderation' => $moderationResult->toArray()
+            ], 400);
+        }
+
+        // Content is clean, create comment
         $comment = $commentService->createComment($id, $content, $user, $parentCommentId);
 
         // Return comment data as JSON
@@ -415,12 +521,28 @@ class PostController extends AbstractController
 
 
     #[Route('/comments/{id}/edit', name: 'comment_edit', methods: ['POST'])]
-    public function editComment(int $id, Request $request, CommentService $commentService): Response
+    public function editComment(
+        int $id, 
+        Request $request, 
+        CommentService $commentService,
+        ModerationService $moderationService
+    ): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
         $user = $this->getUser();
         $content = $request->request->get('content');
+
+        // Moderate comment content
+        $moderationResult = $moderationService->analyzeContent($content, $user, 'comment_edit');
+
+        if (!$moderationResult->isClean()) {
+            return $this->json([
+                'success' => false,
+                'error' => $moderationResult->getMessage(),
+                'moderation' => $moderationResult->toArray()
+            ], 400);
+        }
 
         try {
             $commentService->editComment($id, $content, $user);
@@ -443,5 +565,44 @@ class PostController extends AbstractController
         } catch (\Exception $e) {
             return $this->json(['error' => $e->getMessage()], 403);
         }
+    }
+
+    #[Route('/posts/{id}/track-view', name: 'post_track_view', methods: ['POST'])]
+    public function trackView(int $id, Request $request, PostRepository $postRepository, EntityManagerInterface $entityManager): Response
+    {
+        $post = $postRepository->find($id);
+        
+        if (!$post) {
+            return $this->json(['success' => false, 'message' => 'Post not found'], 404);
+        }
+
+        // Check session to prevent duplicate views
+        $sessionKey = 'post_viewed_' . $id;
+        if (!$request->getSession()->has($sessionKey)) {
+            $post->incrementViewCount();
+            $entityManager->flush();
+            
+            // Mark as viewed in session
+            $request->getSession()->set($sessionKey, true);
+            
+            return $this->json(['success' => true, 'viewCount' => $post->getViewCount()]);
+        }
+        
+        return $this->json(['success' => false, 'message' => 'Already counted']);
+    }
+
+    #[Route('/posts/{id}/track-click', name: 'post_track_click', methods: ['POST'])]
+    public function trackClick(int $id, PostRepository $postRepository, EntityManagerInterface $entityManager): Response
+    {
+        $post = $postRepository->find($id);
+        
+        if (!$post) {
+            return $this->json(['success' => false, 'message' => 'Post not found'], 404);
+        }
+
+        $post->incrementClickCount();
+        $entityManager->flush();
+        
+        return $this->json(['success' => true, 'clickCount' => $post->getClickCount()]);
     }
 }

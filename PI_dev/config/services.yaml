@@ -1,5 +1,26 @@
 parameters:
+    # Example category embeddings for semantic tagging.
+    #
+    # In a real system the embedding vectors will be high-dimensional (e.g. 256, 768, 1024).
+    # To keep configuration manageable and efficient:
+    # - store the raw vectors in a separate JSON/YAML file or a dedicated database table
+    # - load them at boot and inject as a single parameter or service
+    # - avoid duplicating the same vectors across multiple services
+    app.tagging.category_embeddings:
+        machine_learning:
+            label: 'machine learning'
+            embedding: [0.1, 0.2, 0.3]
+        web_development:
+            label: 'web development'
+            embedding: [0.2, 0.1, 0.4]
+        data_science:
+            label: 'data science'
+            embedding: [0.3, 0.25, 0.15]
 
+    # Provide safe defaults so these env vars are optional in dev.
+    # You can override them in .env or server env for production.
+    env(EMBEDDING_API_ENDPOINT): ''
+    env(EMBEDDING_API_KEY): ''
 services:
     _defaults:
         autowire: true
@@ -16,3 +37,33 @@ services:
         resource: '../src/Repository'
         autowire: true
         autoconfigure: true
+
+    # Google Perspective API Moderation Service
+    App\Service\Moderation\ModerationService:
+        arguments:
+            $apiKey: '%env(PERSPECTIVE_API_KEY)%'
+            $toxicityThreshold: '%env(float:PERSPECTIVE_TOXICITY_THRESHOLD)%'
+            $moderationLogger: '@monolog.logger.moderation'
+
+    # TF-IDF based tagging strategy
+    App\Service\Tagging\TfIdfTaggingService:
+        arguments:
+            $maxTags: 2  # Number of tags to generate per post
+
+    # Embedding-based tagging strategy (semantic)
+    #
+    # categoryEmbeddings is defined as a parameter so it can be stored efficiently
+    # in configuration rather than hard-coded in PHP. In production, you can move
+    # the large numeric vectors to a dedicated JSON/YAML file or a table with a
+    # JSON column and hydrate them into this parameter.
+    App\Service\Tagging\EmbeddingTaggingService:
+        arguments:
+            $categoryEmbeddings: '%app.tagging.category_embeddings%'
+            $embeddingApiEndpoint: '%env(EMBEDDING_API_ENDPOINT)%'
+            $embeddingApiKey: '%env(EMBEDDING_API_KEY)%'
+            $maxTags: 2
+
+    # Tagging manager to select the active strategy
+    App\Service\Tagging\TaggingManager:
+        arguments:
+            $defaultStrategy: 'tfidf'  # or 'embedding'

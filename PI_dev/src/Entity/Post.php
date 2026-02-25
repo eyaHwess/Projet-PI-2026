@@ -84,10 +84,24 @@ class Post
     #[ORM\OneToMany(targetEntity: PostLike::class, mappedBy: 'post')]
     private Collection $postLikes;
 
+    #[ORM\Column(options: ["default" => 0])]
+    private int $viewCount = 0;
+
+    #[ORM\Column(options: ["default" => 0])]
+    private int $clickCount = 0;
+
+    /**
+     * @var Collection<int, Tag>
+     */
+    #[ORM\ManyToMany(targetEntity: Tag::class, inversedBy: 'posts')]
+    #[ORM\JoinTable(name: 'post_tags')]
+    private Collection $tags;
+
     public function __construct()
     {
         $this->comments = new ArrayCollection();
         $this->postLikes = new ArrayCollection();
+        $this->tags = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -326,5 +340,75 @@ class Post
             $this->images = array_values($this->images);
         }
         return $this;
+    }
+
+    public function getViewCount(): int
+    {
+        return $this->viewCount;
+    }
+
+    public function setViewCount(int $viewCount): static
+    {
+        $this->viewCount = $viewCount;
+        return $this;
+    }
+
+    public function incrementViewCount(): static
+    {
+        $this->viewCount++;
+        return $this;
+    }
+
+    public function getClickCount(): int
+    {
+        return $this->clickCount;
+    }
+
+    public function setClickCount(int $clickCount): static
+    {
+        $this->clickCount = $clickCount;
+        return $this;
+    }
+
+    public function incrementClickCount(): static
+    {
+        $this->clickCount++;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Tag>
+     */
+    public function getTags(): Collection
+    {
+        return $this->tags;
+    }
+
+    public function addTag(Tag $tag): static
+    {
+        if (!$this->tags->contains($tag)) {
+            $this->tags->add($tag);
+        }
+
+        return $this;
+    }
+
+    public function removeTag(Tag $tag): static
+    {
+        $this->tags->removeElement($tag);
+
+        return $this;
+    }
+
+    public function clearTags(): static
+    {
+        $this->tags->clear();
+
+        return $this;
+    }
+
+    public function hasTag(Tag $tag): bool
+    {
+        return $this->tags->contains($tag);
     }
 }
