@@ -1,0 +1,624 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Moderation Logs{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    {% set pendingCount = 0 %}
+    {% for v in violations %}
+        {% if not v.reviewed %}
+            {% set pendingCount = pendingCount + 1 %}
+        {% endif %}
+    {% endfor %}
+
+    <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-3">
+        <div>
+            <div class="d-flex align-items-center gap-2">
+                <h1 class="h4 mb-0">Moderation Logs</h1>
+                <span class="badge-soft badge-status-pending">Pending: <span id="pendingCountBadge">{{ pendingCount }}</span></span>
+            </div>
+            <div class="mod-muted small mt-1">Toxic content attempts recorded by the moderation system.</div>
+        </div>
+
+        <div class="text-end">
+            <div class="mod-muted small">Total loaded: <strong id="totalLoaded">{{ violations|length }}</strong></div>
+            <div class="mod-muted small">Showing: <strong id="showingCount">0</strong></div>
+        </div>
+    </div>
+
+    <!-- Filters / Controls -->
+    <div class="card mod-card mb-3">
+        <div class="card-body mod-logs-toolbar">
+            <div class="row g-2 g-md-3 align-items-end">
+                <div class="col-12 col-md-2">
+                    <label class="form-label small mb-1 mod-muted">Status</label>
+                    <select id="filterStatus" class="form-select form-select-sm">
+                        <option value="all">All</option>
+                        <option value="pending">Pending</option>
+                        <option value="reviewed">Reviewed</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-2">
+                    <label class="form-label small mb-1 mod-muted">Severity</label>
+                    <select id="filterSeverity" class="form-select form-select-sm">
+                        <option value="all">All</option>
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label small mb-1 mod-muted">From</label>
+                    <input id="filterFrom" type="date" class="form-control form-control-sm">
+                </div>
+                <div class="col-6 col-md-2">
+                    <label class="form-label small mb-1 mod-muted">To</label>
+                    <input id="filterTo" type="date" class="form-control form-control-sm">
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label small mb-1 mod-muted">Search (user or content)</label>
+                    <input id="filterSearch" type="search" class="form-control form-control-sm" placeholder="email, id, keywords…">
+                </div>
+            </div>
+
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3">
+                <div class="mod-muted small">
+                    Tip: click <span class="badge-soft">View</span> to open details.
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <button id="btnResetFilters" type="button" class="btn btn-sm btn-outline-secondary mod-btn-soft">
+                        Reset
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card mod-card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover mb-0 mod-logs-table align-middle">
+                    <thead>
+                        <tr>
+                            <th class="col-date">Date</th>
+                            <th class="col-user">User</th>
+                            <th class="col-entity">Entity</th>
+                            <th>Excerpt</th>
+                            <th class="col-severity">Severity</th>
+                            <th class="col-status">Status</th>
+                            <th class="col-action text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="violationsTbody">
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-5">
+                                Loading…
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card-footer bg-transparent d-flex flex-wrap align-items-center justify-content-between gap-2 mod-card-footer">
+            <div class="small mod-muted" id="paginationInfo">—</div>
+            <div class="btn-group" role="group" aria-label="Pagination">
+                <button id="btnPrev" class="btn btn-sm btn-outline-secondary mod-btn-soft" type="button">Prev</button>
+                <button id="btnNext" class="btn btn-sm btn-outline-secondary mod-btn-soft" type="button">Next</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- In-content Violation Review overlay (centers within main content area only) -->
+<div id="modInContentOverlay" class="mod-incontent-overlay" aria-hidden="true">
+    <div class="mod-incontent-panel" role="dialog" aria-modal="true" aria-labelledby="modPanelTitle">
+        <div class="mod-panel-header">
+            <div>
+                <h5 id="modPanelTitle" class="mod-panel-title">Violation review</h5>
+                <div class="mod-panel-subtitle">Review context, severity and signals.</div>
+            </div>
+            <button type="button" class="mod-panel-close" id="modPanelCloseBtn" aria-label="Close">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <div class="mod-panel-body">
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                <span id="detailSeverity" class="badge-soft"></span>
+                <span id="detailStatus" class="badge-soft"></span>
+            </div>
+
+            <div class="mod-kv">
+                <div>
+                    <div class="mod-kv-label">User</div>
+                    <div id="detailUser" class="mod-kv-value"></div>
+                </div>
+                <div>
+                    <div class="mod-kv-label">Entity</div>
+                    <div id="detailEntity"></div>
+                </div>
+                <div>
+                    <div class="mod-kv-label">Date</div>
+                    <div id="detailDate" class="mod-muted"></div>
+                </div>
+            </div>
+
+            <div class="mod-signals">
+                <div class="mod-kv-label">Content preview</div>
+                <div id="detailContent" class="mod-preview"></div>
+            </div>
+
+            <div class="mod-signals">
+                <div class="mod-kv-label">Signals</div>
+                <div class="d-flex flex-wrap gap-2" id="detailSignals"></div>
+            </div>
+        </div>
+
+        <div class="mod-panel-footer">
+            <button type="button" class="btn btn-sm btn-outline-secondary mod-btn-soft" id="modPanelCloseBtnFooter">Close</button>
+            <button type="button" class="btn btn-sm btn-primary mod-btn-soft-primary mod-hidden" id="detailMarkReviewed">
+                Mark reviewed
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- In-content Confirm Review overlay (same behavior as Violation Review overlay) -->
+<div id="modConfirmOverlay" class="mod-incontent-overlay" aria-hidden="true">
+    <div class="mod-incontent-panel mod-confirm-panel" role="dialog" aria-modal="true" aria-labelledby="modConfirmTitle">
+        <div class="mod-panel-header">
+            <div>
+                <h5 id="modConfirmTitle" class="mod-panel-title">Mark as reviewed</h5>
+                <div class="mod-panel-subtitle">This will append a reviewed marker to the moderation log.</div>
+            </div>
+            <button type="button" class="mod-panel-close" id="modConfirmCloseBtn" aria-label="Close">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <div class="mod-panel-body">
+            <div class="mod-muted small">
+                You can still inspect full details before confirming. This action is reversible only by editing the log file.
+            </div>
+            <div class="mt-3">
+                <span class="badge-soft" id="confirmEntryId"></span>
+            </div>
+        </div>
+
+        <div class="mod-panel-footer">
+            <button type="button" class="btn btn-sm btn-outline-secondary mod-btn-soft" id="btnCancelConfirmReview">Cancel</button>
+            <button type="button" class="btn btn-sm btn-primary mod-btn-soft-primary" id="btnConfirmReview">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<script>
+(() => {
+    const raw = {{ violations|json_encode(constant('JSON_UNESCAPED_UNICODE') b-or constant('JSON_UNESCAPED_SLASHES'))|raw }};
+
+    const els = {
+        tbody: document.getElementById('violationsTbody'),
+        showingCount: document.getElementById('showingCount'),
+        pendingBadge: document.getElementById('pendingCountBadge'),
+        filterStatus: document.getElementById('filterStatus'),
+        filterSeverity: document.getElementById('filterSeverity'),
+        filterFrom: document.getElementById('filterFrom'),
+        filterTo: document.getElementById('filterTo'),
+        filterSearch: document.getElementById('filterSearch'),
+        btnPrev: document.getElementById('btnPrev'),
+        btnNext: document.getElementById('btnNext'),
+        paginationInfo: document.getElementById('paginationInfo'),
+        btnReset: document.getElementById('btnResetFilters'),
+        confirmEntryId: document.getElementById('confirmEntryId'),
+        btnConfirmReview: document.getElementById('btnConfirmReview'),
+        confirmOverlay: document.getElementById('modConfirmOverlay'),
+        btnCancelConfirmReview: document.getElementById('btnCancelConfirmReview'),
+        btnConfirmClose: document.getElementById('modConfirmCloseBtn'),
+    };
+
+    let page = 1;
+    const pageSize = 20;
+    let pendingCount = raw.filter(v => !v.reviewed).length;
+    if (els.pendingBadge) els.pendingBadge.textContent = pendingCount;
+
+    function parseDate(dt) {
+        if (!dt) return null;
+        // dt looks like "2026-02-25T16:59:28.500214+01:00"
+        const d = new Date(dt);
+        return isNaN(d.getTime()) ? null : d;
+    }
+
+    function formatDate(dt) {
+        const d = parseDate(dt);
+        if (!d) return '—';
+        return new Intl.DateTimeFormat(undefined, {
+            year: 'numeric', month: 'short', day: '2-digit',
+            hour: '2-digit', minute: '2-digit'
+        }).format(d);
+    }
+
+    function severityFromScore(score) {
+        if (score === null || typeof score !== 'number') return { key: 'unknown', label: '—', cls: 'badge-soft' };
+        // thresholds: low < 0.75, medium < 0.9, high >= 0.9
+        if (score >= 0.90) return { key: 'high', label: 'High', cls: 'badge-soft badge-sev-high' };
+        if (score >= 0.75) return { key: 'medium', label: 'Medium', cls: 'badge-soft badge-sev-med' };
+        return { key: 'low', label: 'Low', cls: 'badge-soft badge-sev-low' };
+    }
+
+    function statusBadge(reviewed) {
+        return reviewed
+            ? { key: 'reviewed', label: 'Reviewed', cls: 'badge-soft badge-status-reviewed' }
+            : { key: 'pending', label: 'Pending', cls: 'badge-soft badge-status-pending' };
+    }
+
+    function entityBadge(entityType) {
+        const label = (entityType || 'unknown').toString();
+        return `<span class="badge-soft">${escapeHtml(label)}</span>`;
+    }
+
+    function escapeHtml(str) {
+        return (str ?? '').toString()
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#039;');
+    }
+
+    function matchesSearch(v, q) {
+        if (!q) return true;
+        const hay = [
+            v.userEmail, v.userId, v.entityType, v.contentPreview
+        ].join(' ').toLowerCase();
+        return hay.includes(q.toLowerCase());
+    }
+
+    function inDateRange(v) {
+        const from = els.filterFrom?.value ? new Date(els.filterFrom.value + 'T00:00:00') : null;
+        const to = els.filterTo?.value ? new Date(els.filterTo.value + 'T23:59:59') : null;
+        const d = parseDate(v.datetime);
+        if (!d) return true;
+        if (from && d < from) return false;
+        if (to && d > to) return false;
+        return true;
+    }
+
+    function getFiltered() {
+        const status = els.filterStatus?.value || 'all';
+        const sev = els.filterSeverity?.value || 'all';
+        const q = els.filterSearch?.value?.trim() || '';
+
+        return raw.filter(v => {
+            const sb = statusBadge(!!v.reviewed);
+            const sv = severityFromScore(typeof v.highestScore === 'number' ? v.highestScore : null);
+
+            if (status !== 'all' && sb.key !== status) return false;
+            if (sev !== 'all' && sv.key !== sev) return false;
+            if (!inDateRange(v)) return false;
+            if (!matchesSearch(v, q)) return false;
+            return true;
+        });
+    }
+
+    function openDetails(v) {
+        const overlay = document.getElementById('modInContentOverlay');
+        const panel = overlay ? overlay.querySelector('.mod-incontent-panel') : null;
+        if (!overlay || !panel) return;
+
+        const sev = severityFromScore(typeof v.highestScore === 'number' ? v.highestScore : null);
+        const st = statusBadge(!!v.reviewed);
+
+        const roleGuess = (v.userEmail || '').toLowerCase().includes('admin') ? 'admin' : 'user';
+
+        const elSev = document.getElementById('detailSeverity');
+        const elSt = document.getElementById('detailStatus');
+        const elEntity = document.getElementById('detailEntity');
+        const elUser = document.getElementById('detailUser');
+        const elDate = document.getElementById('detailDate');
+        const elMark = document.getElementById('detailMarkReviewed');
+
+        if (elSev) {
+            elSev.className = sev.cls;
+            elSev.textContent = `Severity: ${sev.label}`;
+        }
+        if (elSt) {
+            elSt.className = st.cls;
+            elSt.textContent = `Status: ${st.label}`;
+        }
+        if (elEntity) {
+            elEntity.innerHTML = entityBadge(v.entityType);
+        }
+        if (elUser) {
+            elUser.textContent = `${v.userEmail || '—'} (${roleGuess}) • ID ${v.userId ?? '—'}`;
+        }
+        if (elDate) {
+            elDate.textContent = formatDate(v.datetime);
+        }
+
+        document.getElementById('detailContent').textContent = v.contentPreview || '';
+
+        const signals = document.getElementById('detailSignals');
+        signals.innerHTML = '';
+
+        const score = typeof v.highestScore === 'number' ? v.highestScore : null;
+        if (score !== null) {
+            const pct = Math.round(score * 100);
+            signals.insertAdjacentHTML('beforeend', `<span class="badge-soft">Highest: ${pct}%</span>`);
+        }
+        const attrs = Array.isArray(v.flaggedAttributes) ? v.flaggedAttributes : [];
+        if (attrs.length) {
+            attrs.forEach(a => {
+                signals.insertAdjacentHTML('beforeend', `<span class="badge-soft">${escapeHtml(a)}</span>`);
+            });
+        }
+        const scores = v.scores && typeof v.scores === 'object' ? v.scores : {};
+        Object.keys(scores).slice(0, 6).forEach(k => {
+            const val = scores[k];
+            if (typeof val !== 'number') return;
+            signals.insertAdjacentHTML('beforeend', `<span class="badge-soft">${escapeHtml(k)}: ${Math.round(val * 100)}%</span>`);
+        });
+
+        if (elMark) {
+            if (v.reviewed) {
+                elMark.style.display = 'none';
+            } else {
+                elMark.style.display = 'inline-block';
+                elMark.onclick = () => openConfirmReview(v);
+            }
+        }
+
+        positionOverlayToContentArea(overlay);
+
+        overlay.classList.add('open');
+        overlay.setAttribute('aria-hidden', 'false');
+        updateBodyScrollLock();
+    }
+
+    function closeInContentOverlay() {
+        const overlay = document.getElementById('modInContentOverlay');
+        if (!overlay) return;
+        overlay.classList.remove('open');
+        overlay.setAttribute('aria-hidden', 'true');
+        updateBodyScrollLock();
+    }
+
+    function updateBodyScrollLock() {
+        const detailsOpen = !!document.getElementById('modInContentOverlay')?.classList.contains('open');
+        const confirmOpen = !!document.getElementById('modConfirmOverlay')?.classList.contains('open');
+        document.body.style.overflow = (detailsOpen || confirmOpen) ? 'hidden' : '';
+    }
+
+    function positionOverlayToContentArea(overlay) {
+        if (!overlay) return;
+        try {
+            const pageContent = document.querySelector('.page-content');
+            if (pageContent) {
+                const rect = pageContent.getBoundingClientRect();
+                overlay.style.left = `${rect.left}px`;
+                overlay.style.width = `${rect.width}px`;
+            } else {
+                overlay.style.left = '0px';
+                overlay.style.width = '100vw';
+            }
+        } catch (e) {
+            overlay.style.left = '0px';
+            overlay.style.width = '100vw';
+        }
+    }
+
+    // Close handlers for in-content overlay
+    const overlayEl = document.getElementById('modInContentOverlay');
+    const closeBtn = document.getElementById('modPanelCloseBtn');
+    const closeBtnFooter = document.getElementById('modPanelCloseBtnFooter');
+    if (overlayEl) {
+        overlayEl.addEventListener('click', (e) => {
+            if (e.target === overlayEl) closeInContentOverlay();
+        });
+    }
+    if (closeBtn) closeBtn.addEventListener('click', closeInContentOverlay);
+    if (closeBtnFooter) closeBtnFooter.addEventListener('click', closeInContentOverlay);
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && overlayEl && overlayEl.classList.contains('open')) {
+            closeInContentOverlay();
+        }
+    });
+
+    let confirmEntryId = null;
+    function openConfirmReview(v) {
+        confirmEntryId = v.id;
+        const overlay = document.getElementById('modConfirmOverlay');
+        const panel = overlay ? overlay.querySelector('.mod-incontent-panel') : null;
+        if (!overlay || !panel) return;
+
+        if (els.confirmEntryId) {
+            els.confirmEntryId.textContent = `Entry: ${v.id}`;
+        }
+
+        positionOverlayToContentArea(overlay);
+        overlay.classList.add('open');
+        overlay.setAttribute('aria-hidden', 'false');
+        updateBodyScrollLock();
+    }
+
+    function closeConfirmOverlay() {
+        const overlay = document.getElementById('modConfirmOverlay');
+        if (!overlay) return;
+        overlay.classList.remove('open');
+        overlay.setAttribute('aria-hidden', 'true');
+        if (els.btnConfirmReview) els.btnConfirmReview.disabled = false;
+        updateBodyScrollLock();
+    }
+
+    // Close handlers for confirm overlay
+    if (els.confirmOverlay) {
+        els.confirmOverlay.addEventListener('click', (e) => {
+            if (e.target === els.confirmOverlay) closeConfirmOverlay();
+        });
+    }
+    if (els.btnCancelConfirmReview) els.btnCancelConfirmReview.addEventListener('click', closeConfirmOverlay);
+    if (els.btnConfirmClose) els.btnConfirmClose.addEventListener('click', closeConfirmOverlay);
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && els.confirmOverlay && els.confirmOverlay.classList.contains('open')) {
+            closeConfirmOverlay();
+        }
+    });
+
+    // Keep overlays aligned to content area on resize/scroll
+    window.addEventListener('resize', () => {
+        const details = document.getElementById('modInContentOverlay');
+        const confirm = document.getElementById('modConfirmOverlay');
+        if (details?.classList.contains('open')) positionOverlayToContentArea(details);
+        if (confirm?.classList.contains('open')) positionOverlayToContentArea(confirm);
+    });
+    window.addEventListener('scroll', () => {
+        const details = document.getElementById('modInContentOverlay');
+        const confirm = document.getElementById('modConfirmOverlay');
+        if (details?.classList.contains('open')) positionOverlayToContentArea(details);
+        if (confirm?.classList.contains('open')) positionOverlayToContentArea(confirm);
+    }, { passive: true });
+
+    async function markReviewed(entryId) {
+        const res = await fetch(`/admin/moderation/logs/${encodeURIComponent(entryId)}/review`, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        if (!res.ok) throw new Error('Request failed');
+        const data = await res.json();
+        if (!data.success) throw new Error('Not successful');
+    }
+
+    if (els.btnConfirmReview) {
+        els.btnConfirmReview.addEventListener('click', async () => {
+            if (!confirmEntryId) return;
+            els.btnConfirmReview.disabled = true;
+            try {
+                await markReviewed(confirmEntryId);
+                window.location.reload();
+            } catch (e) {
+                console.error(e);
+                els.btnConfirmReview.disabled = false;
+            }
+        });
+    }
+
+    function render() {
+        const filtered = getFiltered();
+        const total = filtered.length;
+
+        const maxPage = Math.max(1, Math.ceil(total / pageSize));
+        page = Math.max(1, Math.min(page, maxPage));
+
+        const start = (page - 1) * pageSize;
+        const end = Math.min(start + pageSize, total);
+        const slice = filtered.slice(start, end);
+
+        if (els.showingCount) els.showingCount.textContent = `${slice.length}`;
+        if (els.paginationInfo) els.paginationInfo.textContent = total === 0
+            ? 'No results'
+            : `Showing ${start + 1}–${end} of ${total} (page ${page}/${maxPage})`;
+
+        if (!els.tbody) return;
+
+        if (total === 0) {
+            els.tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-5">No results match your filters.</td></tr>`;
+            return;
+        }
+
+        els.tbody.innerHTML = slice.map(v => {
+            const sev = severityFromScore(typeof v.highestScore === 'number' ? v.highestScore : null);
+            const st = statusBadge(!!v.reviewed);
+            const roleGuess = (v.userEmail || '').toLowerCase().includes('admin') ? 'admin' : 'user';
+
+            const userLine = `
+                <div class="fw-semibold mod-user-line">
+                    <span class="me-1">${escapeHtml(v.userEmail || '—')}</span>
+                    <span class="badge-soft badge-role">${roleGuess}</span>
+                </div>
+                <div class="small mod-muted">ID: ${escapeHtml(v.userId ?? '—')}</div>
+            `;
+
+            const excerptText = escapeHtml(v.contentPreview || '');
+
+            const viewBtn = `<button type="button" class="btn btn-sm btn-outline-secondary mod-btn-soft" data-action="view" data-id="${v.id}">View</button>`;
+
+            const actions = v.reviewed
+                ? `<span class="mod-muted small">—</span>`
+                : `
+                    <div class="dropdown">
+                        <button class="btn btn-sm mod-action-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Action
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <button class="dropdown-item" type="button" data-action="review" data-id="${v.id}">
+                                    Mark reviewed
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                `;
+
+            return `
+                <tr>
+                    <td class="small mod-muted">${escapeHtml(formatDate(v.datetime))}</td>
+                    <td>${userLine}</td>
+                    <td>${entityBadge(v.entityType)}</td>
+                    <td>
+                        <div class="d-flex align-items-start gap-2">
+                            <div class="mod-excerpt small" title="Click View for full details">${excerptText}</div>
+                            <div class="ms-auto">${viewBtn}</div>
+                        </div>
+                    </td>
+                    <td><span class="${sev.cls}">${sev.label}</span></td>
+                    <td><span class="${st.cls}">${st.label}</span></td>
+                    <td class="text-end">${actions}</td>
+                </tr>
+            `;
+        }).join('');
+
+        // wire actions
+        els.tbody.querySelectorAll('[data-action="view"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = btn.getAttribute('data-id');
+                const v = raw.find(x => x.id === id);
+                if (v) openDetails(v);
+            });
+        });
+        els.tbody.querySelectorAll('[data-action="review"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = btn.getAttribute('data-id');
+                const v = raw.find(x => x.id === id);
+                if (v) openConfirmReview(v);
+            });
+        });
+
+        if (els.btnPrev) els.btnPrev.disabled = page <= 1;
+        if (els.btnNext) els.btnNext.disabled = page >= maxPage;
+    }
+
+    function resetFilters() {
+        if (els.filterStatus) els.filterStatus.value = 'all';
+        if (els.filterSeverity) els.filterSeverity.value = 'all';
+        if (els.filterFrom) els.filterFrom.value = '';
+        if (els.filterTo) els.filterTo.value = '';
+        if (els.filterSearch) els.filterSearch.value = '';
+        page = 1;
+        render();
+    }
+
+    [els.filterStatus, els.filterSeverity, els.filterFrom, els.filterTo].forEach(el => {
+        if (!el) return;
+        el.addEventListener('change', () => { page = 1; render(); });
+    });
+    if (els.filterSearch) els.filterSearch.addEventListener('input', () => { page = 1; render(); });
+    if (els.btnReset) els.btnReset.addEventListener('click', resetFilters);
+    if (els.btnPrev) els.btnPrev.addEventListener('click', () => { page -= 1; render(); });
+    if (els.btnNext) els.btnNext.addEventListener('click', () => { page += 1; render(); });
+
+    render();
+})();
+</script>
+{% endblock %}
+

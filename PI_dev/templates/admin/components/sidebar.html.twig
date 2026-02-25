@@ -104,8 +104,8 @@
 
                 <!-- Menu item 7 -->
                 <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <i class="bi-gear-fill"></i> Admin Settings
+                    <a class="nav-link {{ app.request.attributes.get('_route') starts with 'admin_moderation_' ? 'active' : '' }}" href="{{ path('admin_moderation_logs') }}">
+                        <i class="bi bi-shield-exclamation"></i> Moderation Logs
                     </a>
                 </li>
 

@@ -26,6 +26,16 @@ class TfIdfTaggingService implements TaggingInterface
         'even', 'new', 'want', 'because', 'any', 'these', 'give', 'day', 'most', 'us',
         'is', 'was', 'are', 'been', 'has', 'had', 'were', 'said', 'did', 'having',
         'may', 'should', 'am', 'being', 'does', 'did', 'doing', 'done',
+        // Extra low-signal verbs/adjectives commonly seen in posts
+        'nice', 'enjoy', 'enjoyed', 'enjoying', 'enjoys',
+        'keep', 'kept', 'keeping', 'keeps',
+        'love', 'loved', 'loving', 'loves',
+        'hate', 'hated', 'hating', 'hates',
+        'feel', 'felt', 'feels', 'feeling',
+        'want', 'wanted', 'wants', 'needing', 'need', 'needed', 'needs',
+        'make', 'made', 'makes', 'making',
+        'take', 'took', 'takes', 'taking',
+        'get', 'got', 'gets', 'getting',
         // French
         'le', 'la', 'les', 'un', 'une', 'des', 'de', 'du', 'et', 'ou',
         'mais', 'donc', 'or', 'ni', 'car', 'ce', 'cet', 'cette', 'ces',
@@ -46,14 +56,9 @@ class TfIdfTaggingService implements TaggingInterface
     private const MAX_WORD_LENGTH = 30;
 
     /**
-     * Ignore terms (unigrams/bigrams) that occur only once in the document.
+     * Ignore terms that occur only once in the document.
      */
     private const MIN_TERM_OCCURRENCE = 2;
-
-    /**
-     * Minimum number of occurrences required for a bigram (two-word phrase).
-     */
-    private const MIN_BIGRAM_OCCURRENCE = 2;
 
     public function __construct(
         private EntityManagerInterface $entityManager,
@@ -90,19 +95,70 @@ class TfIdfTaggingService implements TaggingInterface
                 return [];
             }
 
-            $tfIdfScores = $this->calculateTfIdfScores($titleTokens, $contentTokens);
-            if (empty($tfIdfScores)) {
-                return [];
+            // Enforce "single-word tags only" and reuse existing tags first.
+            // 1) Reuse existing single-word tags explicitly mentioned in the post text (even if they appear once).
+            // 2) If still missing, fill remaining slots with new single-word TF-IDF keywords.
+            $allTokens = array_merge($titleTokens, $contentTokens);
+            $tokenCounts = array_count_values($allTokens);
+            $titleSet = array_fill_keys(array_unique($titleTokens), true);
+
+            $uniqueTokens = array_keys($tokenCounts);
+            if (count($uniqueTokens) > 300) {
+                // Cap query size defensively (rare, but prevents huge IN clauses).
+                $uniqueTokens = array_slice($uniqueTokens, 0, 300);
             }
 
-            $keywords = $this->extractTopKeywords($tfIdfScores, $limit);
+            $existingInPost = $this->tagRepository->findByNamesIndexed($uniqueTokens);
+
+            $existingKeywords = array_keys($existingInPost);
+            usort($existingKeywords, function (string $a, string $b) use ($tokenCounts, $titleSet): int {
+                $aInTitle = isset($titleSet[$a]) ? 1 : 0;
+                $bInTitle = isset($titleSet[$b]) ? 1 : 0;
+                if ($aInTitle !== $bInTitle) {
+                    return $bInTitle <=> $aInTitle;
+                }
+
+                $aCount = $tokenCounts[$a] ?? 0;
+                $bCount = $tokenCounts[$b] ?? 0;
+                return $bCount <=> $aCount;
+            });
+
+            $keywords = array_slice($existingKeywords, 0, $limit);
+
+            // Fill remaining slots from TF-IDF (new tags) if needed.
+            $remaining = $limit - count($keywords);
+            $tfIdfScores = [];
+            if ($remaining > 0) {
+                $tfIdfScores = $this->calculateTfIdfScores($titleTokens, $contentTokens);
+                $tfIdfScores = array_filter(
+                    $tfIdfScores,
+                    static fn(float $score, string $term): bool => $score > 0.0 && !str_contains($term, ' '),
+                    ARRAY_FILTER_USE_BOTH
+                );
+            }
+
+            if ($remaining > 0 && !empty($tfIdfScores)) {
+                arsort($tfIdfScores);
+                $candidates = array_slice(array_keys($tfIdfScores), 0, max($remaining * 10, 30));
+
+                foreach ($candidates as $term) {
+                    if (count($keywords) >= $limit) {
+                        break;
+                    }
+                    if (isset($existingInPost[$term])) {
+                        // Already covered by "existing first" list; skip duplicates.
+                        continue;
+                    }
+                    $keywords[] = $term;
+                }
+            }
 
             // Ensure we don't generate duplicate tag labels (e.g. from overlapping n-grams)
             $keywords = array_values(array_unique($keywords));
 
             $tags = [];
             foreach ($keywords as $keyword) {
-                $tag = $this->tagRepository->findOrCreate($keyword);
+                $tag = $existingInPost[$keyword] ?? $this->tagRepository->findOrCreate($keyword);
 
                 if (!$post->hasTag($tag)) {
                     $post->addTag($tag);
@@ -184,13 +240,10 @@ class TfIdfTaggingService implements TaggingInterface
     }
 
     /**
-     * Build weighted term frequencies including unigrams and bigrams.
+     * Build weighted term frequencies (unigrams only).
      *
      * - Title tokens are given a numeric weight instead of duplicating the title string.
-     * - Unigrams (single words) and bigrams (two-word phrases) must appear at least
-     *   MIN_TERM_OCCURRENCE times (raw count) to be considered.
-     * - Bigrams are only formed from distinct adjacent words; sequences like "word word"
-     *   are ignored to avoid meaningless duplicates.
+     * - Terms must appear at least MIN_TERM_OCCURRENCE times (raw count) to be considered.
      */
     private function getTermFrequencyWithBigrams(array $titleTokens, array $contentTokens, float $titleWeight = 2.0): array
     {
@@ -218,42 +271,6 @@ class TfIdfTaggingService implements TaggingInterface
             if ($rawCount < self::MIN_TERM_OCCURRENCE) {
                 unset($termRawCounts[$term], $termWeightedCounts[$term]);
             }
-        }
-
-        // Bigram counts (raw + weighted)
-        $bigramRawCounts = [];
-        $bigramWeightedCounts = [];
-
-        $buildBigrams = static function (array $tokens, float $weight) use (&$bigramRawCounts, &$bigramWeightedCounts): void {
-            $tokenCount = count($tokens);
-
-            for ($i = 0; $i < $tokenCount - 1; $i++) {
-                $first = $tokens[$i];
-                $second = $tokens[$i + 1];
-
-                // Skip bigrams where both words are identical (e.g. "word word")
-                if ($first === $second) {
-                    continue;
-                }
-
-                $bigram = $first . ' ' . $second;
-
-                $bigramRawCounts[$bigram] = ($bigramRawCounts[$bigram] ?? 0) + 1;
-                $bigramWeightedCounts[$bigram] = ($bigramWeightedCounts[$bigram] ?? 0.0) + $weight;
-            }
-        };
-
-        $buildBigrams($titleTokens, $titleWeight);
-        $buildBigrams($contentTokens, 1.0);
-
-        foreach ($bigramRawCounts as $bigram => $rawCount) {
-            if ($rawCount < self::MIN_BIGRAM_OCCURRENCE) {
-                unset($bigramRawCounts[$bigram], $bigramWeightedCounts[$bigram]);
-                continue;
-            }
-
-            $termRawCounts[$bigram] = $rawCount;
-            $termWeightedCounts[$bigram] = ($termWeightedCounts[$bigram] ?? 0.0) + $bigramWeightedCounts[$bigram];
         }
 
         if (empty($termWeightedCounts)) {
@@ -309,15 +326,16 @@ class TfIdfTaggingService implements TaggingInterface
             $title = $row['title'] ?? '';
             $content = $row['content'] ?? '';
 
-            $text = strip_tags($title . ' ' . $content);
-            $text = mb_strtolower($text, 'UTF-8');
+            // Use the same normalization/tokenization rules to avoid substring matches.
+            $docTokens = $this->tokenize(strip_tags($title . ' ' . $content));
+            $docSet = array_fill_keys(array_unique($docTokens), true);
 
             foreach ($terms as $term) {
                 if ($docFreq[$term] === $totalDocs) {
                     continue;
                 }
 
-                if (str_contains($text, $term)) {
+                if (isset($docSet[$term])) {
                     $docFreq[$term]++;
                 }
             }
@@ -333,7 +351,7 @@ class TfIdfTaggingService implements TaggingInterface
     }
 
     /**
-     * Calculate TF-IDF scores for all terms (unigrams + bigrams).
+     * Calculate TF-IDF scores for all terms (unigrams only).
      *
      * @return array<string,float>
      */
@@ -355,20 +373,5 @@ class TfIdfTaggingService implements TaggingInterface
         return $tfIdf;
     }
 
-    /**
-     * Extract top N keywords based on TF-IDF scores.
-     *
-     * @param array<string,float> $tfIdfScores
-     *
-     * @return string[]
-     */
-    private function extractTopKeywords(array $tfIdfScores, int $limit): array
-    {
-        arsort($tfIdfScores);
-
-        $topKeywords = array_slice(array_keys($tfIdfScores), 0, $limit);
-
-        return $topKeywords;
-    }
 }
 

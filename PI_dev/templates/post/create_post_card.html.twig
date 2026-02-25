@@ -378,10 +378,13 @@ async function loadScheduledPosts() {
 }
 
 async function publishScheduledPost(postId) {
-    if (!confirm('Are you sure you want to publish this post now?')) {
+    // Replace native confirm() with in-app modal (defined in post_list.html.twig)
+    if (typeof openPublishModal === 'function') {
+        openPublishModal(postId);
         return;
     }
-    
+
+    // Safety fallback: keep publish reachable even if modal isn't present for some reason.
     try {
         const response = await fetch(`/posts/${postId}/publish`, {
             method: 'POST',
@@ -390,16 +393,12 @@ async function publishScheduledPost(postId) {
                 'X-Requested-With': 'XMLHttpRequest'
             }
         });
-        
+
         if (response.ok) {
-            // Reload page to show published post
             window.location.reload();
-        } else {
-            alert('Failed to publish post');
         }
     } catch (error) {
         console.error('Error publishing post:', error);
-        alert('Failed to publish post');
     }
 }
 
@@ -427,21 +426,89 @@ async function deleteScheduledPost(postId) {
 }
 
 // Moderation modal functions (global scope)
+window.PI2026Modal = window.PI2026Modal || {};
+window.PI2026Modal._scrollLockCount = window.PI2026Modal._scrollLockCount || 0;
+window.PI2026Modal._prevBodyOverflow = window.PI2026Modal._prevBodyOverflow ?? null;
+window.PI2026Modal.lockScroll = window.PI2026Modal.lockScroll || function() {
+    this._scrollLockCount = (this._scrollLockCount || 0) + 1;
+    if (this._scrollLockCount === 1) {
+        this._prevBodyOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+    }
+};
+window.PI2026Modal.unlockScroll = window.PI2026Modal.unlockScroll || function() {
+    this._scrollLockCount = Math.max(0, (this._scrollLockCount || 0) - 1);
+    if (this._scrollLockCount === 0) {
+        document.body.style.overflow = this._prevBodyOverflow ?? '';
+        this._prevBodyOverflow = null;
+    }
+};
+
+let moderationCloseTimer = null;
+let moderationLastFocusedEl = null;
+
 function showModerationWarning(message) {
     document.getElementById('moderationMessage').textContent = message;
     const modal = document.getElementById('moderationWarningModal');
+    if (!modal) return;
+
+    // Prevent stacked hide timers if triggered repeatedly
+    if (moderationCloseTimer) {
+        clearTimeout(moderationCloseTimer);
+        moderationCloseTimer = null;
+    }
+
+    // Already visible: just refresh message + keep focus on the modal
+    if (modal.classList.contains('show')) {
+        const btn = modal.querySelector('.moderation-btn-close');
+        if (btn) btn.focus({ preventScroll: true });
+        return;
+    }
+
+    moderationLastFocusedEl = document.activeElement;
     modal.style.display = 'block';
-    // Add fade-in animation
-    setTimeout(() => {
+
+    // Fade in on next frame so CSS transition applies
+    requestAnimationFrame(() => {
         modal.classList.add('show');
-    }, 10);
+    });
+
+    if (window.PI2026Modal?.lockScroll) {
+        window.PI2026Modal.lockScroll();
+    } else {
+        document.body.style.overflow = 'hidden';
+    }
+
+    const btn = modal.querySelector('.moderation-btn-close');
+    if (btn) btn.focus({ preventScroll: true });
 }
 
 function closeModerationModal() {
     const modal = document.getElementById('moderationWarningModal');
-    modal.classList.remove('show');
-    setTimeout(() => {
+    if (!modal) return;
+
+    // If already closed, no-op
+    if (!modal.classList.contains('show')) {
         modal.style.display = 'none';
+        return;
+    }
+
+    modal.classList.remove('show');
+
+    moderationCloseTimer = setTimeout(() => {
+        modal.style.display = 'none';
+        moderationCloseTimer = null;
+
+        if (window.PI2026Modal?.unlockScroll) {
+            window.PI2026Modal.unlockScroll();
+        } else {
+            document.body.style.overflow = '';
+        }
+
+        if (moderationLastFocusedEl && typeof moderationLastFocusedEl.focus === 'function') {
+            moderationLastFocusedEl.focus({ preventScroll: true });
+        }
+        moderationLastFocusedEl = null;
     }, 300);
 }
 </script>
@@ -461,14 +528,20 @@ import {
     Essentials,
     Bold,
     Italic,
+    Underline,
     Paragraph,
     Heading,
     Link,
     List,
     BlockQuote,
+    Font,
+    Highlight,
+    MediaEmbed,
     Image,
     ImageCaption,
     ImageToolbar,
+    ImageStyle,
+    ImageResize,
     ImageUpload,
     SimpleUploadAdapter,
     Undo
@@ -480,6 +553,72 @@ let editEditorInstances = {}; // Store edit editor instances by post ID
 let uploadedImageCount = 0;
 const MAX_IMAGES = 3;
 
+function buildEditorConfig(uploadUrl) {
+    return {
+        plugins: [
+            Essentials, Paragraph, Heading,
+            Bold, Italic, Underline,
+            Link, List, BlockQuote,
+            Font, Highlight,
+            MediaEmbed,
+            Image, ImageCaption, ImageToolbar, ImageStyle, ImageResize, ImageUpload, SimpleUploadAdapter,
+            Undo
+        ],
+        toolbar: [
+            'heading', '|',
+            'fontSize', 'fontColor', 'fontBackgroundColor', 'highlight', '|',
+            'bold', 'italic', 'underline', '|',
+            'link', 'blockQuote', 'mediaEmbed', '|',
+            'uploadImage', '|',
+            'bulletedList', 'numberedList', '|',
+            'undo', 'redo'
+        ],
+        heading: {
+            options: [
+                { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
+                { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' },
+                { model: 'heading3', view: 'h3', title: 'Heading 3', class: 'ck-heading_heading3' }
+            ]
+        },
+        fontSize: {
+            options: [10, 12, 14, 'default', 18, 20, 24, 28]
+        },
+        highlight: {
+            options: [
+                { model: 'yellowMarker', class: 'marker-yellow', title: 'Yellow marker' },
+                { model: 'greenMarker', class: 'marker-green', title: 'Green marker' },
+                { model: 'pinkMarker', class: 'marker-pink', title: 'Pink marker' },
+                { model: 'blueMarker', class: 'marker-blue', title: 'Blue marker' },
+                { model: 'redPen', class: 'pen-red', title: 'Red pen' },
+                { model: 'greenPen', class: 'pen-green', title: 'Green pen' }
+            ]
+        },
+        image: {
+            toolbar: [
+                'imageStyle:wrapText',
+                'imageStyle:breakText',
+                'imageStyle:side',
+                '|',
+                'resizeImage',
+                '|',
+                'toggleImageCaption',
+                'imageTextAlternative',
+            ]
+        },
+        mediaEmbed: {
+            previewsInData: true
+        },
+        placeholder: "Write your post content here…",
+        simpleUpload: {
+            uploadUrl,
+            withCredentials: true,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        }
+    };
+}
+
 // Initialize edit draft editor function (exposed globally)
 window.initializeEditDraftEditorAsync = async function(initialContent = '') {
     const editorElement = document.querySelector('#editDraftEditor');
@@ -490,42 +629,10 @@ window.initializeEditDraftEditorAsync = async function(initialContent = '') {
     }
     
     try {
-        const editor = await ClassicEditor.create(editorElement, {
-            plugins: [
-                Essentials, Bold, Italic, Paragraph, Heading,
-                Link, List, BlockQuote, ImageToolbar,
-                Image, ImageCaption, ImageUpload, SimpleUploadAdapter,
-                Undo
-            ],
-            toolbar: [
-                'heading', '|',
-                'bold', 'italic', '|',
-                'link', 'uploadImage', 'blockQuote', '|',
-                'bulletedList', 'numberedList', '|',
-                'undo', 'redo'
-            ],
-            heading: {
-                options: [
-                    { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
-                    { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' },
-                    { model: 'heading3', view: 'h3', title: 'Heading 3', class: 'ck-heading_heading3' }
-                ]
-            },
-            image: {
-                toolbar: [
-                    'toggleImageCaption',
-                    'imageTextAlternative'
-                ]
-            },
-            placeholder: "Write your post content here…",
-            simpleUpload: {
-                uploadUrl: '{{ path('post_upload_image') }}',
-                withCredentials: true,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            }
-        });
+        const editor = await ClassicEditor.create(
+            editorElement,
+            buildEditorConfig('{{ path('post_upload_image') }}')
+        );
         
         // Set initial content
         editor.setData(initialContent);
@@ -600,42 +707,10 @@ window.editPost = async function(postId) {
     
     // Initialize CKEditor on the div
     try {
-        const editor = await ClassicEditor.create(editorDiv, {
-            plugins: [
-                Essentials, Bold, Italic, Paragraph, Heading,
-                Link, List, BlockQuote,
-                Image, ImageCaption, ImageUpload, SimpleUploadAdapter,
-                Undo
-            ],
-            toolbar: [
-                'heading', '|',
-                'bold', 'italic', '|',
-                'link', 'uploadImage', 'blockQuote', '|',
-                'bulletedList', 'numberedList', '|',
-                'undo', 'redo'
-            ],
-            heading: {
-                options: [
-                    { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
-                    { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' },
-                    { model: 'heading3', view: 'h3', title: 'Heading 3', class: 'ck-heading_heading3' }
-                ]
-            },
-            image: {
-                toolbar: [
-                    'toggleImageCaption',
-                    'imageTextAlternative'
-                ]
-            },
-            placeholder: "Write your post content here…",
-            simpleUpload: {
-                uploadUrl: '/posts/upload-image',
-                withCredentials: true,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            }
-        });
+        const editor = await ClassicEditor.create(
+            editorDiv,
+            buildEditorConfig('/posts/upload-image')
+        );
         
         // Set existing content
         editor.setData(existingContent);
@@ -690,42 +765,10 @@ window.cancelEdit = function(postId) {
 
 function initializeCKEditor() {
     ClassicEditor
-        .create(document.querySelector('#editor'), {
-            plugins: [
-                Essentials, Bold, Italic, Paragraph, Heading,
-                Link, List, BlockQuote,ImageToolbar,
-                Image, ImageCaption, ImageUpload, SimpleUploadAdapter,
-                Undo
-            ],
-            toolbar: [
-                'heading', '|',
-                'bold', 'italic', '|',
-                'link', 'uploadImage', 'blockQuote', '|',
-                'bulletedList', 'numberedList', '|',
-                'undo', 'redo'
-            ],
-            heading: {
-                options: [
-                    { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
-                    { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' },
-                    { model: 'heading3', view: 'h3', title: 'Heading 3', class: 'ck-heading_heading3' }
-                ]
-            },
-            image: {
-                toolbar: [
-                    'toggleImageCaption',
-                    'imageTextAlternative'
-                ]
-            },
-            placeholder: "Write your post content here…",
-            simpleUpload: {
-                uploadUrl: '{{ path('post_upload_image') }}',
-                withCredentials: true,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            }
-        })
+        .create(
+            document.querySelector('#editor'),
+            buildEditorConfig('{{ path('post_upload_image') }}')
+        )
         .then(editor => {
             editorInstance = editor;
             

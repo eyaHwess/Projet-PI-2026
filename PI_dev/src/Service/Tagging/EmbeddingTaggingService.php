@@ -64,7 +64,11 @@ class EmbeddingTaggingService implements TaggingInterface
                     continue;
                 }
 
-                $label = $config['label'];
+                $label = strtolower(trim((string) $config['label']));
+                // Enforce "single-word tags only" across all strategies.
+                if ($label === '' || str_contains($label, ' ')) {
+                    continue;
+                }
                 $tag = $this->tagRepository->findOrCreate($label);
 
                 if (!$post->hasTag($tag)) {

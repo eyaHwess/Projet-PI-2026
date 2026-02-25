@@ -6,3 +6,5 @@ mercure:
             jwt:
                 secret: '%env(MERCURE_JWT_SECRET)%'
                 publish: '*'
+                # Needed to authorize private EventSource subscriptions (user-specific topics)
+                subscribe: '*'

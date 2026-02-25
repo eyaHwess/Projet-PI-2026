@@ -5,9 +5,11 @@ namespace App\Service\Post;
 use App\Entity\Comment;
 use App\Entity\CommentLike;
 use App\Entity\User;
+use App\Event\Post\CommentLikedEvent;
 use App\Repository\CommentRepository;
 use App\Repository\CommentLikeRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class CommentLikeService
@@ -15,7 +17,8 @@ class CommentLikeService
     public function __construct(
         private EntityManagerInterface $em,
         private CommentRepository $commentRepository,
-        private CommentLikeRepository $commentLikeRepository
+        private CommentLikeRepository $commentLikeRepository,
+        private EventDispatcherInterface $eventDispatcher
     ) {}
 
     public function toggleLike(int $commentId, User $user): array
@@ -37,6 +40,8 @@ class CommentLikeService
             $this->em->remove($existingLike);
             $this->em->flush();
 
+            $this->eventDispatcher->dispatch(new CommentLikedEvent($comment, $user, false));
+
             return [
                 'liked' => false,
                 'likeCount' => count($comment->getCommentLikes())
@@ -50,6 +55,8 @@ class CommentLikeService
 
             $this->em->persist($like);
             $this->em->flush();
+
+            $this->eventDispatcher->dispatch(new CommentLikedEvent($comment, $user, true));
 
             return [
                 'liked' => true,

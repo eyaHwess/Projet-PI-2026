@@ -84,6 +84,23 @@
                 <div class="ms-xl-auto">
                     <ul class="navbar-nav flex-row align-items-center">
 
+                        {% if is_granted('ROLE_ADMIN') %}
+                        <!-- Moderation violations realtime indicator -->
+                        <li class="nav-item ms-2 ms-md-3">
+                            <a id="adminViolationBtn"
+                               class="btn btn-light btn-round mb-0 position-relative"
+                               href="{{ path('admin_moderation_logs') }}"
+                               title="Moderation Logs">
+                                <i class="bi bi-shield-exclamation fa-fw"></i>
+                                <span id="adminViolationDot"
+                                      class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
+                                      style="display:none;">
+                                    <span class="visually-hidden">New violation</span>
+                                </span>
+                            </a>
+                        </li>
+                        {% endif %}
+
                         <!-- Notification dropdown START -->
                         {% embed 'admin/components/notification/notification_dropdown.html.twig' with {
                             notifications_count: 2

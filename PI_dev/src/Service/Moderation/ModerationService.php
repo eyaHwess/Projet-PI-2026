@@ -3,9 +3,11 @@
 namespace App\Service\Moderation;
 
 use App\Entity\User;
+use App\Event\Moderation\ToxicPublishAttemptEvent;
 use Psr\Log\LoggerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class ModerationService
 {
@@ -23,7 +25,8 @@ class ModerationService
         private LoggerInterface $logger,
         private LoggerInterface $moderationLogger,
         private string $apiKey,
-        private float $toxicityThreshold = 0.7
+        private float $toxicityThreshold = 0.7,
+        private EventDispatcherInterface $eventDispatcher
     ) {
     }
 
@@ -195,6 +198,16 @@ class ModerationService
             'threshold' => $this->toxicityThreshold,
             'timestamp' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
         ]);
+
+        // Admin realtime alert for toxic publish attempts (keeps controllers clean)
+        if (in_array($entityType, ['post', 'post_edit'], true)) {
+            $this->eventDispatcher->dispatch(new ToxicPublishAttemptEvent(
+                $user,
+                $entityType,
+                $combinedPreview,
+                (float) $result->getHighestScore()
+            ));
+        }
     }
 
     /**

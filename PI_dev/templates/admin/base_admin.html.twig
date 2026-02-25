@@ -95,6 +95,11 @@
 
         <!-- Theme CSS -->
         <link rel="stylesheet" href="{{ asset('adminDashboard/assets/styles/style.css') }}">
+
+        {# Moderation logs styling (keep Twig clean, dedicated CSS) #}
+        {% if app.request.attributes.get('_route') starts with 'admin_moderation_' %}
+            <link rel="stylesheet" href="{{ asset('adminDashboard/assets/styles/moderation_logs.css') }}">
+        {% endif %}
     {% endblock %}
 
 </head>
@@ -140,6 +145,26 @@
 
     <!-- Template Functions -->
     <script src="{{ asset('adminDashboard/assets/js/functions.js') }}"></script>
+
+    {% if is_granted('ROLE_ADMIN') %}
+    <script>
+        // Mercure subscription for admin violation alerts (realtime)
+        (function() {
+            try {
+                const mercureUrl = "{{ mercure(['admin/violations'], { subscribe: ['admin/violations'] })|e('js') }}";
+                const dot = document.getElementById('adminViolationDot');
+                if (!mercureUrl || !dot) return;
+
+                const es = new EventSource(mercureUrl);
+                es.onmessage = () => {
+                    dot.style.display = 'inline-block';
+                };
+            } catch (e) {
+                // ignore
+            }
+        })();
+    </script>
+    {% endif %}
 {% endblock %}
 
 </body>

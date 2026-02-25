@@ -80,7 +80,8 @@
         <!-- View Mode -->
         <div id="postView{{ post.id }}">
             <h1 class="mb-3" style="font-size: 1.75rem; font-weight: 600; color: #2d3748;">{{ post.title }}</h1>
-            <div class="mb-3 post-content" id="postContent{{ post.id }}">{{ post.content|raw }}</div>
+            {# Add ck-content so CKEditor-generated HTML keeps its frontend styling (images, embeds, lists, etc.) #}
+            <div class="mb-3 post-content ck-content" id="postContent{{ post.id }}">{{ post.content|raw }}</div>
         </div>
         
         <script>

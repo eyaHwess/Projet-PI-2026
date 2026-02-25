@@ -72,6 +72,25 @@
                             <a href="{{ path('app_session_index') }}" class="nav-link">Mes sessions</a>
                         {% endif %}
                         
+                        {# Realtime Post/Comment Notifications (separate from coaching notifications) #}
+                        <div class="notification-badge relative">
+                            <div id="rtNotificationBtn" onclick="window.toggleRtNotifications(event)" title="Post notifications">
+                                <i class="bi bi-bell-fill"></i>
+                                <span id="rtNotificationCount" class="badge-count hidden">0</span>
+                            </div>
+                            <div id="rtNotificationDropdown" class="notification-dropdown">
+                                <div class="p-3 border-b border-gray-200 flex justify-between items-center">
+                                    <h3 class="font-semibold text-gray-800">Post notifications</h3>
+                                    <button type="button" id="rtMarkAllRead">Tout marquer lu</button>
+                                </div>
+                                <div id="rtNotificationList">
+                                    <div class="p-4 text-center text-gray-500 text-sm">
+                                        Aucune notification
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="notification-badge relative">
                             <div id="notificationBtn" onclick="window.toggleNotifications(event)">
                                 <i class="bi bi-bell"></i>
@@ -408,6 +427,172 @@
                 // Rafraîchir le compteur toutes les 30 secondes
                 setInterval(loadNotificationCount, 30000);
                 
+                /* ==========================================================
+                   Realtime Post/Comment notifications (Mercure)
+                   - separate from coaching notifications
+                   ========================================================== */
+
+                window.rtNotificationDropdownOpen = false;
+
+                window.toggleRtNotifications = function(e) {
+                    if (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+
+                    const dropdown = document.getElementById('rtNotificationDropdown');
+                    const btn = document.getElementById('rtNotificationBtn');
+                    if (!dropdown || !btn) return;
+
+                    window.rtNotificationDropdownOpen = !window.rtNotificationDropdownOpen;
+                    if (window.rtNotificationDropdownOpen) {
+                        dropdown.classList.add('show');
+                        dropdown.style.display = 'block';
+                        if (typeof window.loadRtNotifications === 'function') {
+                            window.loadRtNotifications();
+                        }
+                    } else {
+                        dropdown.classList.remove('show');
+                        dropdown.style.display = 'none';
+                    }
+                };
+
+                const rtBtn = document.getElementById('rtNotificationBtn');
+                const rtDropdown = document.getElementById('rtNotificationDropdown');
+                const rtCountEl = document.getElementById('rtNotificationCount');
+                const rtListEl = document.getElementById('rtNotificationList');
+                const rtMarkAllBtn = document.getElementById('rtMarkAllRead');
+
+                // Close on outside click
+                document.addEventListener('click', function(e) {
+                    if (window.rtNotificationDropdownOpen &&
+                        rtDropdown &&
+                        rtBtn &&
+                        !rtDropdown.contains(e.target) &&
+                        !rtBtn.contains(e.target)) {
+                        window.rtNotificationDropdownOpen = false;
+                        rtDropdown.classList.remove('show');
+                        rtDropdown.style.display = 'none';
+                    }
+                });
+
+                if (rtDropdown) {
+                    rtDropdown.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                    });
+                }
+
+                async function loadRtCount() {
+                    try {
+                        if (!rtCountEl) return;
+                        const res = await fetch('{{ path('app_rt_notifications_unread_count') }}');
+                        if (!res.ok) return;
+                        const data = await res.json();
+
+                        if (data.count > 0) {
+                            rtCountEl.textContent = data.count > 99 ? '99+' : data.count;
+                            rtCountEl.classList.remove('hidden');
+                        } else {
+                            rtCountEl.classList.add('hidden');
+                        }
+                    } catch (e) {
+                        // ignore
+                    }
+                }
+
+                function buildRtTargetUrl(notif) {
+                    const base = '{{ path('post_list_view') }}';
+                    if (notif.postId && notif.commentId) return `${base}#comment${notif.commentId}`;
+                    if (notif.postId) return `${base}#post${notif.postId}`;
+                    return base;
+                }
+
+                async function rtMarkReadAndGo(notif) {
+                    try {
+                        await fetch(`/rt-notifications/${notif.id}/mark-read`, {
+                            method: 'POST',
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        });
+                    } catch (e) {
+                        // ignore
+                    }
+                    window.location.href = buildRtTargetUrl(notif);
+                }
+
+                window.loadRtNotifications = async function() {
+                    if (!rtListEl) return;
+
+                    try {
+                        rtListEl.innerHTML = '<div class="p-4 text-center text-gray-500 text-sm"><i class="bi bi-hourglass-split"></i> Chargement...</div>';
+                        const res = await fetch('{{ path('app_rt_notifications_recent') }}');
+                        if (!res.ok) throw new Error('network');
+                        const data = await res.json();
+                        const items = data.notifications || [];
+
+                        if (items.length === 0) {
+                            rtListEl.innerHTML = '<div class="p-4 text-center text-gray-500 text-sm"><i class="bi bi-bell-slash"></i> Aucune notification</div>';
+                            return;
+                        }
+
+                        rtListEl.innerHTML = items.map(n => `
+                            <div class="notification-item ${n.isRead ? '' : 'unread'} cursor-pointer" data-id="${n.id}">
+                                <div class="text-sm text-gray-800">${n.message}</div>
+                                <div class="text-xs text-gray-500 mt-1">
+                                    <i class="bi bi-clock"></i> ${n.createdAt ? new Date(n.createdAt).toLocaleString() : ''}
+                                </div>
+                            </div>
+                        `).join('');
+
+                        rtListEl.querySelectorAll('.notification-item').forEach(el => {
+                            el.addEventListener('click', () => {
+                                const id = parseInt(el.dataset.id, 10);
+                                const notif = items.find(x => x.id === id);
+                                if (notif) rtMarkReadAndGo(notif);
+                            });
+                        });
+                    } catch (e) {
+                        rtListEl.innerHTML = '<div class="p-4 text-center text-red-500 text-sm"><i class="bi bi-exclamation-triangle"></i> Erreur de chargement</div>';
+                    } finally {
+                        loadRtCount();
+                    }
+                };
+
+                if (rtMarkAllBtn) {
+                    rtMarkAllBtn.addEventListener('click', async function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        try {
+                            await fetch('{{ path('app_rt_notifications_mark_all_read') }}', {
+                                method: 'POST',
+                                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                            });
+                            loadRtCount();
+                            if (window.rtNotificationDropdownOpen) {
+                                window.loadRtNotifications();
+                            }
+                        } catch (e) {
+                            // ignore
+                        }
+                    });
+                }
+
+                // Initial load
+                loadRtCount();
+
+                // Mercure subscription: sets mercureAuthorization cookie + returns hub URL with topic
+                try {
+                    const rtMercureUrl = "{{ mercure(['user/' ~ app.user.id ~ '/rt-notifications'], { subscribe: ['user/' ~ app.user.id ~ '/rt-notifications'] })|e('js') }}";
+                    const es = new EventSource(rtMercureUrl);
+                    es.onmessage = () => {
+                        loadRtCount();
+                        if (window.rtNotificationDropdownOpen) {
+                            window.loadRtNotifications();
+                        }
+                    };
+                } catch (e) {
+                    // ignore
+                }
+
                 console.log('✅ Initialisation terminée');
             } // Fin de initNotifications
         </script>

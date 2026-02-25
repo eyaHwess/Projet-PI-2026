@@ -34,6 +34,42 @@ class TagRepository extends ServiceEntityRepository
     }
 
     /**
+     * Fetch existing tags by normalized names.
+     *
+     * @param string[] $names
+     *
+     * @return array<string,Tag> Indexed by tag name (normalized).
+     */
+    public function findByNamesIndexed(array $names): array
+    {
+        $names = array_values(array_unique(array_filter(array_map(
+            static fn($n) => strtolower(trim((string) $n)),
+            $names
+        ))));
+
+        if ($names === []) {
+            return [];
+        }
+
+        /** @var Tag[] $tags */
+        $tags = $this->createQueryBuilder('t')
+            ->where('t.name IN (:names)')
+            ->setParameter('names', $names)
+            ->getQuery()
+            ->getResult();
+
+        $indexed = [];
+        foreach ($tags as $tag) {
+            $name = $tag->getName();
+            if ($name !== null && $name !== '') {
+                $indexed[$name] = $tag;
+            }
+        }
+
+        return $indexed;
+    }
+
+    /**
      * Get most used tags
      */
     public function findMostUsed(int $limit = 20): array

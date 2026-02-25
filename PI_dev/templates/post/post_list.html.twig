@@ -232,6 +232,25 @@
     </div>
 </div>
 
+<!-- Publish Confirmation Modal (Custom, replaces browser confirm) -->
+<div id="publishConfirmModal" class="publish-modal-overlay" aria-hidden="true">
+    <div class="publish-modal" role="dialog" aria-modal="true" aria-labelledby="publishModalTitle">
+        <div class="publish-modal-header">
+            <h5 id="publishModalTitle" class="mb-0">Publish Post</h5>
+        </div>
+        <div class="publish-modal-body">
+            <p class="mb-0">Are you sure you want to publish this post now?</p>
+            <div id="publishModalError" class="publish-modal-error" style="display:none;"></div>
+        </div>
+        <div class="publish-modal-footer">
+            <button type="button" class="btn publish-btn-cancel" id="publishCancelBtn">Cancel</button>
+            <button type="button" class="btn publish-btn-confirm" id="publishConfirmBtn">
+                Publish Now
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
 let deleteItemId = null;
 let deleteItemType = null;
@@ -285,6 +304,114 @@ document.getElementById('confirmDeleteBtn').addEventListener('click', function()
         deleteItemId = null;
         deleteItemType = null;
     }
+});
+</script>
+
+<script>
+// Custom publish modal (replaces window.confirm)
+let publishTargetPostId = null;
+
+function openPublishModal(postId) {
+    publishTargetPostId = postId;
+    const overlay = document.getElementById('publishConfirmModal');
+    if (!overlay) return;
+
+    const errorEl = document.getElementById('publishModalError');
+    if (errorEl) {
+        errorEl.style.display = 'none';
+        errorEl.textContent = '';
+    }
+
+    overlay.classList.add('show');
+    overlay.setAttribute('aria-hidden', 'false');
+    if (window.PI2026Modal?.lockScroll) {
+        window.PI2026Modal.lockScroll();
+    } else {
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closePublishModal() {
+    publishTargetPostId = null;
+    const overlay = document.getElementById('publishConfirmModal');
+    if (!overlay) return;
+
+    overlay.classList.remove('show');
+    overlay.setAttribute('aria-hidden', 'true');
+    if (window.PI2026Modal?.unlockScroll) {
+        window.PI2026Modal.unlockScroll();
+    } else {
+        document.body.style.overflow = '';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const overlay = document.getElementById('publishConfirmModal');
+    const cancelBtn = document.getElementById('publishCancelBtn');
+    const confirmBtn = document.getElementById('publishConfirmBtn');
+
+    if (!overlay || !cancelBtn || !confirmBtn) return;
+
+    // Close on outside click
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            closePublishModal();
+        }
+    });
+
+    // Close on Cancel
+    cancelBtn.addEventListener('click', () => closePublishModal());
+
+    // Confirm publish (calls existing publish function)
+    confirmBtn.addEventListener('click', async () => {
+        if (!publishTargetPostId) return;
+
+        try {
+            const errorEl = document.getElementById('publishModalError');
+            if (errorEl) {
+                errorEl.style.display = 'none';
+                errorEl.textContent = '';
+            }
+
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = 'Publishing...';
+
+            const response = await fetch(`/posts/${publishTargetPostId}/publish`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (response.ok) {
+                window.location.reload();
+                return;
+            }
+
+            if (errorEl) {
+                errorEl.textContent = 'Failed to publish post. Please try again.';
+                errorEl.style.display = 'block';
+            }
+        } catch (error) {
+            console.error('Error publishing post:', error);
+            const errorEl = document.getElementById('publishModalError');
+            if (errorEl) {
+                errorEl.textContent = 'Failed to publish post. Please try again.';
+                errorEl.style.display = 'block';
+            }
+        } finally {
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = 'Publish Now';
+        }
+    });
+
+    // Close on ESC
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && overlay.classList.contains('show')) {
+            closePublishModal();
+        }
+    });
 });
 </script>
 
@@ -367,6 +494,139 @@ document.getElementById('confirmDeleteBtn').addEventListener('click', function()
     if (container.dataset.hasMore === '1') {
         observer.observe(sentinel);
     }
+})();
+</script>
+
+<script>
+// Contextual navigation + highlight for notification deep-links (#post{id} / #comment{id})
+(function() {
+    const HIGHLIGHT_MS = 2600;
+    const MAX_WAIT_MS = 9000;
+
+    function smoothScrollTo(el, center = false) {
+        try {
+            el.scrollIntoView({
+                behavior: 'smooth',
+                block: center ? 'center' : 'start',
+                inline: 'nearest'
+            });
+        } catch (e) {
+            el.scrollIntoView(true);
+        }
+    }
+
+    function highlight(el, kind) {
+        el.classList.add('notification-focus');
+        el.classList.add(kind === 'comment' ? 'focus-comment' : 'focus-post');
+
+        setTimeout(() => {
+            el.classList.add('fade-out');
+            setTimeout(() => {
+                el.classList.remove('notification-focus', 'focus-comment', 'focus-post', 'fade-out');
+            }, 260);
+        }, HIGHLIGHT_MS);
+    }
+
+    function getPostIdFromCommentId(commentId) {
+        // comment HTML is inside #commentsList{postId}
+        const el = document.getElementById(commentId);
+        if (!el) return null;
+        const list = el.closest('[id^="commentsList"]');
+        if (!list) return null;
+        const m = list.id.match(/^commentsList(\d+)$/);
+        return m ? m[1] : null;
+    }
+
+    function ensureCommentVisible(commentId) {
+        const el = document.getElementById(commentId);
+        if (!el) return;
+
+        // If comment is hidden, expand via existing toggleComments() handler
+        const style = window.getComputedStyle(el);
+        if (style.display !== 'none') return;
+
+        const postId = getPostIdFromCommentId(commentId);
+        if (!postId) return;
+
+        try {
+            const totalCountEl = document.getElementById('commentCount' + postId);
+            const total = totalCountEl ? parseInt(totalCountEl.textContent || '0', 10) : 0;
+            if (typeof window.toggleComments === 'function') {
+                // Call a few times to reveal batches if needed
+                for (let i = 0; i < 4; i++) {
+                    window.toggleComments(parseInt(postId, 10), total);
+                    const s = window.getComputedStyle(el);
+                    if (s.display !== 'none') break;
+                }
+            } else {
+                // Fallback: unhide directly
+                el.style.display = 'flex';
+            }
+        } catch (e) {
+            // ignore
+        }
+    }
+
+    async function waitForElement(selector, timeoutMs) {
+        const start = Date.now();
+        while (Date.now() - start < timeoutMs) {
+            const el = document.querySelector(selector);
+            if (el) return el;
+            await new Promise(r => setTimeout(r, 250));
+        }
+        return null;
+    }
+
+    async function ensureLoadedForTarget(targetId) {
+        const container = document.getElementById('postsContainer');
+        if (!container) return;
+
+        const selector = `#${CSS.escape(targetId)}`;
+        if (document.querySelector(selector)) return;
+
+        const sentinel = document.getElementById('infiniteSentinel');
+        const start = Date.now();
+
+        while (Date.now() - start < MAX_WAIT_MS) {
+            const hasMore = container.dataset.hasMore === '1';
+            if (!hasMore) break;
+
+            if (sentinel) sentinel.scrollIntoView({ behavior: 'auto', block: 'end' });
+            await new Promise(r => setTimeout(r, 650));
+
+            if (document.querySelector(selector)) return;
+        }
+    }
+
+    async function focusFromHash() {
+        const hash = window.location.hash || '';
+        if (!hash) return;
+
+        const targetId = hash.replace('#', '');
+        if (!targetId) return;
+
+        await ensureLoadedForTarget(targetId);
+
+        const el = await waitForElement(`#${CSS.escape(targetId)}`, MAX_WAIT_MS);
+        if (!el) return;
+
+        const isComment = targetId.startsWith('comment');
+        if (isComment) {
+            ensureCommentVisible(targetId);
+        }
+        smoothScrollTo(el, isComment);
+        highlight(el, isComment ? 'comment' : 'post');
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', focusFromHash);
+    } else {
+        focusFromHash();
+    }
+
+    window.addEventListener('hashchange', () => {
+        focusFromHash();
+    });
 })();
 </script>
 {% endblock %}
