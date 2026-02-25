@@ -27,6 +27,9 @@ class Chatroom
     #[ORM\OneToMany(mappedBy: 'chatroom', targetEntity: Message::class, orphanRemoval: true)]
     private Collection $messages;
 
+    #[ORM\Column(length: 50)]
+    private string $state = 'active';
+
     public function __construct()
     {
         $this->messages = new ArrayCollection();
@@ -41,4 +44,15 @@ class Chatroom
     public function setGoal(?Goal $goal): static { $this->goal = $goal; return $this; }
 
     public function getMessages(): Collection { return $this->messages; }
+
+    public function getState(): string
+    {
+        return $this->state;
+    }
+
+    public function setState(string $state): static
+    {
+        $this->state = $state;
+        return $this;
+    }
 }

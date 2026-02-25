@@ -2,145 +2,235 @@
 
 namespace App\Service;
 
-use App\Entity\CoachingRequest;
 use App\Entity\Notification;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Mercure\HubInterface;
+use Symfony\Component\Mercure\Update;
+use Twig\Environment;
 
 class NotificationService
 {
     public function __construct(
-        private EntityManagerInterface $entityManager
-    ) {
-    }
+        private EntityManagerInterface $entityManager,
+        private ?HubInterface $hub = null,
+        private ?Environment $twig = null
+    ) {}
 
     /**
-     * Crée une notification pour l'acceptation d'une demande de coaching
+     * Créer et publier une notification
      */
-    public function notifyRequestAccepted(CoachingRequest $request): void
-    {
-        $coach = $request->getCoach();
-        $notification = new Notification();
-        $notification->setUser($request->getUser());
-        $notification->setType('request_accepted');
-        $notification->setMessage(
-            sprintf(
-                'Bonne nouvelle ! %s %s a accepté votre demande de coaching.',
-                $coach->getFirstName(),
-                $coach->getLastName()
-            )
-        );
-        $notification->setCoachingRequest($request);
-
-        $this->entityManager->persist($notification);
-        $this->entityManager->flush();
-    }
-
-    /**
-     * Crée une notification pour le refus d'une demande de coaching
-     */
-    public function notifyRequestDeclined(CoachingRequest $request): void
-    {
-        $coach = $request->getCoach();
-        $notification = new Notification();
-        $notification->setUser($request->getUser());
-        $notification->setType('request_declined');
-        $notification->setMessage(
-            sprintf(
-                '%s %s a décliné votre demande de coaching. N\'hésitez pas à contacter un autre coach.',
-                $coach->getFirstName(),
-                $coach->getLastName()
-            )
-        );
-        $notification->setCoachingRequest($request);
-
-        $this->entityManager->persist($notification);
-        $this->entityManager->flush();
-    }
-
-    /**
-     * Crée une notification pour la mise en attente d'une demande de coaching
-     */
-    public function notifyRequestPending(CoachingRequest $request): void
-    {
-        $coach = $request->getCoach();
-        $notification = new Notification();
-        $notification->setUser($request->getUser());
-        $notification->setType('request_pending');
-        $notification->setMessage(
-            sprintf(
-                '%s %s a mis votre demande en attente. Le coach reviendra vers vous prochainement.',
-                $coach->getFirstName(),
-                $coach->getLastName()
-            )
-        );
-        $notification->setCoachingRequest($request);
-
-        $this->entityManager->persist($notification);
-        $this->entityManager->flush();
-    }
-
-    /**
-     * Crée une notification personnalisée
-     */
-    public function createNotification(User $user, string $type, string $message, ?CoachingRequest $request = null): void
-    {
+    public function createAndPublish(
+        User $user,
+        string $type,
+        string $message,
+        $relatedEntity = null
+    ): Notification {
+        // Créer la notification
         $notification = new Notification();
         $notification->setUser($user);
         $notification->setType($type);
         $notification->setMessage($message);
-        $notification->setCoachingRequest($request);
-
+        
+        if ($relatedEntity instanceof \App\Entity\CoachingRequest) {
+            $notification->setCoachingRequest($relatedEntity);
+        }
+        
         $this->entityManager->persist($notification);
+        $this->entityManager->flush();
+        
+        // Publier via Mercure (si disponible)
+        $this->publishNotification($notification);
+        
+        return $notification;
+    }
+
+    /**
+     * Publier une notification via Mercure
+     */
+    public function publishNotification(Notification $notification): void
+    {
+        if (!$this->hub || !$this->twig) {
+            return; // Mercure non disponible, le polling prendra le relais
+        }
+
+        try {
+            // Générer le HTML de la notification
+            $html = $this->twig->render('notification/_notification_item.html.twig', [
+                'notification' => $notification
+            ]);
+
+            // Créer l'update Mercure
+            $update = new Update(
+                'notification/user/' . $notification->getUser()->getId(),
+                json_encode([
+                    'id' => $notification->getId(),
+                    'type' => $notification->getType(),
+                    'message' => $notification->getMessage(),
+                    'isRead' => $notification->isRead(),
+                    'createdAt' => $notification->getCreatedAt()->format('c'),
+                    'html' => $html
+                ])
+            );
+
+            $this->hub->publish($update);
+        } catch (\Exception $e) {
+            // Log l'erreur mais ne pas bloquer l'application
+            error_log('Mercure notification publish failed: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Marquer une notification comme lue
+     */
+    public function markAsRead(Notification $notification): void
+    {
+        $notification->setIsRead(true);
         $this->entityManager->flush();
     }
 
     /**
-     * Notifie le coach qu'il a reçu une nouvelle demande
+     * Marquer toutes les notifications d'un utilisateur comme lues
      */
-    public function notifyCoachNewRequest(CoachingRequest $request): void
+    public function markAllAsRead(User $user): void
     {
-        $user = $request->getUser();
-        $isUrgent = $request->isUrgent();
-        
-        $notification = new Notification();
-        $notification->setUser($request->getCoach());
-        $notification->setType($isUrgent ? 'new_request_urgent' : 'new_request');
-        $notification->setMessage(
-            sprintf(
-                '%s%s %s vous a envoyé une %sdemande de coaching.',
-                $isUrgent ? '🔴 URGENT : ' : '',
-                $user->getFirstName(),
-                $user->getLastName(),
-                $isUrgent ? 'demande URGENTE' : 'nouvelle '
-            )
-        );
-        $notification->setCoachingRequest($request);
+        $notifications = $this->entityManager
+            ->getRepository(Notification::class)
+            ->findBy(['user' => $user, 'isRead' => false]);
 
-        $this->entityManager->persist($notification);
+        foreach ($notifications as $notification) {
+            $notification->setIsRead(true);
+        }
+
         $this->entityManager->flush();
     }
 
     /**
-     * Notifie l'utilisateur que sa demande a été envoyée
+     * Obtenir le nombre de notifications non lues
      */
-    public function notifyUserRequestSent(CoachingRequest $request): void
+    public function getUnreadCount(User $user): int
     {
-        $coach = $request->getCoach();
-        
-        $notification = new Notification();
-        $notification->setUser($request->getUser());
-        $notification->setType('request_sent');
-        $notification->setMessage(
-            sprintf(
-                'Votre demande de coaching a été envoyée à %s %s. Vous recevrez une réponse prochainement.',
-                $coach->getFirstName(),
-                $coach->getLastName()
-            )
-        );
-        $notification->setCoachingRequest($request);
+        return $this->entityManager
+            ->getRepository(Notification::class)
+            ->count(['user' => $user, 'isRead' => false]);
+    }
 
-        $this->entityManager->persist($notification);
-        $this->entityManager->flush();
+    /**
+     * Obtenir les notifications récentes d'un utilisateur
+     */
+    public function getRecentNotifications(User $user, int $limit = 10): array
+    {
+        return $this->entityManager
+            ->getRepository(Notification::class)
+            ->findBy(
+                ['user' => $user],
+                ['createdAt' => 'DESC'],
+                $limit
+            );
+    }
+
+    /**
+     * Notifier l'utilisateur que sa demande a été acceptée
+     */
+    public function notifyRequestAccepted(\App\Entity\CoachingRequest $coachingRequest): void
+    {
+        $coach = $coachingRequest->getCoach();
+        $user = $coachingRequest->getUser();
+        
+        if (!$user) {
+            return;
+        }
+
+        $message = sprintf(
+            'Votre demande de coaching a été acceptée par %s %s',
+            $coach->getFirstName(),
+            $coach->getLastName()
+        );
+
+        $this->createAndPublish(
+            $user,
+            'coaching_accepted',
+            $message,
+            $coachingRequest
+        );
+    }
+
+    /**
+     * Notifier l'utilisateur que sa demande a été refusée
+     */
+    public function notifyRequestDeclined(\App\Entity\CoachingRequest $coachingRequest): void
+    {
+        $coach = $coachingRequest->getCoach();
+        $user = $coachingRequest->getUser();
+        
+        if (!$user) {
+            return;
+        }
+
+        $message = sprintf(
+            'Votre demande de coaching a été refusée par %s %s',
+            $coach->getFirstName(),
+            $coach->getLastName()
+        );
+
+        $this->createAndPublish(
+            $user,
+            'coaching_rejected',
+            $message,
+            $coachingRequest
+        );
+    }
+
+    /**
+     * Notifier l'utilisateur que sa demande est en attente
+     */
+    public function notifyRequestPending(\App\Entity\CoachingRequest $coachingRequest): void
+    {
+        $coach = $coachingRequest->getCoach();
+        $user = $coachingRequest->getUser();
+        
+        if (!$user) {
+            return;
+        }
+
+        $message = sprintf(
+            'Votre demande de coaching avec %s %s est de nouveau en attente',
+            $coach->getFirstName(),
+            $coach->getLastName()
+        );
+
+        $this->createAndPublish(
+            $user,
+            'coaching_request',
+            $message,
+            $coachingRequest
+        );
+    }
+
+    /**
+     * Notifier le coach qu'il a reçu une nouvelle demande
+     */
+    public function notifyCoachNewRequest(\App\Entity\CoachingRequest $coachingRequest): void
+    {
+        $coach = $coachingRequest->getCoach();
+        $user = $coachingRequest->getUser();
+        
+        if (!$coach) {
+            return;
+        }
+
+        $message = sprintf(
+            'Nouvelle demande de coaching de %s %s',
+            $user->getFirstName(),
+            $user->getLastName()
+        );
+
+        $this->createAndPublish(
+            $coach,
+            'coaching_request',
+            $message,
+            $coachingRequest
+        );
     }
 }
+

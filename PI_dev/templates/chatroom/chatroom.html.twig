@@ -1,5 +1,7 @@
 {% extends 'base.html.twig' %}
 
+{# Version: 2.2 - Traduction Multi-API - <?php echo time(); ?> #}
+
 {% block title %}Chatroom - {{ goal.title }}{% endblock %}
 
 {% block stylesheets %}
@@ -1148,6 +1150,36 @@
         transition: all 0.2s;
     }
 
+    /* Message Actions Bar */
+    .message-actions-bar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 12px;
+        font-size: 12px;
+        flex-wrap: wrap;
+    }
+
+    .message-action-link {
+        color: #6b7280;
+        text-decoration: none;
+        transition: all 0.2s;
+        cursor: pointer;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .message-action-link:hover {
+        color: #8b9dc3;
+        transform: translateY(-1px);
+    }
+
+    .message-action-link.delete-link:hover {
+        color: #ef4444;
+    }
+
     .read-status i.fa-check-double {
         animation: checkBounce 0.4s ease-out;
     }
@@ -1276,6 +1308,130 @@
         color: #92400e;
         transform: translateY(-2px);
         box-shadow: 0 2px 6px rgba(251, 191, 36, 0.2);
+    }
+
+    /* Translate Button Inline (in reactions) */
+    .translate-btn-inline {
+        background: white;
+        border: 1px solid #e8ecf1;
+        border-radius: 16px;
+        padding: 5px 12px;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: #6b7280;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        font-family: inherit;
+    }
+
+    .translate-btn-inline:hover {
+        background: #eef2f8;
+        border-color: #8b9dc3;
+        color: #8b9dc3;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 6px rgba(139, 157, 195, 0.2);
+    }
+
+    /* Quick Translate Panel */
+    .quick-translate-panel {
+        position: fixed;
+        bottom: 100px;
+        right: 30px;
+        width: 320px;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+        z-index: 9999;
+        animation: slideInUp 0.3s ease-out;
+    }
+
+    .quick-translate-header {
+        padding: 16px 20px;
+        background: linear-gradient(135deg, #8b9dc3 0%, #a8b5d1 100%);
+        color: white;
+        border-radius: 16px 16px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: 600;
+        font-size: 15px;
+    }
+
+    .quick-translate-close {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+
+    .quick-translate-close:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(1.1);
+    }
+
+    .quick-translate-body {
+        padding: 20px;
+        font-size: 14px;
+        color: #6b7280;
+        line-height: 1.6;
+    }
+
+    /* Floating Translate Button */
+    .floating-translate-btn {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #8b9dc3 0%, #a8b5d1 100%);
+        border: none;
+        border-radius: 50%;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        box-shadow: 0 8px 24px rgba(139, 157, 195, 0.4);
+        z-index: 9998;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .floating-translate-btn:hover {
+        transform: scale(1.1) translateY(-4px);
+        box-shadow: 0 12px 32px rgba(139, 157, 195, 0.5);
+    }
+
+    .floating-translate-btn:active {
+        transform: scale(0.95);
+    }
+
+    .floating-translate-btn .btn-text {
+        position: absolute;
+        right: 70px;
+        background: #1f2937;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.3s;
+    }
+
+    .floating-translate-btn:hover .btn-text {
+        opacity: 1;
+        right: 75px;
     }
 
     /* Pinned Message Box */
@@ -1804,6 +1960,102 @@
         transform: scale(0.95);
     }
 
+    /* Translate Button Styling */
+    .translate-message-btn {
+        position: absolute;
+        top: 8px;
+        right: 130px;
+        background: rgba(139, 157, 195, 0.9);
+        border: none;
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        opacity: 0;
+        transition: all 0.2s ease;
+        color: white;
+        font-size: 12px;
+        box-shadow: 0 2px 8px rgba(139, 157, 195, 0.3);
+    }
+
+    .message-bubble:hover .translate-message-btn {
+        opacity: 1;
+    }
+
+    .translate-message-btn:hover {
+        background: rgba(139, 157, 195, 1);
+        transform: scale(1.1);
+    }
+
+    .translate-message-btn:active {
+        transform: scale(0.95);
+    }
+
+    /* Translation Display */
+    .message-translation {
+        margin-top: 8px;
+        padding: 12px;
+        background: rgba(139, 157, 195, 0.1);
+        border-left: 3px solid #8b9dc3;
+        border-radius: 8px;
+        font-size: 13px;
+        color: #4b5563;
+        animation: slideDown 0.3s ease-out;
+    }
+
+    .message-translation .translation-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 6px;
+        font-size: 11px;
+        color: #8b9dc3;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .message-translation .translation-text {
+        color: #1f2937;
+        line-height: 1.5;
+    }
+
+    .message-translation .translation-close {
+        float: right;
+        background: none;
+        border: none;
+        color: #9ca3af;
+        cursor: pointer;
+        font-size: 16px;
+        padding: 0;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.2s;
+    }
+
+    .message-translation .translation-close:hover {
+        background: rgba(0, 0, 0, 0.05);
+        color: #6b7280;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
     /* Reply Button Styling */
     .reply-message-btn, .reply-btn {
         position: absolute;
@@ -2181,9 +2433,10 @@
         padding: 16px;
         display: none;
         z-index: 100;
-        width: 320px;
-        max-height: 400px;
-        overflow-y: auto;
+        width: 360px;
+        max-height: 420px;
+        overflow: hidden;
+        border: 1px solid #e8ecf1;
     }
 
     .emoji-picker.active {
@@ -2203,49 +2456,96 @@
     }
 
     .emoji-picker-header {
-        font-size: 14px;
-        font-weight: 700;
-        color: #1f2937;
+        display: flex;
+        gap: 6px;
         margin-bottom: 12px;
         padding-bottom: 10px;
         border-bottom: 1px solid #e8ecf1;
+        overflow-x: auto;
+        scrollbar-width: none;
     }
 
-    .emoji-categories {
-        display: flex;
-        gap: 8px;
-        margin-bottom: 12px;
-        flex-wrap: wrap;
+    .emoji-picker-header::-webkit-scrollbar {
+        display: none;
     }
 
-    .emoji-category-btn {
+    .emoji-tab {
         background: #f9fafb;
         border: 1px solid #e8ecf1;
         border-radius: 8px;
-        padding: 6px 12px;
-        font-size: 12px;
+        padding: 8px 12px;
+        font-size: 18px;
         cursor: pointer;
         transition: all 0.2s;
-        color: #6b7280;
-        font-weight: 500;
+        flex-shrink: 0;
+        min-width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
-    .emoji-category-btn:hover {
+    .emoji-tab:hover {
         background: #f3f4f6;
         border-color: #8b9dc3;
+        transform: scale(1.05);
     }
 
-    .emoji-category-btn.active {
+    .emoji-tab.active {
         background: #eef2f8;
         border-color: #8b9dc3;
-        color: #8b9dc3;
-        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(139, 157, 195, 0.2);
     }
 
-    .emoji-grid {
+    .emoji-search {
+        margin-bottom: 12px;
+    }
+
+    .emoji-search-input {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid #e8ecf1;
+        border-radius: 10px;
+        font-size: 13px;
+        outline: none;
+        transition: all 0.2s;
+        background: #f9fafb;
+    }
+
+    .emoji-search-input:focus {
+        background: white;
+        border-color: #8b9dc3;
+        box-shadow: 0 0 0 3px rgba(139, 157, 195, 0.1);
+    }
+
+    .emoji-search-input::placeholder {
+        color: #9ca3af;
+    }
+
+    .emoji-picker-content {
         display: grid;
         grid-template-columns: repeat(8, 1fr);
         gap: 4px;
+        max-height: 280px;
+        overflow-y: auto;
+        padding: 4px;
+    }
+
+    .emoji-picker-content::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .emoji-picker-content::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .emoji-picker-content::-webkit-scrollbar-thumb {
+        background: #d1d5db;
+        border-radius: 10px;
+    }
+
+    .emoji-picker-content::-webkit-scrollbar-thumb:hover {
+        background: #9ca3af;
     }
 
     .emoji-item {
@@ -2257,6 +2557,10 @@
         text-align: center;
         background: transparent;
         border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        aspect-ratio: 1;
     }
 
     .emoji-item:hover {
@@ -2268,17 +2572,17 @@
         transform: scale(1.1);
     }
 
-    .emoji-picker::-webkit-scrollbar {
-        width: 6px;
+    .emoji-no-results {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 40px 20px;
+        color: #9ca3af;
+        font-size: 14px;
     }
 
-    .emoji-picker::-webkit-scrollbar-track {
-        background: transparent;
-    }
-
-    .emoji-picker::-webkit-scrollbar-thumb {
-        background: #d1d5db;
-        border-radius: 10px;
+    .chat-input-btn.active {
+        background: #eef2f8;
+        color: #8b9dc3;
     }
 
     /* Voice Recording Interface */
@@ -2831,6 +3135,12 @@
                                     {% if message.isEdited %}
                                         <span class="edited-badge">Edited</span>
                                     {% endif %}
+                                    
+                                    {# Bouton de traduction #}
+                                    <button type="button" class="translate-message-btn" title="Traduire" onclick="translateMessage({{ message.id }})">
+                                        <i class="fas fa-globe"></i>
+                                    </button>
+                                    
                                     <button type="button" class="reply-message-btn" title="Répondre" onclick="setReplyTo({{ message.id }}, '{{ message.author.firstName|e('js') }}', '{{ message.content|e('js')|slice(0, 50) }}')">
                                         <i class="fas fa-reply"></i>
                                     </button>
@@ -2845,6 +3155,9 @@
                                         </button>
                                     {% endif %}
                                 </div>
+                                
+                                {# Zone de traduction #}
+                                <div id="translation-{{ message.id }}" class="message-translation" style="display: none;"></div>
                                 
                                 <!-- Reactions -->
                                 <div class="message-reactions">
@@ -2877,6 +3190,39 @@
                                             <input type="hidden" name="_token" value="{{ csrf_token('pin' ~ message.id) }}">
                                             <button type="submit" class="pin-btn" title="Épingler ce message">
                                                 <i class="fas fa-thumbtack"></i>
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                    
+                                    {# Bouton de traduction #}
+                                    <button type="button" class="translate-btn-inline" onclick="translateMessage({{ message.id }})" title="Traduire ce message">
+                                        <i class="fas fa-globe"></i> Traduire
+                                    </button>
+                                </div>
+                                
+                                {# Barre d'actions texte visible #}
+                                <div class="message-actions-bar">
+                                    <a href="javascript:void(0)" class="message-action-link" onclick="translateMessage({{ message.id }})">
+                                        🌍 Traduire
+                                    </a>
+                                    <a href="javascript:void(0)" class="message-action-link" onclick="setReplyTo({{ message.id }}, '{{ message.author.firstName|e('js') }}', '{{ message.content|e('js')|slice(0, 50) }}')">
+                                        💬 Répondre
+                                    </a>
+                                    {% if app.user and message.author.id == app.user.id %}
+                                        <a href="javascript:void(0)" class="message-action-link" onclick="openEditModal({{ message.id }}, '{{ message.content|e('js') }}')">
+                                            ✏️ Modifier
+                                        </a>
+                                    {% endif %}
+                                    {% if app.user and (message.author.id == app.user.id or (currentUserParticipation and currentUserParticipation.canModerate())) %}
+                                        <a href="javascript:void(0)" class="message-action-link delete-link" onclick="openDeleteModal({{ message.id }})">
+                                            🗑️ Supprimer
+                                        </a>
+                                    {% endif %}
+                                    {% if app.user and not message.isPinned and currentUserParticipation and currentUserParticipation.canModerate() %}
+                                        <form method="post" action="{{ path('message_pin', {id: message.id}) }}" style="display: inline;">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('pin' ~ message.id) }}">
+                                            <button type="submit" class="message-action-link" style="border: none; background: none; padding: 0; cursor: pointer;">
+                                                📌 Épingler
                                             </button>
                                         </form>
                                     {% endif %}
@@ -2961,8 +3307,11 @@
                                         </div>
                                     {% endif %}
                                     {% if message.content %}
-                                        {{ message.content }}
+                                        <span class="message-text">{{ message.content }}</span>
                                     {% endif %}
+                                    
+                                    {# Zone de traduction #}
+                                    <div id="translation-{{ message.id }}" class="message-translation" style="display: none;"></div>
                                 </div>
                                 
                                 <!-- Reactions -->
@@ -3009,6 +3358,29 @@
                                             </button>
                                         {% endif %}
                                     </div>
+                                    
+                                    {# Barre d'actions texte visible pour messages reçus #}
+                                    <div class="message-actions-bar">
+                                        <a href="javascript:void(0)" class="message-action-link" onclick="translateMessage({{ message.id }})">
+                                            🌍 Traduire
+                                        </a>
+                                        <a href="javascript:void(0)" class="message-action-link" onclick="setReplyTo({{ message.id }}, '{{ message.author.firstName|e('js') }}', '{{ message.content|e('js')|slice(0, 50) }}')">
+                                            💬 Répondre
+                                        </a>
+                                        {% if currentUserParticipation and currentUserParticipation.canModerate() %}
+                                            <a href="javascript:void(0)" class="message-action-link delete-link" onclick="openDeleteModal({{ message.id }})">
+                                                🗑️ Supprimer
+                                            </a>
+                                        {% endif %}
+                                        {% if not message.isPinned and currentUserParticipation and currentUserParticipation.canModerate() %}
+                                            <form method="post" action="{{ path('message_pin', {id: message.id}) }}" style="display: inline;">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('pin' ~ message.id) }}">
+                                                <button type="submit" class="message-action-link" style="border: none; background: none; padding: 0; cursor: pointer;">
+                                                    📌 Épingler
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
                                 {% endif %}
                                 
                                 <div class="message-time">
@@ -3028,6 +3400,18 @@
 
             <!-- Input Area -->
             <div class="chat-input-area">
+                
+                {# Panneau de traduction rapide #}
+                <div class="quick-translate-panel" id="quickTranslatePanel" style="display: none;">
+                    <div class="quick-translate-header">
+                        <span>🌍 Traduction Rapide</span>
+                        <button onclick="closeQuickTranslate()" class="quick-translate-close">×</button>
+                    </div>
+                    <div class="quick-translate-body">
+                        <p>Sélectionnez un message à traduire en cliquant sur "🌍 Traduire" sous le message.</p>
+                    </div>
+                </div>
+                
                 {% if currentUserParticipation is defined and currentUserParticipation and currentUserParticipation.isPending() %}
                     <!-- Pending approval notice -->
                     <div class="pending-approval-notice">
@@ -3099,6 +3483,7 @@
 
                             {{ form_widget(form.content, {
                                 'attr': {
+                                    'id': 'messageInput',
                                     'class': 'chat-input',
                                     'placeholder': 'Type message',
                                     'autocomplete': 'off'
@@ -3123,7 +3508,7 @@
                             <i class="fas fa-microphone"></i>
                         </button>
 
-                        <button type="button" class="chat-input-btn" onclick="toggleEmojiPicker()" title="Ajouter un emoji">
+                        <button type="button" class="chat-input-btn" id="emojiButton" title="Ajouter un emoji">
                             <i class="fas fa-smile"></i>
                         </button>
 
@@ -3151,20 +3536,6 @@
                                     <i class="fas fa-paper-plane"></i> Envoyer
                                 </button>
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- Emoji Picker -->
-                    <div id="emojiPicker" class="emoji-picker">
-                        <div class="emoji-picker-header">Choisir un emoji</div>
-                        <div class="emoji-categories">
-                            <button class="emoji-category-btn active" onclick="showEmojiCategory('smileys')">😊 Smileys</button>
-                            <button class="emoji-category-btn" onclick="showEmojiCategory('gestures')">👋 Gestes</button>
-                            <button class="emoji-category-btn" onclick="showEmojiCategory('objects')">🎯 Objets</button>
-                            <button class="emoji-category-btn" onclick="showEmojiCategory('symbols')">❤️ Symboles</button>
-                        </div>
-                        <div id="emojiGrid" class="emoji-grid">
-                            <!-- Emojis will be loaded here -->
                         </div>
                     </div>
 
@@ -3380,6 +3751,12 @@
     </div>
 </div>
 
+{# Bouton flottant de traduction #}
+<button class="floating-translate-btn" onclick="scrollToTranslateInfo()" title="Aide Traduction">
+    <span class="btn-text">Traduire les messages</span>
+    🌍
+</button>
+
 <!-- Edit Message Modal -->
 <div id="editModal" class="edit-modal">
     <div class="edit-modal-content">
@@ -3432,6 +3809,14 @@
 </div>
 
 <script>
+// Include emoji picker
+const emojiPickerScript = document.createElement('script');
+emojiPickerScript.src = '{{ asset('emoji-picker.js') }}';
+document.head.appendChild(emojiPickerScript);
+
+// Set the goal ID for JavaScript to use
+window.GOAL_ID = {{ goal.id }};
+
 // Auto-scroll to bottom on page load
 document.addEventListener('DOMContentLoaded', function() {
     const chatMessages = document.getElementById('chatMessages');
@@ -3557,6 +3942,173 @@ function openEditModal(messageId, currentContent) {
 function closeEditModal() {
     const modal = document.getElementById('editModal');
     modal.classList.remove('active');
+}
+
+// Translation functions
+const translations = {}; // Cache des traductions
+
+async function translateMessage(messageId, targetLang = 'en') {
+    const translationDiv = document.getElementById(`translation-${messageId}`);
+    
+    // Si déjà traduit, toggle l'affichage
+    if (translations[messageId]) {
+        if (translationDiv.style.display === 'none') {
+            translationDiv.style.display = 'block';
+        } else {
+            translationDiv.style.display = 'none';
+        }
+        return;
+    }
+    
+    // Afficher un loader
+    translationDiv.style.display = 'block';
+    translationDiv.innerHTML = `
+        <div class="translation-header">
+            <i class="fas fa-globe"></i>
+            <span>Traduction en cours...</span>
+        </div>
+    `;
+    
+    try {
+        const response = await fetch(`/message/${messageId}/translate`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: `lang=${targetLang}`
+        });
+        
+        if (!response.ok) {
+            throw new Error('Erreur de traduction');
+        }
+        
+        const data = await response.json();
+        
+        // Sauvegarder dans le cache
+        translations[messageId] = data;
+        
+        // Afficher la traduction
+        translationDiv.innerHTML = `
+            <div class="translation-header">
+                <i class="fas fa-globe"></i>
+                <span>Traduction (${data.targetLanguage})</span>
+                <button class="translation-close" onclick="closeTranslation(${messageId})" title="Fermer">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="translation-text">${escapeHtml(data.translation)}</div>
+        `;
+        
+    } catch (error) {
+        console.error('Erreur traduction:', error);
+        translationDiv.innerHTML = `
+            <div class="translation-header">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>Erreur de traduction</span>
+                <button class="translation-close" onclick="closeTranslation(${messageId})">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="translation-text">Impossible de traduire ce message. Veuillez réessayer.</div>
+        `;
+    }
+}
+
+function closeTranslation(messageId) {
+    const translationDiv = document.getElementById(`translation-${messageId}`);
+    translationDiv.style.display = 'none';
+}
+
+// Scroll to translation info
+function scrollToTranslateInfo() {
+    // Afficher un message d'aide
+    const helpMessage = document.createElement('div');
+    helpMessage.className = 'translate-help-message';
+    helpMessage.innerHTML = `
+        <div class="translate-help-content">
+            <div class="translate-help-header">
+                <span>🌍 Comment traduire un message?</span>
+                <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">×</button>
+            </div>
+            <div class="translate-help-body">
+                <p><strong>Méthode 1:</strong> Cliquez sur "🌍 Traduire" sous n'importe quel message</p>
+                <p><strong>Méthode 2:</strong> Utilisez les liens d'action sous les réactions</p>
+                <p>La traduction apparaîtra automatiquement sous le message original!</p>
+            </div>
+        </div>
+    `;
+    
+    // Ajouter le style si pas déjà présent
+    if (!document.getElementById('translate-help-style')) {
+        const style = document.createElement('style');
+        style.id = 'translate-help-style';
+        style.textContent = `
+            .translate-help-message {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                z-index: 10000;
+                animation: fadeIn 0.3s ease-out;
+            }
+            .translate-help-content {
+                background: white;
+                border-radius: 16px;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                min-width: 400px;
+                max-width: 500px;
+            }
+            .translate-help-header {
+                background: linear-gradient(135deg, #8b9dc3 0%, #a8b5d1 100%);
+                color: white;
+                padding: 20px;
+                border-radius: 16px 16px 0 0;
+                font-weight: 600;
+                font-size: 16px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .translate-help-body {
+                padding: 24px;
+                color: #1f2937;
+                line-height: 1.6;
+            }
+            .translate-help-body p {
+                margin: 0 0 12px 0;
+                font-size: 14px;
+            }
+            .translate-help-body strong {
+                color: #8b9dc3;
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+                to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    document.body.appendChild(helpMessage);
+    
+    // Fermer automatiquement après 5 secondes
+    setTimeout(() => {
+        if (helpMessage.parentElement) {
+            helpMessage.remove();
+        }
+    }, 5000);
+}
+
+function closeQuickTranslate() {
+    document.getElementById('quickTranslatePanel').style.display = 'none';
+}
+
+// Helper function pour échapper le HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 // Delete message functions
@@ -3716,82 +4268,6 @@ function removeFile() {
     // Hide preview
     preview.style.display = 'none';
 }
-
-// Emoji Picker
-const emojiCategories = {
-    smileys: ['😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', '😉', '😊', '😇', '🥰', '😍', '🤩', '😘', '😗', '😚', '😙', '🥲', '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔', '🤐', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥', '😌', '😔', '😪', '🤤', '😴', '😷', '🤒', '🤕', '🤢', '🤮', '🤧', '🥵', '🥶', '😎', '🤓', '🧐', '😕', '😟', '🙁', '☹️', '😮', '😯', '😲', '😳', '🥺', '😦', '😧', '😨', '😰', '😥', '😢', '😭', '😱', '😖', '😣', '😞', '😓', '😩', '😫', '🥱'],
-    gestures: ['👋', '🤚', '🖐️', '✋', '🖖', '👌', '🤌', '🤏', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆', '🖕', '👇', '☝️', '👍', '👎', '✊', '👊', '🤛', '🤜', '👏', '🙌', '👐', '🤲', '🤝', '🙏', '✍️', '💪', '🦾', '🦿', '🦵', '🦶', '👂', '🦻', '👃', '🧠', '🫀', '🫁', '🦷', '🦴', '👀', '👁️', '👅', '👄', '💋', '🩸'],
-    objects: ['🎯', '🎮', '🎲', '🎰', '🎳', '🎨', '🎭', '🎪', '🎬', '🎤', '🎧', '🎼', '🎹', '🥁', '🎷', '🎺', '🎸', '🪕', '🎻', '🎲', '♟️', '🎯', '🎱', '🔮', '🪄', '🧿', '🎮', '🕹️', '🎰', '🎲', '🧩', '🧸', '🪅', '🪆', '🖼️', '🧵', '🪡', '🧶', '🪢', '📚', '📖', '📝', '✏️', '✒️', '🖊️', '🖋️', '🖍️', '📌', '📍', '✂️', '🗂️', '📂', '📁', '📅', '📆', '🗓️', '📇', '📈', '📉', '📊', '📋', '📌', '📍', '📎', '🖇️', '📏', '📐', '✂️', '🗃️', '🗄️', '🗑️'],
-    symbols: ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❣️', '💕', '💞', '💓', '💗', '💖', '💘', '💝', '💟', '☮️', '✝️', '☪️', '🕉️', '☸️', '✡️', '🔯', '🕎', '☯️', '☦️', '🛐', '⛎', '♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓', '🆔', '⚛️', '🉑', '☢️', '☣️', '📴', '📳', '🈶', '🈚', '🈸', '🈺', '🈷️', '✴️', '🆚', '💮', '🉐', '㊙️', '㊗️', '🈴', '🈵', '🈹', '🈲', '🅰️', '🅱️', '🆎', '🆑', '🅾️', '🆘', '❌', '⭕', '🛑', '⛔', '📛', '🚫', '💯', '💢', '♨️', '🚷', '🚯', '🚳', '🚱', '🔞', '📵', '🚭', '❗', '❕', '❓', '❔', '‼️', '⁉️', '🔅', '🔆', '〽️', '⚠️', '🚸', '🔱', '⚜️', '🔰', '♻️', '✅', '🈯', '💹', '❇️', '✳️', '❎', '🌐', '💠', '🔠', '🔡', '🔢', '🔣', '🔤', '🅰️', '🆎', '🅱️', '🆑', '🆒', '🆓', 'ℹ️', '🆔', 'Ⓜ️', '🆕', '🆖', '🅾️', '🆗', '🅿️', '🆘', '🆙', '🆚', '🈁', '🈂️', '🈷️', '🈶', '🈯', '🉐', '🈹', '🈚', '🈲', '🉑', '🈸', '🈴', '🈳', '㊗️', '㊙️', '🈺', '🈵', '🔴', '🟠', '🟡', '🟢', '🔵', '🟣', '🟤', '⚫', '⚪', '🟥', '🟧', '🟨', '🟩', '🟦', '🟪', '🟫', '⬛', '⬜', '◼️', '◻️', '◾', '◽', '▪️', '▫️', '🔶', '🔷', '🔸', '🔹', '🔺', '🔻', '💠', '🔘', '🔳', '🔲', '✔️', '☑️', '🔘', '⚪', '⚫', '🔴', '🔵', '🟣']
-};
-
-let currentCategory = 'smileys';
-
-function toggleEmojiPicker() {
-    const picker = document.getElementById('emojiPicker');
-    picker.classList.toggle('active');
-    
-    if (picker.classList.contains('active')) {
-        loadEmojis(currentCategory);
-    }
-}
-
-function showEmojiCategory(category) {
-    currentCategory = category;
-    
-    // Update active button
-    document.querySelectorAll('.emoji-category-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    event.target.classList.add('active');
-    
-    // Load emojis
-    loadEmojis(category);
-}
-
-function loadEmojis(category) {
-    const grid = document.getElementById('emojiGrid');
-    const emojis = emojiCategories[category] || emojiCategories.smileys;
-    
-    grid.innerHTML = '';
-    emojis.forEach(emoji => {
-        const button = document.createElement('button');
-        button.className = 'emoji-item';
-        button.textContent = emoji;
-        button.type = 'button';
-        button.onclick = () => insertEmoji(emoji);
-        grid.appendChild(button);
-    });
-}
-
-function insertEmoji(emoji) {
-    const textarea = document.querySelector('.chat-input');
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const text = textarea.value;
-    
-    // Insert emoji at cursor position
-    textarea.value = text.substring(0, start) + emoji + text.substring(end);
-    
-    // Move cursor after emoji
-    textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
-    
-    // Focus textarea
-    textarea.focus();
-    
-    // Close picker
-    document.getElementById('emojiPicker').classList.remove('active');
-}
-
-// Close emoji picker when clicking outside
-document.addEventListener('click', function(e) {
-    const picker = document.getElementById('emojiPicker');
-    const emojiBtn = e.target.closest('.chat-input-btn');
-    
-    if (picker && !picker.contains(e.target) && (!emojiBtn || !emojiBtn.querySelector('.fa-smile'))) {
-        picker.classList.remove('active');
-    }
-});
 
 // Search functionality
 function toggleSearchBar() {
@@ -4043,14 +4519,13 @@ async function sendVoiceRecording() {
     formData.append('duration', duration);
     
     try {
-        // Get goal ID from URL - URL format is /goal/{id}/messages
-        const pathParts = window.location.pathname.split('/');
-        const goalId = pathParts[pathParts.indexOf('goal') + 1];
+        // Get goal ID from window variable
+        const goalId = window.GOAL_ID;
         console.log('Goal ID:', goalId);
         
         // Send to server
         console.log('Sending to server...');
-        const response = await fetch(`/goal/${goalId}/send-voice`, {
+        const response = await fetch(`/message/chatroom/${goalId}/send-voice`, {
             method: 'POST',
             body: formData
         });
@@ -4287,14 +4762,12 @@ async function fetchNewMessages() {
     isPolling = true;
     
     try {
-        // Extract goal ID correctly from URL like /goal/2/messages
-        const pathParts = window.location.pathname.split('/');
-        const goalIndex = pathParts.indexOf('goal');
-        const goalId = pathParts[goalIndex + 1];
+        // Get goal ID from window variable
+        const goalId = window.GOAL_ID;
         
         console.log('Fetching messages for goal:', goalId);
         
-        const response = await fetch(`/goal/${goalId}/messages/fetch?lastMessageId=${lastMessageId}`);
+        const response = await fetch(`/message/chatroom/${goalId}/fetch?lastMessageId=${lastMessageId}`);
         const data = await response.json();
         
         if (data.messages && data.messages.length > 0) {

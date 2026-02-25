@@ -95,11 +95,11 @@ class GoalRepository extends ServiceEntityRepository
     /**
      * @return Goal[] Returns an array of Goal objects
      */
-    public function findByUser($userId): array
+    public function findByUser(User $user): array
     {
         return $this->createQueryBuilder('g')
-            ->andWhere('g.user = :userId')
-            ->setParameter('userId', $userId)
+            ->andWhere('g.user = :user')
+            ->setParameter('user', $user)
             ->orderBy('g.createdAt', 'DESC')
             ->getQuery()
             ->getResult();

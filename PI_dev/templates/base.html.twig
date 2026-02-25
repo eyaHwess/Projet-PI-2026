@@ -8,6 +8,7 @@
 
         <title>{% block title %}Welcome!{% endblock %}</title>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
         {% block stylesheets %}{% endblock %}
         <style>
             .notification-badge {
@@ -106,7 +107,7 @@
                                         </div>
                                     </div>
                                     <div class="p-2 border-t border-gray-200 text-center">
-                                        <a href="{{ path('app_notifications_index') }}" class="text-sm text-blue-600 hover:text-blue-700">Voir toutes les notifications</a>
+                                        <a href="{{ path('notification_list') }}" class="text-sm text-blue-600 hover:text-blue-700">Voir toutes les notifications</a>
                                     </div>
                                 </div>
                             </div>
@@ -141,6 +142,9 @@
 
         {% block javascripts %}
         {% if app.user %}
+        {# Stocker l'ID utilisateur pour JavaScript #}
+        <div data-user-id="{{ app.user.id }}" style="display: none;"></div>
+        
         <script>
             console.log('🚀 Script chargé');
             
@@ -235,16 +239,16 @@
                 async function loadNotificationCount() {
                     try {
                         console.log('📊 Chargement du compteur...');
-                        const res = await fetch('{{ path('app_notifications_unread_count') }}');
+                        const res = await fetch('{{ path('notification_fetch') }}');
                         if (!res.ok) {
                             console.error('❌ Erreur HTTP:', res.status);
                             throw new Error('Erreur réseau');
                         }
                         const data = await res.json();
-                        console.log('✅ Compteur reçu:', data.count);
+                        console.log('✅ Compteur reçu:', data.unreadCount);
                         
-                        if (data.count > 0) {
-                            notificationCount.textContent = data.count > 99 ? '99+' : data.count;
+                        if (data.unreadCount > 0) {
+                            notificationCount.textContent = data.unreadCount > 99 ? '99+' : data.unreadCount;
                             notificationCount.classList.remove('hidden');
                         } else {
                             notificationCount.classList.add('hidden');
@@ -260,7 +264,7 @@
                         console.log('📥 Chargement des notifications...');
                         notificationList.innerHTML = '<div class="p-4 text-center text-gray-500 text-sm"><i class="bi bi-hourglass-split"></i> Chargement...</div>';
                         
-                        const res = await fetch('{{ path('app_notifications_unread') }}');
+                        const res = await fetch('{{ path('notification_fetch') }}');
                         if (!res.ok) {
                             console.error('❌ Erreur HTTP:', res.status);
                             throw new Error('Erreur réseau');
@@ -282,7 +286,7 @@
                             
                             try {
                                 if (notif.createdAt) {
-                                    const date = new Date(notif.createdAt.replace(' ', 'T'));
+                                    const date = new Date(notif.createdAt);
                                     timeAgo = getTimeAgo(date);
                                 }
                             } catch (e) {
@@ -291,8 +295,7 @@
                             
                             return `
                                 <div class="notification-item ${notif.isRead ? '' : 'unread'} cursor-pointer" 
-                                     data-id="${notif.id}" 
-                                     data-session-id="${notif.sessionId || ''}">
+                                     data-id="${notif.id}">
                                     <div class="flex gap-3">
                                         <div class="flex-shrink-0">
                                             <div class="w-10 h-10 rounded-full ${color} flex items-center justify-center">
@@ -303,7 +306,6 @@
                                             <p class="text-sm text-gray-800">${notif.message}</p>
                                             <p class="text-xs text-gray-500 mt-1">
                                                 <i class="bi bi-clock"></i> ${timeAgo}
-                                                ${notif.sessionId ? '<i class="bi bi-arrow-right ml-2"></i> Voir la session' : ''}
                                             </p>
                                         </div>
                                     </div>
@@ -311,14 +313,13 @@
                             `;
                         }).join('');
                         
-                        // Ajouter les événements de clic pour marquer comme lu et rediriger
+                        // Ajouter les événements de clic pour marquer comme lu
                         document.querySelectorAll('.notification-item').forEach(item => {
                             item.addEventListener('click', function(e) {
                                 e.preventDefault();
                                 const id = this.dataset.id;
-                                const sessionId = this.dataset.sessionId;
-                                console.log('🖱️ Clic sur notification:', id, 'Session:', sessionId);
-                                markAsReadAndRedirect(id, sessionId);
+                                console.log('🖱️ Clic sur notification:', id);
+                                markAsReadAndRedirect(id);
                             });
                         });
                     } catch (err) {
@@ -327,11 +328,11 @@
                     }
                 }
                 
-                // Marquer une notification comme lue et rediriger
-                async function markAsReadAndRedirect(id, sessionId) {
+                // Marquer une notification comme lue
+                async function markAsReadAndRedirect(id) {
                     try {
                         console.log('✔️ Marquage notification comme lue:', id);
-                        const res = await fetch(`/notifications/${id}/mark-read`, {
+                        const res = await fetch(`/notification/${id}/mark-read`, {
                             method: 'POST',
                             headers: {
                                 'X-Requested-With': 'XMLHttpRequest',
@@ -347,15 +348,9 @@
                         const result = await res.json();
                         console.log('✅ Notification marquée:', result);
                         
-                        // Rediriger vers la session si elle existe
-                        if (sessionId) {
-                            console.log('🔗 Redirection vers la session:', sessionId);
-                            window.location.href = `/sessions/${sessionId}`;
-                        } else {
-                            // Sinon, juste recharger les notifications
-                            loadNotificationCount();
-                            loadNotifications();
-                        }
+                        // Recharger les notifications
+                        loadNotificationCount();
+                        loadNotifications();
                     } catch (err) {
                         console.error('❌ Erreur lors du marquage:', err);
                     }
@@ -368,7 +363,7 @@
                         e.stopPropagation();
                         console.log('✔️ Marquage de toutes les notifications');
                         try {
-                            const res = await fetch('{{ path('app_notifications_mark_all_read') }}', {
+                            const res = await fetch('{{ path('notification_mark_all_read') }}', {
                                 method: 'POST',
                                 headers: {
                                     'X-Requested-With': 'XMLHttpRequest',
@@ -395,11 +390,11 @@
                 // Obtenir l'icône selon le type
                 function getNotificationIcon(type) {
                     switch(type) {
-                        case 'request_accepted': return 'bi-check-circle-fill';
-                        case 'request_declined': return 'bi-x-circle-fill';
-                        case 'request_pending': return 'bi-clock-history';
-                        case 'session_scheduled': return 'bi-calendar-check';
-                        case 'session_confirmed': return 'bi-check2-circle';
+                        case 'coaching_request': return 'bi-person-plus-fill';
+                        case 'coaching_accepted': return 'bi-check-circle-fill';
+                        case 'coaching_rejected': return 'bi-x-circle-fill';
+                        case 'new_message': return 'bi-chat-fill';
+                        case 'goal_invitation': return 'bi-bullseye';
                         default: return 'bi-bell-fill';
                     }
                 }
@@ -407,11 +402,11 @@
                 // Obtenir la couleur selon le type
                 function getNotificationColor(type) {
                     switch(type) {
-                        case 'request_accepted': return 'bg-green-500';
-                        case 'request_declined': return 'bg-red-500';
-                        case 'request_pending': return 'bg-yellow-500';
-                        case 'session_scheduled': return 'bg-blue-500';
-                        case 'session_confirmed': return 'bg-purple-500';
+                        case 'coaching_request': return 'bg-blue-500';
+                        case 'coaching_accepted': return 'bg-green-500';
+                        case 'coaching_rejected': return 'bg-red-500';
+                        case 'new_message': return 'bg-purple-500';
+                        case 'goal_invitation': return 'bg-yellow-500';
                         default: return 'bg-blue-500';
                     }
                 }

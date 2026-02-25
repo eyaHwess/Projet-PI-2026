@@ -139,7 +139,7 @@
                         <a class="nav-link" href="{{ path('app_home') }}">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active fw-bold text-orange" href="{{ path('app_goal_index') }}">Mes Objectifs</a>
+                        <a class="nav-link active fw-bold text-orange" href="{{ path('goal_list') }}">Mes Objectifs</a>
                     </li>
                     <li class="nav-item ms-3">
                         <button id="newGoalBtn" class="btn btn-orange">
@@ -277,7 +277,7 @@
                                 </div>
 
                                 <!-- View Details -->
-                                <a href="{{ path('app_goal_show', {id: goal.id}) }}" class="btn btn-outline-orange w-100 mt-3">
+                                <a href="{{ path('goal_show', {id: goal.id}) }}" class="btn btn-outline-orange w-100 mt-3">
                                     Voir les détails <i class="bi bi-arrow-right ms-2"></i>
                                 </a>
                             </div>
@@ -388,7 +388,7 @@
                     }
 
                     try {
-                        const formAction = form.action || form.getAttribute('action') || '{{ path('app_goal_new') }}';
+                        const formAction = form.action || form.getAttribute('action') || '{{ path('goal_new') }}';
                         const formMethod = form.method || form.getAttribute('method') || 'POST';
                         
                         console.log('Envoi vers:', formAction, 'Méthode:', formMethod);
@@ -499,7 +499,7 @@
             [newGoalBtn, newGoalBtnHero, newGoalBtnEmpty].forEach(btn => {
                 if (btn) {
                     btn.addEventListener('click', () => {
-                        openModal('Nouvel Objectif', '{{ path('app_goal_new') }}');
+                        openModal('Nouvel Objectif', '{{ path('goal_new') }}');
                     });
                 }
             });
@@ -542,7 +542,7 @@
             document.querySelectorAll('.edit-goal-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const goalId = btn.dataset.goalId;
-                    openModal('Modifier l\'Objectif', `{{ path('app_goal_edit', {id: '__ID__'}) }}`.replace('__ID__', goalId));
+                    openModal('Modifier l\'Objectif', `/goal/${goalId}/edit`);
                 });
             });
 
@@ -555,7 +555,7 @@
                     const token = '{{ csrf_token('delete') }}';
 
                     try {
-                        const response = await fetch(`{{ path('app_goal_delete', {id: '__ID__'}) }}`.replace('__ID__', goalId), {
+                        const response = await fetch(`/goal/${goalId}/delete`, {
                             method: 'POST',
                             headers: {
                                 'X-Requested-With': 'XMLHttpRequest',

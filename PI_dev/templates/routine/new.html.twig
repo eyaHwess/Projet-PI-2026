@@ -81,7 +81,7 @@
                         <a class="nav-link" href="{{ path('app_home') }}">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active fw-bold text-orange" href="{{ path('app_goal_index') }}">Mes Objectifs</a>
+                        <a class="nav-link active fw-bold text-orange" href="{{ path('goal_list') }}">Mes Objectifs</a>
                     </li>
                 </ul>
             </div>
@@ -90,7 +90,7 @@
 
     <div class="content-section">
         <div class="container py-5">
-            <a href="{{ path('app_goal_show', {id: goal.id}) }}" class="btn btn-link text-decoration-none mb-4 text-orange fw-semibold">
+            <a href="{{ path('goal_show', {id: goal.id}) }}" class="btn btn-link text-decoration-none mb-4 text-orange fw-semibold">
                 <i class="bi bi-arrow-left me-2"></i>Retour à l'objectif
             </a>
 
@@ -129,7 +129,7 @@
                         <button type="submit" class="btn btn-orange flex-grow-1">
                             <i class="bi bi-check-circle me-2"></i>Enregistrer
                         </button>
-                        <a href="{{ path('app_goal_show', {id: goal.id}) }}" class="btn btn-outline-secondary">
+                        <a href="{{ path('goal_show', {id: goal.id}) }}" class="btn btn-outline-secondary">
                             Annuler
                         </a>
                     </div>

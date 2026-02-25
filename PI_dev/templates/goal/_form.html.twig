@@ -4,8 +4,8 @@
 
 {{ form_start(form, {
     'action': (goal is defined and goal.id) 
-        ? path('app_goal_edit', {id: goal.id}) 
-        : path('app_goal_new'),
+        ? path('goal_edit', {id: goal.id}) 
+        : path('goal_new'),
     'method': 'POST',
     'attr': {'class': 'needs-validation', 'novalidate': ''}
 }) }}

@@ -1,0 +1,33 @@
+framework:
+    workflows:
+        chatroom:
+            type: 'state_machine'
+            audit_trail:
+                enabled: true
+            supports:
+                - App\Entity\Chatroom
+            marking_store:
+                type: 'method'
+                property: 'state'
+            places:
+                - active
+                - archived
+                - locked
+                - deleted
+            initial_marking: active
+            transitions:
+                archive:
+                    from: active
+                    to: archived
+                lock:
+                    from: active
+                    to: locked
+                unlock:
+                    from: locked
+                    to: active
+                restore:
+                    from: archived
+                    to: active
+                delete:
+                    from: [active, archived, locked]
+                    to: deleted

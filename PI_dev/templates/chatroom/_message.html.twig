@@ -1,0 +1,174 @@
+<div class="message-group">
+    <div class="message {% if app.user and message.author.id == app.user.id %}own{% endif %} {% if message.isPinned %}pinned{% endif %}" data-message-id="{{ message.id }}">
+        <div class="message-avatar">
+            {{ message.author.firstName|first }}{{ message.author.lastName|first }}
+        </div>
+        <div class="message-content">
+            {% if message.isPinned %}
+                <div class="pinned-badge">
+                    <i class="fas fa-thumbtack"></i> Message épinglé
+                </div>
+            {% endif %}
+            {% if app.user and message.author.id != app.user.id %}
+                <div class="message-author">{{ message.author.firstName }} {{ message.author.lastName }}</div>
+            {% endif %}
+            
+            {# Afficher la réponse citée #}
+            {% if message.isReply %}
+                <div class="reply-reference" onclick="scrollToMessage({{ message.replyTo.id }})">
+                    <div class="reply-reference-content">
+                        <div class="reply-reference-author">
+                            <i class="fas fa-reply"></i>
+                            {{ message.replyTo.author.firstName }} {{ message.replyTo.author.lastName }}
+                        </div>
+                        <div class="reply-reference-text">
+                            {% if message.replyTo.content %}
+                                {{ message.replyTo.content|length > 50 ? message.replyTo.content|slice(0, 50) ~ '...' : message.replyTo.content }}
+                            {% else %}
+                                <em>[Pièce jointe]</em>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            
+            {% if message.content %}
+                <div class="message-bubble">
+                    {{ message.content }}
+                </div>
+            {% endif %}
+
+            {% if message.attachmentType == 'image' %}
+                <img src="{{ message.attachmentPath }}" 
+                     alt="Image" 
+                     class="message-image"
+                     onclick="openImagePreview('{{ message.attachmentPath }}')">
+            {% endif %}
+
+            {# 📷 VichUploader : aperçu image #}
+            {% if message.imageName %}
+                <img src="{{ vich_uploader_asset(message, 'imageFile') }}" alt="{{ message.imageName }}" class="message-image" onclick="openImagePreview('{{ vich_uploader_asset(message, 'imageFile') }}')">
+            {% endif %}
+
+            {% if message.attachmentType == 'audio' %}
+                <div class="message-voice" data-audio-id="{{ message.id }}">
+                    <audio id="audio-{{ message.id }}" style="display: none;">
+                        <source src="{{ message.attachmentPath }}" type="audio/webm">
+                        <source src="{{ message.attachmentPath }}" type="audio/mpeg">
+                        <source src="{{ message.attachmentPath }}" type="audio/mp3">
+                    </audio>
+                    <button class="voice-play-btn" onclick="toggleAudioPlayback({{ message.id }})" data-playing="false">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <div class="voice-waveform">
+                        {% for i in 1..20 %}
+                            <div class="voice-bar" style="height: {{ random(8, 32) }}px;"></div>
+                        {% endfor %}
+                    </div>
+                    <span class="voice-duration" id="duration-{{ message.id }}">
+                        {% if message.formattedDuration %}
+                            {{ message.formattedDuration }}
+                        {% else %}
+                            0:00
+                        {% endif %}
+                    </span>
+                </div>
+            {% endif %}
+
+            {% if message.attachmentType in ['pdf', 'document', 'excel', 'text', 'file', 'video'] %}
+                <div class="message-file">
+                    <div class="file-icon">
+                        {% if message.attachmentType == 'pdf' %}
+                            <i class="fas fa-file-pdf"></i>
+                        {% elseif message.attachmentType == 'document' %}
+                            <i class="fas fa-file-word"></i>
+                        {% elseif message.attachmentType == 'excel' %}
+                            <i class="fas fa-file-excel"></i>
+                        {% elseif message.attachmentType == 'text' %}
+                            <i class="fas fa-file-alt"></i>
+                        {% elseif message.attachmentType == 'video' %}
+                            <i class="fas fa-file-video"></i>
+                        {% else %}
+                            <i class="fas fa-file"></i>
+                        {% endif %}
+                    </div>
+                    <div class="file-info">
+                        <div class="file-name">{{ message.attachmentOriginalName }}</div>
+                        <div class="file-meta">
+                            {% if message.attachmentType == 'pdf' %}
+                                Document PDF
+                            {% elseif message.attachmentType == 'document' %}
+                                Document Word
+                            {% elseif message.attachmentType == 'excel' %}
+                                Feuille Excel
+                            {% elseif message.attachmentType == 'video' %}
+                                Vidéo
+                            {% else %}
+                                Fichier
+                            {% endif %}
+                        </div>
+                    </div>
+                    <a href="{{ message.attachmentPath }}" download="{{ message.attachmentOriginalName }}" class="file-download" title="Télécharger">
+                        <i class="fas fa-download"></i>
+                    </a>
+                </div>
+            {% endif %}
+
+            {# 📄 VichUploader : document (nom, taille, type) avec lien de téléchargement #}
+            {% if message.fileName %}
+                <div class="message-file">
+                    <div class="file-icon">
+                        <i class="fas {{ message.fileIcon }}"></i>
+                    </div>
+                    <div class="file-info">
+                        <div class="file-name">{{ message.fileName }}</div>
+                        <div class="file-meta">{{ message.formattedGeneralFileSize }}{% if message.fileType %} · {{ message.fileType }}{% endif %}</div>
+                    </div>
+                    <a href="{{ vich_uploader_asset(message, 'file') }}" download="{{ message.fileName }}" class="file-download" title="Télécharger">
+                        <i class="fas fa-download"></i>
+                    </a>
+                </div>
+            {% endif %}
+
+            <div class="message-time">
+                {{ message.createdAt|date('H:i') }}
+                {% if message.isEdited %}
+                    <span class="edited-badge" title="Modifié le {{ message.editedAt|date('d/m/Y à H:i') }}">
+                        <i class="fas fa-pencil-alt"></i> Modifié
+                    </span>
+                {% endif %}
+                {% if app.user and message.author.id == app.user.id %}
+                    <i class="fas fa-check-double"></i>
+                {% endif %}
+            </div>
+
+            {# Réactions #}
+            <div class="message-reactions">
+                <button class="reaction {% if message.hasUserReacted(app.user, 'like') %}active{% endif %}" 
+                        data-message-id="{{ message.id }}" 
+                        data-reaction="like"
+                        onclick="reactToMessage({{ message.id }}, 'like')">
+                    👍 <span class="reaction-count">{{ message.getReactionCount('like') }}</span>
+                </button>
+                <button class="reaction {% if message.hasUserReacted(app.user, 'clap') %}active{% endif %}" 
+                        data-message-id="{{ message.id }}" 
+                        data-reaction="clap"
+                        onclick="reactToMessage({{ message.id }}, 'clap')">
+                    👏 <span class="reaction-count">{{ message.getReactionCount('clap') }}</span>
+                </button>
+                <button class="reaction {% if message.hasUserReacted(app.user, 'fire') %}active{% endif %}" 
+                        data-message-id="{{ message.id }}" 
+                        data-reaction="fire"
+                        onclick="reactToMessage({{ message.id }}, 'fire')">
+                    🔥 <span class="reaction-count">{{ message.getReactionCount('fire') }}</span>
+                </button>
+                <button class="reaction {% if message.hasUserReacted(app.user, 'heart') %}active{% endif %}" 
+                        data-message-id="{{ message.id }}" 
+                        data-reaction="heart"
+                        onclick="reactToMessage({{ message.id }}, 'heart')">
+                    ❤️ <span class="reaction-count">{{ message.getReactionCount('heart') }}</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

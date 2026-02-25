@@ -23,22 +23,24 @@ security:
                 target: /
 
     access_control:
-         - { path: ^/admin, roles: ROLE_ADMIN }
+        # Admin routes
+        - { path: ^/admin, roles: ROLE_ADMIN }
         
-         - { path: ^/chatroom, roles: ROLE_USER }
-
-        - { path: ^/$, roles: PUBLIC_ACCESS }
+        # Public routes (accessible sans connexion)
         - { path: ^/login, roles: PUBLIC_ACCESS }
-        - { path: ^/user/add, roles: PUBLIC_ACCESS }
         - { path: ^/register, roles: PUBLIC_ACCESS }
+        - { path: ^/demo, roles: PUBLIC_ACCESS }
+        - { path: ^/user/add, roles: PUBLIC_ACCESS }
+        
+        # Coach routes
+        - { path: ^/coach, roles: ROLE_COACH }
+        - { path: ^/sessions/manage, roles: ROLE_COACH }
+        
+        # User routes (nécessitent connexion)
+        - { path: ^/chatroom, roles: ROLE_USER }
         - { path: ^/goals, roles: ROLE_USER }
         - { path: ^/routines, roles: ROLE_USER }
-
-        - { path: ^/, roles: IS_AUTHENTICATED_FULLY }
-
-        - { path: ^/demo, roles: PUBLIC_ACCESS }
-        - { path: ^/coach, roles: ROLE_COACH }
         
-        - { path: ^/sessions/manage, roles: ROLE_COACH }
-        - { path: ^/, roles: ROLE_USER }
+        # Toutes les autres routes nécessitent une authentification
+        # - { path: ^/, roles: IS_AUTHENTICATED_FULLY }
 

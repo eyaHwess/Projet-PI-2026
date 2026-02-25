@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: MessageReadReceiptRepository::class)]
 #[ORM\Table(name: 'message_read_receipt')]
-#[ORM\UniqueConstraint(name: 'unique_read', columns: ['message_id', 'user_id'])]
+#[ORM\UniqueConstraint(name: 'unique_message_user_read', columns: ['message_id', 'user_id'])]
 class MessageReadReceipt
 {
     #[ORM\Id]
@@ -15,12 +15,12 @@ class MessageReadReceipt
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Message::class)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Message $message = null;
 
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?User $user = null;
 
     #[ORM\Column(type: 'datetime')]

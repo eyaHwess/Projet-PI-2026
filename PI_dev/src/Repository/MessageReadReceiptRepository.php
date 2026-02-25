@@ -2,15 +2,12 @@
 
 namespace App\Repository;
 
+use App\Entity\Message;
 use App\Entity\MessageReadReceipt;
 use App\Entity\User;
-use App\Entity\Message;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @extends ServiceEntityRepository<MessageReadReceipt>
- */
 class MessageReadReceiptRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -19,7 +16,7 @@ class MessageReadReceiptRepository extends ServiceEntityRepository
     }
 
     /**
-     * Check if a message has been read by a user
+     * Check if a user has read a message
      */
     public function hasUserReadMessage(Message $message, User $user): bool
     {
@@ -42,20 +39,57 @@ class MessageReadReceiptRepository extends ServiceEntityRepository
     }
 
     /**
+     * Get users who have read a message
+     */
+    public function getUsersWhoRead(Message $message): array
+    {
+        return $this->createQueryBuilder('r')
+            ->select('u')
+            ->join('r.user', 'u')
+            ->where('r.message = :message')
+            ->setParameter('message', $message)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Mark message as read for user
+     */
+    public function markAsRead(Message $message, User $user): void
+    {
+        if ($this->hasUserReadMessage($message, $user)) {
+            return;
+        }
+
+        $receipt = new MessageReadReceipt();
+        $receipt->setMessage($message);
+        $receipt->setUser($user);
+        $receipt->setReadAt(new \DateTime());
+
+        $this->getEntityManager()->persist($receipt);
+        $this->getEntityManager()->flush();
+    }
+    /**
      * Get unread message count for a user in a chatroom
      */
-    public function getUnreadCountForUserInChatroom(User $user, $chatroomId): int
+    public function getUnreadCountForUserInChatroom(User $user, $chatroom): int
     {
-        return $this->getEntityManager()->createQueryBuilder()
-            ->select('COUNT(DISTINCT m.id)')
-            ->from(Message::class, 'm')
-            ->leftJoin(MessageReadReceipt::class, 'r', 'WITH', 'r.message = m AND r.user = :user')
-            ->where('m.chatroom = :chatroom')
+        $chatroomId = is_object($chatroom) ? $chatroom->getId() : $chatroom;
+        
+        $qb = $this->getEntityManager()->createQueryBuilder();
+        
+        return $qb->select('COUNT(DISTINCT m.id)')
+            ->from('App\Entity\Message', 'm')
+            ->leftJoin('App\Entity\MessageReadReceipt', 'receipt', 'WITH', 'receipt.message = m AND receipt.user = :user')
+            ->where('m.chatroom = :chatroomId')
             ->andWhere('m.author != :user')
-            ->andWhere('r.id IS NULL')
+            ->andWhere('receipt.id IS NULL')
             ->setParameter('user', $user)
-            ->setParameter('chatroom', $chatroomId)
+            ->setParameter('chatroomId', $chatroomId)
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+
+
 }

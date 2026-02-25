@@ -1,0 +1,6 @@
+{
+    "server_url": "http:\/\/localhost:8000",
+    "api_base": "http:\/\/localhost:8000\/message",
+    "js_url": "http:\/\/localhost:8000\/js\/translation.js",
+    "port": 8000
+}

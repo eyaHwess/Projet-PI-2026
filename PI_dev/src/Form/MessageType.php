@@ -13,6 +13,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\File;
 use Vich\UploaderBundle\Form\Type\VichImageType;
+use Vich\UploaderBundle\Form\Type\VichFileType;
 
 class MessageType extends AbstractType
 {
@@ -33,6 +34,15 @@ class MessageType extends AbstractType
                 'image_uri' => false,
                 'attr' => [
                     'accept' => 'image/*'
+                ]
+            ])
+            ->add('file', VichFileType::class, [
+                'label' => 'File',
+                'required' => false,
+                'allow_delete' => false,
+                'download_uri' => false,
+                'attr' => [
+                    'accept' => '.pdf,.doc,.docx,.xls,.xlsx,.txt,.mp3,.mp4,.webm,.wav'
                 ]
             ])
             ->add('attachment', FileType::class, [

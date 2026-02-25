@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnostic Traduction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { background: #d4edda; border-color: #c3e6cb; }
+        .error { background: #f8d7da; border-color: #f5c6cb; }
+        .warning { background: #fff3cd; border-color: #ffeaa7; }
+        .info { background: #d1ecf1; border-color: #bee5eb; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .step {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Diagnostic Complet - Traduction</h1>
+        <p>Cette page diagnostique tous les problèmes possibles avec le système de traduction.</p>
+
+        <div class="test-section">
+            <h3>🚀 Diagnostic Automatique</h3>
+            <button onclick="runFullDiagnostic()">▶️ Lancer le Diagnostic Complet</button>
+            <div id="diagnosticResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>1. 🌐 Vérification du Serveur</h3>
+            <button onclick="checkServer()">Vérifier le Serveur</button>
+            <div id="serverResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. 📁 Vérification des Fichiers</h3>
+            <button onclick="checkFiles()">Vérifier les Fichiers</button>
+            <div id="filesResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. 🔧 Vérification des Routes</h3>
+            <button onclick="checkRoutes()">Vérifier les Routes</button>
+            <div id="routesResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. 📜 Vérification JavaScript</h3>
+            <button onclick="checkJavaScript()">Vérifier JavaScript</button>
+            <div id="jsResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>5. 🧪 Test de Traduction</h3>
+            <p>ID du message : <input type="number" id="testMessageId" value="1" style="padding: 5px; margin: 5px;"></p>
+            <button onclick="testTranslationAPI()">Tester l'API de Traduction</button>
+            <div id="translationTestResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section info">
+            <h3>📋 Instructions de Correction</h3>
+            <div id="instructions">
+                <div class="step">
+                    <strong>Étape 1 :</strong> Démarrer le serveur Symfony
+                    <code>symfony server:start</code> ou <code>php -S localhost:8000 -t public</code>
+                </div>
+                <div class="step">
+                    <strong>Étape 2 :</strong> Vérifier que vous êtes connecté
+                    <a href="/login" target="_blank">Se connecter</a>
+                </div>
+                <div class="step">
+                    <strong>Étape 3 :</strong> Créer un message de test
+                    <a href="/goals" target="_blank">Aller dans un chatroom</a> et envoyer "hello"
+                </div>
+                <div class="step">
+                    <strong>Étape 4 :</strong> Noter l'ID du message et le tester ici
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Diagnostic complet
+        async function runFullDiagnostic() {
+            const resultDiv = document.getElementById('diagnosticResult');
+            showResult(resultDiv, '🔍 Diagnostic en cours...', 'info');
+            
+            let report = '=== RAPPORT DE DIAGNOSTIC ===\n\n';
+            
+            // 1. Vérifier le serveur
+            report += '1. SERVEUR:\n';
+            try {
+                const response = await fetch('/');
+                report += `   ✅ Serveur accessible (Status: ${response.status})\n`;
+            } catch (e) {
+                report += `   ❌ Serveur inaccessible: ${e.message}\n`;
+            }
+            
+            // 2. Vérifier les fichiers JS
+            report += '\n2. FICHIERS JAVASCRIPT:\n';
+            try {
+                const response = await fetch('/js/translation.js');
+                if (response.ok) {
+                    report += `   ✅ translation.js accessible (${response.status})\n`;
+                } else {
+                    report += `   ❌ translation.js non accessible (${response.status})\n`;
+                }
+            } catch (e) {
+                report += `   ❌ Erreur fichier JS: ${e.message}\n`;
+            }
+            
+            // 3. Vérifier les fonctions
+            report += '\n3. FONCTIONS JAVASCRIPT:\n';
+            const functions = ['toggleTranslateMenu', 'translateMessageTo', 'translateMessage', 'closeTranslation'];
+            functions.forEach(func => {
+                const exists = typeof window[func] === 'function';
+                report += `   ${exists ? '✅' : '❌'} ${func}: ${exists ? 'DÉFINIE' : 'MANQUANTE'}\n`;
+            });
+            
+            // 4. Tester une route
+            report += '\n4. ROUTES:\n';
+            try {
+                const response = await fetch('/message/1/translate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: 'lang=fr'
+                });
+                
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    const data = await response.json();
+                    if (data.error) {
+                        report += `   ⚠️ Route accessible mais erreur: ${data.error}\n`;
+                    } else {
+                        report += `   ✅ Route fonctionnelle\n`;
+                    }
+                } else {
+                    report += `   ❌ Route retourne du HTML au lieu de JSON\n`;
+                }
+            } catch (e) {
+                report += `   ❌ Erreur route: ${e.message}\n`;
+            }
+            
+            // 5. Recommandations
+            report += '\n5. RECOMMANDATIONS:\n';
+            if (typeof window.translateMessage !== 'function') {
+                report += '   🔧 Charger le fichier translation.js\n';
+            }
+            report += '   🔧 Vérifier que le serveur Symfony est démarré\n';
+            report += '   🔧 Vérifier que vous êtes connecté\n';
+            report += '   🔧 Créer un message de test dans un chatroom\n';
+            
+            showResult(resultDiv, report, 'info');
+        }
+        
+        // Vérifier le serveur
+        async function checkServer() {
+            const resultDiv = document.getElementById('serverResult');
+            showResult(resultDiv, 'Vérification du serveur...', 'info');
+            
+            try {
+                const response = await fetch('/');
+                const status = response.status;
+                const statusText = response.statusText;
+                
+                if (status === 200) {
+                    showResult(resultDiv, `✅ Serveur accessible\nStatus: ${status} ${statusText}`, 'success');
+                } else {
+                    showResult(resultDiv, `⚠️ Serveur répond mais status inhabituel\nStatus: ${status} ${statusText}`, 'warning');
+                }
+            } catch (error) {
+                showResult(resultDiv, `❌ Serveur inaccessible\nErreur: ${error.message}\n\nSolutions:\n1. Démarrer le serveur: symfony server:start\n2. Ou: php -S localhost:8000 -t public`, 'error');
+            }
+        }
+        
+        // Vérifier les fichiers
+        async function checkFiles() {
+            const resultDiv = document.getElementById('filesResult');
+            showResult(resultDiv, 'Vérification des fichiers...', 'info');
+            
+            const files = [
+                '/js/translation.js',
+                '/test_traduction_direct.html',
+                '/diagnostic_traduction.html'
+            ];
+            
+            let report = 'VÉRIFICATION DES FICHIERS:\n\n';
+            
+            for (const file of files) {
+                try {
+                    const response = await fetch(file);
+                    if (response.ok) {
+                        const size = response.headers.get('content-length') || 'Inconnue';
+                        report += `✅ ${file} (${size} octets)\n`;
+                    } else {
+                        report += `❌ ${file} (Status: ${response.status})\n`;
+                    }
+                } catch (e) {
+                    report += `❌ ${file} (Erreur: ${e.message})\n`;
+                }
+            }
+            
+            showResult(resultDiv, report, 'info');
+        }
+        
+        // Vérifier les routes
+        async function checkRoutes() {
+            const resultDiv = document.getElementById('routesResult');
+            showResult(resultDiv, 'Vérification des routes...', 'info');
+            
+            const routes = [
+                { url: '/goals', method: 'GET', name: 'Liste des goals' },
+                { url: '/login', method: 'GET', name: 'Page de connexion' },
+                { url: '/message/1/translate', method: 'POST', name: 'API de traduction' }
+            ];
+            
+            let report = 'VÉRIFICATION DES ROUTES:\n\n';
+            
+            for (const route of routes) {
+                try {
+                    const options = route.method === 'POST' ? {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: 'lang=fr'
+                    } : {};
+                    
+                    const response = await fetch(route.url, options);
+                    report += `${response.ok ? '✅' : '⚠️'} ${route.name}: ${response.status} ${response.statusText}\n`;
+                } catch (e) {
+                    report += `❌ ${route.name}: ${e.message}\n`;
+                }
+            }
+            
+            showResult(resultDiv, report, 'info');
+        }
+        
+        // Vérifier JavaScript
+        function checkJavaScript() {
+            const resultDiv = document.getElementById('jsResult');
+            
+            const functions = ['toggleTranslateMenu', 'translateMessageTo', 'translateMessage', 'closeTranslation'];
+            let report = 'VÉRIFICATION JAVASCRIPT:\n\n';
+            
+            report += 'Fonctions de traduction:\n';
+            functions.forEach(func => {
+                const exists = typeof window[func] === 'function';
+                report += `${exists ? '✅' : '❌'} ${func}: ${exists ? 'DÉFINIE' : 'MANQUANTE'}\n`;
+            });
+            
+            report += '\nObjets globaux:\n';
+            report += `✅ fetch: ${typeof fetch}\n`;
+            report += `✅ console: ${typeof console}\n`;
+            report += `✅ document: ${typeof document}\n`;
+            
+            if (functions.every(func => typeof window[func] === 'function')) {
+                showResult(resultDiv, report, 'success');
+            } else {
+                report += '\n🔧 SOLUTION: Charger le fichier translation.js\n';
+                report += '<script src="/js/translation.js"></script>';
+                showResult(resultDiv, report, 'error');
+            }
+        }
+        
+        // Tester l'API de traduction
+        async function testTranslationAPI() {
+            const messageId = document.getElementById('testMessageId').value;
+            const resultDiv = document.getElementById('translationTestResult');
+            
+            showResult(resultDiv, 'Test de l\'API de traduction...', 'info');
+            
+            try {
+                const response = await fetch(`/message/${messageId}/translate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: 'lang=fr'
+                });
+                
+                let report = `TEST API TRADUCTION (Message ID: ${messageId}):\n\n`;
+                report += `Status: ${response.status} ${response.statusText}\n`;
+                report += `Content-Type: ${response.headers.get('content-type')}\n\n`;
+                
+                const contentType = response.headers.get('content-type');
+                
+                if (contentType && contentType.includes('application/json')) {
+                    const data = await response.json();
+                    report += 'Réponse JSON:\n';
+                    report += JSON.stringify(data, null, 2);
+                    
+                    if (data.translation) {
+                        showResult(resultDiv, report, 'success');
+                    } else if (data.error) {
+                        showResult(resultDiv, report, 'warning');
+                    } else {
+                        showResult(resultDiv, report, 'info');
+                    }
+                } else {
+                    const text = await response.text();
+                    report += 'Réponse HTML (problème!):\n';
+                    report += text.substring(0, 500) + '...';
+                    showResult(resultDiv, report, 'error');
+                }
+                
+            } catch (error) {
+                showResult(resultDiv, `❌ Erreur: ${error.message}`, 'error');
+            }
+        }
+        
+        // Afficher un résultat
+        function showResult(div, message, type) {
+            div.style.display = 'block';
+            div.innerHTML = message.replace(/\n/g, '<br>');
+            div.className = `result ${type}`;
+        }
+        
+        // Charger le fichier translation.js si disponible
+        const script = document.createElement('script');
+        script.src = '/js/translation.js';
+        script.onerror = () => console.log('❌ Impossible de charger translation.js');
+        script.onload = () => console.log('✅ translation.js chargé');
+        document.head.appendChild(script);
+    </script>
+</body>
+</html>

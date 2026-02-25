@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: MessageReactionRepository::class)]
 #[ORM\Table(name: 'message_reaction')]
-#[ORM\UniqueConstraint(name: 'unique_reaction', columns: ['message_id', 'user_id', 'reaction_type'])]
+#[ORM\UniqueConstraint(name: 'unique_user_message_reaction', columns: ['message_id', 'user_id', 'reaction_type'])]
 class MessageReaction
 {
     #[ORM\Id]
@@ -15,19 +15,24 @@ class MessageReaction
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'reactions')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Message::class, inversedBy: 'reactions')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Message $message = null;
 
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?User $user = null;
 
-    #[ORM\Column(length: 20)]
+    #[ORM\Column(length: 50)]
     private ?string $reactionType = null;
 
-    #[ORM\Column(type: 'datetime')]
-    private ?\DateTimeInterface $createdAt = null;
+    #[ORM\Column]
+    private ?\DateTimeImmutable $createdAt = null;
+
+    public function __construct()
+    {
+        $this->createdAt = new \DateTimeImmutable();
+    }
 
     public function getId(): ?int
     {
@@ -42,6 +47,7 @@ class MessageReaction
     public function setMessage(?Message $message): static
     {
         $this->message = $message;
+
         return $this;
     }
 
@@ -53,6 +59,7 @@ class MessageReaction
     public function setUser(?User $user): static
     {
         $this->user = $user;
+
         return $this;
     }
 
@@ -64,17 +71,19 @@ class MessageReaction
     public function setReactionType(string $reactionType): static
     {
         $this->reactionType = $reactionType;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeInterface
+    public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeInterface $createdAt): static
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 }

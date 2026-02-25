@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Traduction</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f7fa;
+        }
+        .test-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        .status {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .test-btn {
+            background: linear-gradient(135deg, #8b9dc3 0%, #a8b5d1 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px 10px 10px 0;
+            transition: all 0.2s;
+        }
+        .test-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 157, 195, 0.3);
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border-left: 4px solid #8b9dc3;
+        }
+        .result pre {
+            margin: 10px 0 0 0;
+            padding: 10px;
+            background: #1f2937;
+            color: #10b981;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+        .message-demo {
+            background: #eef2f8;
+            padding: 15px;
+            border-radius: 12px;
+            margin: 20px 0;
+            position: relative;
+        }
+        .translate-btn-demo {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(139, 157, 195, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .translate-btn-demo:hover {
+            background: rgba(139, 157, 195, 1);
+            transform: scale(1.1);
+        }
+        .translation-demo {
+            margin-top: 15px;
+            padding: 12px;
+            background: rgba(139, 157, 195, 0.1);
+            border-left: 3px solid #8b9dc3;
+            border-radius: 8px;
+            display: none;
+        }
+        .translation-demo.show {
+            display: block;
+            animation: slideDown 0.3s ease-out;
+        }
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-card">
+        <h1>🧪 Test de Traduction</h1>
+        <div id="status" class="status">Chargement...</div>
+        
+        <h2>1. Test de la Route API</h2>
+        <button class="test-btn" onclick="testRoute()">
+            <i class="fas fa-flask"></i> Tester la Route
+        </button>
+        <div id="routeResult" class="result" style="display: none;"></div>
+        
+        <h2>2. Test de Traduction</h2>
+        <button class="test-btn" onclick="testTranslation()">
+            <i class="fas fa-globe"></i> Traduire "Bonjour"
+        </button>
+        <div id="translationResult" class="result" style="display: none;"></div>
+        
+        <h2>3. Démo Visuelle</h2>
+        <div class="message-demo">
+            <button class="translate-btn-demo" onclick="showDemoTranslation()">
+                <i class="fas fa-globe"></i>
+            </button>
+            <strong>Marie:</strong> Bonjour tout le monde! Comment ça va?
+            <div id="demoTranslation" class="translation-demo">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 11px; color: #8b9dc3; font-weight: 600;">
+                    <i class="fas fa-globe"></i>
+                    <span>TRADUCTION (ENGLISH)</span>
+                </div>
+                <div style="color: #1f2937;">
+                    Hello everyone! How are you?
+                </div>
+            </div>
+        </div>
+        
+        <h2>4. Informations Système</h2>
+        <div class="result">
+            <strong>URL de base:</strong> <span id="baseUrl"></span><br>
+            <strong>Navigateur:</strong> <span id="browser"></span><br>
+            <strong>Timestamp:</strong> <span id="timestamp"></span>
+        </div>
+    </div>
+
+    <script>
+        // Afficher les infos système
+        document.getElementById('baseUrl').textContent = window.location.origin;
+        document.getElementById('browser').textContent = navigator.userAgent.split(' ').pop();
+        document.getElementById('timestamp').textContent = new Date().toLocaleString();
+        
+        // Vérifier que tout est chargé
+        window.addEventListener('load', () => {
+            document.getElementById('status').textContent = '✅ Page chargée';
+            document.getElementById('status').className = 'status success';
+        });
+        
+        // Test de la route
+        async function testRoute() {
+            const result = document.getElementById('routeResult');
+            result.style.display = 'block';
+            result.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Test en cours...';
+            
+            try {
+                const response = await fetch('/message/1/translate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: 'lang=en'
+                });
+                
+                const data = await response.json();
+                
+                result.innerHTML = `
+                    <strong>✅ Route fonctionne!</strong>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                result.innerHTML = `
+                    <strong>❌ Erreur:</strong> ${error.message}
+                    <pre>${error.stack}</pre>
+                `;
+            }
+        }
+        
+        // Test de traduction
+        async function testTranslation() {
+            const result = document.getElementById('translationResult');
+            result.style.display = 'block';
+            result.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Traduction en cours...';
+            
+            try {
+                const response = await fetch('https://libretranslate.de/translate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        q: 'Bonjour tout le monde',
+                        source: 'fr',
+                        target: 'en',
+                        format: 'text'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                result.innerHTML = `
+                    <strong>✅ Traduction réussie!</strong><br>
+                    <strong>Original:</strong> Bonjour tout le monde<br>
+                    <strong>Traduit:</strong> ${data.translatedText}
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                result.innerHTML = `
+                    <strong>❌ Erreur:</strong> ${error.message}
+                `;
+            }
+        }
+        
+        // Démo visuelle
+        function showDemoTranslation() {
+            const demo = document.getElementById('demoTranslation');
+            demo.classList.toggle('show');
+        }
+    </script>
+</body>
+</html>
