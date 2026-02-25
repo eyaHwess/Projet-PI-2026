@@ -1,0 +1,154 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Posts{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- Posts Custom CSS -->
+    <link rel="stylesheet" href="{{ asset('post/posts.css') }}">
+    
+    <style>
+        .avatar {
+            position: relative;
+            display: inline-block;
+        }
+        .avatar-md {
+            width: 48px;
+            height: 48px;
+        }
+        .avatar-sm {
+            width: 32px;
+            height: 32px;
+        }
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<script>
+    // Add posts-page class to body
+    document.body.classList.add('posts-page');
+</script>
+
+<div class="posts-container">
+    <!-- Filter, Sort, and Create Post Bar -->
+    <div class="filter-sort-bar mb-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <!-- Sort Dropdown -->
+                <div class="dropdown">
+                    <button class="btn btn-filter-sort dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-sort-down"></i>
+                        <span class="fw-semibold">Sort: </span>
+                        <span class="current-option">
+                            {% if currentSort == 'oldest' %}Oldest
+                            {% elseif currentSort == 'most_liked' %}Most Liked
+                            {% elseif currentSort == 'most_commented' %}Most Commented
+                            {% else %}Newest{% endif %}
+                        </span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-soft" aria-labelledby="sortDropdown">
+                        <li>
+                            <a class="dropdown-item {{ currentSort == 'newest' ? 'active' : '' }}" 
+                               href="{{ path('post_list_view', {'sort': 'newest', 'filter': currentFilter}) }}">
+                                <i class="bi bi-clock-history"></i> Newest
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item {{ currentSort == 'oldest' ? 'active' : '' }}" 
+                               href="{{ path('post_list_view', {'sort': 'oldest', 'filter': currentFilter}) }}">
+                                <i class="bi bi-clock"></i> Oldest
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item {{ currentSort == 'most_liked' ? 'active' : '' }}" 
+                               href="{{ path('post_list_view', {'sort': 'most_liked', 'filter': currentFilter}) }}">
+                                <i class="bi bi-heart-fill"></i> Most Liked
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item {{ currentSort == 'most_commented' ? 'active' : '' }}" 
+                               href="{{ path('post_list_view', {'sort': 'most_commented', 'filter': currentFilter}) }}">
+                                <i class="bi bi-chat-fill"></i> Most Commented
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Filter Dropdown -->
+                <div class="dropdown">
+                    <button class="btn btn-filter-sort dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-funnel"></i>
+                        <span class="fw-semibold">Filter: </span>
+                        <span class="current-option">
+                            {% if currentFilter == 'my_posts' %}My Posts
+                            {% else %}All Posts{% endif %}
+                        </span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-soft" aria-labelledby="filterDropdown">
+                        <li>
+                            <a class="dropdown-item {{ currentFilter == 'all' ? 'active' : '' }}" 
+                               href="{{ path('post_list_view', {'sort': currentSort, 'filter': 'all'}) }}">
+                                <i class="bi bi-grid-3x3-gap-fill"></i> All Posts
+                            </a>
+                        </li>
+                        {% if app.user %}
+                        <li>
+                            <a class="dropdown-item {{ currentFilter == 'my_posts' ? 'active' : '' }}" 
+                               href="{{ path('post_list_view', {'sort': currentSort, 'filter': 'my_posts'}) }}">
+                                <i class="bi bi-person-fill"></i> My Posts
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Create Post Button -->
+            <button class="btn btn-create-post" type="button" onclick="toggleCreatePost()">
+                <i class="bi bi-plus-circle"></i>
+                <span class="fw-semibold">Create Post</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Create Post Component -->
+    <div class="create-post-glass">
+        {% include 'post/create_post_card.html.twig' %}
+    </div>
+
+    
+    <!-- Posts List -->
+    <div class="vstack gap-4">
+        {% for item in postsWithLikeStatus %}
+            {% include 'post/post_card.html.twig' with {
+                'post': item.post, 
+                'isLikedByCurrentUser': item.isLikedByCurrentUser,
+                'currentUser': currentUser
+            } %}
+        {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-inbox display-1 text-muted"></i>
+                <p class="text-muted mt-3">No posts found</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Include Image Lightbox -->
+{% include 'post/image_lightbox.html.twig' %}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Email envoyé{% endblock %}
+
+{% block body %}
+<div class="min-h-[calc(100vh-3.5rem)] flex items-center justify-center bg-rose-50 px-4 py-8">
+    <div class="w-full max-w-md bg-white rounded-3xl shadow-xl p-8 text-center">
+        <div class="mx-auto mb-4 h-16 w-16 rounded-full bg-green-100 flex items-center justify-center text-3xl">
+            ✉️
+        </div>
+        <h1 class="text-2xl font-bold text-gray-800 mb-2">
+            Vérifie ta boîte mail
+        </h1>
+        <p class="text-gray-600 text-sm leading-relaxed mb-4">
+            Si un compte existe avec cette adresse email, tu as reçu un lien pour réinitialiser ton mot de passe.
+            <br>
+            <span class="font-medium text-gray-700">Le lien expire dans {{ resetToken.expirationMessageKey|trans(resetToken.expirationMessageData, 'ResetPasswordBundle') }}.</span>
+        </p>
+        <div class="rounded-xl bg-blue-50 border border-blue-100 p-4 text-left text-sm text-blue-800 mb-6">
+            <p class="font-medium mb-1"><i class="bi bi-info-circle mr-1"></i> Tu ne reçois rien ?</p>
+            <ul class="list-disc list-inside space-y-1 text-blue-700">
+                <li>Vérifie tes spams / courrier indésirable</li>
+                <li>Attends quelques minutes puis réessaie</li>
+            </ul>
+        </div>
+        <a
+            href="{{ path('app_forgot_password_request') }}"
+            class="inline-flex items-center gap-2 rounded-xl bg-blue-400 px-5 py-2.5 text-white font-semibold hover:bg-blue-500 transition"
+        >
+            <i class="bi bi-arrow-repeat"></i>
+            Renvoyer un lien
+        </a>
+        <p class="mt-6">
+            <a href="{{ path('app_login') }}" class="text-sm text-gray-500 hover:text-gray-700 hover:underline">
+                Retour à la connexion
+            </a>
+        </p>
+    </div>
+</div>
+{% endblock %}

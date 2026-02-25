@@ -1,0 +1,65 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Global Statistics{% endblock %}
+
+{% block content %}
+
+<div class="row g-4 pt-4">
+
+    <!-- Title -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <h1 class="h3 mb-0">Global Statistics</h1>
+        </div>
+    </div>
+
+    <!-- Top 4 Cards Row -->
+    <div class="row g-4 mb-4">
+        <!-- Total Users Card -->
+        <div class="col-md-3">
+            {% include 'admin/components/global_stats/total_users_card.html.twig' %}
+        </div>
+
+        <!-- Total Coaches Card -->
+        <div class="col-md-3">
+            {% include 'admin/components/global_stats/total_coaches_card.html.twig' %}
+        </div>
+
+        <!-- Total Routines Card -->
+        <div class="col-md-3">
+            {% include 'admin/components/global_stats/total_routines_card.html.twig' %}
+        </div>
+
+        <!-- Active Sessions Card -->
+        <div class="col-md-3">
+            {% include 'admin/components/global_stats/active_sessions_card.html.twig' %}
+        </div>
+    </div>
+
+    <!-- Content Statistics Row -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            {% include 'admin/components/global_stats/content_stats_card.html.twig' %}
+        </div>
+        <div class="col-md-6">
+            {% include 'admin/components/global_stats/churn_risk_card.html.twig' %}
+        </div>
+    </div>
+
+    <!-- Platform Growth Row -->
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            {% include 'admin/components/global_stats/platform_growth_card.html.twig' %}
+        </div>
+    </div>
+
+    <!-- User Forecast Row -->
+    <div class="row g-4">
+        <div class="col-12">
+            {% include 'admin/components/global_stats/user_forecast_card.html.twig' %}
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

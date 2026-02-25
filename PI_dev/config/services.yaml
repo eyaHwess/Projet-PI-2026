@@ -1,0 +1,40 @@
+parameters:
+    profile_photos_directory: '%kernel.project_dir%/public/uploads/profiles'
+    openai.api_key: '%env(OPENAI_API_KEY)%'
+    openai.use_mock: '%env(bool:OPENAI_USE_MOCK)%'
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+
+    App\Repository\:
+        resource: '../src/Repository'
+        autowire: true
+        autoconfigure: true
+
+    App\Service\FileUploader:
+        arguments:
+            $targetDirectory: '%profile_photos_directory%'
+
+    App\Service\AiAssistantService:
+        arguments:
+            $apiKey: '%openai.api_key%'
+            $useMockData: '%openai.use_mock%'
+
+    App\EventSubscriber\LocaleSubscriber:
+        arguments:
+            $defaultLocale: '%kernel.default_locale%'
+
+    # Expéditeur des emails (avec Gmail, mettre la même adresse que dans MAILER_DSN)
+    App\Service\EmailService:
+        arguments:
+            $fromEmail: '%env(MAILER_FROM_EMAIL)%'
+            $fromName: '%env(MAILER_FROM_NAME)%'

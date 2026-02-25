@@ -1,0 +1,154 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Coach Requests{% endblock %}
+
+{% block content %}
+
+<div class="row g-4 pt-4">
+
+    <!-- Title -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <h1 class="h3 mb-0">Coach Requests</h1>
+        </div>
+    </div>
+
+    <!-- Card -->
+    <div class="card bg-transparent">
+
+        <!-- Card body -->
+        <div class="card-body px-0">
+
+            <div class="table-responsive border-0">
+                <table class="table table-dark-gray align-middle p-4 mb-0 table-hover">
+
+                    <!-- Table head -->
+                    <thead>
+                        <tr>
+                            <th class="border-0 rounded-start">User who requested</th>
+                            <th class="border-0">Coach requested</th>
+                            <th class="border-0 rounded-end">Action</th>
+                        </tr>
+                    </thead>
+
+                    <!-- Table body -->
+                    <tbody>
+                        {% for request in coachRequests %}
+                        <tr>
+                            <!-- User who requested -->
+                            <td>
+                                <div class="d-flex align-items-center position-relative">
+                                    <div class="avatar avatar-md">
+                                        {% set userName = (request.user.firstName ~ ' ' ~ request.user.lastName)|trim ?: request.user.email %}
+                                        <div class="avatar-img rounded-circle bg-secondary bg-opacity-10 d-flex align-items-center justify-content-center">
+                                            <span class="fw-bold text-secondary small">{{ userName|slice(0, 2)|upper }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="mb-0 ms-2">
+                                        <h6 class="mb-0">
+                                            <a href="{{ path('admin_user_detail', {id: request.user.id}) }}">{{ userName }}</a>
+                                            <a href="{{ path('admin_coach_request_view', {id: request.id}) }}" class="btn btn-sm btn-outline-primary ms-2">Voir</a>
+                                        </h6>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Coach requested -->
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar avatar-md">
+                                        <div class="avatar-img rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center">
+                                            <span class="fw-bold text-primary small">{{ (request.coach.firstName ~ ' ' ~ request.coach.lastName)|trim|slice(0, 2)|upper }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="mb-0 ms-2">
+                                        <h6 class="mb-0">{{ (request.coach.firstName ~ ' ' ~ request.coach.lastName)|trim ?: request.coach.email }}</h6>
+                                        <span class="text-muted small">{{ request.coach.speciality ?? '-' }}</span>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Actions -->
+                            <td>
+                                {% if request.status == 'pending' %}
+                                    <button class="btn btn-lg px-4 py-2 me-2 mb-1 mb-md-0"
+                                            onclick="handleAction({{ request.id }}, 'accept')"
+                                            style="background-color: #d4f4e8; color: #10b981; border: none; border-radius: 8px; font-weight: 500;">
+                                        Accept
+                                    </button>
+                                    <button class="btn btn-lg px-4 py-2 mb-1 mb-md-0"
+                                            onclick="handleAction({{ request.id }}, 'reject')"
+                                            style="background-color: #e5e7eb; color: #9ca3af; border: none; border-radius: 8px; font-weight: 500;">
+                                        Reject
+                                    </button>
+                                {% elseif request.status == 'accepted' %}
+                                    <button class="btn btn-lg px-4 py-2 disabled"
+                                            style="background-color: #d4f4e8; color: #10b981; border: none; border-radius: 8px; font-weight: 500;">
+                                        Accepted
+                                    </button>
+                                {% elseif request.status == 'declined' %}
+                                    <button class="btn btn-lg px-4 py-2 disabled"
+                                            style="background-color: #e5e7eb; color: #9ca3af; border: none; border-radius: 8px; font-weight: 500;">
+                                        Declined
+                                    </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="3" class="text-center py-5">
+                                <p class="mb-0">No coach requests found.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="d-sm-flex justify-content-sm-between align-items-sm-center mt-4 mt-sm-3">
+                <!-- Content -->
+                <p class="mb-0 text-center text-sm-start">Showing {{ startItem }} to {{ endItem }} of {{ totalItems }} entries</p>
+                <!-- Pagination -->
+                <nav class="d-flex justify-content-center mb-0" aria-label="navigation">
+                    <ul class="pagination pagination-sm pagination-primary-soft d-inline-block d-md-flex rounded mb-0">
+                        <!-- Previous button -->
+                        <li class="page-item mb-0 {{ currentPage == 1 ? 'disabled' : '' }}">
+                            <a class="page-link" href="{{ currentPage > 1 ? path('admin_coach_requests', {page: currentPage - 1}) : '#' }}" tabindex="-1">
+                                <i class="fas fa-angle-left"></i>
+                            </a>
+                        </li>
+                        
+                        <!-- Page numbers -->
+                        {% for page in 1..totalPages %}
+                            <li class="page-item mb-0 {{ page == currentPage ? 'active' : '' }}">
+                                <a class="page-link" href="{{ path('admin_coach_requests', {page: page}) }}">{{ page }}</a>
+                            </li>
+                        {% endfor %}
+                        
+                        <!-- Next button -->
+                        <li class="page-item mb-0 {{ currentPage == totalPages ? 'disabled' : '' }}">
+                            <a class="page-link" href="{{ currentPage < totalPages ? path('admin_coach_requests', {page: currentPage + 1}) : '#' }}">
+                                <i class="fas fa-angle-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        function handleAction(requestId, action) {
+            alert(`This is a static demo. In production, this would ${action} request #${requestId}`);
+        }
+    </script>
+{% endblock %}

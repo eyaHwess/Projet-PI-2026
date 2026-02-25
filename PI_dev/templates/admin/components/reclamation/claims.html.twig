@@ -1,0 +1,121 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Claims{% endblock %}
+
+{% block content %}
+
+<div class="row g-4 pt-4">
+
+    <!-- Title -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <h1 class="h3 mb-0">Claims</h1>
+        </div>
+    </div>
+
+    <!-- Card -->
+    <div class="card bg-transparent">
+
+        <!-- Card body -->
+        <div class="card-body px-0">
+
+            <div class="table-responsive border-0">
+                <table class="table table-dark-gray align-middle p-4 mb-0 table-hover">
+
+                    <!-- Table head -->
+                    <thead>
+                        <tr>
+                            <th class="border-0 rounded-start">User who claimed</th>
+                            <th class="border-0">Date of claim</th>
+                            <th class="border-0 rounded-end">Action</th>
+                        </tr>
+                    </thead>
+
+                    <!-- Table body -->
+                    <tbody>
+                        {% for claim in claims %}
+                        <tr>
+                            <!-- User who claimed -->
+                            <td>
+                                <div class="d-flex align-items-center position-relative">
+                                    <!-- Avatar -->
+                                    <div class="avatar avatar-md">
+                                        <img src="{{ asset(claim.user.avatar) }}" class="rounded-circle" alt="avatar">
+                                    </div>
+
+                                    <div class="mb-0 ms-2">
+                                        <h6 class="mb-0">
+                                            <a href="#" class="stretched-link">{{ claim.user.name }}</a>
+                                        </h6>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Date of claim -->
+                            <td>{{ claim.createdAt|date('d M Y') }}</td>
+
+                            <!-- Actions -->
+                            <td>
+                                <a href="#" 
+                                   class="text-decoration-none fw-semibold"
+                                   style="color: #17a2b8; font-size: 1rem;"
+                                   data-bs-toggle="modal"
+                                   data-bs-target="#claimModal{{ claim.id }}">
+                                    View
+                                </a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="3" class="text-center py-5">
+                                <p class="mb-0">No claims found.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="d-sm-flex justify-content-sm-between align-items-sm-center mt-4 mt-sm-3">
+                <!-- Content -->
+                <p class="mb-0 text-center text-sm-start">Showing {{ startItem }} to {{ endItem }} of {{ totalItems }} entries</p>
+                <!-- Pagination -->
+                <nav class="d-flex justify-content-center mb-0" aria-label="navigation">
+                    <ul class="pagination pagination-sm pagination-primary-soft d-inline-block d-md-flex rounded mb-0">
+                        <!-- Previous button -->
+                        <li class="page-item mb-0 {{ currentPage == 1 ? 'disabled' : '' }}">
+                            <a class="page-link" href="{{ currentPage > 1 ? path('admin_claims', {page: currentPage - 1}) : '#' }}" tabindex="-1">
+                                <i class="fas fa-angle-left"></i>
+                            </a>
+                        </li>
+                        
+                        <!-- Page numbers -->
+                        {% for page in 1..totalPages %}
+                            <li class="page-item mb-0 {{ page == currentPage ? 'active' : '' }}">
+                                <a class="page-link" href="{{ path('admin_claims', {page: page}) }}">{{ page }}</a>
+                            </li>
+                        {% endfor %}
+                        
+                        <!-- Next button -->
+                        <li class="page-item mb-0 {{ currentPage == totalPages ? 'disabled' : '' }}">
+                            <a class="page-link" href="{{ currentPage < totalPages ? path('admin_claims', {page: currentPage + 1}) : '#' }}">
+                                <i class="fas fa-angle-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<!-- Modals outside the main content -->
+{% for claim in claims %}
+    {% include 'admin/components/reclamation/claim_modal.html.twig' with {'claim': claim} %}
+{% endfor %}
+
+{% endblock %}

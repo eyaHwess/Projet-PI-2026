@@ -1,0 +1,113 @@
+{# ================= NAVBAR CLEAN VERSION ================= #}
+
+<nav class="fixed top-0 left-0 w-full bg-white border-b border-gray-200 z-50">
+    <div class="max-w-7xl mx-auto px-8">
+        <div class="flex items-center justify-between py-4">
+
+            {# LOGO + NOM #}
+            <a href="{{ path('app_home') }}" class="flex items-center gap-3">
+               <img src="{{ asset('images/dayflow_logo.png') }}"
+     alt="Logo"
+     style="height:48px; width:auto;">
+
+                <span class="text-lg font-bold text-gray-900">
+                    DayFlow
+                </span>
+            </a>
+
+            {# MENU DESKTOP #}
+            <div class="hidden md:flex items-center gap-10 text-sm font-medium text-gray-700">
+
+                <a href="{{ path('app_home') }}" class="hover:text-purple-600 transition">Accueil</a>
+                <a href="{{ path('post_list_view') }}" class="hover:text-purple-600 transition">Posts</a>
+                <a href="#features" class="hover:text-purple-600 transition">Fonctionnalités</a>
+                <a href="#testimonials" class="hover:text-purple-600 transition">Motivation</a>
+
+                {% if app.user %}
+                    <a href="{{ path('user_dashboard') }}"
+                       class="ml-4 px-6 py-2.5 rounded-full text-white text-sm font-semibold
+                       bg-gradient-to-r from-purple-600 to-indigo-600
+                       hover:from-purple-700 hover:to-indigo-700
+                       transition-all duration-300 shadow-md hover:shadow-lg">
+                        Mon espace
+                    </a>
+                {% else %}
+                    <a href="{{ path('app_register') }}"
+                       class="ml-4 px-6 py-2.5 rounded-full text-white text-sm font-semibold
+                       bg-gradient-to-r from-purple-600 to-indigo-600
+                       hover:from-purple-700 hover:to-indigo-700
+                       transition-all duration-300 shadow-md hover:shadow-lg">
+                        Commencer
+                    </a>
+                {% endif %}
+
+            </div>
+
+            {# MOBILE BUTTON #}
+            <button id="openMenu" class="md:hidden text-gray-700">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     width="24" height="24"
+                     fill="none" stroke="currentColor"
+                     stroke-width="2">
+                    <path d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
+
+        </div>
+    </div>
+</nav>
+
+
+{# ================= MOBILE MENU ================= #}
+
+<div id="mobileMenu"
+     class="fixed top-0 right-0 w-full h-0 overflow-hidden bg-white transition-all duration-300 z-40">
+
+    <div class="flex items-center justify-between p-4 border-b">
+        <span class="font-semibold">Menu</span>
+        <button id="closeMenu">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 width="24" height="24"
+                 fill="none" stroke="currentColor"
+                 stroke-width="2">
+                <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+        </button>
+    </div>
+
+    <div class="flex flex-col gap-6 p-6 text-base font-medium">
+        <a href="{{ path('app_home') }}">Accueil</a>
+        <a href="{{ path('post_list_view') }}">Posts</a>
+        <a href="#features">Fonctionnalités</a>
+        <a href="#testimonials">Motivation</a>
+
+        {% if app.user %}
+            <a href="{{ path('user_dashboard') }}"
+               class="px-5 py-2 rounded-full text-white text-center bg-purple-600">
+                Mon espace
+            </a>
+        {% else %}
+            <a href="{{ path('app_register') }}"
+               class="px-5 py-2 rounded-full text-white text-center bg-purple-600">
+                Commencer
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+
+<script>
+const openMenu = document.getElementById('openMenu');
+const closeMenu = document.getElementById('closeMenu');
+const mobileMenu = document.getElementById('mobileMenu');
+
+openMenu.addEventListener('click', () => {
+    mobileMenu.classList.remove('h-0');
+    mobileMenu.classList.add('h-screen');
+});
+
+closeMenu.addEventListener('click', () => {
+    mobileMenu.classList.remove('h-screen');
+    mobileMenu.classList.add('h-0');
+});
+</script>

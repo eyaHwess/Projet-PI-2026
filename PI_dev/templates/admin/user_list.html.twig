@@ -1,0 +1,116 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Users{% endblock %}
+
+{% block content %}
+
+<div class="row g-4 pt-4">
+
+    <!-- Title -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <h1 class="h3 mb-0">Users</h1>
+        </div>
+    </div>
+
+    <!-- Card START -->
+    <div class="card bg-transparent">
+
+        <!-- Card header START -->
+        <div class="card-header bg-transparent border-bottom px-0">
+            <div class="row g-3 align-items-center justify-content-between">
+
+                <!-- Advanced search: by name & email -->
+                <div class="col-md-8">
+                    <form class="rounded position-relative"
+                          method="get"
+                          action="{{ path('admin_user_list') }}">
+                        <div class="row g-2">
+                            <div class="col-md-5">
+                                <input class="form-control bg-transparent"
+                                       type="search"
+                                       name="name"
+                                       placeholder="Rechercher par nom"
+                                       aria-label="Rechercher par nom"
+                                       value="{{ filter_name|default('') }}">
+                            </div>
+                            <div class="col-md-5">
+                                <input class="form-control bg-transparent"
+                                       type="search"
+                                       name="email"
+                                       placeholder="Rechercher par email"
+                                       aria-label="Rechercher par email"
+                                       value="{{ filter_email|default('') }}">
+                            </div>
+                            <div class="col-md-2 d-flex justify-content-end">
+                                <button class="btn btn-primary-soft w-100" type="submit">
+                                    <i class="fas fa-search me-1"></i> Filtrer
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Tabs -->
+                <div class="col-md-3">
+                    <ul class="list-inline mb-0 nav nav-pills nav-pill-dark-soft
+                               border-0 justify-content-end"
+                        role="tablist">
+
+                        <li class="nav-item">
+                            <a href="#grid-view"
+                               class="nav-link mb-0 me-2 active"
+                               data-bs-toggle="tab">
+                                <i class="fas fa-fw fa-th-large"></i>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="#list-view"
+                               class="nav-link mb-0"
+                               data-bs-toggle="tab">
+                                <i class="fas fa-fw fa-list-ul"></i>
+                            </a>
+                        </li>
+
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+        <!-- Card header END -->
+
+        <!-- Card body START -->
+        <div class="card-body px-0">
+
+            <div class="tab-content">
+
+                <!-- GRID VIEW -->
+                <div class="tab-pane fade show active" id="grid-view">
+                    <div class="row g-4">
+
+                        {% for user in users %}
+                            {% include 'admin/components/user_card/user_card.html.twig' with { user: user } %}
+                        {% endfor %}
+
+                    </div>
+                </div>
+
+                <!-- LIST VIEW (placeholder) -->
+                <div class="tab-pane fade" id="list-view">
+                    <div class="alert alert-info mt-4">
+                        List view coming soon
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+        <!-- Card body END -->
+
+    </div>
+    <!-- Card END -->
+
+</div>
+
+{% endblock %}

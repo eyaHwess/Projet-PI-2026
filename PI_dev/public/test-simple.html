@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Test Simple</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 50px;
+            background: #f0f0f0;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        #testBtn {
+            background: #3b82f6;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: inline-block;
+            user-select: none;
+        }
+        #testBtn:hover {
+            background: #2563eb;
+        }
+        #testBtn:active {
+            transform: scale(0.95);
+        }
+        .dropdown {
+            margin-top: 10px;
+            background: white;
+            border: 2px solid #3b82f6;
+            border-radius: 8px;
+            padding: 20px;
+            display: none;
+        }
+        .dropdown.show {
+            display: block;
+        }
+        .log {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .log-item {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Simple de Clic</h1>
+        <p>Cliquez sur le bouton ci-dessous. Si le dropdown apparaît, le système fonctionne.</p>
+        
+        <div id="testBtn">
+            🔔 Cliquez-moi
+        </div>
+        
+        <div id="dropdown" class="dropdown">
+            <h3>✅ Ça fonctionne!</h3>
+            <p>Le système de clic fonctionne correctement.</p>
+        </div>
+        
+        <div class="log" id="log">
+            <strong>📋 Logs:</strong>
+            <div id="logContent"></div>
+        </div>
+    </div>
+
+    <script>
+        const logContent = document.getElementById('logContent');
+        
+        function addLog(message) {
+            const div = document.createElement('div');
+            div.className = 'log-item';
+            div.textContent = new Date().toLocaleTimeString() + ' - ' + message;
+            logContent.appendChild(div);
+            logContent.scrollTop = logContent.scrollHeight;
+        }
+        
+        addLog('🚀 Script chargé');
+        
+        if (document.readyState === 'loading') {
+            addLog('⏳ En attente du DOM...');
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            addLog('✅ DOM déjà prêt');
+            init();
+        }
+        
+        function init() {
+            addLog('🔧 Initialisation...');
+            
+            const btn = document.getElementById('testBtn');
+            const dropdown = document.getElementById('dropdown');
+            
+            if (!btn) {
+                addLog('❌ Bouton non trouvé');
+                return;
+            }
+            
+            if (!dropdown) {
+                addLog('❌ Dropdown non trouvé');
+                return;
+            }
+            
+            addLog('✅ Éléments trouvés');
+            
+            let isOpen = false;
+            
+            btn.addEventListener('click', function(e) {
+                addLog('🖱️ Clic détecté sur le bouton');
+                e.preventDefault();
+                e.stopPropagation();
+                
+                isOpen = !isOpen;
+                
+                if (isOpen) {
+                    addLog('📂 Ouverture du dropdown');
+                    dropdown.classList.add('show');
+                    dropdown.style.display = 'block';
+                } else {
+                    addLog('📁 Fermeture du dropdown');
+                    dropdown.classList.remove('show');
+                    dropdown.style.display = 'none';
+                }
+            });
+            
+            addLog('✅ Event listener attaché');
+            
+            document.addEventListener('click', function(e) {
+                if (isOpen && !dropdown.contains(e.target) && !btn.contains(e.target)) {
+                    addLog('📁 Fermeture (clic extérieur)');
+                    isOpen = false;
+                    dropdown.classList.remove('show');
+                    dropdown.style.display = 'none';
+                }
+            });
+            
+            addLog('✅ Initialisation terminée');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,225 @@
+{% extends 'base_modern.html.twig' %}
+
+{% block title %}Mes Favoris{% endblock %}
+
+{% block navbar_actions %}
+    <a href="{{ path('app_goal_index') }}" class="btn-modern btn-modern-secondary">
+        <i class="bi bi-bullseye"></i> Mes Objectifs
+    </a>
+{% endblock %}
+
+{% block body %}
+    <!-- Page Header -->
+    <div class="page-header-modern">
+        <h1 class="page-header-modern-title">
+            <i class="bi bi-heart-fill" style="color: var(--danger);"></i>
+            Mes Favoris
+        </h1>
+        <p class="page-header-modern-subtitle">
+            Retrouvez tous vos objectifs, routines et activités favoris en un seul endroit
+        </p>
+        
+        <div class="page-header-modern-actions">
+            <a href="{{ path('app_goal_index') }}" class="btn-modern btn-modern-secondary">
+                <i class="bi bi-bullseye"></i> Objectifs
+            </a>
+            <a href="{{ path('app_calendar') }}" class="btn-modern btn-modern-secondary">
+                <i class="bi bi-calendar3"></i> Calendrier
+            </a>
+            <a href="{{ path('app_consistency_heatmap') }}" class="btn-modern btn-modern-secondary">
+                <i class="bi bi-graph-up"></i> Consistency
+            </a>
+            <a href="{{ path('app_time_investment_analytics') }}" class="btn-modern btn-modern-secondary">
+                <i class="bi bi-clock-history"></i> Time Analytics
+            </a>
+        </div>
+    </div>
+
+    {% if favoriteGoals|length == 0 and favoriteRoutines|length == 0 and favoriteActivities|length == 0 %}
+        <!-- Empty State -->
+        <div class="card-modern text-center" style="padding: var(--space-2xl);">
+            <div class="avatar-modern avatar-modern-lg" style="width: 120px; height: 120px; margin: 0 auto var(--space-xl); font-size: 3rem; background: #FFEBEE; color: var(--danger);">
+                <i class="bi bi-heart"></i>
+            </div>
+            <h2 style="font-size: var(--font-size-3xl); margin-bottom: var(--space-md);">Aucun favori</h2>
+            <p style="font-size: var(--font-size-lg); color: var(--gray-600); margin-bottom: var(--space-xl);">
+                Ajoutez des objectifs, routines ou activités à vos favoris en cliquant sur le cœur
+            </p>
+            <a href="{{ path('app_goal_index') }}" class="btn-modern btn-modern-primary btn-modern-lg">
+                <i class="bi bi-bullseye"></i> Voir mes objectifs
+            </a>
+        </div>
+    {% else %}
+        <!-- Favorite Goals -->
+        {% if favoriteGoals|length > 0 %}
+            <div class="mb-xl">
+                <div class="d-flex align-items-center gap-md mb-lg">
+                    <div class="avatar-modern" style="background: var(--primary-lightest); color: var(--primary-color);">
+                        <i class="bi bi-bullseye"></i>
+                    </div>
+                    <h2 style="font-size: var(--font-size-2xl); font-weight: 700; margin: 0;">
+                        Objectifs favoris
+                        <span style="color: var(--gray-500); font-size: var(--font-size-lg); font-weight: 500;">({{ favoriteGoals|length }})</span>
+                    </h2>
+                </div>
+                
+                <div class="grid-modern grid-modern-3">
+                    {% for goal in favoriteGoals %}
+                        <div class="card-modern" style="cursor: pointer;" onclick="window.location.href='{{ path('app_goal_show', {id: goal.id}) }}'">
+                            <!-- Goal Icon & Favorite -->
+                            <div class="d-flex align-items-center justify-content-between mb-md">
+                                <div class="avatar-modern" style="background: var(--primary-lightest); color: var(--primary-color);">
+                                    <i class="bi bi-bullseye"></i>
+                                </div>
+                                <i class="bi bi-heart-fill" style="font-size: 1.25rem; color: var(--danger);"></i>
+                            </div>
+                            
+                            <!-- Goal Title -->
+                            <h3 style="font-size: var(--font-size-lg); font-weight: 700; margin-bottom: var(--space-xs); color: var(--gray-900);">
+                                {{ goal.title }}
+                            </h3>
+                            
+                            <!-- Goal Description -->
+                            {% if goal.description %}
+                                <p style="color: var(--gray-600); font-size: var(--font-size-sm); margin-bottom: var(--space-md); line-height: 1.5;">
+                                    {{ goal.description|slice(0, 80) }}{% if goal.description|length > 80 %}...{% endif %}
+                                </p>
+                            {% endif %}
+                            
+                            <!-- Progress -->
+                            <div class="mb-md">
+                                <div class="d-flex justify-content-between align-items-center mb-sm">
+                                    <span style="font-size: var(--font-size-xs); color: var(--gray-600); font-weight: 600;">Progression</span>
+                                    <span style="font-size: var(--font-size-base); font-weight: 700; color: var(--primary-color);">{{ goal.progressPercentage }}%</span>
+                                </div>
+                                <div class="progress-modern">
+                                    <div class="progress-modern-bar" style="width: {{ goal.progressPercentage }}%;"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Meta Info -->
+                            <div style="font-size: var(--font-size-xs); color: var(--gray-600);">
+                                <div class="d-flex align-items-center gap-sm">
+                                    <i class="bi bi-list-ul" style="color: var(--gray-500);"></i>
+                                    <span>{{ goal.routines|length }} Routine(s)</span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Favorite Routines -->
+        {% if favoriteRoutines|length > 0 %}
+            <div class="mb-xl">
+                <div class="d-flex align-items-center gap-md mb-lg">
+                    <div class="avatar-modern" style="background: #E0F2F1; color: var(--accent-teal);">
+                        <i class="bi bi-repeat"></i>
+                    </div>
+                    <h2 style="font-size: var(--font-size-2xl); font-weight: 700; margin: 0;">
+                        Routines favorites
+                        <span style="color: var(--gray-500); font-size: var(--font-size-lg); font-weight: 500;">({{ favoriteRoutines|length }})</span>
+                    </h2>
+                </div>
+                
+                <div class="grid-modern grid-modern-3">
+                    {% for routine in favoriteRoutines %}
+                        <div class="card-modern" style="cursor: pointer;" onclick="window.location.href='{{ path('app_routine_show', {goalId: routine.goal.id, id: routine.id}) }}'">
+                            <!-- Routine Icon & Favorite -->
+                            <div class="d-flex align-items-center justify-content-between mb-md">
+                                <div class="avatar-modern" style="background: #E0F2F1; color: var(--accent-teal);">
+                                    <i class="bi bi-repeat"></i>
+                                </div>
+                                <i class="bi bi-heart-fill" style="font-size: 1.25rem; color: var(--danger);"></i>
+                            </div>
+                            
+                            <!-- Routine Title -->
+                            <h3 style="font-size: var(--font-size-lg); font-weight: 700; margin-bottom: var(--space-xs); color: var(--gray-900);">
+                                {{ routine.title }}
+                            </h3>
+                            
+                            <!-- Routine Description -->
+                            {% if routine.description %}
+                                <p style="color: var(--gray-600); font-size: var(--font-size-sm); margin-bottom: var(--space-md); line-height: 1.5;">
+                                    {{ routine.description|slice(0, 80) }}{% if routine.description|length > 80 %}...{% endif %}
+                                </p>
+                            {% endif %}
+                            
+                            <!-- Meta Info -->
+                            <div style="font-size: var(--font-size-xs); color: var(--gray-600);">
+                                <div class="d-flex align-items-center gap-sm mb-xs">
+                                    <i class="bi bi-check-circle" style="color: var(--gray-500);"></i>
+                                    <span>{{ routine.activities|length }} Activité(s)</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-sm">
+                                    <i class="bi bi-bullseye" style="color: var(--gray-500);"></i>
+                                    <span>{{ routine.goal.title }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Favorite Activities -->
+        {% if favoriteActivities|length > 0 %}
+            <div class="mb-xl">
+                <div class="d-flex align-items-center gap-md mb-lg">
+                    <div class="avatar-modern" style="background: #FFF3E0; color: var(--accent-orange);">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                    <h2 style="font-size: var(--font-size-2xl); font-weight: 700; margin: 0;">
+                        Activités favorites
+                        <span style="color: var(--gray-500); font-size: var(--font-size-lg); font-weight: 500;">({{ favoriteActivities|length }})</span>
+                    </h2>
+                </div>
+                
+                <div class="grid-modern grid-modern-3">
+                    {% for activity in favoriteActivities %}
+                        <div class="card-modern">
+                            <!-- Activity Icon & Favorite -->
+                            <div class="d-flex align-items-center justify-content-between mb-md">
+                                <div class="avatar-modern" style="background: #FFF3E0; color: var(--accent-orange);">
+                                    <i class="bi bi-check-circle"></i>
+                                </div>
+                                <i class="bi bi-heart-fill" style="font-size: 1.25rem; color: var(--danger);"></i>
+                            </div>
+                            
+                            <!-- Activity Title -->
+                            <h3 style="font-size: var(--font-size-lg); font-weight: 700; margin-bottom: var(--space-md); color: var(--gray-900);">
+                                {{ activity.title }}
+                            </h3>
+                            
+                            <!-- Status Badge -->
+                            <div class="mb-md">
+                                <span class="badge-modern badge-modern-{{ activity.status == 'completed' ? 'success' : (activity.status == 'in_progress' ? 'warning' : 'info') }}" style="font-size: 0.7rem;">
+                                    {{ activity.status|upper }}
+                                </span>
+                            </div>
+                            
+                            <!-- Meta Info -->
+                            <div style="font-size: var(--font-size-xs); color: var(--gray-600);">
+                                <div class="d-flex align-items-center gap-sm mb-xs">
+                                    <i class="bi bi-clock" style="color: var(--gray-500);"></i>
+                                    <span>{{ activity.startTime|date('d/m/Y H:i') }}</span>
+                                </div>
+                                {% if activity.duration %}
+                                    <div class="d-flex align-items-center gap-sm mb-xs">
+                                        <i class="bi bi-hourglass-split" style="color: var(--gray-500);"></i>
+                                        <span>Durée: {{ activity.duration|date('H:i') }}</span>
+                                    </div>
+                                {% endif %}
+                                <div class="d-flex align-items-center gap-sm">
+                                    <i class="bi bi-repeat" style="color: var(--gray-500);"></i>
+                                    <span>{{ activity.routine.title }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    {% endif %}
+{% endblock %}

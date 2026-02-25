@@ -1,0 +1,1266 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Trouver un Coach{% endblock %}
+
+{% block stylesheets %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/styles/coach-search-enhanced.css">
+    <style>
+        :root {
+            --orange-primary: #f97316;
+            --orange-hover: #ea580c;
+            --orange-light: #fff5f0;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f8f9fa;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+
+        .animate-fade-in {
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        /* Header Section */
+        .hero-section {
+            background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+            padding: 2rem 0 3rem;
+        }
+
+        .hero-badge {
+            background: var(--orange-light);
+            color: var(--orange-primary);
+            border: 1px solid rgba(249, 115, 22, 0.3);
+            padding: 0.5rem 1.25rem;
+            border-radius: 50px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Search Bar */
+        .search-container {
+            position: relative;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 1rem 3.5rem 1rem 3rem;
+            border: 2px solid #e9ecef;
+            border-radius: 50px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--orange-primary);
+            box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            font-size: 1.25rem;
+        }
+
+        .search-clear {
+            position: absolute;
+            right: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #6c757d;
+            cursor: pointer;
+            padding: 0.25rem;
+            display: none;
+        }
+
+        .search-clear:hover {
+            color: var(--orange-primary);
+        }
+
+        /* Filters */
+        .filters-section {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-top: 2rem;
+        }
+
+        .filter-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .filter-label {
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-select, .filter-input {
+            border: 2px solid #e9ecef;
+            border-radius: 0.5rem;
+            padding: 0.625rem 1rem;
+            transition: all 0.2s;
+        }
+
+        .filter-select:focus, .filter-input:focus {
+            border-color: var(--orange-primary);
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+        }
+
+        /* Sort Options */
+        .sort-container {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .sort-btn {
+            padding: 0.5rem 1rem;
+            border: 2px solid #e9ecef;
+            border-radius: 50px;
+            background: white;
+            color: #495057;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .sort-btn:hover {
+            border-color: var(--orange-primary);
+            color: var(--orange-primary);
+            background: var(--orange-light);
+        }
+
+        .sort-btn.active {
+            background: var(--orange-primary);
+            border-color: var(--orange-primary);
+            color: white;
+        }
+
+        /* Coach Cards */
+        .coaches-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .coach-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .coach-card:hover {
+            border-color: var(--orange-primary);
+            box-shadow: 0 8px 24px rgba(249, 115, 22, 0.15);
+            transform: translateY(-4px);
+        }
+
+        .coach-photo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--orange-light);
+        }
+
+        .coach-photo-placeholder {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--orange-light), #ffe4d6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: var(--orange-primary);
+        }
+
+        .coach-rating {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            color: #fbbf24;
+            font-weight: 600;
+        }
+
+        .coach-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-top {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: white;
+        }
+
+        .badge-new {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-fast {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .price-tag {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--orange-primary);
+        }
+
+        .btn-quick-request {
+            width: 100%;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, var(--orange-primary), var(--orange-hover));
+            border: none;
+            border-radius: 0.5rem;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-quick-request:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
+            color: white;
+        }
+
+        /* Modal Styles */
+        .modal-content {
+            border-radius: 1rem;
+            border: none;
+        }
+
+        .modal-header {
+            border-bottom: 2px solid #f8f9fa;
+            padding: 1.5rem;
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control, .form-select {
+            border: 2px solid #e9ecef;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            transition: all 0.2s;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--orange-primary);
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+        }
+
+        .char-counter {
+            font-size: 0.875rem;
+            color: #6c757d;
+            text-align: right;
+            margin-top: 0.25rem;
+        }
+
+        .char-counter.warning {
+            color: #f59e0b;
+        }
+
+        .char-counter.danger {
+            color: #dc2626;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, var(--orange-primary), var(--orange-hover));
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            color: white;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.3s;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
+            color: white;
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Loading States */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 0.5rem;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--orange-primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            color: #d1d5db;
+            margin-bottom: 1rem;
+        }
+
+        /* Success Animation */
+        .success-checkmark {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto;
+        }
+
+        .success-checkmark .check-icon {
+            width: 80px;
+            height: 80px;
+            position: relative;
+            border-radius: 50%;
+            box-sizing: content-box;
+            border: 4px solid #4ade80;
+        }
+
+        .success-checkmark .check-icon::before {
+            top: 3px;
+            left: -2px;
+            width: 30px;
+            transform-origin: 100% 50%;
+            border-radius: 100px 0 0 100px;
+        }
+
+        .success-checkmark .check-icon::after {
+            top: 0;
+            left: 30px;
+            width: 60px;
+            transform-origin: 0 50%;
+            border-radius: 0 100px 100px 0;
+            animation: rotate-circle 4.25s ease-in;
+        }
+
+        .success-checkmark .icon-line {
+            height: 5px;
+            background-color: #4ade80;
+            display: block;
+            border-radius: 2px;
+            position: absolute;
+            z-index: 10;
+        }
+
+        .success-checkmark .icon-line.line-tip {
+            top: 46px;
+            left: 14px;
+            width: 25px;
+            transform: rotate(45deg);
+            animation: icon-line-tip 0.75s;
+        }
+
+        .success-checkmark .icon-line.line-long {
+            top: 38px;
+            right: 8px;
+            width: 47px;
+            transform: rotate(-45deg);
+            animation: icon-line-long 0.75s;
+        }
+
+        @keyframes icon-line-tip {
+            0% { width: 0; left: 1px; top: 19px; }
+            54% { width: 0; left: 1px; top: 19px; }
+            70% { width: 50px; left: -8px; top: 37px; }
+            84% { width: 17px; left: 21px; top: 48px; }
+            100% { width: 25px; left: 14px; top: 45px; }
+        }
+
+        @keyframes icon-line-long {
+            0% { width: 0; right: 46px; top: 54px; }
+            65% { width: 0; right: 46px; top: 54px; }
+            84% { width: 55px; right: 0px; top: 35px; }
+            100% { width: 47px; right: 8px; top: 38px; }
+        }
+
+        @media (max-width: 768px) {
+            .coaches-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="text-center mb-4">
+                <span class="hero-badge">
+                    <i class="bi bi-person-badge-fill"></i>
+                    Coaching fitness & bien-être
+                </span>
+                <h1 class="display-4 fw-bold mt-3 mb-3">Trouvez votre coach idéal</h1>
+                <p class="lead text-muted mb-4">
+                    Connectez-vous avec un coach professionnel pour atteindre vos objectifs
+                </p>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="search-container">
+                <i class="bi bi-search search-icon"></i>
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    class="search-input" 
+                    placeholder="Rechercher par nom, spécialité ou mot-clé..."
+                    autocomplete="off"
+                >
+                <button class="search-clear" id="searchClear">
+                    <i class="bi bi-x-circle-fill"></i>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <section class="py-4">
+        <div class="container">
+            <div class="row">
+                <!-- Filters Sidebar -->
+                <div class="col-lg-3 mb-4">
+                    <div class="filters-section sticky-top" style="top: 20px;">
+                        <h5 class="mb-3 fw-bold">
+                            <i class="bi bi-funnel-fill me-2" style="color: var(--orange-primary);"></i>
+                            Filtres
+                        </h5>
+
+                        <!-- Speciality Filter -->
+                        <div class="filter-group">
+                            <label class="filter-label">
+                                <i class="bi bi-star"></i>
+                                Spécialité
+                            </label>
+                            <select class="form-select filter-select" id="filterSpeciality">
+                                <option value="">Toutes les spécialités</option>
+                            </select>
+                        </div>
+
+                        <!-- Price Range -->
+                        <div class="filter-group">
+                            <label class="filter-label">
+                                <i class="bi bi-currency-euro"></i>
+                                Prix par séance
+                            </label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <input type="number" class="form-control filter-input" id="filterMinPrice" placeholder="Min" min="0">
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" class="form-control filter-input" id="filterMaxPrice" placeholder="Max" min="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Rating Filter -->
+                        <div class="filter-group">
+                            <label class="filter-label">
+                                <i class="bi bi-star-fill" style="color: #fbbf24;"></i>
+                                Note minimum
+                            </label>
+                            <select class="form-select filter-select" id="filterRating">
+                                <option value="">Toutes les notes</option>
+                                <option value="4.5">4.5+ ⭐</option>
+                                <option value="4">4+ ⭐</option>
+                                <option value="3.5">3.5+ ⭐</option>
+                                <option value="3">3+ ⭐</option>
+                            </select>
+                        </div>
+
+                        <!-- Availability Filter -->
+                        <div class="filter-group">
+                            <label class="filter-label">
+                                <i class="bi bi-calendar-check"></i>
+                                Disponibilité
+                            </label>
+                            <select class="form-select filter-select" id="filterAvailability">
+                                <option value="">Toutes</option>
+                            </select>
+                        </div>
+
+                        <!-- Coaching Type -->
+                        <div class="filter-group">
+                            <label class="filter-label">
+                                <i class="bi bi-laptop"></i>
+                                Type de coaching
+                            </label>
+                            <select class="form-select filter-select" id="filterCoachingType">
+                                <option value="">Tous les types</option>
+                                <option value="En ligne">En ligne</option>
+                                <option value="En présentiel">En présentiel</option>
+                                <option value="Hybride">Hybride</option>
+                            </select>
+                        </div>
+
+                        <button class="btn btn-outline-secondary w-100 mt-3" id="resetFilters">
+                            <i class="bi bi-arrow-counterclockwise me-2"></i>
+                            Réinitialiser
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Coaches List -->
+                <div class="col-lg-9">
+                    <!-- Sort Options -->
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <div>
+                            <span class="text-muted" id="resultsCount">Chargement...</span>
+                        </div>
+                        <div class="sort-container">
+                            <button class="sort-btn active" data-sort="rating" data-order="desc">
+                                <i class="bi bi-star-fill me-1"></i>Mieux notés
+                            </button>
+                            <button class="sort-btn" data-sort="price" data-order="asc">
+                                <i class="bi bi-arrow-up me-1"></i>Prix croissant
+                            </button>
+                            <button class="sort-btn" data-sort="price" data-order="desc">
+                                <i class="bi bi-arrow-down me-1"></i>Prix décroissant
+                            </button>
+                            <button class="sort-btn" data-sort="popularity" data-order="desc">
+                                <i class="bi bi-fire me-1"></i>Popularité
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div id="loadingState" class="text-center py-5" style="display: none;">
+                        <div class="spinner mx-auto mb-3"></div>
+                        <p class="text-muted">Recherche en cours...</p>
+                    </div>
+
+                    <!-- Coaches Grid -->
+                    <div id="coachesGrid" class="coaches-grid"></div>
+
+                    <!-- Empty State -->
+                    <div id="emptyState" class="empty-state" style="display: none;">
+                        <div class="empty-icon">
+                            <i class="bi bi-search"></i>
+                        </div>
+                        <h4 class="fw-bold mb-2">Aucun coach trouvé</h4>
+                        <p class="text-muted">Essayez de modifier vos critères de recherche</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Request Modal -->
+    <div class="modal fade" id="requestModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">
+                        <i class="bi bi-send-fill me-2" style="color: var(--orange-primary);"></i>
+                        Demande de coaching
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="requestForm">
+                        <div class="mb-3 text-center">
+                            <div id="coachInfo"></div>
+                        </div>
+
+                        <form id="coachingRequestForm">
+                            <input type="hidden" id="selectedCoachId" name="coachId">
+
+                            <div class="mb-3">
+                                <label for="requestGoal" class="form-label">
+                                    <i class="bi bi-bullseye me-1"></i>
+                                    Objectif principal <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" id="requestGoal" required>
+                                    <option value="">Sélectionnez votre objectif</option>
+                                    <option value="Perte de poids">Perte de poids</option>
+                                    <option value="Prise de masse">Prise de masse musculaire</option>
+                                    <option value="Remise en forme">Remise en forme générale</option>
+                                    <option value="Préparation sportive">Préparation sportive</option>
+                                    <option value="Bien-être">Bien-être et santé</option>
+                                    <option value="Autre">Autre</option>
+                                </select>
+                                <div class="invalid-feedback">
+                                    Veuillez sélectionner un objectif.
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="requestLevel" class="form-label">
+                                    <i class="bi bi-bar-chart-steps me-1"></i>
+                                    Niveau actuel <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" id="requestLevel" required>
+                                    <option value="">Sélectionnez votre niveau</option>
+                                    <option value="Débutant">Débutant</option>
+                                    <option value="Intermédiaire">Intermédiaire</option>
+                                    <option value="Avancé">Avancé</option>
+                                </select>
+                                <div class="invalid-feedback">
+                                    Veuillez sélectionner votre niveau.
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="requestFrequency" class="form-label">
+                                    <i class="bi bi-calendar-week me-1"></i>
+                                    Fréquence souhaitée <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" id="requestFrequency" required>
+                                    <option value="">Sélectionnez la fréquence</option>
+                                    <option value="1 fois/semaine">1 fois par semaine</option>
+                                    <option value="2 fois/semaine">2 fois par semaine</option>
+                                    <option value="3 fois/semaine">3 fois par semaine</option>
+                                    <option value="4+ fois/semaine">4+ fois par semaine</option>
+                                </select>
+                                <div class="invalid-feedback">
+                                    Veuillez sélectionner une fréquence.
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="requestBudget" class="form-label">
+                                    <i class="bi bi-wallet2 me-1"></i>
+                                    Budget par séance (€)
+                                </label>
+                                <input type="number" class="form-control" id="requestBudget" min="0" step="5" placeholder="Ex: 50">
+                                <div class="invalid-feedback">
+                                    Le budget doit être un nombre positif.
+                                </div>
+                                <small class="text-muted">Optionnel - Indiquez votre budget pour aider le coach</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="requestMessage" class="form-label">
+                                    <i class="bi bi-chat-left-text me-1"></i>
+                                    Message personnalisé <span class="text-danger">*</span>
+                                </label>
+                                <textarea 
+                                    class="form-control" 
+                                    id="requestMessage" 
+                                    rows="4" 
+                                    placeholder="Décrivez vos besoins, vos attentes et toute information utile pour le coach..."
+                                    minlength="10"
+                                    maxlength="1000"
+                                    required
+                                ></textarea>
+                                <div class="d-flex justify-content-between align-items-center mt-1">
+                                    <div class="invalid-feedback d-block" id="messageError" style="display: none !important;">
+                                        Le message doit contenir entre 10 et 1000 caractères.
+                                    </div>
+                                    <div class="char-counter ms-auto">
+                                        <span id="charCount">0</span> / 1000 caractères
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-submit" id="submitRequest">
+                                <i class="bi bi-send-fill me-2"></i>
+                                Envoyer la demande
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Success State -->
+                    <div id="successState" style="display: none;">
+                        <div class="text-center py-4">
+                            <div class="success-checkmark">
+                                <div class="check-icon">
+                                    <span class="icon-line line-tip"></span>
+                                    <span class="icon-line line-long"></span>
+                                </div>
+                            </div>
+                            <h4 class="fw-bold mt-4 mb-2">Demande envoyée !</h4>
+                            <p class="text-muted">Le coach vous contactera bientôt</p>
+                            <button class="btn btn-outline-secondary mt-3" data-bs-dismiss="modal">
+                                Fermer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // State Management
+        const state = {
+            coaches: [],
+            filteredCoaches: [],
+            filters: {
+                query: '',
+                speciality: '',
+                minPrice: null,
+                maxPrice: null,
+                minRating: null,
+                availability: '',
+                coachingType: ''
+            },
+            sort: {
+                by: 'rating',
+                order: 'desc'
+            }
+        };
+
+        // DOM Elements
+        const searchInput = document.getElementById('searchInput');
+        const searchClear = document.getElementById('searchClear');
+        const coachesGrid = document.getElementById('coachesGrid');
+        const loadingState = document.getElementById('loadingState');
+        const emptyState = document.getElementById('emptyState');
+        const resultsCount = document.getElementById('resultsCount');
+        const requestModal = new bootstrap.Modal(document.getElementById('requestModal'));
+        const requestForm = document.getElementById('coachingRequestForm');
+        const charCount = document.getElementById('charCount');
+        const requestMessage = document.getElementById('requestMessage');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFilters();
+            loadCoaches();
+            setupEventListeners();
+        });
+
+        // Load filter options
+        async function loadFilters() {
+            try {
+                const response = await fetch('/api/coaches/filters');
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Populate specialities
+                    const specialitySelect = document.getElementById('filterSpeciality');
+                    data.filters.specialities.forEach(spec => {
+                        const option = document.createElement('option');
+                        option.value = spec;
+                        option.textContent = spec;
+                        specialitySelect.appendChild(option);
+                    });
+
+                    // Populate availabilities
+                    const availabilitySelect = document.getElementById('filterAvailability');
+                    data.filters.availabilities.forEach(avail => {
+                        const option = document.createElement('option');
+                        option.value = avail;
+                        option.textContent = avail;
+                        availabilitySelect.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading filters:', error);
+            }
+        }
+
+        // Load coaches
+        async function loadCoaches() {
+            showLoading();
+            
+            try {
+                const params = new URLSearchParams({
+                    q: state.filters.query,
+                    speciality: state.filters.speciality,
+                    minPrice: state.filters.minPrice || '',
+                    maxPrice: state.filters.maxPrice || '',
+                    minRating: state.filters.minRating || '',
+                    availability: state.filters.availability,
+                    coachingType: state.filters.coachingType,
+                    sortBy: state.sort.by,
+                    sortOrder: state.sort.order
+                });
+
+                const response = await fetch(`/api/coaches/search?${params}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    state.coaches = data.coaches;
+                    state.filteredCoaches = data.coaches;
+                    renderCoaches();
+                }
+            } catch (error) {
+                console.error('Error loading coaches:', error);
+                showEmpty();
+            }
+        }
+
+        // Render coaches
+        function renderCoaches() {
+            hideLoading();
+            
+            if (state.filteredCoaches.length === 0) {
+                showEmpty();
+                return;
+            }
+
+            hideEmpty();
+            resultsCount.textContent = `${state.filteredCoaches.length} coach${state.filteredCoaches.length > 1 ? 'es' : ''} trouvé${state.filteredCoaches.length > 1 ? 's' : ''}`;
+            
+            coachesGrid.innerHTML = state.filteredCoaches.map(coach => createCoachCard(coach)).join('');
+            
+            // Add animation
+            document.querySelectorAll('.coach-card').forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.05}s`;
+                card.classList.add('animate-fade-in');
+            });
+
+            // Setup quick request buttons
+            document.querySelectorAll('.btn-quick-request').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const coachId = btn.dataset.coachId;
+                    openRequestModal(coachId);
+                });
+            });
+        }
+
+        // Create coach card HTML
+        function createCoachCard(coach) {
+            const photoHtml = coach.photoUrl 
+                ? `<img src="${coach.photoUrl}" alt="${coach.firstName}" class="coach-photo">`
+                : `<div class="coach-photo-placeholder"><i class="bi bi-person-fill"></i></div>`;
+
+            const badges = (coach.badges || []).map(badge => {
+                let badgeClass = 'badge-new';
+                let icon = 'bi-star';
+                
+                if (badge === 'Top coach') {
+                    badgeClass = 'badge-top';
+                    icon = 'bi-trophy-fill';
+                } else if (badge === 'Répond rapidement') {
+                    badgeClass = 'badge-fast';
+                    icon = 'bi-lightning-fill';
+                }
+                
+                return `<span class="coach-badge ${badgeClass}"><i class="bi ${icon}"></i> ${badge}</span>`;
+            }).join(' ');
+
+            return `
+                <div class="coach-card">
+                    <div class="d-flex align-items-start mb-3">
+                        ${photoHtml}
+                        <div class="ms-3 flex-grow-1">
+                            <h5 class="fw-bold mb-1">${coach.firstName} ${coach.lastName}</h5>
+                            ${coach.speciality ? `<span class="badge bg-light text-dark border"><i class="bi bi-star-fill me-1" style="color: var(--orange-primary);"></i>${coach.speciality}</span>` : ''}
+                        </div>
+                    </div>
+
+                    ${coach.bio ? `<p class="text-muted small mb-3">${coach.bio.substring(0, 100)}${coach.bio.length > 100 ? '...' : ''}</p>` : ''}
+
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="coach-rating">
+                            <i class="bi bi-star-fill"></i>
+                            <span>${coach.rating || 'N/A'}</span>
+                            <span class="text-muted small">(${coach.reviewCount || 0} avis)</span>
+                        </div>
+                        ${coach.pricePerSession ? `<div class="price-tag">${coach.pricePerSession}€</div>` : ''}
+                    </div>
+
+                    ${coach.availability ? `
+                        <div class="mb-3">
+                            <small class="text-muted">
+                                <i class="bi bi-calendar-check me-1"></i>
+                                ${coach.availability}
+                            </small>
+                        </div>
+                    ` : ''}
+
+                    ${badges ? `<div class="mb-3">${badges}</div>` : ''}
+
+                    ${coach.totalSessions ? `
+                        <div class="mb-3">
+                            <small class="text-muted">
+                                <i class="bi bi-people me-1"></i>
+                                ${coach.totalSessions} séances réalisées
+                            </small>
+                        </div>
+                    ` : ''}
+
+                    <button class="btn btn-quick-request" data-coach-id="${coach.id}">
+                        <i class="bi bi-send-fill me-2"></i>
+                        Demande rapide
+                    </button>
+                </div>
+            `;
+        }
+
+        // Open request modal
+        function openRequestModal(coachId) {
+            const coach = state.filteredCoaches.find(c => c.id == coachId);
+            if (!coach) return;
+
+            document.getElementById('selectedCoachId').value = coachId;
+            document.getElementById('coachInfo').innerHTML = `
+                <div class="d-flex align-items-center justify-content-center mb-3">
+                    ${coach.photoUrl 
+                        ? `<img src="${coach.photoUrl}" alt="${coach.firstName}" class="coach-photo me-3">`
+                        : `<div class="coach-photo-placeholder me-3"><i class="bi bi-person-fill"></i></div>`
+                    }
+                    <div class="text-start">
+                        <h6 class="fw-bold mb-0">${coach.firstName} ${coach.lastName}</h6>
+                        <small class="text-muted">${coach.speciality || ''}</small>
+                    </div>
+                </div>
+            `;
+
+            // Reset form
+            requestForm.reset();
+            document.getElementById('requestForm').style.display = 'block';
+            document.getElementById('successState').style.display = 'none';
+            
+            requestModal.show();
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Search input
+            let searchTimeout;
+            searchInput.addEventListener('input', (e) => {
+                const value = e.target.value;
+                searchClear.style.display = value ? 'block' : 'none';
+                
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    state.filters.query = value;
+                    loadCoaches();
+                }, 300);
+            });
+
+            searchClear.addEventListener('click', () => {
+                searchInput.value = '';
+                searchClear.style.display = 'none';
+                state.filters.query = '';
+                loadCoaches();
+            });
+
+            // Filter inputs
+            document.getElementById('filterSpeciality').addEventListener('change', (e) => {
+                state.filters.speciality = e.target.value;
+                loadCoaches();
+            });
+
+            document.getElementById('filterMinPrice').addEventListener('input', (e) => {
+                state.filters.minPrice = e.target.value ? parseFloat(e.target.value) : null;
+                debounceLoadCoaches();
+            });
+
+            document.getElementById('filterMaxPrice').addEventListener('input', (e) => {
+                state.filters.maxPrice = e.target.value ? parseFloat(e.target.value) : null;
+                debounceLoadCoaches();
+            });
+
+            document.getElementById('filterRating').addEventListener('change', (e) => {
+                state.filters.minRating = e.target.value ? parseFloat(e.target.value) : null;
+                loadCoaches();
+            });
+
+            document.getElementById('filterAvailability').addEventListener('change', (e) => {
+                state.filters.availability = e.target.value;
+                loadCoaches();
+            });
+
+            document.getElementById('filterCoachingType').addEventListener('change', (e) => {
+                state.filters.coachingType = e.target.value;
+                loadCoaches();
+            });
+
+            // Reset filters
+            document.getElementById('resetFilters').addEventListener('click', () => {
+                state.filters = {
+                    query: '',
+                    speciality: '',
+                    minPrice: null,
+                    maxPrice: null,
+                    minRating: null,
+                    availability: '',
+                    coachingType: ''
+                };
+                
+                searchInput.value = '';
+                searchClear.style.display = 'none';
+                document.getElementById('filterSpeciality').value = '';
+                document.getElementById('filterMinPrice').value = '';
+                document.getElementById('filterMaxPrice').value = '';
+                document.getElementById('filterRating').value = '';
+                document.getElementById('filterAvailability').value = '';
+                document.getElementById('filterCoachingType').value = '';
+                
+                loadCoaches();
+            });
+
+            // Sort buttons
+            document.querySelectorAll('.sort-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    
+                    state.sort.by = btn.dataset.sort;
+                    state.sort.order = btn.dataset.order;
+                    loadCoaches();
+                });
+            });
+
+            // Character counter
+            requestMessage.addEventListener('input', () => {
+                const length = requestMessage.value.length;
+                charCount.textContent = length;
+                
+                const counter = document.querySelector('.char-counter');
+                const messageError = document.getElementById('messageError');
+                counter.classList.remove('warning', 'danger');
+                
+                // Validation en temps réel
+                if (length < 10 && length > 0) {
+                    requestMessage.classList.add('is-invalid');
+                    requestMessage.classList.remove('is-valid');
+                    messageError.style.display = 'block';
+                } else if (length >= 10 && length <= 1000) {
+                    requestMessage.classList.remove('is-invalid');
+                    requestMessage.classList.add('is-valid');
+                    messageError.style.display = 'none';
+                } else if (length > 1000) {
+                    requestMessage.classList.add('is-invalid');
+                    requestMessage.classList.remove('is-valid');
+                    messageError.style.display = 'block';
+                    counter.classList.add('danger');
+                } else {
+                    requestMessage.classList.remove('is-invalid', 'is-valid');
+                    messageError.style.display = 'none';
+                }
+                
+                if (length > 900 && length <= 1000) {
+                    counter.classList.add('warning');
+                } else if (length > 1000) {
+                    counter.classList.add('danger');
+                }
+            });
+
+            // Validation des champs select en temps réel
+            ['requestGoal', 'requestLevel', 'requestFrequency'].forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                field.addEventListener('change', () => {
+                    if (field.value) {
+                        field.classList.remove('is-invalid');
+                        field.classList.add('is-valid');
+                    } else {
+                        field.classList.add('is-invalid');
+                        field.classList.remove('is-valid');
+                    }
+                });
+            });
+
+            // Validation du budget
+            const budgetField = document.getElementById('requestBudget');
+            budgetField.addEventListener('input', () => {
+                const value = parseFloat(budgetField.value);
+                if (budgetField.value && (isNaN(value) || value < 0)) {
+                    budgetField.classList.add('is-invalid');
+                    budgetField.classList.remove('is-valid');
+                } else if (budgetField.value && value >= 0) {
+                    budgetField.classList.remove('is-invalid');
+                    budgetField.classList.add('is-valid');
+                } else {
+                    budgetField.classList.remove('is-invalid', 'is-valid');
+                }
+            });
+
+            // Form submission
+            requestForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await submitRequest();
+            });
+        }
+
+        // Submit request
+        async function submitRequest() {
+            const submitBtn = document.getElementById('submitRequest');
+            
+            // Validation finale avant envoi
+            const goal = document.getElementById('requestGoal').value;
+            const level = document.getElementById('requestLevel').value;
+            const frequency = document.getElementById('requestFrequency').value;
+            const message = document.getElementById('requestMessage').value;
+            
+            let hasError = false;
+            
+            if (!goal) {
+                document.getElementById('requestGoal').classList.add('is-invalid');
+                hasError = true;
+            }
+            if (!level) {
+                document.getElementById('requestLevel').classList.add('is-invalid');
+                hasError = true;
+            }
+            if (!frequency) {
+                document.getElementById('requestFrequency').classList.add('is-invalid');
+                hasError = true;
+            }
+            if (!message || message.length < 10 || message.length > 1000) {
+                document.getElementById('requestMessage').classList.add('is-invalid');
+                document.getElementById('messageError').style.display = 'block';
+                hasError = true;
+            }
+            
+            if (hasError) {
+                return;
+            }
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Envoi...';
+
+            const formData = new FormData();
+            formData.append('coaching_request[coach]', document.getElementById('selectedCoachId').value);
+            formData.append('coaching_request[goal]', goal);
+            formData.append('coaching_request[level]', level);
+            formData.append('coaching_request[frequency]', frequency);
+            formData.append('coaching_request[budget]', document.getElementById('requestBudget').value);
+            formData.append('coaching_request[message]', message);
+
+            try {
+                const response = await fetch('{{ path('app_coach_request_create_ajax') }}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('requestForm').style.display = 'none';
+                    document.getElementById('successState').style.display = 'block';
+                    
+                    setTimeout(() => {
+                        requestModal.hide();
+                        // Réinitialiser le formulaire
+                        requestForm.reset();
+                        document.querySelectorAll('.is-valid, .is-invalid').forEach(el => {
+                            el.classList.remove('is-valid', 'is-invalid');
+                        });
+                    }, 3000);
+                } else {
+                    alert(data.message || 'Erreur lors de l\'envoi');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="bi bi-send-fill me-2"></i>Envoyer la demande';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Erreur réseau. Veuillez réessayer.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="bi bi-send-fill me-2"></i>Envoyer la demande';
+            }
+        }
+
+
+        // Utility functions
+        let debounceTimeout;
+        function debounceLoadCoaches() {
+            clearTimeout(debounceTimeout);
+            debounceTimeout = setTimeout(() => loadCoaches(), 500);
+        }
+
+        function showLoading() {
+            loadingState.style.display = 'block';
+            coachesGrid.style.display = 'none';
+            emptyState.style.display = 'none';
+        }
+
+        function hideLoading() {
+            loadingState.style.display = 'none';
+            coachesGrid.style.display = 'grid';
+        }
+
+        function showEmpty() {
+            emptyState.style.display = 'block';
+            coachesGrid.style.display = 'none';
+            resultsCount.textContent = '0 coach trouvé';
+        }
+
+        function hideEmpty() {
+            emptyState.style.display = 'none';
+        }
+    </script>
+{% endblock %}

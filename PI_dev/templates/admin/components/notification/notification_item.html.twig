@@ -1,0 +1,51 @@
+<li>
+    <a href="{{ link|default('#') }}"
+       class="list-group-item-action border-0 border-bottom d-flex p-3">
+
+        <!-- Avatar -->
+        <div class="me-3">
+            <div class="avatar avatar-md">
+                {% if avatar is defined and avatar %}
+                    <img class="avatar-img rounded-circle"
+                         src="{{ avatar }}"
+                         alt="avatar">
+                {% else %}
+                    <div class="avatar-img rounded-circle
+                                bg-secondary bg-opacity-10
+                                d-flex align-items-center justify-content-center">
+                        {% set initials =
+                            name|default('')
+                            |split(' ')
+                            |map(v => v|first)
+                            |join
+                            |upper
+                        %}
+                        <span class="fw-bold text-secondary">
+                            {{ initials ?: '?' }}
+                        </span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div>
+            {% if title is defined %}
+                <h6 class="mb-1">{{ title }}</h6>
+            {% endif %}
+
+            {% if message is defined %}
+                <p class="text-body small m-0">{{ message|raw }}</p>
+            {% endif %}
+
+            {% if actionText is defined %}
+                <u class="small">{{ actionText }}</u>
+            {% endif %}
+
+            {% if time is defined %}
+                <small class="text-body">{{ time }}</small>
+            {% endif %}
+        </div>
+
+    </a>
+</li>

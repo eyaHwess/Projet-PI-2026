@@ -1,0 +1,162 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ goal.title }} - Time Details{% endblock %}
+
+{% block stylesheets %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #9333ea;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #ffffff;
+        }
+        .content-section {
+            background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+            padding-top: 120px;
+            padding-bottom: 60px;
+            min-height: 100vh;
+        }
+        .stats-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            text-align: center;
+            border: 2px solid #f3f4f6;
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(147, 51, 234, 0.15);
+            border-color: var(--primary-color);
+        }
+        .stats-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .stats-label {
+            color: #6b7280;
+            font-size: 0.95rem;
+            margin-top: 0.5rem;
+            font-weight: 600;
+        }
+        .chart-container {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="content-section">
+        <div class="container py-5">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="display-5 fw-bold mb-2">{{ goal.title }}</h1>
+                    <p class="text-muted">Analyse détaillée de l'investissement temps</p>
+                </div>
+                <a href="{{ path('app_time_investment_analytics') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Retour
+                </a>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="row g-4 mb-5">
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <i class="bi bi-clock-fill mb-3" style="font-size: 2.5rem; color: var(--primary-color);"></i>
+                        <div class="stats-value">{{ (totalTime / 60)|round(1) }}h</div>
+                        <div class="stats-label">Temps total</div>
+                        <small class="text-muted">{{ analyzer.formatDuration(totalTime) }}</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <i class="bi bi-calendar-week mb-3" style="font-size: 2.5rem; color: var(--primary-color);"></i>
+                        <div class="stats-value">{{ (weeklyTime / 60)|round(1) }}h</div>
+                        <div class="stats-label">Cette semaine</div>
+                        <small class="text-muted">{{ analyzer.formatDuration(weeklyTime) }}</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <i class="bi bi-calendar-month mb-3" style="font-size: 2.5rem; color: var(--primary-color);"></i>
+                        <div class="stats-value">{{ (monthlyTime / 60)|round(1) }}h</div>
+                        <div class="stats-label">Ce mois</div>
+                        <small class="text-muted">{{ analyzer.formatDuration(monthlyTime) }}</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-card">
+                        <i class="bi bi-speedometer2 mb-3" style="font-size: 2.5rem; color: var(--primary-color);"></i>
+                        <div class="stats-value">
+                            {% if efficiency %}
+                                {{ efficiency }}%
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </div>
+                        <div class="stats-label">Efficacité</div>
+                        <small class="text-muted">
+                            {% if efficiency %}
+                                {% if efficiency <= 100 %}
+                                    Excellent
+                                {% elseif efficiency <= 120 %}
+                                    Bon
+                                {% else %}
+                                    À améliorer
+                                {% endif %}
+                            {% else %}
+                                Pas de données
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Goal Info -->
+            <div class="chart-container">
+                <h3 class="h5 fw-bold mb-4">
+                    <i class="bi bi-info-circle me-2" style="color: var(--primary-color);"></i>
+                    Informations du goal
+                </h3>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Description:</strong> {{ goal.description ?? 'Aucune description' }}</p>
+                        <p><strong>Statut:</strong> 
+                            <span class="badge bg-{{ goal.status == 'active' ? 'success' : 'secondary' }}">
+                                {{ goal.status|upper }}
+                            </span>
+                        </p>
+                        <p><strong>Progression:</strong> {{ goal.progressPercentage }}%</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Date de début:</strong> {{ goal.startDate|date('d/m/Y') }}</p>
+                        <p><strong>Date de fin:</strong> {{ goal.endDate|date('d/m/Y') }}</p>
+                        <p><strong>Routines:</strong> {{ goal.routines|length }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Back to Analytics -->
+            <div class="text-center mt-5">
+                <a href="{{ path('app_time_investment_analytics') }}" class="btn btn-lg" style="background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%); color: white;">
+                    <i class="bi bi-arrow-left me-2"></i>Retour aux analytics
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

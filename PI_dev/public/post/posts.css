@@ -1,0 +1,521 @@
+/* Posts and Comments Styling - Glassmorphism Design */
+
+/* Page Background with Gradient - Horizontal colors (left to right) */
+body.posts-page {
+    background: linear-gradient(to right, 
+        #b5d9f7 0%,      /* Pastel blue on left */
+        #d4c8f7 50%,     /* Pastel violet in middle */
+        #facfe4 100%     /* Pastel pink on right */
+    ) !important;
+    background-attachment: fixed !important;
+    min-height: 100vh !important;
+    margin: 0;
+    padding: 0;
+}
+
+/* Main Posts Container - Glassmorphism */
+.posts-container {
+    max-width: 850px;
+    margin: 2rem auto;
+    padding: 2rem;
+    margin-top: -10px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+}
+
+/* Create Post Card - Glass Effect */
+
+
+/* Create Post Glass Container - With Animation */
+.create-post-glass-container {
+    background: #ffffff;
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    transform: translateY(-20px);
+}
+
+/* Post Card - Enhanced Glass */
+.post-card {
+    background: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-radius: 32px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    margin-bottom: 2rem;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.post-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.2);
+}
+
+/* Post Header */
+.post-card .card-header {
+    background: rgba(255, 255, 255, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 1.5rem;
+}
+
+/* Post Body */
+.post-card .card-body {
+    background: white;
+    padding: 2rem;
+}
+
+/* Post Footer */
+.post-card .card-footer {
+    background: rgba(255, 255, 255, 0.15);
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 1.5rem;
+}
+
+/* Post Images */
+.post-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    cursor: pointer;
+    border-radius: 20px;
+    transition: transform 0.3s ease;
+}
+
+.post-image:hover {
+    transform: scale(1.02);
+}
+
+/* Comment Content Bubble */
+.comment-content {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 0.75rem 1rem;
+    display: inline-block;
+    margin-bottom: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 2px 12px rgba(31, 38, 135, 0.08);
+}
+
+.comment-content p {
+    margin-bottom: 0;
+    font-size: 0.875rem;
+    color: #2d3748;
+}
+
+/* Comments Section Background */
+.comments-section {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 16px;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+/* Comment Actions (Like, Reply buttons) */
+.comment-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.comment-actions button {
+    background: none;
+    border: none;
+    color: #4a5568;
+    padding: 0;
+    text-decoration: none;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.comment-actions button:hover {
+    color: #2d3748;
+}
+
+/* View Replies Button */
+.view-replies-btn {
+    background: none;
+    border: none;
+    color: #4a5568;
+    padding: 0;
+    text-decoration: none;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.view-replies-btn:hover {
+    color: #2d3748;
+}
+
+/* Buttons - Glass Style */
+.btn-glass {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 20px;
+    color: #2d3748;
+    padding: 0.5rem 1.25rem;
+    transition: all 0.3s ease;
+}
+
+.btn-glass:hover {
+    background: rgba(255, 255, 255, 0.35);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(31, 38, 135, 0.15);
+}
+
+/* Primary Button - Glass */
+.btn-primary-glass {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.8), rgba(118, 75, 162, 0.8));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 20px;
+    color: white;
+    padding: 0.5rem 1.25rem;
+    transition: all 0.3s ease;
+}
+
+.btn-primary-glass:hover {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 1), rgba(118, 75, 162, 1));
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+}
+
+/* Input Fields - Glass */
+.input-glass {
+    background: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 20px;
+    padding: 0.75rem 1rem;
+    color: #2d3748;
+    transition: all 0.3s ease;
+}
+
+.input-glass:focus {
+    background: rgba(255, 255, 255, 0.4);
+    border-color: rgba(102, 126, 234, 0.6);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.input-glass::placeholder {
+    color: rgba(45, 55, 72, 0.6);
+}
+
+/* Textarea - Glass */
+.textarea-glass {
+    background: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 20px;
+    padding: 0.75rem 1rem;
+    color: #2d3748;
+    transition: all 0.3s ease;
+    resize: vertical;
+}
+
+.textarea-glass:focus {
+    background: rgba(255, 255, 255, 0.4);
+    border-color: rgba(102, 126, 234, 0.6);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Reply Input */
+.reply-input-container {
+    display: none;
+    margin-top: 0.5rem;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 12px;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Avatar Sizes */
+.avatar-md img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 2px 8px rgba(31, 38, 135, 0.2);
+}
+
+.avatar-sm img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 2px 6px rgba(31, 38, 135, 0.15);
+}
+
+/* Like Icon */
+.bi-heart-fill.text-danger {
+    color: #f56565 !important;
+}
+
+/* Three Dots Menu */
+.dropdown-toggle::after {
+    display: none;
+}
+
+.dropdown-menu {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(31, 38, 135, 0.3);
+}
+
+.dropdown-item {
+    color: #2d3748;
+    transition: background 0.2s ease;
+}
+
+.dropdown-item:hover {
+    background: rgba(102, 126, 234, 0.1);
+}
+
+/* Comment Edit Mode */
+.comment-edit-mode {
+    display: none;
+}
+
+/* Replies Container */
+.replies-container {
+    margin-left: 2rem;
+    margin-top: 0.5rem;
+}
+
+/* Hide/Show Comments */
+.comment-item {
+    display: flex;
+}
+
+.comment-item.hidden {
+    display: none !important;
+}
+
+/* Scrollbar Styling */
+.posts-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.posts-container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.posts-container::-webkit-scrollbar-thumb {
+    background: rgba(102, 126, 234, 0.5);
+    border-radius: 10px;
+}
+
+.posts-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(102, 126, 234, 0.7);
+}
+
+/* Text Colors for Better Contrast */
+.post-card h6,
+.post-card p,
+.post-card .text-dark {
+    color: #2d3748 !important;
+}
+
+.post-card .text-muted,
+.post-card small {
+    color: #4a5568 !important;
+}
+
+/* Modal - Glass Effect */
+.modal-content {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .posts-container {
+        margin: 1rem;
+        padding: 1rem;
+        border-radius: 20px;
+    }
+    
+    .post-card {
+        border-radius: 16px;
+    }
+}
+
+
+
+/* Filter and Sort Bar Styling */
+.filter-sort-bar {
+    background: transparent;
+    border: none;
+    padding: 0;
+    box-shadow: none;
+}
+
+.text-purple {
+    color: #7c3aed;
+}
+
+/* Dropdown Button Styling */
+.btn-filter-sort {
+    background: linear-gradient(135deg, #e879f9 0%, #c084fc 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 20px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(232, 121, 249, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-filter-sort:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(232, 121, 249, 0.3);
+    color: white;
+    background: linear-gradient(135deg, #c084fc 0%, #a855f7 100%);
+}
+
+.btn-filter-sort .current-option {
+    font-weight: 600;
+}
+
+.btn-filter-sort i {
+    font-size: 1.1rem;
+}
+
+/* Dropdown Menu Styling */
+.dropdown-menu-soft {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 2px solid rgba(232, 121, 249, 0.2);
+    border-radius: 16px;
+    padding: 0.5rem;
+    box-shadow: 0 8px 24px rgba(232, 121, 249, 0.2);
+    margin-top: 0.5rem;
+}
+
+.dropdown-menu-soft .dropdown-item {
+    color: #6b7280;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.dropdown-menu-soft .dropdown-item i {
+    font-size: 1rem;
+    width: 20px;
+    text-align: center;
+}
+
+.dropdown-menu-soft .dropdown-item:hover {
+    background: rgba(232, 121, 249, 0.1);
+    color: #7c3aed;
+    transform: translateX(4px);
+}
+
+.dropdown-menu-soft .dropdown-item.active {
+    background: linear-gradient(135deg, #e879f9 0%, #c084fc 100%);
+    color: white;
+}
+
+.dropdown-menu-soft .dropdown-item.active:hover {
+    background: linear-gradient(135deg, #c084fc 0%, #a855f7 100%);
+    transform: translateX(0);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .filter-sort-bar .d-flex {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+    
+    .btn-filter-sort {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+
+/* Create Post Button Styling - Stronger Purple */
+.btn-create-post {
+    background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 20px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-create-post:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(124, 58, 237, 0.4);
+    color: white;
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+}
+
+.btn-create-post i {
+    font-size: 1.1rem;
+}
+
+/* Hide the old create post button inside the card */
+.create-post-glass .d-flex.justify-content-end {
+    display: none !important;
+}
+
+/* Create Post Glass Container */
+.create-post-glass {
+    margin-bottom: 2rem;
+}
+
+.create-post-glass-container {
+    background: #ffffff;
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    padding: 2rem;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}

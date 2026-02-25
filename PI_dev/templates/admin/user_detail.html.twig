@@ -1,0 +1,30 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}User Details{% endblock %}
+
+{% block content %}
+
+<div class="row g-4 pt-4">
+    <!-- Page header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-0">User Details</h1>
+        </div>
+    </div>
+
+    <!-- Content row -->
+    <div class="row g-4">
+
+        {# Include Personal Info Component #}
+        {% include 'admin/components/user_detail/personal_info.html.twig' with { user: user } %}
+
+        {# You can add more components here later #}
+        {# Example:
+           {% include 'admin/components/user_detail/activity.html.twig' with { user: user } %}
+        #}
+
+    </div>
+
+</div>
+
+{% endblock %}

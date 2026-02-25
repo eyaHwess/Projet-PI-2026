@@ -1,0 +1,464 @@
+{% extends 'base_modern.html.twig' %}
+
+{% block title %}Calendrier de Planification{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css' rel='stylesheet' />
+    <style>
+        /* Calendar Container */
+        .calendar-wrapper {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: var(--space-2xl);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--gray-200);
+        }
+        
+        /* Legend */
+        .calendar-legend {
+            display: flex;
+            gap: var(--space-xl);
+            margin-bottom: var(--space-xl);
+            flex-wrap: wrap;
+            padding: var(--space-lg);
+            background: var(--gray-50);
+            border-radius: var(--radius-md);
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            color: var(--gray-700);
+        }
+        
+        .legend-color {
+            width: 24px;
+            height: 24px;
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .legend-color-goal {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        }
+        
+        .legend-color-routine {
+            background: linear-gradient(135deg, var(--accent-teal) 0%, #229A8E 100%);
+        }
+        
+        .legend-color-activity {
+            background: linear-gradient(135deg, var(--accent-orange) 0%, #F57C00 100%);
+        }
+        
+        /* FullCalendar Customization */
+        #calendar {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+        
+        .fc {
+            font-family: var(--font-family);
+        }
+        
+        /* Calendar Header */
+        .fc .fc-toolbar {
+            padding: var(--space-lg) 0;
+            gap: var(--space-md);
+        }
+        
+        .fc .fc-toolbar-title {
+            font-size: var(--font-size-2xl);
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+        
+        /* Calendar Buttons */
+        .fc .fc-button {
+            background: var(--primary-color);
+            border: none;
+            border-radius: var(--radius-md);
+            padding: var(--space-sm) var(--space-lg);
+            font-weight: 600;
+            font-size: var(--font-size-sm);
+            transition: all var(--transition-base);
+            text-transform: capitalize;
+        }
+        
+        .fc .fc-button:hover {
+            background: var(--secondary-color);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .fc .fc-button:focus {
+            box-shadow: 0 0 0 3px var(--primary-lightest);
+        }
+        
+        .fc .fc-button-primary:not(:disabled).fc-button-active {
+            background: var(--secondary-color);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .fc .fc-button-primary:disabled {
+            background: var(--gray-300);
+            opacity: 0.6;
+        }
+        
+        /* Calendar Grid */
+        .fc .fc-col-header-cell {
+            background: var(--primary-lightest);
+            font-weight: 600;
+            padding: var(--space-md) 0;
+            color: var(--gray-800);
+            text-transform: uppercase;
+            font-size: var(--font-size-xs);
+            letter-spacing: 0.5px;
+            border: none;
+        }
+        
+        .fc .fc-daygrid-day {
+            border-color: var(--gray-200);
+        }
+        
+        .fc .fc-daygrid-day-number {
+            padding: var(--space-sm);
+            font-weight: 600;
+            color: var(--gray-700);
+        }
+        
+        .fc .fc-daygrid-day.fc-day-today {
+            background-color: var(--primary-lightest) !important;
+        }
+        
+        .fc .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+            background: var(--primary-color);
+            color: var(--white);
+            border-radius: var(--radius-full);
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Calendar Events */
+        .fc-event {
+            border-radius: var(--radius-sm);
+            padding: 4px 8px;
+            border: none;
+            cursor: pointer;
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            margin-bottom: 2px;
+            transition: all var(--transition-fast);
+        }
+        
+        .fc-event:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .fc-event-goal {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: var(--white);
+        }
+        
+        .fc-event-routine {
+            background: linear-gradient(135deg, var(--accent-teal) 0%, #229A8E 100%);
+            color: var(--white);
+        }
+        
+        .fc-event-activity {
+            background: linear-gradient(135deg, var(--accent-orange) 0%, #F57C00 100%);
+            color: var(--white);
+        }
+        
+        .fc-event-title {
+            font-weight: 600;
+        }
+        
+        /* Time Grid View */
+        .fc .fc-timegrid-slot {
+            height: 3em;
+        }
+        
+        .fc .fc-timegrid-axis-cushion {
+            color: var(--gray-600);
+            font-size: var(--font-size-sm);
+        }
+        
+        /* Week/Day View */
+        .fc .fc-timegrid-col.fc-day-today {
+            background-color: var(--primary-lightest);
+        }
+        
+        /* Scrollbar Styling */
+        .fc-scroller::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        .fc-scroller::-webkit-scrollbar-track {
+            background: var(--gray-100);
+            border-radius: var(--radius-sm);
+        }
+        
+        .fc-scroller::-webkit-scrollbar-thumb {
+            background: var(--gray-400);
+            border-radius: var(--radius-sm);
+        }
+        
+        .fc-scroller::-webkit-scrollbar-thumb:hover {
+            background: var(--gray-500);
+        }
+        
+        /* Stats Cards */
+        .calendar-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-lg);
+            margin-bottom: var(--space-2xl);
+        }
+        
+        .calendar-stat-card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            box-shadow: var(--shadow-sm);
+            border-left: 4px solid var(--primary-color);
+            transition: all var(--transition-base);
+        }
+        
+        .calendar-stat-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        
+        .calendar-stat-card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: var(--space-md);
+        }
+        
+        .calendar-stat-card-value {
+            font-size: var(--font-size-3xl);
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: var(--space-xs);
+        }
+        
+        .calendar-stat-card-label {
+            font-size: var(--font-size-sm);
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .calendar-wrapper {
+                padding: var(--space-lg);
+            }
+            
+            .calendar-legend {
+                gap: var(--space-md);
+            }
+            
+            .fc .fc-toolbar {
+                flex-direction: column;
+                gap: var(--space-md);
+            }
+            
+            .fc .fc-toolbar-title {
+                font-size: var(--font-size-xl);
+            }
+            
+            .fc .fc-button {
+                padding: var(--space-xs) var(--space-md);
+                font-size: var(--font-size-xs);
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block breadcrumb %}
+    <nav class="breadcrumb-modern">
+        <a href="{{ path('app_home') }}">Accueil</a>
+        <span class="breadcrumb-modern-separator">/</span>
+        <span>Calendrier</span>
+    </nav>
+{% endblock %}
+
+{% block navbar_actions %}
+    <a href="{{ path('app_goal_index') }}" class="btn-modern btn-modern-secondary">
+        <i class="bi bi-bullseye"></i> Mes Objectifs
+    </a>
+{% endblock %}
+
+{% block body %}
+    <!-- Page Header -->
+    <div class="page-header-modern">
+        <h1 class="page-header-modern-title">
+            <i class="bi bi-calendar3" style="color: var(--primary-color);"></i>
+            Calendrier de Planification
+        </h1>
+        <p class="page-header-modern-subtitle">
+            Visualisez toutes vos deadlines et activités en un coup d'œil
+        </p>
+        
+        <div class="page-header-modern-actions">
+            <a href="{{ path('app_goal_index') }}" class="btn-modern btn-modern-secondary">
+                <i class="bi bi-bullseye"></i> Objectifs
+            </a>
+            <a href="{{ path('app_favorites') }}" class="btn-modern btn-modern-secondary">
+                <i class="bi bi-heart"></i> Favoris
+            </a>
+            <a href="{{ path('app_consistency_heatmap') }}" class="btn-modern btn-modern-secondary">
+                <i class="bi bi-graph-up"></i> Consistency
+            </a>
+            <a href="{{ path('app_time_investment_analytics') }}" class="btn-modern btn-modern-secondary">
+                <i class="bi bi-clock-history"></i> Time Analytics
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="calendar-stats">
+        <div class="calendar-stat-card" style="border-left-color: var(--primary-color);">
+            <div class="calendar-stat-card-icon" style="background: var(--primary-lightest); color: var(--primary-color);">
+                <i class="bi bi-bullseye"></i>
+            </div>
+            <div class="calendar-stat-card-value" id="totalGoals">-</div>
+            <div class="calendar-stat-card-label">Objectifs actifs</div>
+        </div>
+        
+        <div class="calendar-stat-card" style="border-left-color: var(--accent-teal);">
+            <div class="calendar-stat-card-icon" style="background: #E0F2F1; color: var(--accent-teal);">
+                <i class="bi bi-repeat"></i>
+            </div>
+            <div class="calendar-stat-card-value" id="totalRoutines">-</div>
+            <div class="calendar-stat-card-label">Routines en cours</div>
+        </div>
+        
+        <div class="calendar-stat-card" style="border-left-color: var(--accent-orange);">
+            <div class="calendar-stat-card-icon" style="background: #FFF3E0; color: var(--accent-orange);">
+                <i class="bi bi-check-circle"></i>
+            </div>
+            <div class="calendar-stat-card-value" id="totalActivities">-</div>
+            <div class="calendar-stat-card-label">Activités planifiées</div>
+        </div>
+        
+        <div class="calendar-stat-card" style="border-left-color: var(--danger);">
+            <div class="calendar-stat-card-icon" style="background: #FFEBEE; color: var(--danger);">
+                <i class="bi bi-alarm"></i>
+            </div>
+            <div class="calendar-stat-card-value" id="upcomingDeadlines">-</div>
+            <div class="calendar-stat-card-label">Deadlines à venir</div>
+        </div>
+    </div>
+
+    <!-- Calendar Container -->
+    <div class="calendar-wrapper">
+        <!-- Legend -->
+        <div class="calendar-legend">
+            <div class="legend-item">
+                <div class="legend-color legend-color-goal"></div>
+                <span><i class="bi bi-bullseye"></i> Objectifs</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color legend-color-routine"></div>
+                <span><i class="bi bi-repeat"></i> Routines</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color legend-color-activity"></div>
+                <span><i class="bi bi-check-circle"></i> Activités</span>
+            </div>
+        </div>
+
+        <!-- Calendar -->
+        <div id="calendar"></div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/locales/fr.global.min.js'></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendarEl = document.getElementById('calendar');
+
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'fr',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                buttonText: {
+                    today: 'Aujourd\'hui',
+                    month: 'Mois',
+                    week: 'Semaine',
+                    day: 'Jour'
+                },
+                height: 'auto',
+                events: '/calendar/events',
+                eventClick: function(info) {
+                    info.jsEvent.preventDefault();
+                    
+                    // Redirect directly to the event page
+                    const url = info.event.extendedProps.url;
+                    if (url) {
+                        window.location.href = url;
+                    }
+                },
+                eventDidMount: function(info) {
+                    info.el.classList.add(info.event.extendedProps.className);
+                },
+                loading: function(isLoading) {
+                    if (!isLoading) {
+                        updateStats();
+                    }
+                }
+            });
+
+            calendar.render();
+            
+            // Update stats from calendar events
+            function updateStats() {
+                fetch('/calendar/events')
+                    .then(response => response.json())
+                    .then(events => {
+                        const goals = events.filter(e => e.className === 'fc-event-goal');
+                        const routines = events.filter(e => e.className === 'fc-event-routine');
+                        const activities = events.filter(e => e.className === 'fc-event-activity');
+                        
+                        // Count upcoming deadlines (within 7 days)
+                        const now = new Date();
+                        const sevenDaysLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+                        const upcoming = events.filter(e => {
+                            const eventDate = new Date(e.start);
+                            return eventDate >= now && eventDate <= sevenDaysLater;
+                        });
+                        
+                        document.getElementById('totalGoals').textContent = goals.length;
+                        document.getElementById('totalRoutines').textContent = routines.length;
+                        document.getElementById('totalActivities').textContent = activities.length;
+                        document.getElementById('upcomingDeadlines').textContent = upcoming.length;
+                    })
+                    .catch(error => {
+                        console.error('Error loading stats:', error);
+                    });
+            }
+        });
+    </script>
+{% endblock %}

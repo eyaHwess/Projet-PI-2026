@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nos Coachs - Demo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+    <style>
+        :root { --orange-primary: #f97316; --orange-hover: #ea580c; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .navbar-custom { background-color: #fff !important; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .btn-orange { 
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); 
+            border: none; 
+            color: white; 
+            padding: 0.75rem 2rem; 
+            border-radius: 50px; 
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-orange:hover { transform: translateY(-2px); color: white; box-shadow: 0 5px 15px rgba(249, 115, 22, 0.3); }
+        .coach-card { 
+            border: 2px solid #e9ecef; 
+            border-radius: 20px; 
+            padding: 2rem; 
+            transition: all 0.3s ease; 
+            height: 100%; 
+        }
+        .coach-card:hover { 
+            border-color: var(--orange-primary); 
+            box-shadow: 0 10px 30px rgba(249, 115, 22, 0.15); 
+            transform: translateY(-5px);
+        }
+        .coach-avatar { 
+            width: 80px; 
+            height: 80px; 
+            background: linear-gradient(135deg, #fff5f0, #ffe4d6); 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 2rem; 
+            color: var(--orange-primary); 
+        }
+        .badge-pending { background: #fef3c7; color: #92400e; padding: 0.5rem 1rem; }
+        .badge-accepted { background: #d1fae5; color: #065f46; padding: 0.5rem 1rem; }
+        .badge-declined { background: #fee2e2; color: #991b1b; padding: 0.5rem 1rem; }
+        .filter-btn { 
+            border: 2px solid #e9ecef; 
+            border-radius: 50px; 
+            padding: 0.5rem 1.5rem; 
+            transition: all 0.3s;
+            background: white;
+            cursor: pointer;
+        }
+        .filter-btn:hover, .filter-btn.active { 
+            border-color: var(--orange-primary); 
+            background: var(--orange-primary); 
+            color: white; 
+        }
+        .request-card {
+            border-radius: 15px;
+            transition: all 0.3s;
+        }
+        .request-card:hover {
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+        <div class="container-fluid px-4 px-md-5">
+            <a class="navbar-brand" href="#">
+                <strong style="color: var(--orange-primary); font-size: 1.5rem;">
+                    <i class="bi bi-heart-pulse-fill me-2"></i>FitCoach
+                </strong>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item"><a class="nav-link" href="#">Home</a></li>
+                    <li class="nav-item"><a class="nav-link active fw-bold" style="color: var(--orange-primary)" href="#">Coachs</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Mes Sessions</a></li>
+                    <li class="nav-item ms-3">
+                        <a href="#" class="btn btn-outline-secondary rounded-pill">
+                            <i class="bi bi-person-circle me-1"></i>Mon Compte
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero-section" style="padding-top: 120px; padding-bottom: 60px; background: linear-gradient(180deg, #fff 0%, #f8f9fa 100%);">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-lg-8">
+                    <span class="badge bg-light px-4 py-2 rounded-pill mb-3" style="color: var(--orange-primary); font-size: 0.9rem;">
+                        <i class="bi bi-person-badge me-2"></i>Coaching fitness & bien-être
+                    </span>
+                    <h1 class="display-4 fw-bold mb-4">Trouvez votre coach</h1>
+                    <p class="lead text-muted mb-0">
+                        Connectez-vous avec un coach professionnel pour atteindre vos objectifs de santé et de bien-être
+                    </p>
+                </div>
+            </div>
+
+            {# Filtres par spécialité #}
+            <div class="mb-4">
+                <h5 class="mb-3"><i class="bi bi-funnel me-2"></i>Filtrer par spécialité</h5>
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn filter-btn active" data-filter="all">
+                        <i class="bi bi-grid-3x3-gap me-1"></i>Toutes
+                    </button>
+                    {% for speciality in specialities %}
+                        <button class="btn filter-btn" data-filter="{{ speciality }}">
+                            {{ speciality }}
+                        </button>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-5">
+        <div class="container">
+            {# Formulaire de demande de coaching #}
+            <div class="row mb-5">
+                <div class="col-lg-8 mx-auto">
+                    <div class="card border-0 shadow-sm" style="border-radius: 20px;">
+                        <div class="card-body p-4">
+                            <h4 class="mb-4">
+                                <i class="bi bi-send-fill me-2" style="color: var(--orange-primary);"></i>
+                                Faire une demande de coaching
+                            </h4>
+                            <form id="coachingRequestForm">
+                                <div class="mb-3">
+                                    <label for="coach" class="form-label fw-semibold">Choisir un coach</label>
+                                    <select class="form-select form-select-lg" id="coach" required>
+                                        <option value="">Sélectionnez un coach</option>
+                                        {% for coach in coaches %}
+                                            <option value="{{ coach.id }}">
+                                                {{ coach.firstName }} {{ coach.lastName }} - {{ coach.speciality }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="message" class="form-label fw-semibold">Votre message</label>
+                                    <textarea class="form-control" id="message" rows="5" 
+                                              placeholder="Décrivez vos besoins et objectifs de coaching..." 
+                                              required></textarea>
+                                    <small class="text-muted">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Minimum 10 caractères, maximum 1000 caractères
+                                    </small>
+                                </div>
+                                <button type="submit" class="btn btn-orange w-100">
+                                    <i class="bi bi-send me-2"></i>Envoyer la demande
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Liste des coaches #}
+            <h3 class="mb-4">
+                <i class="bi bi-people-fill me-2" style="color: var(--orange-primary);"></i>
+                Nos coaches disponibles
+            </h3>
+            <div class="row g-4" id="coachesContainer">
+                {% for coach in coaches %}
+                    <div class="col-md-6 col-lg-4 coach-item" data-speciality="{{ coach.speciality }}">
+                        <div class="coach-card">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="coach-avatar me-3">
+                                    <i class="bi bi-person-fill"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-1 fw-bold">{{ coach.firstName }} {{ coach.lastName }}</h5>
+                                    <p class="text-muted small mb-0">{{ coach.email }}</p>
+                                </div>
+                            </div>
+                            
+                            <p class="mb-2">
+                                <span class="badge bg-light text-dark">
+                                    <i class="bi bi-star-fill me-1" style="color: var(--orange-primary);"></i>
+                                    {{ coach.speciality }}
+                                </span>
+                            </p>
+                            
+                            <p class="text-muted small mb-3">
+                                <i class="bi bi-star-fill" style="color: #fbbf24;"></i>
+                                {{ coach.rating }}/5
+                            </p>
+
+                            {% set hasRequest = false %}
+                            {% set requestStatus = '' %}
+                            {% for request in myRequests %}
+                                {% if request.coach.id == coach.id %}
+                                    {% set hasRequest = true %}
+                                    {% set requestStatus = request.status %}
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if hasRequest %}
+                                {% if requestStatus == 'pending' %}
+                                    <span class="badge badge-pending rounded-pill w-100 text-center">
+                                        <i class="bi bi-clock me-1"></i>Demande en attente
+                                    </span>
+                                {% elseif requestStatus == 'accepted' %}
+                                    <span class="badge badge-accepted rounded-pill w-100 text-center">
+                                        <i class="bi bi-check-circle me-1"></i>Demande acceptée
+                                    </span>
+                                {% elseif requestStatus == 'declined' %}
+                                    <span class="badge badge-declined rounded-pill w-100 text-center">
+                                        <i class="bi bi-x-circle me-1"></i>Demande refusée
+                                    </span>
+                                {% endif %}
+                            {% else %}
+                                <button class="btn btn-orange w-100">
+                                    <i class="bi bi-send me-2"></i>Demander un coaching
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {# Mes demandes en cours #}
+            <div class="mt-5">
+                <h3 class="mb-4">
+                    <i class="bi bi-inbox-fill me-2" style="color: var(--orange-primary);"></i>
+                    Mes demandes de coaching
+                </h3>
+                <div class="row g-3">
+                    {% for request in myRequests %}
+                        <div class="col-12">
+                            <div class="card border-0 shadow-sm request-card">
+                                <div class="card-body p-4">
+                                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1 fw-bold">
+                                                <i class="bi bi-person-badge me-1"></i>
+                                                Coach: {{ request.coach.firstName }} {{ request.coach.lastName }}
+                                            </h6>
+                                            <p class="text-muted small mb-2">
+                                                <i class="bi bi-calendar3 me-1"></i>
+                                                {{ request.createdAt|date('d/m/Y à H:i') }}
+                                            </p>
+                                            <div class="mt-3">
+                                                <strong><i class="bi bi-chat-left-text me-1"></i>Message:</strong>
+                                                <p class="mb-0 mt-1">{{ request.message }}</p>
+                                            </div>
+                                        </div>
+                                        <span class="badge 
+                                            {% if request.status == 'pending' %}badge-pending
+                                            {% elseif request.status == 'accepted' %}badge-accepted
+                                            {% else %}badge-declined{% endif %} 
+                                            rounded-pill">
+                                            {% if request.status == 'pending' %}
+                                                <i class="bi bi-clock me-1"></i>EN ATTENTE
+                                            {% elseif request.status == 'accepted' %}
+                                                <i class="bi bi-check-circle me-1"></i>ACCEPTÉE
+                                            {% else %}
+                                                <i class="bi bi-x-circle me-1"></i>REFUSÉE
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container text-center">
+            <p class="mb-0">© 2026 FitCoach - Tous droits réservés</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Filtres interactifs
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Retirer la classe active de tous les boutons
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                const filter = this.getAttribute('data-filter');
+                const coaches = document.querySelectorAll('.coach-item');
+                
+                coaches.forEach(coach => {
+                    if (filter === 'all' || coach.getAttribute('data-speciality') === filter) {
+                        coach.style.display = 'block';
+                    } else {
+                        coach.style.display = 'none';
+                    }
+                });
+            });
+        });
+
+        // Validation du formulaire
+        document.getElementById('coachingRequestForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const coach = document.getElementById('coach').value;
+            const message = document.getElementById('message').value;
+            
+            if (!coach) {
+                alert('Veuillez sélectionner un coach');
+                return;
+            }
+            
+            if (message.length < 10) {
+                alert('Le message doit contenir au moins 10 caractères');
+                return;
+            }
+            
+            if (message.length > 1000) {
+                alert('Le message ne peut pas dépasser 1000 caractères');
+                return;
+            }
+            
+            alert('✅ Demande envoyée avec succès!\n\nVotre demande a été transmise au coach. Vous recevrez une réponse prochainement.');
+            this.reset();
+        });
+
+        // Animation au scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        });
+
+        document.querySelectorAll('.coach-card, .request-card').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'all 0.5s ease';
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>

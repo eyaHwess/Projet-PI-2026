@@ -1,0 +1,37 @@
+<div class="ai-suggestions-card">
+    <div class="ai-suggestions-header">
+        <div class="ai-icon-wrap"><i class="bi bi-robot"></i></div>
+        <div>
+            <h2>{{ 'ai.suggestions_title'|trans({}, 'messages') }}</h2>
+            <p>{{ 'ai.suggestions_subtitle'|trans({}, 'messages') }}</p>
+        </div>
+    </div>
+    <div class="ai-suggestions-body">
+        {% if aiSuggestions|length > 0 %}
+            {% for item in aiSuggestions %}
+            <div class="ai-suggestion-item">
+                <div class="ai-item-title">{{ item.title|default('') }}</div>
+                <div class="ai-item-desc">{{ item.description|default('') }}</div>
+                <div class="ai-item-meta">
+                    {% set priority = (item.priority|default('medium'))|lower %}
+                    <span class="ai-badge-priority {{ priority }}">{{ priority|capitalize }}</span>
+                    {% if item.duration_days is defined %}
+                    <span class="ai-duration"><i class="bi bi-calendar3"></i> {{ item.duration_days }} {{ 'ai.days'|trans({}, 'messages') }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% elseif aiUnavailable %}
+            <div class="ai-unavailable-box">
+                <h3>{{ 'ai.unavailable_title'|trans({}, 'messages') }}</h3>
+                <p>{{ 'ai.unavailable_body'|trans({}, 'messages') }}</p>
+                <p class="mt-2 small">{{ 'ai.unavailable_hint'|trans({'%completed%': aiUserStats.completed_goals, '%total%': aiUserStats.total_goals, '%rate%': aiUserStats.completion_rate}, 'messages') }}</p>
+            </div>
+        {% else %}
+            <div class="ai-unavailable-box">
+                <h3>{{ 'ai.fallback_title'|trans({}, 'messages') }}</h3>
+                <p>{{ 'ai.fallback_body'|trans({'%completed%': aiUserStats.completed_goals, '%total%': aiUserStats.total_goals}, 'messages') }}</p>
+            </div>
+        {% endif %}
+    </div>
+</div>

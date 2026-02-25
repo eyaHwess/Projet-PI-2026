@@ -1,0 +1,180 @@
+<!-- Sidebar START -->
+<nav class="navbar sidebar navbar-expand-xl navbar-dark bg-dark">
+
+    <!-- Navbar brand for xl START -->
+    <div class="d-flex align-items-center">
+        <a class="navbar-brand d-flex align-items-center" href="#" style="gap: 0.5rem;">
+            <img class="navbar-brand-item"
+                 src="{{ asset('images/dayflow_logo.png') }}"
+                 alt="DayFlow Logo"
+                 style="height: 40px;">
+            <span style="color: #7c3aed; font-weight: 600; font-size: 1.25rem;">DayFlow</span>
+                 src="/adminDashboard/assets/images/logo-light.svg"
+                 alt="Logo">
+        </a>
+    </div>
+    <!-- Navbar brand for xl END -->
+
+    <div class="offcanvas offcanvas-start flex-row custom-scrollbar h-100"
+         data-bs-backdrop="true"
+         tabindex="-1"
+         id="offcanvasSidebar">
+
+        <div class="offcanvas-body sidebar-content d-flex flex-column bg-dark">
+
+            <!-- Sidebar menu START -->
+            <ul class="navbar-nav flex-column" id="navbar-sidebar">
+
+                <!-- Menu item 1 -->
+                <li class="nav-item">
+                    <a href="{{ path('admin_dashboard') }}" class="nav-link {{ app.request.attributes.get('_route') == 'admin_dashboard' ? 'active' : '' }}">
+                        <i class="bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+
+                <!-- Title -->
+                <li class="nav-item ms-2 my-2">Pages</li>
+
+                <!-- Menu item 2 -->
+                <li class="nav-item">
+                    <a class="nav-link {{ app.request.attributes.get('_route') in ['admin_user_list', 'admin_manage_accounts'] ? 'active' : '' }}" data-bs-toggle="collapse" href="#collapsepage"
+                       role="button" aria-expanded="false" aria-controls="collapsepage">
+                        <i class="bi-people-fill"></i>Users
+                    </a>
+
+                    <!-- Submenu -->
+                    <ul class="nav collapse flex-column" id="collapsepage" data-bs-parent="#navbar-sidebar">
+                        <li class="nav-item">
+                            <a class="nav-link {{ app.request.attributes.get('_route') == 'admin_user_list' ? 'active' : '' }}" href="{{ path('admin_user_list') }}">List users</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ app.request.attributes.get('_route') == 'admin_manage_accounts' ? 'active' : '' }}" href="{{ path('admin_manage_accounts') }}">Manage accounts</a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Menu item 3 -->
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="bi-journal-text"></i> Routines
+                    </a>
+                </li>
+
+                <!-- Menu item 4 -->
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="collapse" href="#collapseGoals"
+                       role="button" aria-expanded="false" aria-controls="collapseGoals">
+                        <i class="bi-bullseye"></i> Goal Management
+                    </a>
+
+                    <!-- Submenu -->
+                    <ul class="nav collapse flex-column" id="collapseGoals" data-bs-parent="#navbar-sidebar">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Goals</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Chatrooms</a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Menu item 5 -->
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="bi-file-post"></i> Posts
+                    </a>
+                </li>
+
+                <!-- Menu item 6 -->
+                <li class="nav-item">
+                    <a class="nav-link {{ app.request.attributes.get('_route') in ['admin_claims'] ? 'active' : '' }}" data-bs-toggle="collapse" href="#collapseinstructors"
+                       role="button" aria-expanded="false" aria-controls="collapseinstructors">
+                        <i class="bi-exclamation-triangle-fill"></i> Reclamations
+                    </a>
+                    <!-- Submenu -->
+                    <ul class="nav collapse flex-column" id="collapseinstructors" data-bs-parent="#navbar-sidebar">
+                        <li class="nav-item">
+                            <a class="nav-link {{ app.request.attributes.get('_route') == 'admin_claims' ? 'active' : '' }}" href="{{ path('admin_claims') }}">Complaints<span class="badge text-bg-success rounded-circle ms-2">2</span></a>
+                            
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Responses<span class="badge text-bg-success rounded-circle ms-2">2</span></a>
+                            
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Menu item 7 -->
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="bi-gear-fill"></i> Admin Settings
+                    </a>
+                </li>
+
+                <!-- Menu item 8 -->
+                <li class="nav-item">
+                    <a class="nav-link {{ app.request.attributes.get('_route') in ['coaches_list', 'admin_coach_requests'] ? 'active' : '' }}" data-bs-toggle="collapse" href="#collapseauthentication"
+                       role="button" aria-expanded="false" aria-controls="collapseauthentication">
+                        <i class="bi-person-badge-fill"></i> Coaching Management
+                    </a>
+
+                    <!-- Submenu -->
+                    <ul class="nav collapse flex-column" id="collapseauthentication" data-bs-parent="#navbar-sidebar">
+                        <li class="nav-item">
+                            <a class="nav-link {{ app.request.attributes.get('_route') == 'coaches_list' ? 'active' : '' }}" href="{{ path('coaches_list') }}">Coaches</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ app.request.attributes.get('_route') == 'admin_coach_requests' ? 'active' : '' }}" href="{{ path('admin_coach_requests') }}">Requests</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Sessions</a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Title -->
+                <li class="nav-item ms-2 my-2">Statistics</li>
+
+                <!-- Menu item 9 -->
+                <li class="nav-item">
+                    <a class="nav-link {{ app.request.attributes.get('_route') in ['admin_global_stats', 'admin_user_stats'] ? 'active' : '' }}" data-bs-toggle="collapse" href="#collapseStatistics"
+                       role="button" aria-expanded="false" aria-controls="collapseStatistics">
+                        <i class="bi-person-badge-fill"></i> Statistics & Monitoring
+                    </a>
+
+                    <!-- Submenu -->
+                    <ul class="nav collapse flex-column" id="collapseStatistics" data-bs-parent="#navbar-sidebar">
+                        <li class="nav-item">
+                            <a class="nav-link {{ app.request.attributes.get('_route') == 'admin_global_stats' ? 'active' : '' }}" href="{{ path('admin_global_stats') }}">Global stats</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ app.request.attributes.get('_route') == 'admin_user_stats' ? 'active' : '' }}" href="{{ path('admin_user_stats') }}">User activity</a>
+                        </li>
+                    </ul>
+                </li>
+                
+
+
+            </ul>
+            <!-- Sidebar menu END -->
+
+            <!-- Sidebar footer START -->
+            <div class="px-3 mt-auto pt-3">
+                <div class="d-flex align-items-center justify-content-between text-primary-hover">
+                    <a class="h5 mb-0 text-body" href="{{ path('admin_dashboard') }}" title="Dashboard">
+                        <i class="bi bi-speedometer2"></i>
+                    </a>
+                    {% if app.user %}
+                        <span class="small text-muted">{{ app.user.firstName }} {{ app.user.lastName }}</span>
+                    {% endif %}
+                    <a class="h5 mb-0 text-body" href="{{ path('app_logout') }}" title="Déconnexion">
+                        <i class="bi bi-power"></i>
+                    </a>
+                </div>
+            </div>
+            <!-- Sidebar footer END -->
+
+        </div>
+    </div>
+</nav>
+<!-- Sidebar END -->

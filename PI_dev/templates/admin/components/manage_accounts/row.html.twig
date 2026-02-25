@@ -1,0 +1,91 @@
+<tr>
+    <!-- Instructor name -->
+    <td>
+        <div class="d-flex align-items-center position-relative">
+            <!-- Avatar -->
+            <div class="avatar avatar-md">
+                {% if user.avatar %}
+                    <img src="{{ user.avatar }}" class="rounded-circle" alt="avatar">
+                {% else %}
+                    <div class="avatar-img rounded-circle bg-secondary bg-opacity-10
+                                d-flex align-items-center justify-content-center">
+                        {% set initials = user.name|split(' ')|map(v => v|first)|join|upper %}
+                        <span class="fw-bold text-secondary">{{ initials }}</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="mb-0 ms-2">
+                <h6 class="mb-0">
+                    <a href="{{ user.id is defined ? path('admin_user_detail', {id: user.id}) : '#' }}" class="stretched-link">{{ user.name }}</a>
+                </h6>
+            </div>
+        </div>
+    </td>
+
+    <!-- Detail -->
+    <td class="text-center text-sm-start">
+        <h6 class="mb-0">{{ user.goal }}</h6>
+    </td>
+
+    <!-- Courses -->
+    <td>{{ user.routines }}</td>
+
+    <!-- Total students -->
+    <td>{{ user.streakDays }}</td>
+
+    <!-- Actions -->
+    <td>
+        <div class="d-flex align-items-center gap-2">
+            <!-- Status Dropdown -->
+            <div class="btn-group">
+                <button type="button" 
+                        class="btn btn-primary-soft dropdown-toggle" 
+                        data-bs-toggle="dropdown" 
+                        aria-expanded="false"
+                        title="Change Status"
+                        style="border-radius: 0.25rem;">
+                    <i class="bi bi-gear"></i>
+                </button>
+                <ul class="dropdown-menu">
+                    <li>
+                        <a class="dropdown-item" href="#" onclick="changeStatus('{{ user.name }}', 'activate'); return false;">
+                            <i class="bi bi-check-circle text-success me-2"></i>Activate
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="#" onclick="changeStatus('{{ user.name }}', 'deactivate'); return false;">
+                            <i class="bi bi-x-circle text-secondary me-2"></i>Deactivate
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="#" onclick="changeStatus('{{ user.name }}', 'suspend'); return false;">
+                            <i class="bi bi-pause-circle text-warning me-2"></i>Suspend
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Delete Button -->
+            <button class="btn btn-danger-soft"
+                    onclick="deleteAccount('{{ user.name }}')"
+                    data-bs-toggle="tooltip"
+                    title="Delete Account"
+                    style="border-radius: 0.25rem;">
+                <i class="bi bi-trash"></i>
+            </button>
+        </div>
+    </td>
+</tr>
+
+<script>
+    function changeStatus(userName, action) {
+        alert(`This is a static demo. In production, this would ${action} the account for ${userName}`);
+    }
+    
+    function deleteAccount(userName) {
+        if (confirm(`Are you sure you want to delete the account for ${userName}? This action cannot be undone.`)) {
+            alert(`This is a static demo. In production, this would delete the account for ${userName}`);
+        }
+    }
+</script>

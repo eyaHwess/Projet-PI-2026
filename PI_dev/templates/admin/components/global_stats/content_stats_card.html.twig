@@ -1,0 +1,60 @@
+<!-- Content Statistics Card -->
+<div class="card bg-transparent border">
+    <div class="card-header bg-transparent border-bottom">
+        <h5 class="card-header-title mb-0">Content Statistics</h5>
+    </div>
+    <div class="card-body">
+        <div id="contentStatsChart"></div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var options = {
+        series: [{{ contentStats.posts }}, {{ contentStats.comments }}, {{ contentStats.chatrooms }}, {{ contentStats.claims }}],
+        chart: {
+            type: 'donut',
+            height: 350,
+        },
+        labels: ['Posts', 'Comments', 'Chatrooms', 'Claims'],
+        colors: ['#066ac9', '#0cbc87', '#f7c32e', '#d6293e'],
+        legend: {
+            position: 'bottom',
+            fontSize: '14px',
+        },
+        dataLabels: {
+            enabled: true,
+            formatter: function(val, opts) {
+                return opts.w.config.series[opts.seriesIndex]
+            }
+        },
+        plotOptions: {
+            pie: {
+                donut: {
+                    size: '65%',
+                    labels: {
+                        show: true,
+                        total: {
+                            show: true,
+                            label: 'Total Content',
+                            formatter: function (w) {
+                                return w.globals.seriesTotals.reduce((a, b) => a + b, 0)
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        tooltip: {
+            y: {
+                formatter: function(value) {
+                    return value + ' items';
+                }
+            }
+        }
+    };
+
+    var chart = new ApexCharts(document.querySelector("#contentStatsChart"), options);
+    chart.render();
+});
+</script>

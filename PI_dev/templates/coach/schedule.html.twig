@@ -1,0 +1,156 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Planifier une session{% endblock %}
+
+{% block stylesheets %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+    <style>
+        :root { --orange-primary: #f97316; --orange-hover: #ea580c; }
+        .navbar-custom { background-color: #fff !important; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .navbar-custom .nav-link { color: #212529 !important; }
+        .navbar-custom .nav-link:hover { color: var(--orange-primary) !important; }
+        .navbar-custom .navbar-brand { color: #212529 !important; }
+        .btn-orange { background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); border: none; color: white; padding: 0.75rem 2rem; border-radius: 50px; font-weight: 600; }
+        .btn-orange:hover { transform: translateY(-2px); color: white; }
+        .schedule-card { border: 2px solid #e9ecef; border-radius: 20px; padding: 2rem; transition: all 0.3s ease; margin-bottom: 1.5rem; }
+        .schedule-card:hover { border-color: var(--orange-primary); box-shadow: 0 10px 30px rgba(249, 115, 22, 0.15); }
+        .coach-avatar { width: 70px; height: 70px; background: linear-gradient(135deg, #fff5f0, #ffe4d6); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; color: var(--orange-primary); }
+        .coach-card { border: 2px solid #e9ecef; border-radius: 16px; padding: 1.5rem; transition: all 0.3s ease; }
+        .coach-card:hover { border-color: var(--orange-primary); box-shadow: 0 6px 20px rgba(249, 115, 22, 0.12); }
+        .badge-pending { background: #fef3c7; color: #92400e; }
+        .badge-accepted { background: #d1fae5; color: #065f46; }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <section class="py-5">
+        <div class="container">
+            <div class="mb-5">
+                <span class="badge bg-light px-4 py-2 rounded-pill mb-3" style="color: var(--orange-primary);">
+                    <i class="bi bi-calendar-event me-2"></i>Réservez votre créneau
+                </span>
+                <h1 class="display-5 fw-bold mb-2">Planifier une session</h1>
+                <p class="lead text-muted mb-0">
+                    Choisissez une date et heure pour votre session de coaching
+                </p>
+            </div>
+
+            {% if sessionsToSchedule|length > 0 %}
+                <h5 class="mb-3">Sessions à planifier</h5>
+                {% for item in sessionsToSchedule %}
+                    <div class="schedule-card">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <div class="coach-avatar">
+                                    <i class="bi bi-person-fill"></i>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <h5 class="mb-1">{{ item.coach.fullName ?: item.coach.email }}</h5>
+                                <p class="text-muted small mb-2">{{ item.coach.email }}</p>
+                                {% if item.session.proposedTimeByUser or item.session.proposedTimeByCoach %}
+                                    <p class="small mb-0">
+                                        {% if item.session.proposedTimeByUser %}
+                                            <span class="text-muted">Votre proposition :</span> {{ item.session.proposedTimeByUser|date('d/m/Y H:i') }}
+                                        {% endif %}
+                                        {% if item.session.proposedTimeByCoach %}
+                                            <span class="text-muted ms-2">Proposition du coach :</span> {{ item.session.proposedTimeByCoach|date('d/m/Y H:i') }}
+                                        {% endif %}
+                                    </p>
+                                {% else %}
+                                    <p class="text-muted small mb-0">Aucun créneau proposé</p>
+                                {% endif %}
+                            </div>
+                            <div class="col-auto">
+                                <a href="{{ path('app_session_schedule', {id: item.session.id}) }}" class="btn btn-orange">
+                                    <i class="bi bi-calendar-plus me-2"></i>
+                                    {% if item.session.proposedTimeByUser or item.session.proposedTimeByCoach %}
+                                        Modifier le créneau
+                                    {% else %}
+                                        Choisir un créneau
+                                    {% endif %}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            {% if sessionsToSchedule|length == 0 %}
+                <div class="alert alert-info mb-5">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Vous n'avez pas encore de session à planifier. Trouvez un coach et envoyez-lui une demande de coaching. Une fois acceptée, vous pourrez planifier votre session ici.
+                </div>
+            {% endif %}
+
+            <h5 class="mb-3 mt-5">Trouver un coach</h5>
+            {% if allCoaches|length > 0 %}
+                <div class="row g-4">
+                    {% for coach in allCoaches %}
+                        {% set pendingRequest = myRequests|filter(r => r.coach.id == coach.id and r.status == 'pending')|first %}
+                        {% set acceptedRequest = myRequests|filter(r => r.coach.id == coach.id and r.status == 'accepted')|first %}
+                        {% set declinedRequest = myRequests|filter(r => r.coach.id == coach.id and r.status == 'declined')|first %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="coach-card">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="coach-avatar me-3" style="width: 50px; height: 50px; font-size: 1.25rem;">
+                                        <i class="bi bi-person-fill"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">{{ coach.fullName ?: coach.email }}</h6>
+                                        <p class="text-muted small mb-0">{{ coach.email }}</p>
+                                    </div>
+                                </div>
+                                {% if pendingRequest %}
+                                    <span class="badge badge-pending rounded-pill px-3 py-2 w-100 text-center">
+                                        <i class="bi bi-clock me-1"></i>Demande en attente
+                                    </span>
+                                {% elseif acceptedRequest and acceptedRequest.session %}
+                                    <a href="{{ path('app_session_schedule', {id: acceptedRequest.session.id}) }}" class="btn btn-orange w-100 btn-sm">
+                                        <i class="bi bi-calendar-check me-2"></i>Planifier la session
+                                    </a>
+                                {% elseif declinedRequest %}
+                                    <span class="badge bg-secondary rounded-pill px-3 py-2 w-100 text-center">Demande refusée</span>
+                                {% else %}
+                                    <form action="{{ path('app_coach_request', {id: coach.id}) }}" method="post" class="request-coach-form">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('coach-request' ~ coach.id) }}">
+                                        <button type="submit" class="btn btn-outline-primary w-100 btn-sm">
+                                            <i class="bi bi-send me-2"></i>Demander un coaching
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted">Aucun coach disponible pour le moment.</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.querySelectorAll('.request-coach-form').forEach(form => {
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const btn = this.querySelector('button[type="submit"]');
+                const originalText = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Envoi...';
+                try {
+                    const fd = new FormData(this);
+                    const res = await fetch(this.action, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd });
+                    const data = await res.json();
+                    alert(data.message);
+                    if (data.success) location.reload();
+                } catch (err) {
+                    alert('Erreur réseau');
+                }
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            });
+        });
+    </script>
+{% endblock %}

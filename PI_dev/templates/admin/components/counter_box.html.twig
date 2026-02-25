@@ -1,0 +1,28 @@
+<div class="col-md-6 col-xxl-3">
+    <div class="card card-body {{ bgColor }} {{ bgOpacity }} p-4 h-100">
+        <div class="d-flex justify-content-between align-items-center">
+
+            <!-- Digit -->
+            <div>
+                <div class="d-flex align-items-center">
+                    <h2 class="purecounter mb-0 fw-bold"
+                        data-purecounter-start="0"
+                        data-purecounter-end="{{ value }}"
+                        data-purecounter-delay="200">0</h2>
+
+                    {% if suffix is defined %}
+                        <span class="mb-0 h2 ms-1">{{ suffix }}</span>
+                    {% endif %}
+                </div>
+
+                <span class="mb-0 h6 fw-light">{{ title }}</span>
+            </div>
+
+            <!-- Icon -->
+            <div class="icon-lg rounded-circle {{ iconBg }} text-white mb-0">
+                <i class="{{ icon }}"></i>
+            </div>
+
+        </div>
+    </div>
+</div>

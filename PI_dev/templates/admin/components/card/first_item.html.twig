@@ -1,0 +1,43 @@
+<div class="d-flex justify-content-between position-relative mb-4">
+  <div class="d-sm-flex">
+
+    <!-- Avatar -->
+    <div class="avatar avatar-md flex-shrink-0">
+        {% if avatar is defined and avatar %}
+            <img class="avatar-img rounded-circle" src="{{ avatar }}" alt="avatar">
+        {% else %}
+            <div class="avatar-img rounded-circle
+                        {{ bgClass|default('bg-secondary bg-opacity-10') }}
+                        d-flex align-items-center justify-content-center">
+                {% set computedInitials =
+                    initials
+                    |default(
+                        name
+                        |default('')
+                        |split(' ')
+                        |map(v => v|first)
+                        |join
+                        |upper
+                    )
+                %}
+                <span class="{{ textClass|default('text-secondary') }} fw-bold">
+                    {{ computedInitials ?: '?' }}
+                </span>
+            </div>
+        {% endif %}
+    </div>
+
+
+    <!-- Info -->
+    <div class="ms-0 ms-sm-2 mt-2 mt-sm-0">
+      <h6 class="mb-0">
+        <a href="{{ link|default('#') }}" class="stretched-link">
+          {{ name|default('Unknown') }}
+        </a>
+      </h6>
+      <p class="mb-0">{{ message|default('')|raw }}</p>
+      <span class="small">{{ time|default('') }}</span>
+    </div>
+
+  </div>
+</div>

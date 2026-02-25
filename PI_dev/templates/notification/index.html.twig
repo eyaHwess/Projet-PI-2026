@@ -1,0 +1,725 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Notifications{% endblock %}
+
+{% block stylesheets %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --pastel-primary: #A8D8EA;
+            --pastel-hover: #B8E6F0;
+            --pastel-light: #E8F6F9;
+            --pastel-success: #B5EAD7;
+            --pastel-warning: #FFE5B4;
+            --pastel-danger: #FFB3D9;
+            --pastel-purple: #E2C2E8;
+            --green-mint: #7FCDB8;
+            --green-light: #C8F2E3;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #F8FCFE 0%, #F0F8FF 100%);
+            min-height: 100vh;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+        
+        .animate-fade-in {
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        .page-header {
+            background: linear-gradient(135deg, #F0F8FF 0%, #E8F6F9 50%, #D4EEF7 100%);
+            padding: 3rem 0 2rem;
+            margin-bottom: 2rem;
+            border-bottom: 3px solid var(--pastel-primary);
+            box-shadow: 0 4px 20px rgba(168, 216, 234, 0.15);
+        }
+        
+        .stats-card {
+            background: white;
+            border: 2px solid var(--pastel-light);
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(168, 216, 234, 0.1);
+        }
+        
+        .stats-card:hover {
+            border-color: var(--pastel-primary);
+            box-shadow: 0 6px 20px rgba(168, 216, 234, 0.25);
+            transform: translateY(-4px);
+        }
+        
+        .stats-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            margin: 0 auto 1rem;
+        }
+        
+        .filter-tabs {
+            background: white;
+            border: 2px solid var(--pastel-light);
+            border-radius: 1rem;
+            padding: 0.5rem;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 12px rgba(168, 216, 234, 0.1);
+        }
+        
+        .filter-tab {
+            flex: 1;
+            min-width: 120px;
+            padding: 0.75rem 1.25rem;
+            border: 2px solid transparent;
+            border-radius: 0.75rem;
+            background: transparent;
+            color: #5A7C8F;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .filter-tab:hover {
+            background: var(--pastel-light);
+            color: #2C5F7F;
+        }
+        
+        .filter-tab.active {
+            background: linear-gradient(135deg, var(--pastel-primary), var(--pastel-hover));
+            color: #2C5F7F;
+            border-color: var(--pastel-primary);
+            box-shadow: 0 4px 12px rgba(168, 216, 234, 0.3);
+        }
+        
+        .filter-tab .badge {
+            background: rgba(255, 255, 255, 0.9);
+            color: #2C5F7F;
+            padding: 0.25rem 0.5rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        
+        .notification-card {
+            background: white;
+            border: 2px solid #D4EEF7;
+            border-radius: 1.25rem;
+            padding: 1.75rem;
+            margin-bottom: 1.25rem;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            animation: slideIn 0.4s ease-out;
+        }
+        
+        .notification-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(135deg, var(--pastel-primary), var(--green-mint));
+            transform: scaleY(0);
+            transition: transform 0.3s;
+        }
+        
+        .notification-card:hover {
+            border-color: var(--pastel-primary);
+            box-shadow: 0 8px 28px rgba(168, 216, 234, 0.25);
+            transform: translateX(5px);
+        }
+        
+        .notification-card:hover::before {
+            transform: scaleY(1);
+        }
+        
+        .notification-card.unread {
+            background: linear-gradient(135deg, #FFFEF8 0%, #FFF9F0 100%);
+            border-color: var(--pastel-warning);
+            border-width: 3px;
+        }
+        
+        .notification-card.unread::before {
+            background: linear-gradient(135deg, var(--pastel-warning), #FFD700);
+            transform: scaleY(1);
+            width: 6px;
+        }
+        
+        .notification-icon {
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            flex-shrink: 0;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        
+        .notification-icon::after {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: 50%;
+            border: 2px solid currentColor;
+            opacity: 0.2;
+        }
+        
+        .icon-accepted {
+            background: linear-gradient(135deg, var(--green-mint), var(--green-light));
+            color: #2D6A5C;
+        }
+        
+        .icon-declined {
+            background: linear-gradient(135deg, var(--pastel-danger), #FFD1DC);
+            color: #8B5F7A;
+        }
+        
+        .icon-pending {
+            background: linear-gradient(135deg, var(--pastel-warning), #FFF9C4);
+            color: #8B7355;
+        }
+        
+        .icon-info {
+            background: linear-gradient(135deg, var(--pastel-primary), var(--pastel-hover));
+            color: #2C5F7F;
+        }
+        
+        .notification-badge {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: white;
+            padding: 0.375rem 0.875rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            animation: pulse 2s infinite;
+            box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+        }
+        
+        .notification-badge i {
+            font-size: 0.5rem;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .notification-content {
+            flex: 1;
+        }
+        
+        .notification-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #2C5F7F;
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }
+        
+        .notification-message {
+            color: #5A7C8F;
+            margin-bottom: 0.75rem;
+            line-height: 1.6;
+        }
+        
+        .notification-meta {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            color: #8B9DAF;
+            font-size: 0.875rem;
+        }
+        
+        .notification-meta i {
+            color: var(--pastel-primary);
+        }
+        
+        .notification-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .btn-action {
+            padding: 0.625rem 1.25rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: all 0.3s;
+            border: 2px solid;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary-action {
+            background: linear-gradient(135deg, var(--pastel-primary), var(--pastel-hover));
+            border-color: var(--pastel-primary);
+            color: #2C5F7F;
+        }
+        
+        .btn-primary-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(168, 216, 234, 0.4);
+            color: #2C5F7F;
+        }
+        
+        .btn-secondary-action {
+            background: white;
+            border-color: #D4EEF7;
+            color: #5A7C8F;
+        }
+        
+        .btn-secondary-action:hover {
+            border-color: var(--pastel-primary);
+            color: #2C5F7F;
+            background: var(--pastel-light);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 5rem 2rem;
+            background: white;
+            border-radius: 1.5rem;
+            border: 3px dashed #D4EEF7;
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        .empty-state-icon {
+            font-size: 5rem;
+            color: var(--pastel-primary);
+            margin-bottom: 1.5rem;
+            opacity: 0.7;
+        }
+        
+        .action-bar {
+            background: white;
+            border: 2px solid var(--pastel-light);
+            border-radius: 1rem;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            box-shadow: 0 2px 12px rgba(168, 216, 234, 0.1);
+        }
+        
+        .btn-mark-all {
+            background: linear-gradient(135deg, var(--green-mint), var(--green-light));
+            color: #2D6A5C;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-mark-all:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(127, 205, 184, 0.4);
+            color: #2D6A5C;
+        }
+        
+        .notification-type-badge {
+            padding: 0.375rem 0.875rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+        
+        .badge-accepted {
+            background: var(--green-light);
+            color: #2D6A5C;
+        }
+        
+        .badge-declined {
+            background: #FFE4E9;
+            color: #8B5F7A;
+        }
+        
+        .badge-pending {
+            background: #FFF9C4;
+            color: #8B7355;
+        }
+        
+        @media (max-width: 768px) {
+            .notification-card {
+                padding: 1.25rem;
+            }
+            
+            .notification-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 1.5rem;
+            }
+            
+            .filter-tab {
+                min-width: 100px;
+                font-size: 0.875rem;
+            }
+            
+            .stats-card {
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="page-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="display-5 fw-bold text-dark mb-2 animate-fade-in">
+                        <i class="bi bi-bell-fill me-2" style="color: #4A7C9D;"></i>
+                        Centre de Notifications
+                    </h1>
+                    <p class="text-muted mb-0">Suivez l'évolution de vos demandes de coaching en temps réel</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container pb-5">
+        {% if notifications|length > 0 %}
+            {# Statistiques #}
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="stats-card">
+                        <div class="stats-icon" style="background: linear-gradient(135deg, var(--pastel-primary), var(--pastel-hover)); color: #2C5F7F;">
+                            <i class="bi bi-bell-fill"></i>
+                        </div>
+                        <h3 class="h2 fw-bold text-dark mb-1">{{ notifications|length }}</h3>
+                        <p class="text-muted small mb-0">Total notifications</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stats-card">
+                        <div class="stats-icon" style="background: linear-gradient(135deg, #FFD700, #FFA500); color: white;">
+                            <i class="bi bi-circle-fill"></i>
+                        </div>
+                        <h3 class="h2 fw-bold text-dark mb-1" id="unreadCount">{{ notifications|filter(n => not n.isRead)|length }}</h3>
+                        <p class="text-muted small mb-0">Non lues</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stats-card">
+                        <div class="stats-icon" style="background: linear-gradient(135deg, var(--green-mint), var(--green-light)); color: #2D6A5C;">
+                            <i class="bi bi-check-circle-fill"></i>
+                        </div>
+                        <h3 class="h2 fw-bold text-dark mb-1">{{ notifications|filter(n => n.isRead)|length }}</h3>
+                        <p class="text-muted small mb-0">Lues</p>
+                    </div>
+                </div>
+            </div>
+
+            {# Filtres #}
+            <div class="filter-tabs">
+                <button class="filter-tab active" data-filter="all">
+                    <i class="bi bi-grid-fill"></i>
+                    Toutes
+                    <span class="badge">{{ notifications|length }}</span>
+                </button>
+                <button class="filter-tab" data-filter="unread">
+                    <i class="bi bi-circle-fill"></i>
+                    Non lues
+                    <span class="badge">{{ notifications|filter(n => not n.isRead)|length }}</span>
+                </button>
+                <button class="filter-tab" data-filter="accepted">
+                    <i class="bi bi-check-circle-fill"></i>
+                    Acceptées
+                    <span class="badge">{{ notifications|filter(n => n.type == 'request_accepted')|length }}</span>
+                </button>
+                <button class="filter-tab" data-filter="declined">
+                    <i class="bi bi-x-circle-fill"></i>
+                    Refusées
+                    <span class="badge">{{ notifications|filter(n => n.type == 'request_declined')|length }}</span>
+                </button>
+            </div>
+
+            {# Barre d'actions #}
+            <div class="action-bar">
+                <div>
+                    <span class="text-dark fw-semibold">
+                        <i class="bi bi-funnel-fill me-2" style="color: var(--pastel-primary);"></i>
+                        <span id="visibleCount">{{ notifications|length }}</span> notification(s) affichée(s)
+                    </span>
+                </div>
+                <button id="markAllReadBtn" class="btn btn-mark-all">
+                    <i class="bi bi-check-all"></i>
+                    Tout marquer comme lu
+                </button>
+            </div>
+
+            {# Liste des notifications #}
+            <div id="notificationsList">
+                {% for notification in notifications %}
+                    <div class="notification-card {% if not notification.isRead %}unread{% endif %}" 
+                         data-id="{{ notification.id }}"
+                         data-type="{{ notification.type }}"
+                         data-read="{{ notification.isRead ? 'true' : 'false' }}"
+                         style="animation-delay: {{ loop.index * 0.05 }}s;">
+                        <div class="d-flex gap-3 align-items-start">
+                            <div class="notification-icon 
+                                {% if notification.type == 'request_accepted' %}icon-accepted
+                                {% elseif notification.type == 'request_declined' %}icon-declined
+                                {% elseif notification.type == 'request_pending' %}icon-pending
+                                {% else %}icon-info
+                                {% endif %}">
+                                {% if notification.type == 'request_accepted' %}
+                                    <i class="bi bi-check-circle-fill"></i>
+                                {% elseif notification.type == 'request_declined' %}
+                                    <i class="bi bi-x-circle-fill"></i>
+                                {% elseif notification.type == 'request_pending' %}
+                                    <i class="bi bi-clock-history"></i>
+                                {% else %}
+                                    <i class="bi bi-bell-fill"></i>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="notification-content">
+                                <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap gap-2">
+                                    <div>
+                                        <h3 class="notification-title">
+                                            {% if notification.type == 'request_accepted' %}
+                                                🎉 Demande acceptée !
+                                            {% elseif notification.type == 'request_declined' %}
+                                                Demande refusée
+                                            {% elseif notification.type == 'request_pending' %}
+                                                Demande en attente
+                                            {% else %}
+                                                Nouvelle notification
+                                            {% endif %}
+                                        </h3>
+                                        <span class="notification-type-badge 
+                                            {% if notification.type == 'request_accepted' %}badge-accepted
+                                            {% elseif notification.type == 'request_declined' %}badge-declined
+                                            {% else %}badge-pending
+                                            {% endif %}">
+                                            {% if notification.type == 'request_accepted' %}
+                                                <i class="bi bi-check-circle-fill"></i>Acceptée
+                                            {% elseif notification.type == 'request_declined' %}
+                                                <i class="bi bi-x-circle-fill"></i>Refusée
+                                            {% else %}
+                                                <i class="bi bi-clock-history"></i>En attente
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    {% if not notification.isRead %}
+                                        <span class="notification-badge">
+                                            <i class="bi bi-circle-fill"></i>
+                                            Nouveau
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                
+                                <p class="notification-message">{{ notification.message }}</p>
+                                
+                                <div class="notification-meta">
+                                    <span>
+                                        <i class="bi bi-clock me-1"></i>
+                                        {{ notification.createdAt|date('d/m/Y à H:i') }}
+                                    </span>
+                                    {% if notification.coachingRequest %}
+                                        <span>
+                                            <i class="bi bi-person-badge me-1"></i>
+                                            Coach: {{ notification.coachingRequest.coach.firstName }} {{ notification.coachingRequest.coach.lastName }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="notification-actions">
+                                    {% if notification.coachingRequest %}
+                                        <a href="{{ path('app_coach_index') }}" class="btn btn-action btn-primary-action">
+                                            <i class="bi bi-eye"></i>
+                                            Voir mes demandes
+                                        </a>
+                                    {% endif %}
+                                    {% if not notification.isRead %}
+                                        <button class="btn btn-action btn-secondary-action mark-read-btn" data-id="{{ notification.id }}">
+                                            <i class="bi bi-check"></i>
+                                            Marquer comme lu
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="bi bi-bell-slash"></i>
+                </div>
+                <h3 class="h3 fw-bold text-dark mb-3">Aucune notification</h3>
+                <p class="text-muted mb-4 lead">Vous n'avez pas encore de notifications.<br>Elles apparaîtront ici lorsque vos coaches répondront à vos demandes.</p>
+                <a href="{{ path('app_coach_index') }}" class="btn btn-primary-action btn-action" style="padding: 1rem 2.5rem; font-size: 1rem;">
+                    <i class="bi bi-search"></i>
+                    Trouver un coach
+                </a>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function() {
+            const markAllReadBtn = document.getElementById('markAllReadBtn');
+            const filterTabs = document.querySelectorAll('.filter-tab');
+            const notificationCards = document.querySelectorAll('.notification-card');
+            const visibleCountEl = document.getElementById('visibleCount');
+            const markReadBtns = document.querySelectorAll('.mark-read-btn');
+            
+            // Filtrer les notifications
+            filterTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    filterTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const filter = this.dataset.filter;
+                    let visibleCount = 0;
+                    
+                    notificationCards.forEach(card => {
+                        let show = false;
+                        
+                        if (filter === 'all') {
+                            show = true;
+                        } else if (filter === 'unread') {
+                            show = card.dataset.read === 'false';
+                        } else if (filter === 'accepted') {
+                            show = card.dataset.type === 'request_accepted';
+                        } else if (filter === 'declined') {
+                            show = card.dataset.type === 'request_declined';
+                        }
+                        
+                        if (show) {
+                            card.style.display = '';
+                            visibleCount++;
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                    
+                    if (visibleCountEl) {
+                        visibleCountEl.textContent = visibleCount;
+                    }
+                });
+            });
+            
+            // Marquer toutes comme lues
+            if (markAllReadBtn) {
+                markAllReadBtn.addEventListener('click', async function() {
+                    this.disabled = true;
+                    this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Traitement...';
+                    
+                    try {
+                        const res = await fetch('{{ path('app_notifications_mark_all_read') }}', {
+                            method: 'POST',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+                        
+                        if (res.ok) {
+                            location.reload();
+                        }
+                    } catch (err) {
+                        console.error('Erreur:', err);
+                        alert('Une erreur est survenue');
+                    } finally {
+                        this.disabled = false;
+                        this.innerHTML = '<i class="bi bi-check-all"></i>Tout marquer comme lu';
+                    }
+                });
+            }
+            
+            // Marquer une notification comme lue
+            markReadBtns.forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const notifId = this.dataset.id;
+                    this.disabled = true;
+                    this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>...';
+                    
+                    try {
+                        const res = await fetch(`/notifications/${notifId}/mark-read`, {
+                            method: 'POST',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+                        
+                        if (res.ok) {
+                            location.reload();
+                        }
+                    } catch (err) {
+                        console.error('Erreur:', err);
+                        alert('Une erreur est survenue');
+                    } finally {
+                        this.disabled = false;
+                        this.innerHTML = '<i class="bi bi-check"></i>Marquer comme lu';
+                    }
+                });
+            });
+        })();
+    </script>
+{% endblock %}
