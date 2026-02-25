@@ -383,6 +383,13 @@ class CoachController extends AbstractController
         $categories = $analysis['categories'];
         $emotion = $analysis['emotion'];
 
+        // Fallback local si l'IA ne renvoie rien (ou si l'appel a échoué)
+        if (empty($categories) && null === $emotion) {
+            $fallback = $this->inferCategoriesAndEmotionFromMessage($message);
+            $categories = $fallback['categories'];
+            $emotion = $fallback['emotion'];
+        }
+
         $coaches = $this->userRepository->findCoaches();
 
         $scored = [];
@@ -448,5 +455,56 @@ class CoachController extends AbstractController
             $reasons[] = 'Recommandé par notre IA (' . $percent . '%)';
         }
         return $reasons;
+    }
+
+    /**
+     * Heuristique locale si OpenAI ne renvoie rien.
+     */
+    private function inferCategoriesAndEmotionFromMessage(string $message): array
+    {
+        $text = mb_strtolower($message);
+        $categories = [];
+        $emotion = null;
+
+        // Catégorie fitness
+        $fitnessKeywords = ['sport', 'musculation', 'cardio', 'courir', 'course', 'perdre du poids', 'perte de poids', 'mincir', 'remise en forme'];
+        foreach ($fitnessKeywords as $kw) {
+            if (str_contains($text, $kw)) {
+                $categories[] = 'fitness';
+                break;
+            }
+        }
+
+        // Catégorie nutrition
+        $nutritionKeywords = ['nutrition', 'aliment', 'régime', 'diète', 'manger', 'alimentation'];
+        foreach ($nutritionKeywords as $kw) {
+            if (str_contains($text, $kw)) {
+                $categories[] = 'nutrition';
+                break;
+            }
+        }
+
+        // Catégorie mental
+        $mentalKeywords = ['stress', 'anxieux', 'anxiété', 'burn-out', 'burnout', 'dépression', 'mental', 'motivation'];
+        foreach ($mentalKeywords as $kw) {
+            if (str_contains($text, $kw)) {
+                $categories[] = 'mental';
+                break;
+            }
+        }
+
+        // Emotion
+        if (str_contains($text, 'stress') || str_contains($text, 'anxi')) {
+            $emotion = 'stress';
+        } elseif (str_contains($text, 'urgent') || str_contains($text, 'rapidement') || str_contains($text, 'tout de suite') || str_contains($text, 'immédiatement')) {
+            $emotion = 'urgence';
+        } elseif (str_contains($text, 'motivé') || str_contains($text, 'motivation') || str_contains($text, 'déterminé')) {
+            $emotion = 'motivation';
+        }
+
+        return [
+            'categories' => array_values(array_unique($categories)),
+            'emotion' => $emotion,
+        ];
     }
 }
