@@ -39,6 +39,9 @@ private ?string $content = null;
     #[ORM\Column(type: 'datetime_immutable')]
     private ?\DateTimeImmutable $createdAt = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $photoPath = null;
+
     // ✅ ONLY ONE relation to User
     #[ORM\ManyToOne(inversedBy: 'reclamations')]
     #[ORM\JoinColumn(nullable: false)]
@@ -103,6 +106,17 @@ private ?string $content = null;
     public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
+    }
+
+    public function getPhotoPath(): ?string
+    {
+        return $this->photoPath;
+    }
+
+    public function setPhotoPath(?string $photoPath): static
+    {
+        $this->photoPath = $photoPath;
+        return $this;
     }
 
     public function getUser(): ?User

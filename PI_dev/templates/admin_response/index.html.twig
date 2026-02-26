@@ -1,38 +1,260 @@
-<link rel="stylesheet" href="{{ asset('css/reclamation.css') }}">
+{% extends 'admin/base_admin.html.twig' %}
 
-<div class="container">
-    <h1>📋 All Reclamations</h1>
+{% block title %}Gestion des Réclamations{% endblock %}
 
-    {% for reclamation in reclamations %}
-        <div class="card">
-            <p><strong>Content:</strong> {{ reclamation.content }}</p>
-            <p><strong>Type:</strong> {{ reclamation.type.value }}</p>
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card bg-transparent border rounded-3">
+                <div class="card-header bg-pink-50 border-bottom">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h3 class="mb-0 text-pink-600">📋 Toutes les Réclamations</h3>
+                            <p class="mb-0 text-muted">Gérez et répondez aux réclamations des utilisateurs</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <span class="badge bg-blue-400 text-white">{{ reclamations|length }} réclamation(s)</span>
+                        </div>
+                    </div>
+                </div>
 
-            <p>
-                <strong>Status:</strong>
-                {% if reclamation.status.name == 'PENDING' %}
-                    <span class="status status-pending">
-                        {{ reclamation.status.value }}
-                    </span>
-                {% else %}
-                    <span class="status status-answered">
-                        {{ reclamation.status.value }}
-                    </span>
-                {% endif %}
-            </p>
+                {# Filters Section #}
+                <div class="card-body border-bottom bg-light">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">Recherche</label>
+                            <input type="text" name="search" class="form-control" 
+                                   placeholder="Rechercher..." 
+                                   value="{{ currentFilters.search }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">Statut</label>
+                            <select name="status" class="form-select">
+                                <option value="">Tous les statuts</option>
+                                {% for status in statusOptions %}
+                                    <option value="{{ status.value }}" 
+                                            {% if currentFilters.status == status.value %}selected{% endif %}>
+                                        {{ status.value }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">Type</label>
+                            <select name="type" class="form-select">
+                                <option value="">Tous les types</option>
+                                {% for type in typeOptions %}
+                                    <option value="{{ type.value }}" 
+                                            {% if currentFilters.type == type.value %}selected{% endif %}>
+                                        {{ type.value }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end gap-2">
+                            <button type="submit" class="btn btn-primary" style="background-color: #60a5fa; border-color: #60a5fa;">
+                                <i class="bi bi-search"></i> Filtrer
+                            </button>
+                            <a href="{{ path('admin_reclamation_list') }}" class="btn btn-light">
+                                <i class="bi bi-arrow-clockwise"></i> Reset
+                            </a>
+                        </div>
+                    </form>
+                </div>
 
-            {% if reclamation.status.name != 'ANSWERED' %}
-                <a class="btn"
-                   href="{{ path('admin_reclamation_reply', {id: reclamation.id}) }}">
-                    Reply
-                </a>
-            {% else %}
-                <span style="color: gray; font-style: italic;">
-                    ✔ Already answered
-                </span>
-            {% endif %}
+                <div class="card-body">
+                    {% if reclamations|length > 0 %}
+                        <div class="table-responsive border-0" style="overflow-x: auto;">
+                            <table class="table table-hover align-middle p-4 mb-0" style="table-layout: fixed; width: 100%;">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th scope="col" class="border-0 rounded-start" style="width: 10%;">Type</th>
+                                        <th scope="col" class="border-0" style="width: 30%;">Contenu</th>
+                                        <th scope="col" class="border-0" style="width: 20%;">Utilisateur</th>
+                                        <th scope="col" class="border-0" style="width: 10%;">Statut</th>
+                                        <th scope="col" class="border-0" style="width: 12%;">Date</th>
+                                        <th scope="col" class="border-0" style="width: 8%;">Photo</th>
+                                        <th scope="col" class="border-0 rounded-end" style="width: 10%;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for reclamation in reclamations %}
+                                        <tr class="border-bottom border-light">
+                                            <td>
+                                                <span class="badge" style="background-color: #93c5fd; color: #1e3a8a;">{{ reclamation.type.value }}</span>
+                                            </td>
+                                            <td style="max-width: 300px;">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="ms-2">
+                                                        <h6 class="mb-0 fw-light text-break" style="word-wrap: break-word; overflow-wrap: break-word;">{{ reclamation.content|slice(0, 80) }}{% if reclamation.content|length > 80 %}...{% endif %}</h6>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td style="max-width: 200px;">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="avatar avatar-xs me-2 flex-shrink-0">
+                                                        <div class="avatar-img rounded-circle text-white d-flex align-items-center justify-content-center" style="background-color: #f9a8d4;">
+                                                            {{ reclamation.user.firstName|slice(0,1) }}{{ reclamation.user.lastName|slice(0,1) }}
+                                                        </div>
+                                                    </div>
+                                                    <div class="text-truncate">
+                                                        <h6 class="mb-0 fw-light text-truncate">{{ reclamation.user.firstName }} {{ reclamation.user.lastName }}</h6>
+                                                        <small class="text-muted text-truncate d-block">{{ reclamation.user.email }}</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {% if reclamation.status.name == 'PENDING' %}
+                                                    <span class="badge" style="background-color: #fef08a; color: #854d0e;">{{ reclamation.status.value }}</span>
+                                                {% elseif reclamation.status.name == 'ANSWERED' %}
+                                                    <span class="badge" style="background-color: #bbf7d0; color: #14532d;">{{ reclamation.status.value }}</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">{{ reclamation.status.value }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ reclamation.createdAt|date('d/m/Y H:i') }}</td>
+                                            <td>
+                                                {% if reclamation.photoPath %}
+                                                    <img src="{{ asset(reclamation.photoPath) }}" 
+                                                         alt="Photo" 
+                                                         class="rounded" 
+                                                         style="width: 40px; height: 40px; object-fit: cover; cursor: pointer;"
+                                                         onclick="openImageModal('{{ asset(reclamation.photoPath) }}')">
+                                                {% else %}
+                                                    <span class="text-muted small">Aucune</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if reclamation.status.name != 'ANSWERED' %}
+                                                    <a href="{{ path('admin_reclamation_reply', {id: reclamation.id}) }}" 
+                                                       class="btn btn-sm me-1 mb-1 mb-md-0" 
+                                                       style="background-color: #bbf7d0; color: #14532d;"
+                                                       data-bs-toggle="tooltip" 
+                                                       data-bs-placement="top" 
+                                                       title="Répondre">
+                                                        <i class="bi bi-reply"></i>
+                                                    </a>
+                                                {% else %}
+                                                    <span class="text-success small">
+                                                        <i class="bi bi-check-circle"></i> Répondu
+                                                    </span>
+                                                {% endif %}
+                                                <button class="btn btn-light btn-sm me-1 mb-1 mb-md-0" 
+                                                        data-bs-toggle="tooltip" 
+                                                        data-bs-placement="top" 
+                                                        title="Voir détails"
+                                                        onclick="showReclamationDetails({{ reclamation.id }}, '{{ reclamation.content|e('js') }}', '{{ reclamation.user.firstName }} {{ reclamation.user.lastName }}', '{{ reclamation.createdAt|date('d/m/Y H:i') }}', '{{ reclamation.photoPath ? asset(reclamation.photoPath) : '' }}')">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <div class="mb-4">
+                                <i class="bi bi-chat-dots display-1 text-muted"></i>
+                            </div>
+                            <h4 class="mt-3">Aucune réclamation trouvée</h4>
+                            <p class="text-muted">
+                                {% if currentFilters.status or currentFilters.type or currentFilters.search %}
+                                    Aucune réclamation ne correspond à vos critères de recherche.
+                                {% else %}
+                                    Il n'y a actuellement aucune réclamation à traiter.
+                                {% endif %}
+                            </p>
+                            {% if currentFilters.status or currentFilters.type or currentFilters.search %}
+                                <a href="{{ path('admin_reclamation_list') }}" class="btn btn-primary" style="background-color: #60a5fa; border-color: #60a5fa;">
+                                    Voir toutes les réclamations
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    {# Pagination #}
+                    {% if reclamations.pageCount > 1 %}
+                        <div class="d-flex justify-content-center mt-4">
+                            {{ knp_pagination_render(reclamations, 'pagination/admin_pagination.html.twig', {}, {
+                                'status': currentFilters.status,
+                                'type': currentFilters.type,
+                                'search': currentFilters.search
+                            }) }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
-    {% else %}
-        <p>No reclamations found.</p>
-    {% endfor %}
+    </div>
 </div>
+
+{# Image Modal #}
+<div class="modal fade" id="imageModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Photo de la réclamation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="modalImage" src="" alt="Photo agrandie" class="img-fluid rounded">
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Details Modal #}
+<div class="modal fade" id="detailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header text-white" style="background-color: #f9a8d4;">
+                <h5 class="modal-title">Détails de la réclamation</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h6 class="fw-bold">Contenu:</h6>
+                        <p id="detailContent" class="mb-3"></p>
+                        <h6 class="fw-bold">Utilisateur:</h6>
+                        <p id="detailUser" class="mb-3"></p>
+                        <h6 class="fw-bold">Date:</h6>
+                        <p id="detailDate" class="mb-0"></p>
+                    </div>
+                    <div class="col-md-4" id="detailPhotoContainer" style="display: none;">
+                        <h6 class="fw-bold">Photo:</h6>
+                        <img id="detailPhoto" src="" alt="Photo" class="img-fluid rounded">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function openImageModal(imageSrc) {
+    document.getElementById('modalImage').src = imageSrc;
+    new bootstrap.Modal(document.getElementById('imageModal')).show();
+}
+
+function showReclamationDetails(id, content, user, date, photoPath) {
+    document.getElementById('detailContent').textContent = content;
+    document.getElementById('detailUser').textContent = user;
+    document.getElementById('detailDate').textContent = date;
+    
+    const photoContainer = document.getElementById('detailPhotoContainer');
+    const photoImg = document.getElementById('detailPhoto');
+    
+    if (photoPath) {
+        photoImg.src = photoPath;
+        photoContainer.style.display = 'block';
+    } else {
+        photoContainer.style.display = 'none';
+    }
+    
+    new bootstrap.Modal(document.getElementById('detailsModal')).show();
+}
+</script>
+{% endblock %}

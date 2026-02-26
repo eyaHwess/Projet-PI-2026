@@ -1,12 +1,19 @@
 framework:
     notifier:
-        chatter_transports:
-        texter_transports:
+        # Configure admin recipients for notifications
+        admin_recipients:
+            - { email: admin@buildify.com }
+        
+        # Configure notification channels
         channel_policy:
-            # use chat/slack, chat/telegram, sms/twilio or sms/nexmo
-            urgent: ['email']
+            # urgent: ['sms', 'email']
+            # high: ['email']
             high: ['email']
             medium: ['email']
             low: ['email']
-        admin_recipients:
-            - { email: admin@example.com }
+        
+        # Configure transports (optional - for SMS, Slack, etc.)
+        # chatter_transports:
+        #     slack: '%env(SLACK_DSN)%'
+        # texter_transports:
+        #     twilio: '%env(TWILIO_DSN)%'

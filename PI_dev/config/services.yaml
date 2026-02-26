@@ -1,10 +1,17 @@
 parameters:
+    # Sender email for notifications
+    app.mailer.sender_email: 'noreply@buildify.com'
+    # OpenAI API Key
+    app.openai.api_key: '%env(OPENAI_API_KEY)%'
 
 services:
+    # default configuration for services in *this* file
     _defaults:
-        autowire: true
-        autoconfigure: true
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
 
+    # makes classes in src/ available to be used as services
+    # this creates a service per class whose id is the fully-qualified class name
     App\:
         resource: '../src/'
         exclude:
@@ -12,7 +19,15 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
-    App\Repository\:
-        resource: '../src/Repository'
-        autowire: true
-        autoconfigure: true
+    # add more service definitions when explicit configuration is needed
+    # please note that last definitions always *replace* previous ones
+    
+    # Configure ReclamationNotificationService with sender email
+    App\Service\ReclamationNotificationService:
+        arguments:
+            $senderEmail: '%app.mailer.sender_email%'
+    
+    # Configure AIResponseService with OpenAI API key
+    App\Service\AIResponseService:
+        arguments:
+            $openaiApiKey: '%app.openai.api_key%'

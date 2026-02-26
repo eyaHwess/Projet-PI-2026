@@ -1,40 +1,93 @@
-<link rel="stylesheet" href="{{ asset('css/reclamation.css') }}">
+{% extends 'base.html.twig' %}
 
-<h1>My Reclamations</h1>
+{% block title %}Mes Réclamations{% endblock %}
 
-<a href="{{ path('reclamation_new') }}">➕ Create New Reclamation</a>
-
-<hr>
-
-{% if reclamations|length > 0 %}
-    {% for reclamation in reclamations %}
-        <div style="border:1px solid #ccc; padding:15px; margin-bottom:15px; border-radius:5px;">
-            
-            <p><strong>Content:</strong> {{ reclamation.content }}</p>
-
-            <p>
-                <strong>Status:</strong>
-                {{ reclamation.status.value }}
-            </p>
-
-            <p>
-                <strong>Type:</strong>
-                {{ reclamation.type.value }}
-            </p>
-
-            <p>
-                <strong>Created At:</strong>
-                {{ reclamation.createdAt|date('Y-m-d H:i') }}
-            </p>
-
-            <br>
-
-            <a href="{{ path('reclamation_show', { id: reclamation.id }) }}">
-                🔎 View Details
+{% block body %}
+<div class="max-w-6xl mx-auto px-4 py-8" style="overflow-x: hidden;">
+    <div class="bg-pink-50 rounded-2xl shadow-lg border border-pink-200 p-8" style="overflow-x: hidden;">
+        <div class="flex items-center justify-between mb-8">
+            <h1 class="text-3xl font-bold text-pink-600 flex items-center gap-3">
+                <div class="w-12 h-12 bg-pink-300 rounded-full flex items-center justify-center">
+                    <i class="bi bi-chat-dots text-white text-xl"></i>
+                </div>
+                Mes Réclamations
+            </h1>
+            <a href="{{ path('reclamation_new') }}" class="bg-blue-400 hover:bg-blue-500 text-white px-6 py-3 rounded-xl transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl transform hover:scale-105">
+                <i class="bi bi-plus-circle"></i>
+                Nouvelle réclamation
             </a>
-
         </div>
-    {% endfor %}
-{% else %}
-    <p>No reclamations found.</p>
-{% endif %}
+
+        {% if reclamations|length > 0 %}
+            <div class="grid gap-6" style="overflow-x: hidden;">
+                {% for reclamation in reclamations %}
+                    <div class="bg-white border-2 border-blue-200 rounded-2xl p-6 hover:shadow-xl transition-all duration-300 hover:border-blue-300 transform hover:scale-[1.02]" style="overflow: hidden;">
+                        <div class="flex items-start justify-between" style="max-width: 100%;">
+                            <div class="flex-1" style="min-width: 0; max-width: 100%;">
+                                <div class="flex items-center gap-3 mb-4 flex-wrap">
+                                    <span class="px-4 py-2 text-sm font-semibold rounded-full
+                                        {% if reclamation.status.name == 'PENDING' %}
+                                            bg-yellow-200 text-yellow-800
+                                        {% elseif reclamation.status.name == 'ANSWERED' %}
+                                            bg-green-200 text-green-800
+                                        {% else %}
+                                            bg-gray-200 text-gray-800
+                                        {% endif %}">
+                                        {{ reclamation.status.value }}
+                                    </span>
+                                    <span class="px-3 py-1 text-sm bg-blue-200 text-blue-800 rounded-full font-medium">
+                                        {{ reclamation.type.value }}
+                                    </span>
+                                </div>
+                                
+                                <div class="flex gap-4">
+                                    <div class="flex-1 min-w-0" style="max-width: 100%;">
+                                        <p class="text-gray-700 mb-3 leading-relaxed" style="word-break: break-all; overflow-wrap: break-word; max-width: 100%;">{{ reclamation.content|slice(0, 200) }}{% if reclamation.content|length > 200 %}...{% endif %}</p>
+                                        <p class="text-sm text-gray-500 flex items-center gap-2">
+                                            <i class="bi bi-calendar3 text-pink-400"></i>
+                                            {{ reclamation.createdAt|date('d/m/Y à H:i') }}
+                                        </p>
+                                    </div>
+                                    
+                                    {% if reclamation.photoPath %}
+                                        <div class="flex-shrink-0">
+                                            <img src="{{ asset(reclamation.photoPath) }}" 
+                                                 alt="Photo de la réclamation" 
+                                                 class="w-20 h-20 object-cover rounded-xl border-2 border-pink-200 shadow-sm">
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="ml-6">
+                                <a href="{{ path('reclamation_show', { id: reclamation.id }) }}" 
+                                   class="bg-pink-300 hover:bg-pink-400 text-white px-4 py-2 rounded-xl font-medium text-sm flex items-center gap-2 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105">
+                                    <i class="bi bi-eye"></i>
+                                    Voir détails
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-16">
+                <div class="w-24 h-24 bg-pink-200 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="bi bi-chat-dots text-pink-400 text-4xl"></i>
+                </div>
+                <h3 class="text-2xl font-semibold text-gray-600 mb-3">Aucune réclamation</h3>
+                <p class="text-gray-500 mb-6 max-w-md mx-auto">Vous n'avez pas encore soumis de réclamation. Notre équipe est là pour vous aider !</p>
+                <a href="{{ path('reclamation_new') }}" class="bg-blue-400 hover:bg-blue-500 text-white px-8 py-3 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                    Créer ma première réclamation
+                </a>
+            </div>
+        {% endif %}
+
+        {# Pagination #}
+        {% if reclamations.pageCount > 1 %}
+            <div class="mt-8">
+                {{ knp_pagination_render(reclamations, 'pagination/custom_pagination.html.twig') }}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,105 @@
+{# Admin Pagination Template - Pastel Pink & Blue #}
+{% if pageCount > 1 %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center gap-2">
+            {# Previous Button #}
+            {% if previous is defined %}
+                <li class="page-item">
+                    <a href="{{ path(route, query|merge({(pageParameterName): previous})) }}" 
+                       class="page-link rounded-3 border-0 shadow-sm"
+                       style="background-color: #bfdbfe; color: #1e40af; padding: 0.5rem 0.75rem;"
+                       rel="prev">
+                        <i class="bi bi-chevron-left"></i> Précédent
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link rounded-3 border-0" 
+                          style="background-color: #e5e7eb; color: #9ca3af; padding: 0.5rem 0.75rem;">
+                        <i class="bi bi-chevron-left"></i> Précédent
+                    </span>
+                </li>
+            {% endif %}
+
+            {# Page Numbers #}
+            {% if startPage > 1 %}
+                <li class="page-item">
+                    <a href="{{ path(route, query|merge({(pageParameterName): 1})) }}" 
+                       class="page-link rounded-3 border-0 shadow-sm"
+                       style="background-color: white; color: #374151; padding: 0.5rem 0.75rem; border: 2px solid #bfdbfe;">
+                        1
+                    </a>
+                </li>
+                {% if startPage > 2 %}
+                    <li class="page-item disabled">
+                        <span class="page-link border-0" style="background: transparent; color: #9ca3af;">...</span>
+                    </li>
+                {% endif %}
+            {% endif %}
+
+            {% for page in pagesInRange %}
+                {% if page == current %}
+                    <li class="page-item active">
+                        <span class="page-link rounded-3 border-0 shadow-md fw-bold"
+                              style="background-color: #f9a8d4; color: white; padding: 0.5rem 0.75rem;">
+                            {{ page }}
+                        </span>
+                    </li>
+                {% else %}
+                    <li class="page-item">
+                        <a href="{{ path(route, query|merge({(pageParameterName): page})) }}" 
+                           class="page-link rounded-3 border-0 shadow-sm"
+                           style="background-color: white; color: #374151; padding: 0.5rem 0.75rem; border: 2px solid #bfdbfe;">
+                            {{ page }}
+                        </a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if endPage < pageCount %}
+                {% if endPage < pageCount - 1 %}
+                    <li class="page-item disabled">
+                        <span class="page-link border-0" style="background: transparent; color: #9ca3af;">...</span>
+                    </li>
+                {% endif %}
+                <li class="page-item">
+                    <a href="{{ path(route, query|merge({(pageParameterName): pageCount})) }}" 
+                       class="page-link rounded-3 border-0 shadow-sm"
+                       style="background-color: white; color: #374151; padding: 0.5rem 0.75rem; border: 2px solid #bfdbfe;">
+                        {{ pageCount }}
+                    </a>
+                </li>
+            {% endif %}
+
+            {# Next Button #}
+            {% if next is defined %}
+                <li class="page-item">
+                    <a href="{{ path(route, query|merge({(pageParameterName): next})) }}" 
+                       class="page-link rounded-3 border-0 shadow-sm"
+                       style="background-color: #bfdbfe; color: #1e40af; padding: 0.5rem 0.75rem;"
+                       rel="next">
+                        Suivant <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link rounded-3 border-0" 
+                          style="background-color: #e5e7eb; color: #9ca3af; padding: 0.5rem 0.75rem;">
+                        Suivant <i class="bi bi-chevron-right"></i>
+                    </span>
+                </li>
+            {% endif %}
+        </ul>
+
+        {# Page Info #}
+        <div class="text-center mt-3">
+            <p class="text-muted small mb-0">
+                Page <span class="fw-bold" style="color: #f9a8d4;">{{ current }}</span> sur <span class="fw-bold" style="color: #f9a8d4;">{{ pageCount }}</span>
+                {% if totalCount is defined %}
+                    <span class="mx-2">•</span>
+                    <span class="fw-bold" style="color: #60a5fa;">{{ totalCount }}</span> réclamation(s)
+                {% endif %}
+            </p>
+        </div>
+    </nav>
+{% endif %}

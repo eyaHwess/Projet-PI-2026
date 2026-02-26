@@ -83,21 +83,9 @@
 
                 <!-- Menu item 6 -->
                 <li class="nav-item">
-                    <a class="nav-link" data-bs-toggle="collapse" href="#collapseinstructors"
-                       role="button" aria-expanded="false" aria-controls="collapseinstructors">
-                        <i class="bi-exclamation-triangle-fill"></i> Reclamations
+                    <a class="nav-link" href="{{ path('admin_reclamation_list') }}">
+                        <i class="bi-exclamation-triangle-fill"></i> Réclamations
                     </a>
-                    <!-- Submenu -->
-                    <ul class="nav collapse flex-column" id="collapseinstructors" data-bs-parent="#navbar-sidebar">
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('admin_claims') }}">Complaints<span class="badge text-bg-success rounded-circle ms-2">2</span></a>
-                            
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Responses<span class="badge text-bg-success rounded-circle ms-2">2</span></a>
-                            
-                        </li>
-                    </ul>
                 </li>
 
                 <!-- Menu item 7 -->

@@ -1,0 +1,97 @@
+{# Custom Pagination Template - Pastel Pink & Blue #}
+{% if pageCount > 1 %}
+    <nav aria-label="Page navigation" class="mt-8">
+        <ul class="flex items-center justify-center gap-2">
+            {# Previous Button #}
+            {% if previous is defined %}
+                <li>
+                    <a href="{{ path(route, query|merge({(pageParameterName): previous})) }}" 
+                       class="flex items-center justify-center w-10 h-10 rounded-lg bg-white border-2 border-blue-200 text-blue-600 hover:bg-blue-100 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow-md"
+                       rel="prev">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+            {% else %}
+                <li>
+                    <span class="flex items-center justify-center w-10 h-10 rounded-lg bg-gray-100 border-2 border-gray-200 text-gray-400 cursor-not-allowed">
+                        <i class="bi bi-chevron-left"></i>
+                    </span>
+                </li>
+            {% endif %}
+
+            {# Page Numbers #}
+            {% if startPage > 1 %}
+                <li>
+                    <a href="{{ path(route, query|merge({(pageParameterName): 1})) }}" 
+                       class="flex items-center justify-center w-10 h-10 rounded-lg bg-white border-2 border-blue-200 text-gray-700 hover:bg-blue-100 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow-md font-medium">
+                        1
+                    </a>
+                </li>
+                {% if startPage > 2 %}
+                    <li>
+                        <span class="flex items-center justify-center w-10 h-10 text-gray-400">...</span>
+                    </li>
+                {% endif %}
+            {% endif %}
+
+            {% for page in pagesInRange %}
+                {% if page == current %}
+                    <li>
+                        <span class="flex items-center justify-center w-10 h-10 rounded-lg bg-pink-300 border-2 border-pink-400 text-white font-bold shadow-md">
+                            {{ page }}
+                        </span>
+                    </li>
+                {% else %}
+                    <li>
+                        <a href="{{ path(route, query|merge({(pageParameterName): page})) }}" 
+                           class="flex items-center justify-center w-10 h-10 rounded-lg bg-white border-2 border-blue-200 text-gray-700 hover:bg-blue-100 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow-md font-medium">
+                            {{ page }}
+                        </a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if endPage < pageCount %}
+                {% if endPage < pageCount - 1 %}
+                    <li>
+                        <span class="flex items-center justify-center w-10 h-10 text-gray-400">...</span>
+                    </li>
+                {% endif %}
+                <li>
+                    <a href="{{ path(route, query|merge({(pageParameterName): pageCount})) }}" 
+                       class="flex items-center justify-center w-10 h-10 rounded-lg bg-white border-2 border-blue-200 text-gray-700 hover:bg-blue-100 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow-md font-medium">
+                        {{ pageCount }}
+                    </a>
+                </li>
+            {% endif %}
+
+            {# Next Button #}
+            {% if next is defined %}
+                <li>
+                    <a href="{{ path(route, query|merge({(pageParameterName): next})) }}" 
+                       class="flex items-center justify-center w-10 h-10 rounded-lg bg-white border-2 border-blue-200 text-blue-600 hover:bg-blue-100 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow-md"
+                       rel="next">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+            {% else %}
+                <li>
+                    <span class="flex items-center justify-center w-10 h-10 rounded-lg bg-gray-100 border-2 border-gray-200 text-gray-400 cursor-not-allowed">
+                        <i class="bi bi-chevron-right"></i>
+                    </span>
+                </li>
+            {% endif %}
+        </ul>
+
+        {# Page Info #}
+        <div class="text-center mt-4">
+            <p class="text-sm text-gray-600">
+                Page <span class="font-semibold text-pink-600">{{ current }}</span> sur <span class="font-semibold text-pink-600">{{ pageCount }}</span>
+                {% if totalCount is defined %}
+                    <span class="mx-2">•</span>
+                    <span class="font-semibold text-blue-600">{{ totalCount }}</span> résultat(s)
+                {% endif %}
+            </p>
+        </div>
+    </nav>
+{% endif %}
