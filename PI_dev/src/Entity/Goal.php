@@ -30,6 +30,7 @@ class Goal
     private Collection $goalParticipations;
 
         
+    #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'Le titre est obligatoire.')]
     #[Assert\Length(
         min: 3,
@@ -260,6 +261,7 @@ class Goal
     public function setChatroom(?Chatroom $chatroom): self
     {
         $this->chatroom = $chatroom;
+        return $this;
     }
 
     public function getCreatedAt(): ?\DateTimeImmutable
