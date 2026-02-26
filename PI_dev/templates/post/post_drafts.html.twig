@@ -1,0 +1,47 @@
+{# Partial template for drafts list - can be used standalone or via AJAX #}
+{% if drafts is defined and drafts|length > 0 %}
+    {% for draft in drafts %}
+        <div class="draft-item">
+            <div class="d-flex align-items-center gap-3 flex-grow-1" onclick="editDraft({{ draft.id }})" style="cursor: pointer;">
+                {% if '<img' in draft.content %}
+                    {% set imgSrc = draft.content|split('src="')[1]|split('"')[0] %}
+                    <img src="{{ imgSrc }}" class="draft-thumbnail" alt="Draft thumbnail">
+                {% else %}
+                    <div class="draft-placeholder">
+                        <i class="bi bi-file-earmark-text" style="font-size: 2rem; color: #a855f7;"></i>
+                    </div>
+                {% endif %}
+                
+                <div class="draft-content">
+                    <div class="draft-title">{{ draft.title ?: 'Untitled Draft' }}</div>
+                    <div class="draft-preview">{{ draft.content|striptags|slice(0, 100) }}...</div>
+                </div>
+                <span class="draft-badge">Draft</span>
+            </div>
+            
+            <div class="dropdown">
+                <button class="btn btn-link text-secondary p-0" type="button" data-bs-toggle="dropdown" aria-expanded="false" onclick="event.stopPropagation()">
+                    <i class="bi bi-three-dots"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <a class="dropdown-item" href="#" onclick="editDraft({{ draft.id }}); return false;">
+                            <i class="bi bi-pencil me-2"></i> Edit
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item text-danger" href="#" onclick="showDeleteModal({{ draft.id }}, 'draft'); return false;">
+                            <i class="bi bi-trash me-2"></i> Delete
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-file-earmark-text" style="font-size: 3rem; color: #cbd5e0;"></i>
+        <p class="text-muted mt-3 mb-0">No drafts yet</p>
+        <small class="text-muted">Your draft posts will appear here</small>
+    </div>
+{% endif %}

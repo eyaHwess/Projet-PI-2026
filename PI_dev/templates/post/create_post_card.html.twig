@@ -1,87 +1,658 @@
-<!-- Create Post Button -->
-<div class="d-flex justify-content-end mb-4">
-    <button class="btn btn-primary btn-sm rounded-pill px-4" type="button" onclick="toggleCreatePost()">
-        <i class="bi bi-plus-circle me-2"></i> Create Post
-    </button>
-</div>
-
 <!-- Create Post Glass Card (Hidden by default with animation) -->
 <div class="create-post-glass-container mb-4" id="createPostCard" style="display: none; opacity: 0;">
-    <form id="createPostForm" method="POST" action="{{ path('post_create_ajax') }}" enctype="multipart/form-data">
-        <h5 class="mb-4" style="color: #2d3748; font-weight: 600;">Create New Post</h5>
-        
-        <!-- Title Input -->
-        <div class="mb-3">
-            <label for="postTitle" class="form-label" style="color: #4a5568; font-weight: 500;">Title</label>
-            <input type="text" 
-                   class="form-control input-glass" 
-                   id="postTitle" 
-                   name="title"
-                   placeholder="Enter post title" 
-                   required>
-        </div>
-        
-        <!-- Content Input -->
-        <div class="mb-3">
-            <label for="postContent" class="form-label" style="color: #4a5568; font-weight: 500;">Content</label>
-            <textarea class="form-control textarea-glass" 
-                      id="postContent" 
-                      name="content"
-                      rows="4" 
-                      placeholder="What's on your mind?" 
-                      required></textarea>
-        </div>
+    <!-- Tabbed Navigation -->
+    <ul class="nav nav-tabs-custom mb-4" id="createPostTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link-custom active" id="create-tab" data-bs-toggle="tab" data-bs-target="#create-panel" type="button" role="tab" aria-controls="create-panel" aria-selected="true">
+                <i class="bi bi-plus-circle me-2"></i>
+                Create Post
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link-custom" id="drafts-tab" data-bs-toggle="tab" data-bs-target="#drafts-panel" type="button" role="tab" aria-controls="drafts-panel" aria-selected="false" onclick="loadDraftsOnTabClick()">
+                <i class="bi bi-file-earmark-text me-2"></i>
+                Drafts
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link-custom" id="scheduled-tab" data-bs-toggle="tab" data-bs-target="#scheduled-panel" type="button" role="tab" aria-controls="scheduled-panel" aria-selected="false" onclick="loadScheduledOnTabClick()">
+                <i class="bi bi-clock me-2"></i>
+                Scheduled Posts
+            </button>
+        </li>
+    </ul>
+    
+    <!-- Tab Content -->
+    <div class="tab-content" id="createPostTabContent">
+        <!-- Create Post Tab Panel -->
+        <div class="tab-pane fade show active" id="create-panel" role="tabpanel" aria-labelledby="create-tab">
+            <form id="createPostForm" method="POST" action="{{ path('post_create_ajax') }}" enctype="multipart/form-data">
+                <!-- Title Input -->
+                <div class="mb-4">
+                    <label for="postTitle" class="form-label" style="color: #4a5568; font-weight: 500;">Title</label>
+                    <input type="text" 
+                           class="form-control input-glass" 
+                           id="postTitle" 
+                           name="title"
+                           placeholder="Enter your post title" 
+                           required>
+                </div>
+                
+                <!-- Content Input with CKEditor -->
+                <div class="mb-4">
+                    <label for="postContent" class="form-label" style="color: #4a5568; font-weight: 500;">Content</label>
+                    <div id="editor" style="min-height: 250px;"></div>
+                    <textarea id="postContent" name="content" style="display: none;" required></textarea>
+                </div>
 
-        <!-- Image Upload -->
-        <div class="mb-3">
-            <label for="postImages" class="form-label" style="color: #4a5568; font-weight: 500;">Images (Max 3)</label>
-            <input type="file" 
-                   class="form-control input-glass" 
-                   id="postImages" 
-                   name="images[]"
-                   accept="image/*"
-                   multiple
-                   onchange="handleImageSelection(event)">
-            <small style="color: #718096;">You can upload up to 3 images</small>
-            
-            <!-- Error Message -->
-            <div id="imageError" class="alert alert-danger mt-2" style="display: none; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 16px; backdrop-filter: blur(10px);" role="alert">
-                <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                <strong>Maximum limit reached!</strong> You can only upload up to 3 images.
+                <!-- Status Selection -->
+                <div class="mb-4">
+                    <label for="postStatus" class="form-label" style="color: #4a5568; font-weight: 500;">Status</label>
+                    <select class="form-select input-glass" id="postStatus" name="status" onchange="toggleScheduleField()">
+                        <option value="published" selected>Publish Now</option>
+                        <option value="scheduled">Schedule for Later</option>
+                        <option value="draft">Save as Draft</option>
+                    </select>
+                </div>
+                
+                <!-- Schedule Date/Time (Hidden by default) -->
+                <div class="mb-4" id="scheduleField" style="display: none;">
+                    <label for="scheduledAt" class="form-label" style="color: #4a5568; font-weight: 500;">Schedule Date & Time</label>
+                    <input type="datetime-local" 
+                           class="form-control input-glass" 
+                           id="scheduledAt" 
+                           name="scheduledAt">
+                    <small class="text-muted">Post will be automatically published at this time</small>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="d-flex gap-3 justify-content-end mt-4 pt-3 border-top" style="border-color: rgba(168, 85, 247, 0.1) !important;">
+                    <button type="button" 
+                            class="btn btn-glass px-5 py-2" 
+                            onclick="toggleCreatePost()"
+                            style="font-size: 1rem;">
+                        <i class="bi bi-x-circle me-2"></i>
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary-glass px-5 py-2" style="font-size: 1rem;">
+                        <i class="bi bi-send me-2"></i> 
+                        Publish
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Drafts Tab Panel -->
+        <div class="tab-pane fade" id="drafts-panel" role="tabpanel" aria-labelledby="drafts-tab">
+            <!-- Drafts List View -->
+            <div id="draftsListContainer">
+                <div id="draftsList" class="vstack gap-3">
+                    <!-- Drafts will be loaded here via AJAX -->
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
             </div>
             
-            <!-- Image Preview -->
-            <div id="imagePreview" class="d-flex gap-2 mt-2 flex-wrap"></div>
-        </div>
+            <!-- Edit Draft View (Hidden by default) -->
+            <div id="editDraftContainer" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <button class="btn btn-glass btn-sm" type="button" onclick="backToDraftsList()">
+                        <i class="bi bi-arrow-left me-1"></i>
+                        Back to Drafts
+                    </button>
+                    <h5 class="mb-0" style="color: #2d3748; font-weight: 600;">Edit Draft</h5>
+                    <div style="width: 100px;"></div> <!-- Spacer for centering -->
+                </div>
+                
+                <form id="editDraftForm" method="POST" action="{{ path('post_create_ajax') }}">
+                    <input type="hidden" id="editDraftId" name="id">
+                    
+                    <!-- Title Input -->
+                    <div class="mb-4">
+                        <label for="editDraftTitle" class="form-label" style="color: #4a5568; font-weight: 500;">Title</label>
+                        <input type="text" 
+                               class="form-control input-glass" 
+                               id="editDraftTitle" 
+                               name="title"
+                               placeholder="Enter your post title" 
+                               required>
+                    </div>
+                    
+                    <!-- Content Input with CKEditor -->
+                    <div class="mb-4">
+                        <label for="editDraftContent" class="form-label" style="color: #4a5568; font-weight: 500;">Content</label>
+                        <div id="editDraftEditor" style="min-height: 250px;"></div>
+                        <textarea id="editDraftContent" name="content" style="display: none;" required></textarea>
+                    </div>
 
-        <!-- Status Selection -->
-        <div class="mb-4">
-            <label for="postStatus" class="form-label" style="color: #4a5568; font-weight: 500;">Status</label>
-            <select class="form-select input-glass" id="postStatus" name="status">
-                <option value="published" selected>Publish Now</option>
-                <option value="draft">Save as Draft</option>
-            </select>
+                    <!-- Status Selection -->
+                    <div class="mb-4">
+                        <label for="editDraftStatus" class="form-label" style="color: #4a5568; font-weight: 500;">Status</label>
+                        <select class="form-select input-glass" id="editDraftStatus" name="status">
+                            <option value="published">Publish Now</option>
+                            <option value="draft">Keep as Draft</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="d-flex gap-3 justify-content-end mt-4 pt-3 border-top" style="border-color: rgba(168, 85, 247, 0.1) !important;">
+                        <button type="button" 
+                                class="btn btn-glass px-5 py-2" 
+                                onclick="cancelEditDraft()"
+                                style="font-size: 1rem;">
+                            <i class="bi bi-x-circle me-2"></i>
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary-glass px-5 py-2" style="font-size: 1rem;">
+                            <i class="bi bi-save me-2"></i> 
+                            Save
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
         
-        <!-- Action Buttons -->
-        <div class="d-flex gap-2 justify-content-end">
-            <button type="button" 
-                    class="btn btn-glass px-4" 
-                    onclick="toggleCreatePost()">
-                Cancel
-            </button>
-            <button type="submit" class="btn btn-primary-glass px-4">
-                <i class="bi bi-send me-2"></i> Post
-            </button>
+        <!-- Scheduled Posts Tab Panel (Placeholder) -->
+        <div class="tab-pane fade" id="scheduled-panel" role="tabpanel" aria-labelledby="scheduled-tab">
+            <div id="scheduledPostsList" class="vstack gap-3">
+                <!-- Scheduled posts will be loaded here via AJAX -->
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
         </div>
-    </form>
+    </div>
 </div>
 
-<script>
-// Store selected files
-let selectedFiles = [];
 
-function toggleCreatePost() {
+<script>
+let draftsLoaded = false;
+let draftsData = []; // Store drafts globally
+
+function toggleScheduleField() {
+    const status = document.getElementById('postStatus').value;
+    const scheduleField = document.getElementById('scheduleField');
+    const scheduledAtInput = document.getElementById('scheduledAt');
+    
+    if (status === 'scheduled') {
+        scheduleField.style.display = 'block';
+        scheduledAtInput.required = true;
+        
+        // Set minimum date to current time
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        scheduledAtInput.min = now.toISOString().slice(0, 16);
+    } else {
+        scheduleField.style.display = 'none';
+        scheduledAtInput.required = false;
+        scheduledAtInput.value = '';
+    }
+}
+
+// Load drafts when Drafts tab is clicked
+function loadDraftsOnTabClick() {
+    if (!draftsLoaded) {
+        loadDrafts();
+    }
+}
+
+// Load scheduled posts when Scheduled tab is clicked
+let scheduledLoaded = false;
+let scheduledData = []; // Store scheduled posts globally
+
+function loadScheduledOnTabClick() {
+    if (!scheduledLoaded) {
+        loadScheduledPosts();
+    }
+}
+
+async function loadDrafts() {
+    const draftsList = document.getElementById('draftsList');
+    
+    try {
+        const response = await fetch('{{ path('post_drafts_list') }}');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const html = await response.text();
+        draftsList.innerHTML = html;
+        draftsLoaded = true;
+        
+        // Store draft IDs for edit functionality
+        const draftItems = draftsList.querySelectorAll('.draft-item');
+        draftsData = Array.from(draftItems).map(item => {
+            const onclick = item.querySelector('[onclick*="editDraft"]');
+            if (onclick) {
+                const match = onclick.getAttribute('onclick').match(/editDraft\((\d+)\)/);
+                return match ? { id: parseInt(match[1]) } : null;
+            }
+            return null;
+        }).filter(d => d !== null);
+        
+    } catch (error) {
+        console.error('Error loading drafts:', error);
+        draftsList.innerHTML = `
+            <div class="text-center py-4 text-danger">
+                <i class="bi bi-exclamation-circle me-2"></i>
+                Failed to load drafts: ${error.message}
+            </div>
+        `;
+    }
+}
+
+async function editDraft(draftId) {
+    console.log('Editing draft:', draftId);
+    
+    try {
+        // Fetch the draft data
+        const response = await fetch(`/posts/${draftId}/edit-data`, {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to fetch draft data');
+        }
+        
+        const draft = await response.json();
+        console.log('Found draft:', draft);
+        
+        // Show edit view
+        document.getElementById('draftsListContainer').style.display = 'none';
+        document.getElementById('editDraftContainer').style.display = 'block';
+        
+        // Populate form
+        document.getElementById('editDraftId').value = draft.id;
+        document.getElementById('editDraftTitle').value = draft.title || '';
+        document.getElementById('editDraftStatus').value = 'draft';
+        document.getElementById('editDraftContent').value = draft.content;
+        
+        // Initialize CKEditor if not already initialized
+        if (!window.editDraftEditorInstance) {
+            console.log('Initializing new editor with content');
+            initializeEditDraftEditorAsync(draft.content);
+        } else {
+            console.log('Updating existing editor with content');
+            window.editDraftEditorInstance.setData(draft.content);
+            document.getElementById('editDraftContent').value = draft.content;
+        }
+    } catch (error) {
+        console.error('Error loading draft:', error);
+        alert('Failed to load draft data');
+    }
+}
+
+function showEditDraftView(draft) {
+    // Hide drafts list
+    document.getElementById('draftsListContainer').style.display = 'none';
+    // Show edit draft view
+    document.getElementById('editDraftContainer').style.display = 'block';
+    
+    // Populate form
+    document.getElementById('editDraftId').value = draft.id;
+    document.getElementById('editDraftTitle').value = draft.title || '';
+    document.getElementById('editDraftStatus').value = 'draft';
+    
+    // Initialize CKEditor for draft editing if not already initialized
+    if (!window.editDraftEditorInstance) {
+        initializeEditDraftEditor(draft.content);
+    } else {
+        window.editDraftEditorInstance.setData(draft.content);
+    }
+}
+
+function backToDraftsList() {
+    // Hide edit view
+    document.getElementById('editDraftContainer').style.display = 'none';
+    // Show drafts list
+    document.getElementById('draftsListContainer').style.display = 'block';
+    
+    // Clear form
+    document.getElementById('editDraftForm').reset();
+    if (window.editDraftEditorInstance) {
+        window.editDraftEditorInstance.setData('');
+    }
+}
+
+function cancelEditDraft() {
+    if (confirm('Are you sure you want to cancel? Any unsaved changes will be lost.')) {
+        backToDraftsList();
+    }
+}
+
+async function confirmDeleteDraft(draftId) {
+    try {
+        const response = await fetch(`/posts/${draftId}/delete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        
+        if (response.ok) {
+            // Reload drafts list
+            draftsLoaded = false;
+            loadDrafts();
+        } else {
+            alert('Failed to delete draft');
+        }
+    } catch (error) {
+        console.error('Error deleting draft:', error);
+        alert('Failed to delete draft');
+    }
+}
+
+async function loadScheduledPosts() {
+    const scheduledList = document.getElementById('scheduledPostsList');
+    
+    try {
+        const response = await fetch('{{ path('post_scheduled_list') }}');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const html = await response.text();
+        scheduledList.innerHTML = html;
+        scheduledLoaded = true;
+        
+    } catch (error) {
+        console.error('Error loading scheduled posts:', error);
+        scheduledList.innerHTML = `
+            <div class="text-center py-4 text-danger">
+                <i class="bi bi-exclamation-circle me-2"></i>
+                Failed to load scheduled posts: ${error.message}
+            </div>
+        `;
+    }
+}
+
+async function publishScheduledPost(postId) {
+    // Replace native confirm() with in-app modal (defined in post_list.html.twig)
+    if (typeof openPublishModal === 'function') {
+        openPublishModal(postId);
+        return;
+    }
+
+    // Safety fallback: keep publish reachable even if modal isn't present for some reason.
+    try {
+        const response = await fetch(`/posts/${postId}/publish`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        if (response.ok) {
+            window.location.reload();
+        }
+    } catch (error) {
+        console.error('Error publishing post:', error);
+    }
+}
+
+async function deleteScheduledPost(postId) {
+    try {
+        const response = await fetch(`/posts/${postId}/delete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        
+        if (response.ok) {
+            // Reload scheduled posts list
+            scheduledLoaded = false;
+            loadScheduledPosts();
+        } else {
+            alert('Failed to delete post');
+        }
+    } catch (error) {
+        console.error('Error deleting post:', error);
+        alert('Failed to delete post');
+    }
+}
+
+// Moderation modal functions (global scope)
+window.PI2026Modal = window.PI2026Modal || {};
+window.PI2026Modal._scrollLockCount = window.PI2026Modal._scrollLockCount || 0;
+window.PI2026Modal._prevBodyOverflow = window.PI2026Modal._prevBodyOverflow ?? null;
+window.PI2026Modal.lockScroll = window.PI2026Modal.lockScroll || function() {
+    this._scrollLockCount = (this._scrollLockCount || 0) + 1;
+    if (this._scrollLockCount === 1) {
+        this._prevBodyOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+    }
+};
+window.PI2026Modal.unlockScroll = window.PI2026Modal.unlockScroll || function() {
+    this._scrollLockCount = Math.max(0, (this._scrollLockCount || 0) - 1);
+    if (this._scrollLockCount === 0) {
+        document.body.style.overflow = this._prevBodyOverflow ?? '';
+        this._prevBodyOverflow = null;
+    }
+};
+
+let moderationCloseTimer = null;
+let moderationLastFocusedEl = null;
+
+function showModerationWarning(message) {
+    document.getElementById('moderationMessage').textContent = message;
+    const modal = document.getElementById('moderationWarningModal');
+    if (!modal) return;
+
+    // Prevent stacked hide timers if triggered repeatedly
+    if (moderationCloseTimer) {
+        clearTimeout(moderationCloseTimer);
+        moderationCloseTimer = null;
+    }
+
+    // Already visible: just refresh message + keep focus on the modal
+    if (modal.classList.contains('show')) {
+        const btn = modal.querySelector('.moderation-btn-close');
+        if (btn) btn.focus({ preventScroll: true });
+        return;
+    }
+
+    moderationLastFocusedEl = document.activeElement;
+    modal.style.display = 'block';
+
+    // Fade in on next frame so CSS transition applies
+    requestAnimationFrame(() => {
+        modal.classList.add('show');
+    });
+
+    if (window.PI2026Modal?.lockScroll) {
+        window.PI2026Modal.lockScroll();
+    } else {
+        document.body.style.overflow = 'hidden';
+    }
+
+    const btn = modal.querySelector('.moderation-btn-close');
+    if (btn) btn.focus({ preventScroll: true });
+}
+
+function closeModerationModal() {
+    const modal = document.getElementById('moderationWarningModal');
+    if (!modal) return;
+
+    // If already closed, no-op
+    if (!modal.classList.contains('show')) {
+        modal.style.display = 'none';
+        return;
+    }
+
+    modal.classList.remove('show');
+
+    moderationCloseTimer = setTimeout(() => {
+        modal.style.display = 'none';
+        moderationCloseTimer = null;
+
+        if (window.PI2026Modal?.unlockScroll) {
+            window.PI2026Modal.unlockScroll();
+        } else {
+            document.body.style.overflow = '';
+        }
+
+        if (moderationLastFocusedEl && typeof moderationLastFocusedEl.focus === 'function') {
+            moderationLastFocusedEl.focus({ preventScroll: true });
+        }
+        moderationLastFocusedEl = null;
+    }, 300);
+}
+</script>
+
+<script type="importmap">
+{
+    "imports": {
+        "ckeditor5": "https://cdn.ckeditor.com/ckeditor5/43.3.1/ckeditor5.js",
+        "ckeditor5/": "https://cdn.ckeditor.com/ckeditor5/43.3.1/"
+    }
+}
+</script>
+
+<script type="module">
+import {
+    ClassicEditor,
+    Essentials,
+    Bold,
+    Italic,
+    Underline,
+    Paragraph,
+    Heading,
+    Link,
+    List,
+    BlockQuote,
+    Font,
+    Highlight,
+    MediaEmbed,
+    Image,
+    ImageCaption,
+    ImageToolbar,
+    ImageStyle,
+    ImageResize,
+    ImageUpload,
+    SimpleUploadAdapter,
+    Undo
+} from 'ckeditor5';
+
+// CKEditor instance
+let editorInstance;
+let editEditorInstances = {}; // Store edit editor instances by post ID
+let uploadedImageCount = 0;
+const MAX_IMAGES = 3;
+
+function buildEditorConfig(uploadUrl) {
+    return {
+        plugins: [
+            Essentials, Paragraph, Heading,
+            Bold, Italic, Underline,
+            Link, List, BlockQuote,
+            Font, Highlight,
+            MediaEmbed,
+            Image, ImageCaption, ImageToolbar, ImageStyle, ImageResize, ImageUpload, SimpleUploadAdapter,
+            Undo
+        ],
+        toolbar: [
+            'heading', '|',
+            'fontSize', 'fontColor', 'fontBackgroundColor', 'highlight', '|',
+            'bold', 'italic', 'underline', '|',
+            'link', 'blockQuote', 'mediaEmbed', '|',
+            'uploadImage', '|',
+            'bulletedList', 'numberedList', '|',
+            'undo', 'redo'
+        ],
+        heading: {
+            options: [
+                { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
+                { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' },
+                { model: 'heading3', view: 'h3', title: 'Heading 3', class: 'ck-heading_heading3' }
+            ]
+        },
+        fontSize: {
+            options: [10, 12, 14, 'default', 18, 20, 24, 28]
+        },
+        highlight: {
+            options: [
+                { model: 'yellowMarker', class: 'marker-yellow', title: 'Yellow marker' },
+                { model: 'greenMarker', class: 'marker-green', title: 'Green marker' },
+                { model: 'pinkMarker', class: 'marker-pink', title: 'Pink marker' },
+                { model: 'blueMarker', class: 'marker-blue', title: 'Blue marker' },
+                { model: 'redPen', class: 'pen-red', title: 'Red pen' },
+                { model: 'greenPen', class: 'pen-green', title: 'Green pen' }
+            ]
+        },
+        image: {
+            toolbar: [
+                'imageStyle:wrapText',
+                'imageStyle:breakText',
+                'imageStyle:side',
+                '|',
+                'resizeImage',
+                '|',
+                'toggleImageCaption',
+                'imageTextAlternative',
+            ]
+        },
+        mediaEmbed: {
+            previewsInData: true
+        },
+        placeholder: "Write your post content here…",
+        simpleUpload: {
+            uploadUrl,
+            withCredentials: true,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        }
+    };
+}
+
+// Initialize edit draft editor function (exposed globally)
+window.initializeEditDraftEditorAsync = async function(initialContent = '') {
+    const editorElement = document.querySelector('#editDraftEditor');
+    
+    if (!editorElement) {
+        console.error('Editor element #editDraftEditor not found');
+        return;
+    }
+    
+    try {
+        const editor = await ClassicEditor.create(
+            editorElement,
+            buildEditorConfig('{{ path('post_upload_image') }}')
+        );
+        
+        // Set initial content
+        editor.setData(initialContent);
+        
+        // Store editor instance globally
+        window.editDraftEditorInstance = editor;
+        
+        // Sync CKEditor content with hidden textarea
+        editor.model.document.on('change:data', () => {
+            document.getElementById('editDraftContent').value = editor.getData();
+        });
+        
+        console.log('Edit Draft CKEditor initialized successfully');
+    } catch (error) {
+        console.error('Edit Draft CKEditor initialization error:', error);
+        alert('Failed to initialize editor: ' + error.message);
+    }
+}
+
+window.toggleCreatePost = function() {
     const createPostCard = document.getElementById('createPostCard');
     
     if (createPostCard.style.display === 'none') {
@@ -91,6 +662,11 @@ function toggleCreatePost() {
             createPostCard.style.opacity = '1';
             createPostCard.style.transform = 'translateY(0)';
         }, 10);
+        
+        // Initialize CKEditor if not already initialized
+        if (!editorInstance) {
+            initializeCKEditor();
+        }
     } else {
         // Hide with animation
         createPostCard.style.opacity = '0';
@@ -99,108 +675,207 @@ function toggleCreatePost() {
             createPostCard.style.display = 'none';
             // Clear form when closing
             document.getElementById('createPostForm').reset();
-            document.getElementById('imagePreview').innerHTML = '';
-            document.getElementById('imageError').style.display = 'none';
-            selectedFiles = [];
+            uploadedImageCount = 0;
+            
+            // Clear CKEditor content
+            if (editorInstance) {
+                editorInstance.setData('');
+            }
         }, 300);
     }
 }
 
-function handleImageSelection(event) {
-    const files = Array.from(event.target.files);
-    const errorDiv = document.getElementById('imageError');
+// Edit post function
+window.editPost = async function(postId) {
+    // Hide view mode
+    document.getElementById('postView' + postId).style.display = 'none';
+    // Show edit mode
+    document.getElementById('postEdit' + postId).style.display = 'block';
     
-    // Check if adding these files would exceed the limit
-    if (selectedFiles.length + files.length > 3) {
-        // Show error message
-        errorDiv.style.display = 'block';
-        event.target.value = ''; // Clear the input
+    // Get the textarea
+    const textarea = document.getElementById('editContent' + postId);
+    const existingContent = textarea.value;
+    
+    // Create a div to replace the textarea
+    const editorDiv = document.createElement('div');
+    editorDiv.id = 'editEditor' + postId;
+    editorDiv.style.minHeight = '250px';
+    
+    // Replace textarea with div
+    textarea.style.display = 'none';
+    textarea.parentNode.insertBefore(editorDiv, textarea.nextSibling);
+    
+    // Initialize CKEditor on the div
+    try {
+        const editor = await ClassicEditor.create(
+            editorDiv,
+            buildEditorConfig('/posts/upload-image')
+        );
         
-        // Hide error after 5 seconds
-        setTimeout(() => {
-            errorDiv.style.display = 'none';
-        }, 5000);
-        return;
+        // Set existing content
+        editor.setData(existingContent);
+        
+        // Store editor instance
+        editEditorInstances[postId] = editor;
+        
+        // Sync changes back to textarea
+        editor.model.document.on('change:data', () => {
+            textarea.value = editor.getData();
+        });
+        
+        console.log('Edit editor initialized for post', postId);
+    } catch (error) {
+        console.error('Error initializing edit editor:', error);
+        // Fallback: show textarea
+        textarea.style.display = 'block';
+        editorDiv.remove();
+    }
+}
+
+// Cancel edit function
+window.cancelEdit = function(postId) {
+    // Destroy editor if exists
+    if (editEditorInstances[postId]) {
+        editEditorInstances[postId].destroy()
+            .then(() => {
+                delete editEditorInstances[postId];
+                
+                // Remove editor div
+                const editorDiv = document.getElementById('editEditor' + postId);
+                if (editorDiv) {
+                    editorDiv.remove();
+                }
+                
+                // Show textarea again
+                const textarea = document.getElementById('editContent' + postId);
+                if (textarea) {
+                    textarea.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Error destroying editor:', error);
+            });
     }
     
-    // Hide error message if it was showing
-    errorDiv.style.display = 'none';
-    
-    // Add new files to selected files
-    files.forEach(file => {
-        if (selectedFiles.length < 3) {
-            selectedFiles.push(file);
-        }
-    });
-    
-    // Update preview
-    updateImagePreview();
-    
-    // Clear the input so the same file can be selected again if needed
-    event.target.value = '';
+    // Hide edit mode
+    document.getElementById('postEdit' + postId).style.display = 'none';
+    // Show view mode
+    document.getElementById('postView' + postId).style.display = 'block';
 }
 
-function updateImagePreview() {
-    const preview = document.getElementById('imagePreview');
-    preview.innerHTML = '';
-    
-    selectedFiles.forEach((file, index) => {
-        const reader = new FileReader();
-        
-        reader.onload = function(e) {
-            const imgContainer = document.createElement('div');
-            imgContainer.className = 'position-relative';
-            imgContainer.style.width = '120px';
-            imgContainer.style.height = '120px';
+function initializeCKEditor() {
+    ClassicEditor
+        .create(
+            document.querySelector('#editor'),
+            buildEditorConfig('{{ path('post_upload_image') }}')
+        )
+        .then(editor => {
+            editorInstance = editor;
             
-            const img = document.createElement('img');
-            img.src = e.target.result;
-            img.style.width = '100%';
-            img.style.height = '100%';
-            img.style.objectFit = 'cover';
-            img.style.borderRadius = '16px';
-            img.style.border = '2px solid rgba(255, 255, 255, 0.5)';
+            console.log('CKEditor initialized successfully');
+            console.log('Available plugins:', Array.from(editor.plugins).map(p => p.constructor.pluginName));
             
-            // Delete button
-            const deleteBtn = document.createElement('button');
-            deleteBtn.type = 'button';
-            deleteBtn.className = 'btn btn-danger btn-sm position-absolute top-0 start-0 m-1';
-            deleteBtn.style.padding = '4px 8px';
-            deleteBtn.style.fontSize = '12px';
-            deleteBtn.style.borderRadius = '12px';
-            deleteBtn.innerHTML = '<i class="bi bi-trash"></i>';
-            deleteBtn.onclick = function() {
-                removeImage(index);
-            };
-            
-            imgContainer.appendChild(img);
-            imgContainer.appendChild(deleteBtn);
-            preview.appendChild(imgContainer);
-        };
-        
-        reader.readAsDataURL(file);
-    });
+            // Sync CKEditor content with hidden textarea
+            editor.model.document.on('change:data', () => {
+                document.getElementById('postContent').value = editor.getData();
+            });
+        })
+        .catch(error => {
+            console.error('CKEditor initialization error:', error);
+            console.error('Error details:', error.message, error.stack);
+            // Fallback: show a regular textarea if CKEditor fails
+            document.getElementById('editor').innerHTML = '<textarea class="form-control textarea-glass" id="fallbackContent" name="content" rows="8" placeholder="Write your post content here…" required></textarea>';
+        });
 }
 
-function removeImage(index) {
-    selectedFiles.splice(index, 1);
-    updateImagePreview();
-    updateFileInput();
-}
-
-function updateFileInput() {
-    const input = document.getElementById('postImages');
-    const dataTransfer = new DataTransfer();
-    
-    selectedFiles.forEach(file => {
-        dataTransfer.items.add(file);
-    });
-    
-    input.files = dataTransfer.files;
-}
 
 // Update file input before form submission
-document.getElementById('createPostForm').addEventListener('submit', function(e) {
-    updateFileInput();
+document.getElementById('createPostForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    // Sync CKEditor content one more time
+    if (editorInstance) {
+        const content = editorInstance.getData();
+        document.getElementById('postContent').value = content;
+        
+        // Validate content is not empty
+        if (!content.trim() || content.trim() === '<p>&nbsp;</p>' || content.trim() === '<p></p>') {
+            alert('Please enter some content for your post');
+            return false;
+        }
+    }
+    
+    // Submit via AJAX to check for moderation errors
+    const formData = new FormData(this);
+    
+    try {
+        const response = await fetch(this.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        
+        // Check content type of response
+        const contentType = response.headers.get('content-type');
+        
+        if (contentType && contentType.includes('application/json')) {
+            // Parse JSON response
+            const result = await response.json();
+            
+            if (result.success) {
+                // Success - reload to show the post
+                window.location.reload();
+            } else if (result.error) {
+                // Moderation error - show warning modal
+                showModerationWarning(result.error);
+            }
+        } else {
+            // HTML response (redirect or error page) - reload
+            window.location.reload();
+        }
+    } catch (error) {
+        console.error('Error submitting post:', error);
+        alert('Failed to create post. Please try again.');
+    }
+});
+
+// Edit draft form submission
+document.getElementById('editDraftForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Sync CKEditor content
+    if (window.editDraftEditorInstance) {
+        const content = window.editDraftEditorInstance.getData();
+        document.getElementById('editDraftContent').value = content;
+        
+        // Validate content is not empty
+        if (!content.trim() || content.trim() === '<p>&nbsp;</p>' || content.trim() === '<p></p>') {
+            alert('Please enter some content for your post');
+            return false;
+        }
+    }
+    
+    const draftId = document.getElementById('editDraftId').value;
+    const formData = new FormData(this);
+    
+    // Submit via AJAX
+    fetch(`/posts/${draftId}/edit`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (response.ok) {
+            // Reload page to show updated post/draft
+            window.location.reload();
+        } else {
+            alert('Failed to save draft');
+        }
+    })
+    .catch(error => {
+        console.error('Error saving draft:', error);
+        alert('Failed to save draft');
+    });
 });
 </script>

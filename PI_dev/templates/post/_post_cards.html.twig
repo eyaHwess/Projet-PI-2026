@@ -1,0 +1,10 @@
+{# Partial: renders only the post cards list items (no outer containers) #}
+{% for item in postsWithLikeStatus %}
+    {% include 'post/post_card.html.twig' with {
+        'post': item.post,
+        'isLikedByCurrentUser': item.isLikedByCurrentUser,
+        'isSavedByCurrentUser': item.isSavedByCurrentUser,
+        'currentUser': currentUser
+    } %}
+{% endfor %}
+

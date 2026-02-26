@@ -17,19 +17,24 @@ class PostService
     ) {}
 
     
-    public function createPost(string $title, string $content, User $user, string $status = null, array $images = []): Post
+    public function createPost(string $title, string $content, User $user, string $status = null, array $images = [], ?\DateTimeImmutable $scheduledAt = null): Post
     {
         $post = new Post();
         $post->setTitle($title);
         $post->setContent($content);
         $post->setCreatedBy($user);
-        $post->setCreatedAt(new \DateTimeImmutable());
+        // createdAt is now automatically set by Gedmo\Timestampable
         
         // Set status (default to published if not specified)
-        if ($status && in_array($status, [PostStatus::DRAFT->value, PostStatus::PUBLISHED->value])) {
+        if ($status && in_array($status, [PostStatus::DRAFT->value, PostStatus::PUBLISHED->value, PostStatus::SCHEDULED->value])) {
             $post->setStatus($status);
         } else {
             $post->setStatus(PostStatus::PUBLISHED->value);
+        }
+        
+        // Set scheduled date if status is scheduled
+        if ($status === PostStatus::SCHEDULED->value && $scheduledAt) {
+            $post->setScheduledAt($scheduledAt);
         }
 
         // Set images if provided
@@ -43,7 +48,7 @@ class PostService
         return $post;
     }
 
-    public function editPost(int $postId, string $title, string $content, User $user): Post
+    public function editPost(int $postId, string $title, string $content, User $user, string $status = null): Post
     {
         $post = $this->postRepository->find($postId);
 
@@ -57,6 +62,12 @@ class PostService
 
         $post->setTitle($title);
         $post->setContent($content);
+        // updatedAt is now automatically set by Gedmo\Timestampable
+        
+        // Update status if provided
+        if ($status && in_array($status, [PostStatus::DRAFT->value, PostStatus::PUBLISHED->value])) {
+            $post->setStatus($status);
+        }
 
         $this->em->flush();
 

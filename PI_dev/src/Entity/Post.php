@@ -9,8 +9,10 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use App\Enum\PostStatus;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: PostRepository::class)]
+#[Gedmo\SoftDeleteable(fieldName: 'deletedAt', timeAware: false)]
 class Post
 {
     #[ORM\Id]
@@ -28,18 +30,33 @@ class Post
     )]
     private ?string $title = null;
 
+    #[Gedmo\Slug(fields: ['title'], unique: true, updatable: false)]
+    #[ORM\Column(length: 255, unique: true)]
+    private ?string $slug = null;
+
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank(message: "Content is required")]
     #[Assert\Length(
         min: 5,
-        max: 5000,
+        max: 50000,
         minMessage: "Content must be at least {{ limit }} characters long",
         maxMessage: "Content cannot be longer than {{ limit }} characters"
     )]
     private ?string $content = null;
 
+    #[Gedmo\Timestampable(on: 'create')]
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
+
+    #[Gedmo\Timestampable(on: 'update')]
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $deletedAt = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $scheduledAt = null;
 
     #[ORM\Column(length: 255, options: ["default" => "active"])]
     private string $status = PostStatus::PUBLISHED->value;
@@ -67,10 +84,24 @@ class Post
     #[ORM\OneToMany(targetEntity: PostLike::class, mappedBy: 'post')]
     private Collection $postLikes;
 
+    #[ORM\Column(options: ["default" => 0])]
+    private int $viewCount = 0;
+
+    #[ORM\Column(options: ["default" => 0])]
+    private int $clickCount = 0;
+
+    /**
+     * @var Collection<int, Tag>
+     */
+    #[ORM\ManyToMany(targetEntity: Tag::class, inversedBy: 'posts')]
+    #[ORM\JoinTable(name: 'post_tags')]
+    private Collection $tags;
+
     public function __construct()
     {
         $this->comments = new ArrayCollection();
         $this->postLikes = new ArrayCollection();
+        $this->tags = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -86,6 +117,18 @@ class Post
     public function setTitle(string $title): static
     {
         $this->title = $title;
+
+        return $this;
+    }
+
+    public function getSlug(): ?string
+    {
+        return $this->slug;
+    }
+
+    public function setSlug(?string $slug): static
+    {
+        $this->slug = $slug;
 
         return $this;
     }
@@ -110,6 +153,30 @@ class Post
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
+    {
+        $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    public function getDeletedAt(): ?\DateTimeImmutable
+    {
+        return $this->deletedAt;
+    }
+
+    public function setDeletedAt(?\DateTimeImmutable $deletedAt): static
+    {
+        $this->deletedAt = $deletedAt;
 
         return $this;
     }
@@ -223,6 +290,21 @@ class Post
         return $this->status === PostStatus::HIDDEN->value;
     }
 
+    public function getScheduledAt(): ?\DateTimeImmutable
+    {
+        return $this->scheduledAt;
+    }
+
+    public function setScheduledAt(?\DateTimeImmutable $scheduledAt): static
+    {
+        $this->scheduledAt = $scheduledAt;
+        return $this;
+    }
+
+    public function isScheduled(): bool
+    {
+        return $this->status === PostStatus::SCHEDULED->value;
+    }
 
 
     /**
@@ -258,5 +340,75 @@ class Post
             $this->images = array_values($this->images);
         }
         return $this;
+    }
+
+    public function getViewCount(): int
+    {
+        return $this->viewCount;
+    }
+
+    public function setViewCount(int $viewCount): static
+    {
+        $this->viewCount = $viewCount;
+        return $this;
+    }
+
+    public function incrementViewCount(): static
+    {
+        $this->viewCount++;
+        return $this;
+    }
+
+    public function getClickCount(): int
+    {
+        return $this->clickCount;
+    }
+
+    public function setClickCount(int $clickCount): static
+    {
+        $this->clickCount = $clickCount;
+        return $this;
+    }
+
+    public function incrementClickCount(): static
+    {
+        $this->clickCount++;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Tag>
+     */
+    public function getTags(): Collection
+    {
+        return $this->tags;
+    }
+
+    public function addTag(Tag $tag): static
+    {
+        if (!$this->tags->contains($tag)) {
+            $this->tags->add($tag);
+        }
+
+        return $this;
+    }
+
+    public function removeTag(Tag $tag): static
+    {
+        $this->tags->removeElement($tag);
+
+        return $this;
+    }
+
+    public function clearTags(): static
+    {
+        $this->tags->clear();
+
+        return $this;
+    }
+
+    public function hasTag(Tag $tag): bool
+    {
+        return $this->tags->contains($tag);
     }
 }

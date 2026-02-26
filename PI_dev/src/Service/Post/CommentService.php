@@ -3,9 +3,11 @@ namespace App\Service\Post;
 
 use App\Entity\Comment;
 use App\Entity\User;
+use App\Event\Post\PostCommentCreatedEvent;
 use App\Repository\CommentRepository;
 use App\Repository\PostRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class CommentService
@@ -13,7 +15,8 @@ class CommentService
     public function __construct(
         private EntityManagerInterface $em,
         private CommentRepository $commentRepository,
-        private PostRepository $postRepository
+        private PostRepository $postRepository,
+        private EventDispatcherInterface $eventDispatcher
     ) {}
 
     public function createComment(int $postId, string $content, User $user, ?int $parentCommentId = null): Comment
@@ -41,6 +44,8 @@ class CommentService
 
         $this->em->persist($comment);
         $this->em->flush();
+
+        $this->eventDispatcher->dispatch(new PostCommentCreatedEvent($comment));
 
         return $comment;
     }

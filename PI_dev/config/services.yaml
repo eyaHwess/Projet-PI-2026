@@ -3,6 +3,19 @@ parameters:
     openai.api_key: '%env(OPENAI_API_KEY)%'
     openai.use_mock: '%env(bool:OPENAI_USE_MOCK)%'
     openAiApiKey: '%env(OPENAI_API_KEY)%'
+    app.tagging.category_embeddings:
+        machine_learning:
+            label: 'machine learning'
+            embedding: [0.1, 0.2, 0.3]
+        web_development:
+            label: 'web development'
+            embedding: [0.2, 0.1, 0.4]
+        data_science:
+            label: 'data science'
+            embedding: [0.3, 0.25, 0.15]
+
+    env(EMBEDDING_API_ENDPOINT): ''
+    env(EMBEDDING_API_KEY): ''
 
 services:
     _defaults:
@@ -39,8 +52,33 @@ services:
         arguments:
             $defaultLocale: '%kernel.default_locale%'
 
-    # Expéditeur des emails (avec Gmail, mettre la même adresse que dans MAILER_DSN)
+    # Expéditeur des emails
     App\Service\EmailService:
         arguments:
             $fromEmail: '%env(MAILER_FROM_EMAIL)%'
             $fromName: '%env(MAILER_FROM_NAME)%'
+
+    # Google Perspective API Moderation Service
+    App\Service\Moderation\ModerationService:
+        arguments:
+            $apiKey: '%env(PERSPECTIVE_API_KEY)%'
+            $toxicityThreshold: '%env(float:PERSPECTIVE_TOXICITY_THRESHOLD)%'
+            $moderationLogger: '@monolog.logger.moderation'
+
+    # TF-IDF based tagging strategy
+    App\Service\Tagging\TfIdfTaggingService:
+        arguments:
+            $maxTags: 2
+
+    # Embedding-based tagging strategy (semantic)
+    App\Service\Tagging\EmbeddingTaggingService:
+        arguments:
+            $categoryEmbeddings: '%app.tagging.category_embeddings%'
+            $embeddingApiEndpoint: '%env(EMBEDDING_API_ENDPOINT)%'
+            $embeddingApiKey: '%env(EMBEDDING_API_KEY)%'
+            $maxTags: 2
+
+    # Tagging manager to select the active strategy
+    App\Service\Tagging\TaggingManager:
+        arguments:
+            $defaultStrategy: 'tfidf'

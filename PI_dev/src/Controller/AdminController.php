@@ -4,9 +4,12 @@ namespace App\Controller;
 
 use App\Repository\CoachingRequestRepository;
 use App\Repository\GoalRepository;
+use App\Repository\PostRepository;
 use App\Repository\RoutineRepository;
 use App\Repository\SessionRepository;
 use App\Repository\UserRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
@@ -518,5 +521,203 @@ final class AdminController extends AbstractController
                 ],
             ],
         ]);
+    }
+
+    #[Route('/admin/posts', name: 'admin_posts')]
+    public function posts(
+        PostRepository $postRepository, 
+        PaginatorInterface $paginator, 
+        Request $request,
+        \App\Service\Analytics\PostAnalyticsService $analyticsService,
+        EntityManagerInterface $entityManager
+    ): Response
+    {
+        // Get filter parameters
+        $userName = trim((string) $request->query->get('userName', ''));
+        $userEmail = trim((string) $request->query->get('userEmail', ''));
+        $tagSlug = trim((string) $request->query->get('tag', ''));
+        $trendFilter = trim((string) $request->query->get('trend', ''));
+        $sortBy = $request->query->get('sortBy', 'newest');
+        
+        // Create query for posts with user data
+        $qb = $postRepository->createQueryBuilder('p')
+            ->leftJoin('p.createdBy', 'u')
+            ->addSelect('u');
+        
+        // Apply filters
+        if ($userName !== '') {
+            $qb->andWhere('LOWER(u.firstName) LIKE :userName OR LOWER(u.lastName) LIKE :userName')
+               ->setParameter('userName', '%' . mb_strtolower($userName) . '%');
+        }
+        
+        if ($userEmail !== '') {
+            $qb->andWhere('LOWER(u.email) LIKE :userEmail')
+               ->setParameter('userEmail', '%' . mb_strtolower($userEmail) . '%');
+        }
+        
+        // Apply tag filter
+        if ($tagSlug !== '') {
+            $qb->leftJoin('p.tags', 't')
+               ->andWhere('t.slug = :tagSlug')
+               ->setParameter('tagSlug', $tagSlug);
+        }
+        
+        // Apply sorting
+        switch ($sortBy) {
+            case 'oldest':
+                $qb->orderBy('p.createdAt', 'ASC');
+                break;
+            case 'most_liked':
+                $qb->leftJoin('p.postLikes', 'pl')
+                   ->addSelect('COUNT(pl.id) as HIDDEN likes_count')
+                   ->groupBy('p.id')
+                   ->orderBy('likes_count', 'DESC');
+                break;
+            case 'most_commented':
+                $qb->leftJoin('p.comments', 'c')
+                   ->addSelect('COUNT(c.id) as HIDDEN comments_count')
+                   ->groupBy('p.id')
+                   ->orderBy('comments_count', 'DESC');
+                break;
+            case 'newest':
+            default:
+                $qb->orderBy('p.createdAt', 'DESC');
+                break;
+        }
+        
+        $query = $qb->getQuery();
+        
+        // Paginate the results
+        $pagination = $paginator->paginate(
+            $query,
+            $request->query->getInt('page', 1),
+            6 // items per page
+        );
+        
+        // Add analytics to each post
+        $postsWithAnalytics = [];
+        foreach ($pagination as $post) {
+            $ctrScore = $analyticsService->getCTRScore($post);
+            $trendData = $analyticsService->getTrendStatus($post);
+            
+            // Apply trend filter
+            if ($trendFilter !== '') {
+                $matchesTrend = match($trendFilter) {
+                    'trending' => $trendData['statusClass'] === 'trending',
+                    'growing' => $trendData['statusClass'] === 'growing',
+                    'declining' => $trendData['statusClass'] === 'declining',
+                    default => true
+                };
+                
+                if (!$matchesTrend) {
+                    continue;
+                }
+            }
+            
+            $postsWithAnalytics[] = [
+                'post' => $post,
+                'ctrScore' => $ctrScore,
+                'trendData' => $trendData,
+            ];
+        }
+        
+        // Get all tags for filter dropdown
+        $allTags = $analyticsService->getAllTagsWithStats();
+        
+        return $this->render('admin/components/Post/posts.html.twig', [
+            'posts' => $postsWithAnalytics,
+            'pagination' => $pagination,
+            'filter_userName' => $userName,
+            'filter_userEmail' => $userEmail,
+            'filter_tag' => $tagSlug,
+            'filter_trend' => $trendFilter,
+            'sortBy' => $sortBy,
+            'allTags' => $allTags,
+        ]);
+    }
+
+    #[Route('/admin/posts/{id}', name: 'admin_post_detail', requirements: ['id' => '\d+'])]
+    public function postDetail(
+        int $id, 
+        PostRepository $postRepository,
+        \App\Service\Analytics\PostAnalyticsService $analyticsService
+    ): Response
+    {
+        $post = $postRepository->createQueryBuilder('p')
+            ->leftJoin('p.comments', 'c')
+            ->leftJoin('c.commenter', 'u')
+            ->leftJoin('p.tags', 't')
+            ->addSelect('c', 'u', 't')
+            ->where('p.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
+        
+        if (!$post) {
+            throw $this->createNotFoundException('Post not found.');
+        }
+        
+        // Calculate analytics
+        $ctr = $analyticsService->calculateCTR($post);
+        $engagementRate = $analyticsService->calculateEngagementRate($post);
+        $interactionScore = $analyticsService->calculateInteractionScore($post);
+        $trendData = $analyticsService->getTrendStatus($post);
+        
+        // Get tag performance
+        $tagPerformance = [];
+        foreach ($post->getTags() as $tag) {
+            $tagPerformance[] = [
+                'tag' => $tag,
+                'stats' => $analyticsService->getTagPerformance($tag),
+            ];
+        }
+        
+        return $this->render('admin/components/Post/post_detail.html.twig', [
+            'post' => $post,
+            'likesCount' => count($post->getPostLikes()),
+            'commentsCount' => count($post->getComments()),
+            'ctr' => round($ctr, 2),
+            'engagementRate' => round($engagementRate, 2),
+            'interactionScore' => $interactionScore,
+            'trendData' => $trendData,
+            'tagPerformance' => $tagPerformance,
+        ]);
+    }
+
+    #[Route('/admin/posts/{id}/delete', name: 'admin_post_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function postDelete(int $id, PostRepository $postRepository, EntityManagerInterface $entityManager): Response
+    {
+        $post = $postRepository->find($id);
+        
+        if (!$post) {
+            throw $this->createNotFoundException('Post not found.');
+        }
+        
+        $entityManager->remove($post);
+        $entityManager->flush();
+        
+        $this->addFlash('success', 'Post deleted successfully.');
+        
+        return $this->redirectToRoute('admin_posts');
+    }
+
+    #[Route('/admin/comments/{id}/delete', name: 'admin_comment_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function commentDelete(int $id, EntityManagerInterface $entityManager): Response
+    {
+        $commentRepository = $entityManager->getRepository(\App\Entity\Comment::class);
+        $comment = $commentRepository->find($id);
+        
+        if (!$comment) {
+            return $this->json(['success' => false, 'message' => 'Comment not found.'], 404);
+        }
+        
+        try {
+            $entityManager->remove($comment);
+            $entityManager->flush();
+            
+            return $this->json(['success' => true, 'message' => 'Comment deleted successfully.']);
+        } catch (\Exception $e) {
+            return $this->json(['success' => false, 'message' => 'Error deleting comment: ' . $e->getMessage()], 500);
+        }
     }
 }

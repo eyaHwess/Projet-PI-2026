@@ -10,26 +10,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <!-- Posts Custom CSS -->
     <link rel="stylesheet" href="{{ asset('post/posts.css') }}">
-    
-    <style>
-        .avatar {
-            position: relative;
-            display: inline-block;
-        }
-        .avatar-md {
-            width: 48px;
-            height: 48px;
-        }
-        .avatar-sm {
-            width: 32px;
-            height: 32px;
-        }
-        .avatar-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-    </style>
+    <!-- CKEditor 5 CSS -->
+    <link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/41.1.0/ckeditor5.css">
 {% endblock %}
 
 {% block body %}
@@ -95,7 +77,7 @@
                     </button>
                     <ul class="dropdown-menu dropdown-menu-soft" aria-labelledby="filterDropdown">
                         <li>
-                            <a class="dropdown-item {{ currentFilter == 'all' ? 'active' : '' }}" 
+                            <a class="dropdown-item {{ currentFilter == 'all' and not currentTag ? 'active' : '' }}" 
                                href="{{ path('post_list_view', {'sort': currentSort, 'filter': 'all'}) }}">
                                 <i class="bi bi-grid-3x3-gap-fill"></i> All Posts
                             </a>
@@ -103,13 +85,53 @@
                         {% if app.user %}
                         <li>
                             <a class="dropdown-item {{ currentFilter == 'my_posts' ? 'active' : '' }}" 
-                               href="{{ path('post_list_view', {'sort': currentSort, 'filter': 'my_posts'}) }}">
+                               href="{{ path('post_list_view', {'sort': currentSort, 'filter': 'my_posts', 'tag': currentTag}) }}">
                                 <i class="bi bi-person-fill"></i> My Posts
                             </a>
                         </li>
                         {% endif %}
                     </ul>
                 </div>
+                
+                <!-- Tag Filter Dropdown -->
+                {% if availableTags|length > 0 %}
+                <div class="dropdown">
+                    <button class="btn btn-filter-sort dropdown-toggle" type="button" id="tagDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-tag"></i>
+                        <span class="fw-semibold">Tag: </span>
+                        <span class="current-option">
+                            {% if currentTag %}
+                                {% for tag in availableTags %}
+                                    {% if tag.slug == currentTag %}{{ tag.name }}{% endif %}
+                                {% endfor %}
+                            {% else %}All Tags{% endif %}
+                        </span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-soft tag-dropdown-menu" aria-labelledby="tagDropdown">
+                        <li class="tag-dropdown-header">
+                            <a class="dropdown-item {{ not currentTag ? 'active' : '' }}" 
+                               href="{{ path('post_list_view', {'sort': currentSort, 'filter': currentFilter}) }}">
+                                <i class="bi bi-x-circle"></i> All Tags
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li class="tag-dropdown-scroll-container">
+                            <ul class="tag-dropdown-list list-unstyled mb-0">
+                                {% for tag in availableTags %}
+                                <li>
+                                    <a class="dropdown-item {{ currentTag == tag.slug ? 'active' : '' }}" 
+                                       href="{{ path('post_list_view', {'sort': currentSort, 'filter': currentFilter, 'tag': tag.slug}) }}">
+                                        <i class="bi bi-tag-fill"></i>
+                                        <span class="tag-name">{{ tag.name }}</span>
+                                        <span class="tag-count">{{ tag.usageCount }}</span>
+                                    </a>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+                {% endif %}
             </div>
             
             <!-- Create Post Button -->
@@ -127,28 +149,499 @@
 
     
     <!-- Posts List -->
-    <div class="vstack gap-4">
-        {% for item in postsWithLikeStatus %}
-            {% include 'post/post_card.html.twig' with {
-                'post': item.post, 
-                'isLikedByCurrentUser': item.isLikedByCurrentUser,
-                'currentUser': currentUser
+    <div class="vstack gap-4" id="postsContainer"
+         data-next-page="{{ (currentPage|default(1)) + 1 }}"
+         data-has-more="{{ hasMorePosts ? '1' : '0' }}">
+        {% if postsWithLikeStatus is not empty %}
+            {% include 'post/_post_cards.html.twig' with {
+                'postsWithLikeStatus': postsWithLikeStatus,
+                'currentUser': currentUser,
+                'commentLikeService': commentLikeService
             } %}
         {% else %}
             <div class="text-center py-5">
                 <i class="bi bi-inbox display-1 text-muted"></i>
                 <p class="text-muted mt-3">No posts found</p>
             </div>
-        {% endfor %}
+        {% endif %}
     </div>
+
+    <!-- Infinite scroll loading indicator -->
+    <div class="text-center py-4" id="infiniteLoader" style="display: none;">
+        <div class="spinner-border text-secondary" role="status" style="width: 1.5rem; height: 1.5rem;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <div class="text-muted small mt-2">Loading more posts…</div>
+    </div>
+
+    <!-- Sentinel element observed for infinite loading -->
+    <div id="infiniteSentinel" style="height: 1px;"></div>
 </div>
 
 <!-- Include Image Lightbox -->
 {% include 'post/image_lightbox.html.twig' %}
+
+<!-- Moderation Warning Modal (placed at body level for proper positioning) -->
+<div id="moderationWarningModal" class="moderation-modal-overlay" style="display: none;">
+    <div class="moderation-modal">
+        <div class="moderation-modal-header">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            Content Violation Detected
+        </div>
+        <div class="moderation-modal-body">
+            <div class="moderation-icon">
+                <i class="bi bi-shield-fill-exclamation"></i>
+            </div>
+            <h4 class="moderation-warning-title">Warning!</h4>
+            <p id="moderationMessage" class="moderation-message"></p>
+            <div class="moderation-alert">
+                <strong>⚠️ This action has been logged.</strong><br>
+                Repeated violations may result in account restrictions.
+            </div>
+        </div>
+        <div class="moderation-modal-footer">
+            <button type="button" class="moderation-btn-close" onclick="closeModerationModal()">
+                <i class="bi bi-check-circle"></i>
+                I Understand
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal (Universal for posts, drafts, and scheduled posts) -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="deleteConfirmModalLabel">
+                    <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                    <span id="deleteModalTitle">Delete Post</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0" id="deleteModalMessage">Are you sure you want to delete this post? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                    <i class="bi bi-trash me-2"></i>Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Publish Confirmation Modal (Custom, replaces browser confirm) -->
+<div id="publishConfirmModal" class="publish-modal-overlay" aria-hidden="true">
+    <div class="publish-modal" role="dialog" aria-modal="true" aria-labelledby="publishModalTitle">
+        <div class="publish-modal-header">
+            <h5 id="publishModalTitle" class="mb-0">Publish Post</h5>
+        </div>
+        <div class="publish-modal-body">
+            <p class="mb-0">Are you sure you want to publish this post now?</p>
+            <div id="publishModalError" class="publish-modal-error" style="display:none;"></div>
+        </div>
+        <div class="publish-modal-footer">
+            <button type="button" class="btn publish-btn-cancel" id="publishCancelBtn">Cancel</button>
+            <button type="button" class="btn publish-btn-confirm" id="publishConfirmBtn">
+                Publish Now
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+let deleteItemId = null;
+let deleteItemType = null;
+
+function showDeleteModal(itemId, type) {
+    deleteItemId = itemId;
+    deleteItemType = type;
+    
+    // Customize modal based on type
+    const modalTitle = document.getElementById('deleteModalTitle');
+    const modalMessage = document.getElementById('deleteModalMessage');
+    
+    switch(type) {
+        case 'draft':
+            modalTitle.textContent = 'Delete Draft';
+            modalMessage.textContent = 'Are you sure you want to delete this draft? This action cannot be undone.';
+            break;
+        case 'scheduled':
+            modalTitle.textContent = 'Delete Scheduled Post';
+            modalMessage.textContent = 'Are you sure you want to delete this scheduled post? This action cannot be undone.';
+            break;
+        case 'post':
+        default:
+            modalTitle.textContent = 'Delete Post';
+            modalMessage.textContent = 'Are you sure you want to delete this post? This action cannot be undone.';
+            break;
+    }
+    
+    const modal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+    modal.show();
+}
+
+document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+    if (deleteItemId && deleteItemType) {
+        // Call appropriate delete function based on type
+        switch(deleteItemType) {
+            case 'draft':
+                confirmDeleteDraft(deleteItemId);
+                break;
+            case 'scheduled':
+                deleteScheduledPost(deleteItemId);
+                break;
+            case 'post':
+            default:
+                deletePost(deleteItemId);
+                break;
+        }
+        
+        const modal = bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal'));
+        modal.hide();
+        deleteItemId = null;
+        deleteItemType = null;
+    }
+});
+</script>
+
+<script>
+// Custom publish modal (replaces window.confirm)
+let publishTargetPostId = null;
+
+function openPublishModal(postId) {
+    publishTargetPostId = postId;
+    const overlay = document.getElementById('publishConfirmModal');
+    if (!overlay) return;
+
+    const errorEl = document.getElementById('publishModalError');
+    if (errorEl) {
+        errorEl.style.display = 'none';
+        errorEl.textContent = '';
+    }
+
+    overlay.classList.add('show');
+    overlay.setAttribute('aria-hidden', 'false');
+    if (window.PI2026Modal?.lockScroll) {
+        window.PI2026Modal.lockScroll();
+    } else {
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closePublishModal() {
+    publishTargetPostId = null;
+    const overlay = document.getElementById('publishConfirmModal');
+    if (!overlay) return;
+
+    overlay.classList.remove('show');
+    overlay.setAttribute('aria-hidden', 'true');
+    if (window.PI2026Modal?.unlockScroll) {
+        window.PI2026Modal.unlockScroll();
+    } else {
+        document.body.style.overflow = '';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const overlay = document.getElementById('publishConfirmModal');
+    const cancelBtn = document.getElementById('publishCancelBtn');
+    const confirmBtn = document.getElementById('publishConfirmBtn');
+
+    if (!overlay || !cancelBtn || !confirmBtn) return;
+
+    // Close on outside click
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            closePublishModal();
+        }
+    });
+
+    // Close on Cancel
+    cancelBtn.addEventListener('click', () => closePublishModal());
+
+    // Confirm publish (calls existing publish function)
+    confirmBtn.addEventListener('click', async () => {
+        if (!publishTargetPostId) return;
+
+        try {
+            const errorEl = document.getElementById('publishModalError');
+            if (errorEl) {
+                errorEl.style.display = 'none';
+                errorEl.textContent = '';
+            }
+
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = 'Publishing...';
+
+            const response = await fetch(`/posts/${publishTargetPostId}/publish`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (response.ok) {
+                window.location.reload();
+                return;
+            }
+
+            if (errorEl) {
+                errorEl.textContent = 'Failed to publish post. Please try again.';
+                errorEl.style.display = 'block';
+            }
+        } catch (error) {
+            console.error('Error publishing post:', error);
+            const errorEl = document.getElementById('publishModalError');
+            if (errorEl) {
+                errorEl.textContent = 'Failed to publish post. Please try again.';
+                errorEl.style.display = 'block';
+            }
+        } finally {
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = 'Publish Now';
+        }
+    });
+
+    // Close on ESC
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && overlay.classList.contains('show')) {
+            closePublishModal();
+        }
+    });
+});
+</script>
+
+<script>
+(function() {
+    const container = document.getElementById('postsContainer');
+    const loader = document.getElementById('infiniteLoader');
+    const sentinel = document.getElementById('infiniteSentinel');
+
+    if (!container || !sentinel) return;
+
+    let loading = false;
+
+    function getBaseParams() {
+        const params = new URLSearchParams(window.location.search);
+        // Keep existing filters/sort/tag, but never propagate ajax param
+        params.delete('ajax');
+        return params;
+    }
+
+    async function loadNextPage() {
+        const hasMore = container.dataset.hasMore === '1';
+        if (!hasMore || loading) return;
+
+        loading = true;
+        if (loader) loader.style.display = 'block';
+
+        try {
+            const nextPage = parseInt(container.dataset.nextPage || '2', 10);
+            const params = getBaseParams();
+            params.set('page', String(nextPage));
+            params.set('ajax', '1');
+
+            const response = await fetch(`{{ path('post_list_view') }}?${params.toString()}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to load posts');
+            }
+
+            const data = await response.json();
+            const html = (data && data.html) ? data.html : '';
+
+            if (html.trim() !== '') {
+                container.insertAdjacentHTML('beforeend', html);
+            }
+
+            container.dataset.hasMore = data.hasMore ? '1' : '0';
+            container.dataset.nextPage = String(data.nextPage || (nextPage + 1));
+
+            // If nothing was returned, stop further requests.
+            if (html.trim() === '' || !data.hasMore) {
+                observer.disconnect();
+            }
+        } catch (e) {
+            // Stop infinite loop on repeated failures
+            observer.disconnect();
+            console.error(e);
+        } finally {
+            loading = false;
+            if (loader) loader.style.display = 'none';
+        }
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+        const entry = entries[0];
+        if (entry && entry.isIntersecting) {
+            loadNextPage();
+        }
+    }, {
+        root: null,
+        rootMargin: '800px 0px',
+        threshold: 0
+    });
+
+    // Only start observing if there are more posts
+    if (container.dataset.hasMore === '1') {
+        observer.observe(sentinel);
+    }
+})();
+</script>
+
+<script>
+// Contextual navigation + highlight for notification deep-links (#post{id} / #comment{id})
+(function() {
+    const HIGHLIGHT_MS = 2600;
+    const MAX_WAIT_MS = 9000;
+
+    function smoothScrollTo(el, center = false) {
+        try {
+            el.scrollIntoView({
+                behavior: 'smooth',
+                block: center ? 'center' : 'start',
+                inline: 'nearest'
+            });
+        } catch (e) {
+            el.scrollIntoView(true);
+        }
+    }
+
+    function highlight(el, kind) {
+        el.classList.add('notification-focus');
+        el.classList.add(kind === 'comment' ? 'focus-comment' : 'focus-post');
+
+        setTimeout(() => {
+            el.classList.add('fade-out');
+            setTimeout(() => {
+                el.classList.remove('notification-focus', 'focus-comment', 'focus-post', 'fade-out');
+            }, 260);
+        }, HIGHLIGHT_MS);
+    }
+
+    function getPostIdFromCommentId(commentId) {
+        // comment HTML is inside #commentsList{postId}
+        const el = document.getElementById(commentId);
+        if (!el) return null;
+        const list = el.closest('[id^="commentsList"]');
+        if (!list) return null;
+        const m = list.id.match(/^commentsList(\d+)$/);
+        return m ? m[1] : null;
+    }
+
+    function ensureCommentVisible(commentId) {
+        const el = document.getElementById(commentId);
+        if (!el) return;
+
+        // If comment is hidden, expand via existing toggleComments() handler
+        const style = window.getComputedStyle(el);
+        if (style.display !== 'none') return;
+
+        const postId = getPostIdFromCommentId(commentId);
+        if (!postId) return;
+
+        try {
+            const totalCountEl = document.getElementById('commentCount' + postId);
+            const total = totalCountEl ? parseInt(totalCountEl.textContent || '0', 10) : 0;
+            if (typeof window.toggleComments === 'function') {
+                // Call a few times to reveal batches if needed
+                for (let i = 0; i < 4; i++) {
+                    window.toggleComments(parseInt(postId, 10), total);
+                    const s = window.getComputedStyle(el);
+                    if (s.display !== 'none') break;
+                }
+            } else {
+                // Fallback: unhide directly
+                el.style.display = 'flex';
+            }
+        } catch (e) {
+            // ignore
+        }
+    }
+
+    async function waitForElement(selector, timeoutMs) {
+        const start = Date.now();
+        while (Date.now() - start < timeoutMs) {
+            const el = document.querySelector(selector);
+            if (el) return el;
+            await new Promise(r => setTimeout(r, 250));
+        }
+        return null;
+    }
+
+    async function ensureLoadedForTarget(targetId) {
+        const container = document.getElementById('postsContainer');
+        if (!container) return;
+
+        const selector = `#${CSS.escape(targetId)}`;
+        if (document.querySelector(selector)) return;
+
+        const sentinel = document.getElementById('infiniteSentinel');
+        const start = Date.now();
+
+        while (Date.now() - start < MAX_WAIT_MS) {
+            const hasMore = container.dataset.hasMore === '1';
+            if (!hasMore) break;
+
+            if (sentinel) sentinel.scrollIntoView({ behavior: 'auto', block: 'end' });
+            await new Promise(r => setTimeout(r, 650));
+
+            if (document.querySelector(selector)) return;
+        }
+    }
+
+    async function focusFromHash() {
+        const hash = window.location.hash || '';
+        if (!hash) return;
+
+        const targetId = hash.replace('#', '');
+        if (!targetId) return;
+
+        await ensureLoadedForTarget(targetId);
+
+        const el = await waitForElement(`#${CSS.escape(targetId)}`, MAX_WAIT_MS);
+        if (!el) return;
+
+        const isComment = targetId.startsWith('comment');
+        if (isComment) {
+            ensureCommentVisible(targetId);
+        }
+        smoothScrollTo(el, isComment);
+        highlight(el, isComment ? 'comment' : 'post');
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', focusFromHash);
+    } else {
+        focusFromHash();
+    }
+
+    window.addEventListener('hashchange', () => {
+        focusFromHash();
+    });
+})();
+</script>
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- CKEditor 5 with Image Upload -->
+    <link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/43.3.1/ckeditor5.css" />
+    <script>
+        document.addEventListener('hidden.bs.modal', function () {
+            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.removeProperty('padding-right');
+        });
+    </script>
 {% endblock %}

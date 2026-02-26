@@ -4,9 +4,11 @@ namespace App\Service\Post;
 use App\Entity\Post;
 use App\Entity\PostLike;
 use App\Entity\User;
+use App\Event\Post\PostLikedEvent;
 use App\Repository\PostLikeRepository;
 use App\Repository\PostRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class PostLikeService
@@ -14,7 +16,8 @@ class PostLikeService
     public function __construct(
         private EntityManagerInterface $em,
         private PostLikeRepository $postLikeRepository,
-        private PostRepository $postRepository
+        private PostRepository $postRepository,
+        private EventDispatcherInterface $eventDispatcher
     ) {}
 
     public function toggleLike(int $postId, User $user): array
@@ -35,6 +38,8 @@ class PostLikeService
             // Unlike: remove the like
             $this->em->remove($existingLike);
             $this->em->flush();
+
+            $this->eventDispatcher->dispatch(new PostLikedEvent($post, $user, false));
             
             return [
                 'liked' => false,
@@ -48,6 +53,8 @@ class PostLikeService
             
             $this->em->persist($postLike);
             $this->em->flush();
+
+            $this->eventDispatcher->dispatch(new PostLikedEvent($post, $user, true));
             
             return [
                 'liked' => true,
