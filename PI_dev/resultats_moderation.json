@@ -1,0 +1,74 @@
+[
+    {
+        "message": "Bonjour!",
+        "status": "approved",
+        "isToxic": false,
+        "isSpam": false,
+        "toxicityScore": 0,
+        "spamScore": 0,
+        "reason": null
+    },
+    {
+        "message": "Comment allez-vous?",
+        "status": "approved",
+        "isToxic": false,
+        "isSpam": false,
+        "toxicityScore": 0,
+        "spamScore": 0,
+        "reason": null
+    },
+    {
+        "message": "Merci beaucoup",
+        "status": "approved",
+        "isToxic": false,
+        "isSpam": false,
+        "toxicityScore": 0,
+        "spamScore": 0,
+        "reason": null
+    },
+    {
+        "message": "You are a fucking asshole",
+        "status": "blocked",
+        "isToxic": true,
+        "isSpam": false,
+        "toxicityScore": 0.8,
+        "spamScore": 0,
+        "reason": "Ce message viole les règles de la communauté"
+    },
+    {
+        "message": "Espèce de connard",
+        "status": "blocked",
+        "isToxic": true,
+        "isSpam": false,
+        "toxicityScore": 0.8,
+        "spamScore": 0,
+        "reason": "Ce message viole les règles de la communauté"
+    },
+    {
+        "message": "Visitez https:\/\/spam.com",
+        "status": "approved",
+        "isToxic": false,
+        "isSpam": false,
+        "toxicityScore": 0,
+        "spamScore": 0.4,
+        "reason": null
+    },
+    {
+        "message": "https:\/\/site1.com https:\/\/site2.com https:\/\/site3.com",
+        "status": "hidden",
+        "isToxic": false,
+        "isSpam": true,
+        "toxicityScore": 0,
+        "spamScore": 0.8,
+        "reason": "Ce message est considéré comme spam"
+    },
+    {
+        "message": "aaaaaaaaaa",
+        "status": "approved",
+        "isToxic": false,
+        "isSpam": false,
+        "toxicityScore": 0,
+        "spamScore": 0.4,
+        "reason": null
+    }
+]

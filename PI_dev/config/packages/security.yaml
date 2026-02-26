@@ -10,10 +10,6 @@ security:
                 property: email
 
     firewalls:
-        dev:
-            pattern: ^/(_profiler|_wdt|assets|build)/
-            security: false
-
         main:
             lazy: true
             provider: app_user_provider
@@ -30,7 +26,7 @@ security:
 
             logout:
                 path: app_logout
-                target: /login
+                target: /
 
     access_control:
         # Public routes (no authentication required)
@@ -40,10 +36,10 @@ security:
         - { path: ^/user/add, roles: PUBLIC_ACCESS }
         - { path: ^/register, roles: PUBLIC_ACCESS }
         - { path: ^/demo, roles: PUBLIC_ACCESS }
-        
-        # Goal/Routine/Activity system (public access)
-        - { path: ^/goals, roles: PUBLIC_ACCESS }
-        - { path: ^/goal, roles: PUBLIC_ACCESS }
+
+        # Goal/Routine/Activity system
+        - { path: ^/goals, roles: ROLE_USER }
+        - { path: ^/goal, roles: ROLE_USER }
         - { path: ^/routines, roles: PUBLIC_ACCESS }
         - { path: ^/routine, roles: PUBLIC_ACCESS }
         - { path: ^/activity, roles: PUBLIC_ACCESS }
@@ -52,25 +48,19 @@ security:
         - { path: ^/calendar, roles: PUBLIC_ACCESS }
         - { path: ^/consistency, roles: PUBLIC_ACCESS }
         - { path: ^/time-investment, roles: PUBLIC_ACCESS }
-        
-        # Admin routes (require ROLE_ADMIN)
+
+        # Chatroom (mariem — requires login)
+        - { path: ^/chatroom, roles: ROLE_USER }
+
+        # Admin routes
         - { path: ^/admin, roles: ROLE_ADMIN }
-        
-        # Coach management routes (coaches only: manage requests, etc.)
+
+        # Coach management routes
         - { path: ^/coach/, roles: ROLE_COACH }
         - { path: ^/sessions/manage, roles: ROLE_COACH }
-        
-        # Onboarding (first-time users)
+
+        # Onboarding
         - { path: ^/onboarding, roles: ROLE_USER }
 
         # User dashboard and other authenticated routes
         - { path: ^/user, roles: ROLE_USER }
-
-when@test:
-    security:
-        password_hashers:
-            App\Entity\User:
-                algorithm: auto
-                cost: 4
-                time_cost: 3
-                memory_cost: 10

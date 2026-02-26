@@ -2,128 +2,137 @@
 
 namespace App\Controller;
 
-use App\Repository\NotificationRepository;
+use App\Entity\Notification;
+use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/notifications')]
+#[Route('/notification')]
 class NotificationController extends AbstractController
 {
     public function __construct(
-        private NotificationRepository $notificationRepository,
+        private NotificationService $notificationService,
         private EntityManagerInterface $entityManager
-    ) {
-    }
+    ) {}
 
     /**
-     * Liste toutes les notifications de l'utilisateur
+     * Afficher toutes les notifications
      */
-    #[Route('', name: 'app_notifications_index', methods: ['GET'])]
-    public function index(): Response
+    #[Route('/', name: 'notification_list', methods: ['GET'])]
+    public function list(): Response
     {
         $user = $this->getUser();
+        
         if (!$user) {
             return $this->redirectToRoute('app_login');
         }
 
-        $notifications = $this->notificationRepository->findByUser($user);
+        $notifications = $this->notificationService->getRecentNotifications($user, 50);
+        $unreadCount = $this->notificationService->getUnreadCount($user);
 
-        return $this->render('notification/index.html.twig', [
+        return $this->render('notification/list.html.twig', [
             'notifications' => $notifications,
+            'unreadCount' => $unreadCount
         ]);
     }
 
     /**
-     * Récupère le nombre de notifications non lues (API)
+     * Récupérer les nouvelles notifications (AJAX)
      */
-    #[Route('/unread-count', name: 'app_notifications_unread_count', methods: ['GET'])]
-    public function unreadCount(): JsonResponse
+    #[Route('/fetch', name: 'notification_fetch', methods: ['GET'])]
+    public function fetch(): JsonResponse
     {
         $user = $this->getUser();
+        
         if (!$user) {
-            return new JsonResponse(['count' => 0]);
+            return new JsonResponse(['error' => 'Non authentifié'], 401);
         }
 
-        $count = $this->notificationRepository->countUnreadByUser($user);
+        $notifications = $this->notificationService->getRecentNotifications($user, 10);
+        $unreadCount = $this->notificationService->getUnreadCount($user);
 
-        return new JsonResponse(['count' => $count]);
-    }
-
-    /**
-     * Récupère les notifications non lues (API)
-     */
-    #[Route('/unread', name: 'app_notifications_unread', methods: ['GET'])]
-    public function unread(): JsonResponse
-    {
-        $user = $this->getUser();
-        if (!$user) {
-            return new JsonResponse(['notifications' => []]);
-        }
-
-        $notifications = $this->notificationRepository->findUnreadByUser($user);
-
-        $data = array_map(function ($notification) {
-            $createdAt = $notification->getCreatedAt();
-            $coachingRequest = $notification->getCoachingRequest();
-            $sessionId = null;
-            
-            // Récupérer l'ID de la session si elle existe
-            if ($coachingRequest && $coachingRequest->getSession()) {
-                $sessionId = $coachingRequest->getSession()->getId();
-            }
-            
-            return [
+        $notificationsData = [];
+        foreach ($notifications as $notification) {
+            $notificationsData[] = [
                 'id' => $notification->getId(),
                 'type' => $notification->getType(),
                 'message' => $notification->getMessage(),
-                'createdAt' => $createdAt ? $createdAt->format('Y-m-d H:i:s') : null,
                 'isRead' => $notification->isRead(),
-                'sessionId' => $sessionId,
+                'createdAt' => $notification->getCreatedAt()->format('c'),
+                'html' => $this->renderView('notification/_notification_item.html.twig', [
+                    'notification' => $notification
+                ])
             ];
-        }, $notifications);
+        }
 
-        return new JsonResponse(['notifications' => $data]);
+        return new JsonResponse([
+            'notifications' => $notificationsData,
+            'unreadCount' => $unreadCount
+        ]);
     }
 
     /**
-     * Marque une notification comme lue
+     * Marquer une notification comme lue
      */
-    #[Route('/{id}/mark-read', name: 'app_notifications_mark_read', methods: ['POST'])]
-    public function markAsRead(int $id): JsonResponse
+    #[Route('/{id}/mark-read', name: 'notification_mark_read', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function markRead(Notification $notification): JsonResponse
     {
         $user = $this->getUser();
+        
+        if (!$user || $notification->getUser()->getId() !== $user->getId()) {
+            return new JsonResponse(['error' => 'Non autorisé'], 403);
+        }
+
+        $this->notificationService->markAsRead($notification);
+
+        return new JsonResponse([
+            'success' => true,
+            'unreadCount' => $this->notificationService->getUnreadCount($user)
+        ]);
+    }
+
+    /**
+     * Marquer toutes les notifications comme lues
+     */
+    #[Route('/mark-all-read', name: 'notification_mark_all_read', methods: ['POST'])]
+    public function markAllRead(): JsonResponse
+    {
+        $user = $this->getUser();
+        
         if (!$user) {
-            return new JsonResponse(['success' => false, 'message' => 'Non authentifié'], 401);
+            return new JsonResponse(['error' => 'Non authentifié'], 401);
         }
 
-        $notification = $this->notificationRepository->find($id);
+        $this->notificationService->markAllAsRead($user);
 
-        if (!$notification || $notification->getUser() !== $user) {
-            return new JsonResponse(['success' => false, 'message' => 'Notification non trouvée'], 404);
+        return new JsonResponse([
+            'success' => true,
+            'unreadCount' => 0
+        ]);
+    }
+
+    /**
+     * Supprimer une notification
+     */
+    #[Route('/{id}/delete', name: 'notification_delete', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function delete(Notification $notification): JsonResponse
+    {
+        $user = $this->getUser();
+        
+        if (!$user || $notification->getUser()->getId() !== $user->getId()) {
+            return new JsonResponse(['error' => 'Non autorisé'], 403);
         }
 
-        $notification->setIsRead(true);
+        $this->entityManager->remove($notification);
         $this->entityManager->flush();
 
-        return new JsonResponse(['success' => true]);
-    }
-
-    /**
-     * Marque toutes les notifications comme lues
-     */
-    #[Route('/mark-all-read', name: 'app_notifications_mark_all_read', methods: ['POST'])]
-    public function markAllAsRead(): JsonResponse
-    {
-        $user = $this->getUser();
-        if (!$user) {
-            return new JsonResponse(['success' => false, 'message' => 'Non authentifié'], 401);
-        }
-
-        $this->notificationRepository->markAllAsReadForUser($user);
-
-        return new JsonResponse(['success' => true]);
+        return new JsonResponse([
+            'success' => true,
+            'unreadCount' => $this->notificationService->getUnreadCount($user)
+        ]);
     }
 }
+

@@ -1,0 +1,26 @@
+<div class="notification-item {% if not notification.isRead %}unread{% endif %}" data-notification-id="{{ notification.id }}">
+    <div class="notification-icon">
+        {% if notification.type == 'coaching_request' %}
+            <i class="fas fa-user-plus"></i>
+        {% elseif notification.type == 'coaching_accepted' %}
+            <i class="fas fa-check-circle"></i>
+        {% elseif notification.type == 'coaching_rejected' %}
+            <i class="fas fa-times-circle"></i>
+        {% elseif notification.type == 'new_message' %}
+            <i class="fas fa-comment"></i>
+        {% elseif notification.type == 'goal_invitation' %}
+            <i class="fas fa-bullseye"></i>
+        {% else %}
+            <i class="fas fa-bell"></i>
+        {% endif %}
+    </div>
+    <div class="notification-content">
+        <div class="notification-message">{{ notification.message }}</div>
+        <div class="notification-time">
+            {{ notification.createdAt|date('d/m/Y à H:i') }}
+        </div>
+    </div>
+    {% if not notification.isRead %}
+        <div class="notification-badge"></div>
+    {% endif %}
+</div>

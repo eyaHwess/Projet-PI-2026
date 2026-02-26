@@ -1,57 +1,63 @@
-{% extends 'base_modern.html.twig' %}
+{% extends 'base.html.twig' %}
 
-{% block title %}Modifier {{ goal.title }}{% endblock %}
-
-{% block navbar_actions %}
-    <a href="{{ path('app_goal_show', {id: goal.id}) }}" class="btn-modern btn-modern-secondary">
-        <i class="bi bi-arrow-left"></i> Retour
-    </a>
-{% endblock %}
+{% block title %}Modifier le Goal{% endblock %}
 
 {% block body %}
-    <!-- Page Header -->
-    <div class="page-header-modern">
-        <h1 class="page-header-modern-title">
-            <i class="bi bi-pencil" style="color: var(--primary-color);"></i>
-            Modifier l'objectif
-        </h1>
-        <p class="page-header-modern-subtitle">
-            {{ goal.title }}
-        </p>
-    </div>
-
-    <!-- Form Card -->
-    <div class="card-modern" style="max-width: 800px; margin: 0 auto;">
-        <div class="card-modern-header">
-            <h2 style="font-size: var(--font-size-xl); font-weight: 700; margin: 0; color: var(--gray-900);">
-                <i class="bi bi-bullseye"></i> Informations de l'objectif
-            </h2>
-        </div>
-
-        {{ include('goal/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
-    </div>
-
-    <!-- Delete Section -->
-    <div class="card-modern" style="max-width: 800px; margin: var(--space-xl) auto 0; overflow: hidden; position: relative;">
-        <!-- Red gradient left border accent -->
-        <div style="position:absolute;top:0;left:0;width:5px;height:100%;background:linear-gradient(180deg,#ef4444,#dc2626);border-radius:1.25rem 0 0 1.25rem;"></div>
-        <div style="padding-left: 0.75rem;">
-            <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:var(--space-md);">
-                <div style="width:40px;height:40px;background:linear-gradient(135deg,#fef2f2,#fee2e2);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 10px rgba(239,68,68,0.18);">
-                    <i class="bi bi-exclamation-triangle-fill" style="color:#dc2626;font-size:1.1rem;"></i>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-edit"></i> Modifier le Goal
+                    </h3>
                 </div>
-                <h3 style="font-size: var(--font-size-lg); font-weight: 800; margin: 0; color: #b91c1c;">Zone dangereuse</h3>
+                <div class="card-body">
+                    {{ form_start(form) }}
+                        <div class="mb-3">
+                            {{ form_label(form.title, 'Titre', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.title, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(form.title) }}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 5}}) }}
+                            {{ form_errors(form.description) }}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form_label(form.startDate, 'Date de début', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.startDate, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_errors(form.startDate) }}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                {{ form_label(form.endDate, 'Date de fin', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.endDate, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_errors(form.endDate) }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.status, 'Statut', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.status, {'attr': {'class': 'form-control'}}) }}
+                            {{ form_errors(form.status) }}
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ path('goal_list') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Annuler
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Enregistrer les modifications
+                            </button>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
             </div>
-            <p style="color: var(--gray-600); margin-bottom: var(--space-lg); font-size: 0.9rem; line-height: 1.6; background: #fef2f2; border: 1px solid #fecaca; border-radius: 0.75rem; padding: 0.875rem 1rem;">
-                <i class="bi bi-info-circle me-2" style="color:#ef4444;"></i>
-                La suppression de cet objectif supprimera également <strong>toutes les routines et activités</strong> associées. Cette action est <strong>irréversible</strong>.
-            </p>
-            <form method="post" action="{{ path('app_goal_delete', {'id': goal.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet objectif ?');">
-                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ goal.id) }}">
-                <button type="submit" style="background:linear-gradient(135deg,#ef4444,#dc2626);color:white;border:none;padding:0.65rem 1.5rem;border-radius:50px;font-weight:700;font-family:inherit;cursor:pointer;display:inline-flex;align-items:center;gap:0.4rem;box-shadow:0 4px 14px rgba(239,68,68,0.35);transition:all 0.2s;font-size:0.875rem;">
-                    <i class="bi bi-trash"></i> Supprimer l'objectif
-                </button>
-            </form>
         </div>
     </div>
+</div>
 {% endblock %}

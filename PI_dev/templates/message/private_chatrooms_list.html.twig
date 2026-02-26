@@ -1,0 +1,316 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Chatrooms Privés - {{ goal.title }}{% endblock %}
+
+{% block body %}
+<style>
+    .private-chatrooms-container {
+        max-width: 1200px;
+        margin: 40px auto;
+        padding: 20px;
+    }
+
+    .page-header {
+        margin-bottom: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .page-header-left h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: #050505;
+        margin-bottom: 8px;
+    }
+
+    .page-header-left p {
+        color: #65676b;
+        font-size: 14px;
+    }
+
+    .btn {
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-primary {
+        background: #0084ff;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #0073e6;
+    }
+
+    .btn-secondary {
+        background: #e4e6eb;
+        color: #050505;
+    }
+
+    .btn-secondary:hover {
+        background: #d0d2d6;
+    }
+
+    .chatrooms-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 20px;
+    }
+
+    .chatroom-card {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: all 0.2s;
+        cursor: pointer;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+
+    .chatroom-card:hover {
+        box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        transform: translateY(-2px);
+    }
+
+    .chatroom-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+    .chatroom-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 24px;
+        flex-shrink: 0;
+    }
+
+    .chatroom-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .chatroom-name {
+        font-size: 18px;
+        font-weight: 600;
+        color: #050505;
+        margin-bottom: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .chatroom-meta {
+        font-size: 13px;
+        color: #65676b;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .chatroom-meta i {
+        font-size: 12px;
+    }
+
+    .chatroom-members {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .member-avatars {
+        display: flex;
+        margin-left: -8px;
+    }
+
+    .member-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 12px;
+        border: 2px solid white;
+        margin-left: -8px;
+    }
+
+    .member-avatar:first-child {
+        margin-left: 0;
+    }
+
+    .members-count {
+        font-size: 13px;
+        color: #65676b;
+    }
+
+    .chatroom-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 16px;
+        border-top: 1px solid #e4e6eb;
+    }
+
+    .chatroom-creator {
+        font-size: 12px;
+        color: #65676b;
+    }
+
+    .chatroom-date {
+        font-size: 12px;
+        color: #65676b;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 600;
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .empty-state i {
+        font-size: 64px;
+        color: #e4e6eb;
+        margin-bottom: 16px;
+    }
+
+    .empty-state h3 {
+        font-size: 20px;
+        font-weight: 600;
+        color: #050505;
+        margin-bottom: 8px;
+    }
+
+    .empty-state p {
+        color: #65676b;
+        margin-bottom: 24px;
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #0084ff;
+        text-decoration: none;
+        font-size: 14px;
+        margin-bottom: 20px;
+        transition: all 0.2s;
+    }
+
+    .back-link:hover {
+        color: #0073e6;
+    }
+</style>
+
+<div class="private-chatrooms-container">
+    <a href="{{ path('message_chatroom', {goalId: goal.id}) }}" class="back-link">
+        <i class="fas fa-arrow-left"></i> Retour au chatroom principal
+    </a>
+
+    <div class="page-header">
+        <div class="page-header-left">
+            <h1>Chatrooms Privés</h1>
+            <p>{{ goal.title }}</p>
+        </div>
+        <a href="{{ path('message_private_chatroom_create', {goalId: goal.id}) }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Créer un sous-groupe
+        </a>
+    </div>
+
+    {% if privateChatrooms|length > 0 %}
+        <div class="chatrooms-grid">
+            {% for chatroom in privateChatrooms %}
+                <a href="{{ path('message_private_chatroom_show', {id: chatroom.id}) }}" class="chatroom-card">
+                    <div class="chatroom-header">
+                        <div class="chatroom-icon">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <div class="chatroom-info">
+                            <div class="chatroom-name">{{ chatroom.name }}</div>
+                            <div class="chatroom-meta">
+                                <span>
+                                    <i class="fas fa-users"></i>
+                                    {{ chatroom.members|length }} membres
+                                </span>
+                                <span>
+                                    <i class="fas fa-comments"></i>
+                                    {{ chatroom.messages|length }} messages
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chatroom-members">
+                        <div class="member-avatars">
+                            {% for member in chatroom.members|slice(0, 5) %}
+                                <div class="member-avatar">
+                                    {{ member.firstName|first }}{{ member.lastName|first }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% if chatroom.members|length > 5 %}
+                            <span class="members-count">+{{ chatroom.members|length - 5 }} autres</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="chatroom-footer">
+                        <div class="chatroom-creator">
+                            Créé par {{ chatroom.creator.firstName }}
+                            {% if chatroom.creator.id == app.user.id %}
+                                <span class="badge">Vous</span>
+                            {% endif %}
+                        </div>
+                        <div class="chatroom-date">
+                            {{ chatroom.createdAt|date('d/m/Y') }}
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-comments"></i>
+            <h3>Aucun chatroom privé</h3>
+            <p>Créez votre premier sous-groupe privé pour discuter avec des membres spécifiques</p>
+            <a href="{{ path('message_private_chatroom_create', {goalId: goal.id}) }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Créer un sous-groupe
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,265 +1,396 @@
-{% extends 'base_modern.html.twig' %}
+{% extends 'base.html.twig' %}
 
-{% block title %}Nouvel Objectif{% endblock %}
+{% block title %}Create Goal{% endblock %}
 
 {% block stylesheets %}
-    {{ parent() }}
-    <style>
-        .goal-new-root {
-            --ai-accent: #6366f1;
-            --ai-accent-light: #eef2ff;
-            --ai-surface: #fafbff;
-            --radius: 16px;
-            --radius-sm: 12px;
-            --shadow: 0 4px 24px rgba(0,0,0,0.06);
-            --shadow-hover: 0 8px 32px rgba(0,0,0,0.08);
-        }
+<style>
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-        .goal-new-header {
-            margin-bottom: 2rem;
-        }
-        .goal-new-header h1 {
-            font-size: 1.75rem;
-            font-weight: 800;
-            color: var(--gray-900);
-            margin: 0 0 0.35rem 0;
-            letter-spacing: -0.02em;
-        }
-        .goal-new-header p {
-            font-size: 1rem;
-            color: var(--gray-600);
-            margin: 0;
-        }
+    .multi-step-form {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        max-width: 800px;
+        width: 100%;
+    }
 
-        .goal-new-layout {
-            display: grid;
-            gap: 1.5rem;
-            align-items: start;
-        }
-        @media (min-width: 992px) {
-            .goal-new-layout {
-                grid-template-columns: 380px 1fr;
-                gap: 2rem;
-                max-width: 1100px;
-                margin: 0 auto;
-            }
-        }
+    /* Progress Steps */
+    .progress-steps {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 40px;
+        position: relative;
+    }
 
-        /* —— Suggestions sidebar —— */
-        .ai-sidebar {
-            background: var(--ai-surface);
-            border: 1px solid rgba(99, 102, 241, 0.12);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-        }
-        .ai-sidebar-header {
-            padding: 1.25rem 1.5rem;
-            background: linear-gradient(135deg, var(--ai-accent-light) 0%, #fff 100%);
-            border-bottom: 1px solid rgba(99, 102, 241, 0.1);
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-        .ai-sidebar-header-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            background: var(--ai-accent);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-        }
-        .ai-sidebar-header-text h2 {
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--gray-900);
-            margin: 0;
-        }
-        .ai-sidebar-header-text p {
-            font-size: 0.8125rem;
-            color: var(--gray-600);
-            margin: 0.2rem 0 0 0;
-        }
-        .ai-sidebar-body {
-            padding: 1rem 1.25rem;
-            max-height: 420px;
-            overflow-y: auto;
-        }
-        .ai-suggestions-grid {
-            display: grid;
-            gap: 0.75rem;
-        }
-        .ai-card {
-            background: #fff;
-            border: 1px solid var(--gray-200);
-            border-radius: var(--radius-sm);
-            padding: 1rem 1.25rem;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        .ai-card:hover {
-            border-color: rgba(99, 102, 241, 0.35);
-            box-shadow: var(--shadow-hover);
-        }
-        .ai-card-num {
-            font-size: 0.6875rem;
-            font-weight: 700;
-            color: var(--ai-accent);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 0.35rem;
-        }
-        .ai-card-title {
-            font-size: 0.9375rem;
-            font-weight: 700;
-            color: var(--gray-900);
-            margin-bottom: 0.4rem;
-            line-height: 1.3;
-        }
-        .ai-card-desc {
-            font-size: 0.8125rem;
-            color: var(--gray-600);
-            line-height: 1.45;
-            margin-bottom: 0.75rem;
-        }
-        .ai-card-meta {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .ai-pill {
-            padding: 0.25rem 0.6rem;
-            border-radius: 999px;
-            font-size: 0.6875rem;
-            font-weight: 700;
-        }
-        .ai-pill.high { background: #fce7f3; color: #be185d; }
-        .ai-pill.medium { background: #ffedd5; color: #c2410c; }
-        .ai-pill.low { background: #d1fae5; color: #047857; }
-        .ai-days {
-            font-size: 0.75rem;
-            color: var(--gray-500);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-        .ai-empty {
-            text-align: center;
-            padding: 1.5rem 1rem;
-            background: linear-gradient(180deg, #fffbeb 0%, #fff 100%);
-            border: 1px dashed var(--gray-300);
-            border-radius: var(--radius-sm);
-        }
-        .ai-empty h3 { font-size: 0.9375rem; font-weight: 700; color: var(--gray-800); margin: 0 0 0.5rem 0; }
-        .ai-empty p { font-size: 0.8125rem; color: var(--gray-600); margin: 0; line-height: 1.5; }
+    .progress-steps::before {
+        content: '';
+        position: absolute;
+        top: 20px;
+        left: 10%;
+        right: 10%;
+        height: 3px;
+        background: #e0e0e0;
+        z-index: 0;
+    }
 
-        /* —— Form card —— */
-        .goal-form-wrap {
-            background: #fff;
-            border: 1px solid var(--gray-200);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-        }
-        .goal-form-header {
-            padding: 1.25rem 1.5rem;
-            border-bottom: 1px solid var(--gray-100);
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-        .goal-form-header-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            background: var(--primary-lighter, #e0f2fe);
-            color: var(--primary-color, #0284c7);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-        }
-        .goal-form-header h2 {
-            font-size: 1.125rem;
-            font-weight: 700;
-            color: var(--gray-900);
-            margin: 0;
-        }
-        .goal-form-body {
-            padding: 1.5rem 1.5rem 2rem;
-        }
-    </style>
-{% endblock %}
+    .step {
+        text-align: center;
+        position: relative;
+        flex: 1;
+        z-index: 1;
+    }
 
-{% block navbar_actions %}
-    <a href="{{ path('app_goal_index') }}" class="btn-modern btn-modern-secondary">
-        <i class="bi bi-arrow-left"></i> Retour
-    </a>
+    .step-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #e0e0e0;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 10px;
+        font-weight: bold;
+        transition: all 0.3s;
+    }
+
+    .step.active .step-circle {
+        background: #7ed321;
+        transform: scale(1.1);
+    }
+
+    .step.completed .step-circle {
+        background: #7ed321;
+    }
+
+    .step-label {
+        font-size: 12px;
+        color: #999;
+        font-weight: 500;
+    }
+
+    .step.active .step-label {
+        color: #333;
+        font-weight: 600;
+    }
+
+    /* Form Steps */
+    .form-step {
+        display: none;
+        animation: fadeIn 0.5s;
+    }
+
+    .form-step.active {
+        display: block;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .step-content {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        color: white;
+        font-weight: 600;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .form-control, .form-select {
+        background: rgba(255,255,255,0.2);
+        border: 1px solid rgba(255,255,255,0.3);
+        color: white;
+        border-radius: 10px;
+        padding: 12px 15px;
+        transition: all 0.3s;
+    }
+
+    .form-control::placeholder {
+        color: rgba(255,255,255,0.6);
+    }
+
+    .form-control:focus, .form-select:focus {
+        background: rgba(255,255,255,0.3);
+        border-color: white;
+        color: white;
+        box-shadow: 0 0 0 0.2rem rgba(255,255,255,0.25);
+    }
+
+    .form-select option {
+        background: #4facfe;
+        color: white;
+    }
+
+    /* Buttons */
+    .btn-navigation {
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+    }
+
+    .btn-prev, .btn-next {
+        border: none;
+        padding: 12px 30px;
+        border-radius: 50px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .btn-prev {
+        background: #e0e0e0;
+        color: #666;
+    }
+
+    .btn-prev:hover {
+        background: #d0d0d0;
+    }
+
+    .btn-next {
+        background: #7ed321;
+        color: white;
+        margin-left: auto;
+    }
+
+    .btn-next:hover {
+        background: #6bc218;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(126,211,33,0.3);
+    }
+
+    .btn-submit {
+        background: #7ed321;
+        color: white;
+        border: none;
+        padding: 12px 40px;
+        border-radius: 50px;
+        font-weight: 600;
+        width: 100%;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .btn-submit:hover {
+        background: #6bc218;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(126,211,33,0.3);
+    }
+
+    .step-icon {
+        font-size: 18px;
+    }
+</style>
 {% endblock %}
 
 {% block body %}
-    <div class="goal-new-root">
-        <div class="goal-new-header">
-            <h1>Nouvel objectif</h1>
-            <p>Inspirez-vous des suggestions puis complétez le formulaire.</p>
-        </div>
-
-        <div class="goal-new-layout">
-            <!-- Colonne gauche : Suggestions IA -->
-            <aside class="ai-sidebar">
-                <div class="ai-sidebar-header">
-                    <div class="ai-sidebar-header-icon"><i class="bi bi-magic"></i></div>
-                    <div class="ai-sidebar-header-text">
-                        <h2>{{ 'ai.suggestions_title'|trans({}, 'messages') }}</h2>
-                        <p>{{ 'ai.suggestions_subtitle'|trans({}, 'messages') }}</p>
-                    </div>
+<div class="container">
+    <div class="multi-step-form">
+        
+        <!-- Progress Steps -->
+        <div class="progress-steps">
+            <div class="step active" data-step="1">
+                <div class="step-circle">
+                    <span class="step-icon">📝</span>
                 </div>
-                <div class="ai-sidebar-body">
-                    {% if aiSuggestions|length > 0 %}
-                        <div class="ai-suggestions-grid">
-                            {% for item in aiSuggestions %}
-                            <div class="ai-card">
-                                <div class="ai-card-num">{{ 'ai.suggestion'|trans({}, 'messages') }} {{ loop.index }}</div>
-                                <div class="ai-card-title">{{ item.title|default('') }}</div>
-                                <div class="ai-card-desc">{{ item.description|default('') }}</div>
-                                <div class="ai-card-meta">
-                                    {% set priority = (item.priority|default('medium'))|lower %}
-                                    <span class="ai-pill {{ priority }}">{{ priority|capitalize }}</span>
-                                    {% if item.duration_days is defined %}
-                                    <span class="ai-days"><i class="bi bi-calendar3"></i> {{ item.duration_days }} {{ 'ai.days'|trans({}, 'messages') }}</span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    {% elseif aiUnavailable %}
-                        <div class="ai-empty">
-                            <h3>{{ 'ai.unavailable_title'|trans({}, 'messages') }}</h3>
-                            <p>{{ 'ai.unavailable_body'|trans({}, 'messages') }}</p>
-                            <p style="margin-top: 0.75rem;">{{ 'ai.unavailable_hint'|trans({'%completed%': aiUserStats.completed_goals, '%total%': aiUserStats.total_goals, '%rate%': aiUserStats.completion_rate}, 'messages') }}</p>
-                        </div>
-                    {% else %}
-                        <div class="ai-empty">
-                            <h3>{{ 'ai.fallback_title'|trans({}, 'messages') }}</h3>
-                            <p>{{ 'ai.fallback_body'|trans({'%completed%': aiUserStats.completed_goals, '%total%': aiUserStats.total_goals}, 'messages') }}</p>
-                        </div>
-                    {% endif %}
+                <div class="step-label">Step 1<br>Goal Information</div>
+            </div>
+            <div class="step" data-step="2">
+                <div class="step-circle">
+                    <span class="step-icon">📅</span>
                 </div>
-            </aside>
-
-            <!-- Colonne droite : Formulaire -->
-            <div class="goal-form-wrap">
-                <div class="goal-form-header">
-                    <div class="goal-form-header-icon"><i class="bi bi-bullseye"></i></div>
-                    <h2>Informations de l'objectif</h2>
+                <div class="step-label">Step 2<br>Timeline</div>
+            </div>
+            <div class="step" data-step="3">
+                <div class="step-circle">
+                    <span class="step-icon">✅</span>
                 </div>
-                <div class="goal-form-body">
-                    {{ include('goal/_form.html.twig') }}
-                </div>
+                <div class="step-label">Step 3<br>Confirm Details</div>
             </div>
         </div>
+
+        {{ form_start(form, {'attr': {'id': 'goalForm'}}) }}
+
+        <!-- Step 1: Goal Information -->
+        <div class="form-step active" data-step="1">
+            <div class="step-content">
+                <div class="mb-3">
+                    {{ form_label(form.title, 'Goal Title*', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.title, {'attr': {'class': 'form-control', 'placeholder': 'Enter your goal title'}}) }}
+                    {{ form_errors(form.title) }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(form.description, 'Description*', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 4, 'placeholder': 'Describe your goal...'}}) }}
+                    {{ form_errors(form.description) }}
+                </div>
+            </div>
+
+            <div class="btn-navigation">
+                <button type="button" class="btn-next" onclick="nextStep()">
+                    Next →
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 2: Timeline -->
+        <div class="form-step" data-step="2">
+            <div class="step-content">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        {{ form_label(form.startDate, 'Start Date*', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.startDate, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.startDate) }}
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        {{ form_label(form.endDate, 'End Date*', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.endDate, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.endDate) }}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(form.status, 'Status*', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.status, {'attr': {'class': 'form-select'}}) }}
+                    {{ form_errors(form.status) }}
+                </div>
+            </div>
+
+            <div class="btn-navigation">
+                <button type="button" class="btn-prev" onclick="prevStep()">
+                    ← Previous
+                </button>
+                <button type="button" class="btn-next" onclick="nextStep()">
+                    Next →
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 3: Confirm Details -->
+        <div class="form-step" data-step="3">
+            <div class="step-content">
+                <h4 style="color: white; margin-bottom: 20px;">📋 Review Your Goal</h4>
+                
+                <div style="background: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px; color: white;">
+                    <div class="mb-3">
+                        <strong>Title:</strong>
+                        <div id="confirm-title" style="margin-top: 5px;">-</div>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Description:</strong>
+                        <div id="confirm-description" style="margin-top: 5px;">-</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <strong>Start Date:</strong>
+                            <div id="confirm-start" style="margin-top: 5px;">-</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <strong>End Date:</strong>
+                            <div id="confirm-end" style="margin-top: 5px;">-</div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Status:</strong>
+                        <div id="confirm-status" style="margin-top: 5px;">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="btn-navigation">
+                <button type="button" class="btn-prev" onclick="prevStep()">
+                    ← Previous
+                </button>
+                <button type="submit" class="btn-submit">
+                    🚀 Create Goal
+                </button>
+            </div>
+        </div>
+
+        {{ form_end(form) }}
+
     </div>
+</div>
+
+<script>
+let currentStep = 1;
+const totalSteps = 3;
+
+function updateSteps() {
+    // Update step circles
+    document.querySelectorAll('.step').forEach(step => {
+        const stepNum = parseInt(step.dataset.step);
+        if (stepNum < currentStep) {
+            step.classList.add('completed');
+            step.classList.remove('active');
+        } else if (stepNum === currentStep) {
+            step.classList.add('active');
+            step.classList.remove('completed');
+        } else {
+            step.classList.remove('active', 'completed');
+        }
+    });
+
+    // Update form steps
+    document.querySelectorAll('.form-step').forEach(step => {
+        const stepNum = parseInt(step.dataset.step);
+        if (stepNum === currentStep) {
+            step.classList.add('active');
+        } else {
+            step.classList.remove('active');
+        }
+    });
+
+    // Update confirmation on step 3
+    if (currentStep === 3) {
+        updateConfirmation();
+    }
+}
+
+function nextStep() {
+    if (currentStep < totalSteps) {
+        currentStep++;
+        updateSteps();
+    }
+}
+
+function prevStep() {
+    if (currentStep > 1) {
+        currentStep--;
+        updateSteps();
+    }
+}
+
+function updateConfirmation() {
+    const title = document.querySelector('[name="goal[title]"]').value || '-';
+    const description = document.querySelector('[name="goal[description]"]').value || '-';
+    const startDate = document.querySelector('[name="goal[startDate]"]').value || '-';
+    const endDate = document.querySelector('[name="goal[endDate]"]').value || '-';
+    const status = document.querySelector('[name="goal[status]"]').value || '-';
+
+    document.getElementById('confirm-title').textContent = title;
+    document.getElementById('confirm-description').textContent = description;
+    document.getElementById('confirm-start').textContent = startDate;
+    document.getElementById('confirm-end').textContent = endDate;
+    document.getElementById('confirm-status').textContent = status;
+}
+
+// Initialize
+updateSteps();
+</script>
 {% endblock %}

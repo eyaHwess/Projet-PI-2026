@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Simple Traduction</title>
+</head>
+<body>
+    <h1>Test Simple</h1>
+    <button onclick="testFunction()">Tester les Fonctions</button>
+    <div id="result"></div>
+    
+    <script src="/js/translation.js"></script>
+    <script>
+        function testFunction() {
+            const result = document.getElementById("result");
+            let html = "<h3>Résultats:</h3>";
+            
+            const functions = ["toggleTranslateMenu", "translateMessageTo", "translateMessage", "closeTranslation"];
+            functions.forEach(func => {
+                const exists = typeof window[func] === "function";
+                html += `<p>${func}: ${exists ? "✅ OK" : "❌ MANQUANTE"}</p>`;
+            });
+            
+            result.innerHTML = html;
+        }
+        
+        // Test automatique au chargement
+        window.addEventListener("load", () => {
+            setTimeout(testFunction, 1000);
+        });
+    </script>
+</body>
+</html>

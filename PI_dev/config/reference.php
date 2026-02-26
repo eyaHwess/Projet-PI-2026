@@ -1511,96 +1511,43 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     generate_final_classes?: bool|Param, // Default: true
  *     generate_final_entities?: bool|Param, // Default: false
  * }
- * @psalm-type StofDoctrineExtensionsConfig = array{
- *     orm?: array<string, array{ // Default: []
- *         translatable?: scalar|Param|null, // Default: false
- *         timestampable?: scalar|Param|null, // Default: false
- *         blameable?: scalar|Param|null, // Default: false
- *         sluggable?: scalar|Param|null, // Default: false
- *         tree?: scalar|Param|null, // Default: false
- *         loggable?: scalar|Param|null, // Default: false
- *         ip_traceable?: scalar|Param|null, // Default: false
- *         sortable?: scalar|Param|null, // Default: false
- *         softdeleteable?: scalar|Param|null, // Default: false
- *         uploadable?: scalar|Param|null, // Default: false
- *         reference_integrity?: scalar|Param|null, // Default: false
+ * @psalm-type VichUploaderConfig = array{
+ *     default_filename_attribute_suffix?: scalar|Param|null, // Default: "_name"
+ *     db_driver: scalar|Param|null,
+ *     storage?: scalar|Param|null, // Default: "file_system"
+ *     use_flysystem_to_resolve_uri?: bool|Param, // Default: false
+ *     twig?: scalar|Param|null, // twig requires templating // Default: true
+ *     form?: scalar|Param|null, // Default: true
+ *     metadata?: array{
+ *         cache?: scalar|Param|null, // Default: "file"
+ *         type?: scalar|Param|null, // Default: "attribute"
+ *         file_cache?: array{
+ *             dir?: scalar|Param|null, // Default: "%kernel.cache_dir%/vich_uploader"
+ *         },
+ *         auto_detection?: bool|Param, // Default: true
+ *         directories?: list<array{ // Default: []
+ *             path: scalar|Param|null,
+ *             namespace_prefix?: scalar|Param|null, // Default: ""
+ *         }>,
+ *     },
+ *     mappings?: array<string, array{ // Default: []
+ *         uri_prefix?: scalar|Param|null, // Default: "/uploads"
+ *         upload_destination?: scalar|Param|null, // Default: null
+ *         namer?: string|array{
+ *             service?: scalar|Param|null, // Default: null
+ *             options?: mixed, // Default: null
+ *         },
+ *         directory_namer?: string|array{
+ *             service?: scalar|Param|null, // Default: null
+ *             options?: mixed, // Default: null
+ *         },
+ *         delete_on_remove?: scalar|Param|null, // Default: true
+ *         erase_fields?: scalar|Param|null, // Default: true
+ *         delete_on_update?: scalar|Param|null, // Default: true
+ *         inject_on_load?: scalar|Param|null, // Default: false
+ *         namer_keep_extension?: scalar|Param|null, // Default: false
+ *         db_driver?: scalar|Param|null, // Default: null
  *     }>,
- *     mongodb?: array<string, array{ // Default: []
- *         translatable?: scalar|Param|null, // Default: false
- *         timestampable?: scalar|Param|null, // Default: false
- *         blameable?: scalar|Param|null, // Default: false
- *         sluggable?: scalar|Param|null, // Default: false
- *         tree?: scalar|Param|null, // Default: false
- *         loggable?: scalar|Param|null, // Default: false
- *         ip_traceable?: scalar|Param|null, // Default: false
- *         sortable?: scalar|Param|null, // Default: false
- *         softdeleteable?: scalar|Param|null, // Default: false
- *         uploadable?: scalar|Param|null, // Default: false
- *         reference_integrity?: scalar|Param|null, // Default: false
- *     }>,
- *     class?: array{
- *         translatable?: scalar|Param|null, // Default: "Gedmo\\Translatable\\TranslatableListener"
- *         timestampable?: scalar|Param|null, // Default: "Gedmo\\Timestampable\\TimestampableListener"
- *         blameable?: scalar|Param|null, // Default: "Gedmo\\Blameable\\BlameableListener"
- *         sluggable?: scalar|Param|null, // Default: "Gedmo\\Sluggable\\SluggableListener"
- *         tree?: scalar|Param|null, // Default: "Gedmo\\Tree\\TreeListener"
- *         loggable?: scalar|Param|null, // Default: "Gedmo\\Loggable\\LoggableListener"
- *         sortable?: scalar|Param|null, // Default: "Gedmo\\Sortable\\SortableListener"
- *         softdeleteable?: scalar|Param|null, // Default: "Gedmo\\SoftDeleteable\\SoftDeleteableListener"
- *         uploadable?: scalar|Param|null, // Default: "Gedmo\\Uploadable\\UploadableListener"
- *         reference_integrity?: scalar|Param|null, // Default: "Gedmo\\ReferenceIntegrity\\ReferenceIntegrityListener"
- *     },
- *     softdeleteable?: array{
- *         handle_post_flush_event?: bool|Param, // Default: false
- *     },
- *     uploadable?: array{
- *         default_file_path?: scalar|Param|null, // Default: null
- *         mime_type_guesser_class?: scalar|Param|null, // Default: "Stof\\DoctrineExtensionsBundle\\Uploadable\\MimeTypeGuesserAdapter"
- *         default_file_info_class?: scalar|Param|null, // Default: "Stof\\DoctrineExtensionsBundle\\Uploadable\\UploadedFileInfo"
- *         validate_writable_directory?: bool|Param, // Default: true
- *     },
- *     default_locale?: scalar|Param|null, // Default: "en"
- *     translation_fallback?: bool|Param, // Default: false
- *     persist_default_translation?: bool|Param, // Default: false
- *     skip_translation_on_load?: bool|Param, // Default: false
- *     metadata_cache_pool?: scalar|Param|null, // Default: null
- * }
- * @psalm-type KnpPaginatorConfig = array{
- *     default_options?: array{
- *         sort_field_name?: scalar|Param|null, // Default: "sort"
- *         sort_direction_name?: scalar|Param|null, // Default: "direction"
- *         filter_field_name?: scalar|Param|null, // Default: "filterField"
- *         filter_value_name?: scalar|Param|null, // Default: "filterValue"
- *         page_name?: scalar|Param|null, // Default: "page"
- *         distinct?: bool|Param, // Default: true
- *         page_out_of_range?: scalar|Param|null, // Default: "ignore"
- *         default_limit?: scalar|Param|null, // Default: 10
- *     },
- *     template?: array{
- *         pagination?: scalar|Param|null, // Default: "@KnpPaginator/Pagination/sliding.html.twig"
- *         rel_links?: scalar|Param|null, // Default: "@KnpPaginator/Pagination/rel_links.html.twig"
- *         filtration?: scalar|Param|null, // Default: "@KnpPaginator/Pagination/filtration.html.twig"
- *         sortable?: scalar|Param|null, // Default: "@KnpPaginator/Pagination/sortable_link.html.twig"
- *     },
- *     page_range?: scalar|Param|null, // Default: 5
- *     page_limit?: scalar|Param|null, // Default: null
- *     convert_exception?: bool|Param, // Default: false
- *     remove_first_page_param?: bool|Param, // Default: false
- * }
- * @psalm-type SymfonycastsResetPasswordConfig = array{
- *     request_password_repository: scalar|Param|null, // A class that implements ResetPasswordRequestRepositoryInterface - usually your ResetPasswordRequestRepository.
- *     lifetime?: int|Param, // The length of time in seconds that a password reset request is valid for after it is created. // Default: 3600
- *     throttle_limit?: int|Param, // Another password reset cannot be made faster than this throttle time in seconds. // Default: 3600
- *     enable_garbage_collection?: bool|Param, // Enable/Disable automatic garbage collection. // Default: true
- * }
- * @psalm-type KnpuOauth2ClientConfig = array{
- *     http_client?: scalar|Param|null, // Service id of HTTP client to use (must implement GuzzleHttp\ClientInterface) // Default: null
- *     http_client_options?: array{
- *         timeout?: int|Param,
- *         proxy?: scalar|Param|null,
- *         verify?: bool|Param, // Use only with proxy option set
- *     },
- *     clients?: array<string, array<string, mixed>>,
  * }
  * @psalm-type MercureConfig = array{
  *     hubs?: array<string, array{ // Default: []
@@ -1636,10 +1583,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     twig_extra?: TwigExtraConfig,
  *     security?: SecurityConfig,
  *     monolog?: MonologConfig,
- *     stof_doctrine_extensions?: StofDoctrineExtensionsConfig,
- *     knp_paginator?: KnpPaginatorConfig,
- *     symfonycasts_reset_password?: SymfonycastsResetPasswordConfig,
- *     knpu_oauth2_client?: KnpuOauth2ClientConfig,
+ *     vich_uploader?: VichUploaderConfig,
  *     mercure?: MercureConfig,
  *     "when@dev"?: array{
  *         imports?: ImportsConfig,
@@ -1657,10 +1601,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         security?: SecurityConfig,
  *         monolog?: MonologConfig,
  *         maker?: MakerConfig,
- *         stof_doctrine_extensions?: StofDoctrineExtensionsConfig,
- *         knp_paginator?: KnpPaginatorConfig,
- *         symfonycasts_reset_password?: SymfonycastsResetPasswordConfig,
- *         knpu_oauth2_client?: KnpuOauth2ClientConfig,
+ *         vich_uploader?: VichUploaderConfig,
  *         mercure?: MercureConfig,
  *     },
  *     "when@prod"?: array{
@@ -1676,10 +1617,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         twig_extra?: TwigExtraConfig,
  *         security?: SecurityConfig,
  *         monolog?: MonologConfig,
- *         stof_doctrine_extensions?: StofDoctrineExtensionsConfig,
- *         knp_paginator?: KnpPaginatorConfig,
- *         symfonycasts_reset_password?: SymfonycastsResetPasswordConfig,
- *         knpu_oauth2_client?: KnpuOauth2ClientConfig,
+ *         vich_uploader?: VichUploaderConfig,
  *         mercure?: MercureConfig,
  *     },
  *     "when@test"?: array{
@@ -1696,10 +1634,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         twig_extra?: TwigExtraConfig,
  *         security?: SecurityConfig,
  *         monolog?: MonologConfig,
- *         stof_doctrine_extensions?: StofDoctrineExtensionsConfig,
- *         knp_paginator?: KnpPaginatorConfig,
- *         symfonycasts_reset_password?: SymfonycastsResetPasswordConfig,
- *         knpu_oauth2_client?: KnpuOauth2ClientConfig,
+ *         vich_uploader?: VichUploaderConfig,
  *         mercure?: MercureConfig,
  *     },
  *     ...<string, ExtensionType|array{ // extra keys must follow the when@%env% pattern or match an extension alias

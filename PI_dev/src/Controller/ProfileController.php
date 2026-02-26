@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Enum\PostStatus;
+use App\Service\AiProfileGenerator;
 use App\Service\LoginHistoryService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,6 +16,7 @@ class ProfileController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
+        private AiProfileGenerator $aiProfileGenerator,
     ) {
     }
 
@@ -29,6 +31,43 @@ class ProfileController extends AbstractController
             $this->addFlash('success', 'Vous pouvez refaire l\'onboarding pour régénérer votre profil IA.');
         }
         return $this->redirectToRoute('app_onboarding');
+    }
+
+    #[IsGranted('ROLE_USER')]
+    #[Route('/user/ai-profile/regenerate', name: 'app_ai_profile_regenerate', methods: ['GET'])]
+    public function regenerateAiProfile(): Response
+    {
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        $answers = $user->getOnboardingAnswers();
+
+        if (empty($answers)) {
+            $this->addFlash('info', 'Complétez d\'abord l\'onboarding pour générer votre profil IA.');
+            return $this->redirectToRoute('app_onboarding');
+        }
+
+        $profile = $this->aiProfileGenerator->generateProfile($answers);
+
+        if ($profile !== null) {
+            $user->setArchetypeName($profile['archetypeName']);
+            $user->setArchetypeDescription($profile['description']);
+            $user->setArchetypeShortBio($profile['shortBio']);
+            $user->setArchetypeData([
+                'strengths' => $profile['strengths'],
+                'growthAreas' => $profile['growthAreas'],
+                'habitSuggestions' => $profile['habitSuggestions'],
+            ]);
+            $user->setIsOnboarded(true);
+            $this->entityManager->flush();
+            $this->addFlash('success', 'Votre profil IA a été généré avec succès !');
+        } else {
+            $this->addFlash('warning', 'Impossible de générer le profil IA pour le moment. Réessayez plus tard.');
+        }
+
+        return $this->redirectToRoute('app_user_ai_profile');
     }
 
     #[IsGranted('ROLE_USER')]

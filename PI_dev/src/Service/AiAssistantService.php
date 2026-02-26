@@ -80,6 +80,8 @@ Return ONLY a valid JSON array, no other text, no markdown:
                     'max_tokens' => 800,
                 ],
                 'timeout' => 30,
+                'verify_peer' => false,
+                'verify_host' => false,
             ]);
 
             $data = $response->toArray();

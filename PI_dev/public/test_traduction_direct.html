@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Traduction Direct</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { background: #d4edda; border-color: #c3e6cb; }
+        .error { background: #f8d7da; border-color: #f5c6cb; }
+        .warning { background: #fff3cd; border-color: #ffeaa7; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+        }
+        input[type="text"] {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 200px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌍 Test de Traduction Direct</h1>
+        <p>Cette page teste directement la traduction sans passer par l'interface du chatroom.</p>
+
+        <div class="test-section">
+            <h3>1. Test de Traduction Forcée</h3>
+            <p>Entrez un ID de message existant et testez la traduction :</p>
+            
+            <div>
+                <label>ID du message :</label>
+                <input type="text" id="messageId" value="1" placeholder="ID du message">
+                
+                <label>Texte à traduire :</label>
+                <input type="text" id="textToTranslate" value="hello" placeholder="Texte">
+                
+                <label>Langue cible :</label>
+                <select id="targetLang">
+                    <option value="fr">🇫🇷 Français</option>
+                    <option value="en">🇬🇧 English</option>
+                    <option value="ar">🇸🇦 العربية</option>
+                </select>
+            </div>
+            
+            <button onclick="testTranslation()">🔄 Tester la Traduction</button>
+            <button onclick="testDirectAPI()">🚀 Test API Direct</button>
+            
+            <div id="translationResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. Test des Fonctions JavaScript</h3>
+            <p>Vérifiez que les fonctions de traduction sont chargées :</p>
+            
+            <button onclick="checkFunctions()">🔍 Vérifier les Fonctions</button>
+            
+            <div id="functionsResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. Test de Traduction Prédéfinie</h3>
+            <p>Tests avec des textes prédéfinis :</p>
+            
+            <button onclick="translatePredefined('hello', 'fr')">hello → français</button>
+            <button onclick="translatePredefined('good morning', 'fr')">good morning → français</button>
+            <button onclick="translatePredefined('bonjour', 'en')">bonjour → anglais</button>
+            <button onclick="translatePredefined('مرحبا', 'fr')">مرحبا → français</button>
+            
+            <div id="predefinedResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. Instructions</h3>
+            <ol>
+                <li><strong>Démarrer le serveur :</strong> <code>symfony server:start</code></li>
+                <li><strong>Créer un message :</strong> Aller dans un chatroom et envoyer "hello"</li>
+                <li><strong>Noter l'ID :</strong> Regarder l'ID du message dans l'URL ou la console</li>
+                <li><strong>Tester ici :</strong> Entrer l'ID et cliquer sur "Tester la Traduction"</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Charger le fichier JavaScript de traduction -->
+    <script src="/js/translation.js"></script>
+    
+    <script>
+        // Test de traduction via l'API
+        async function testTranslation() {
+            const messageId = document.getElementById('messageId').value;
+            const targetLang = document.getElementById('targetLang').value;
+            const resultDiv = document.getElementById('translationResult');
+            
+            if (!messageId) {
+                showResult(resultDiv, '❌ Veuillez entrer un ID de message', 'error');
+                return;
+            }
+            
+            showResult(resultDiv, '⏳ Test en cours...', 'warning');
+            
+            try {
+                const response = await fetch(`/message/${messageId}/translate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: `lang=${targetLang}`
+                });
+                
+                // Vérifier le type de contenu de la réponse
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const textResponse = await response.text();
+                    showResult(resultDiv, `❌ Erreur: Réponse non-JSON reçue<br><strong>Status:</strong> ${response.status}<br><strong>Contenu:</strong> ${textResponse.substring(0, 200)}...`, 'error');
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    showResult(resultDiv, `❌ Erreur: ${data.error}`, 'error');
+                } else if (data.translation) {
+                    showResult(resultDiv, `✅ Traduction réussie!<br><strong>Résultat:</strong> ${data.translation}<br><strong>Langue:</strong> ${data.targetLanguage}`, 'success');
+                } else {
+                    showResult(resultDiv, `❓ Réponse inattendue: ${JSON.stringify(data)}`, 'warning');
+                }
+            } catch (error) {
+                showResult(resultDiv, `❌ Erreur réseau: ${error.message}<br><strong>Vérifiez que:</strong><br>1. Le serveur est démarré<br>2. L'ID du message existe<br>3. Vous êtes connecté`, 'error');
+            }
+        }
+        
+        // Test direct de l'API sans ID de message
+        async function testDirectAPI() {
+            const text = document.getElementById('textToTranslate').value;
+            const targetLang = document.getElementById('targetLang').value;
+            const resultDiv = document.getElementById('translationResult');
+            
+            showResult(resultDiv, '⏳ Test API direct en cours...', 'warning');
+            
+            // Simuler une traduction simple
+            const translations = {
+                'hello': { fr: 'bonjour', en: 'hello', ar: 'مرحبا' },
+                'good morning': { fr: 'bonjour', en: 'good morning', ar: 'صباح الخير' },
+                'bonjour': { fr: 'bonjour', en: 'hello', ar: 'مرحبا' },
+                'مرحبا': { fr: 'bonjour', en: 'hello', ar: 'مرحبا' }
+            };
+            
+            const result = translations[text.toLowerCase()]?.[targetLang];
+            
+            if (result) {
+                showResult(resultDiv, `✅ Traduction simulée réussie!<br><strong>Texte:</strong> ${text}<br><strong>Résultat:</strong> ${result}<br><strong>Langue:</strong> ${targetLang.toUpperCase()}`, 'success');
+            } else {
+                showResult(resultDiv, `❌ Pas de traduction simulée disponible pour "${text}" vers ${targetLang}`, 'error');
+            }
+        }
+        
+        // Vérifier que les fonctions JavaScript sont chargées
+        function checkFunctions() {
+            const resultDiv = document.getElementById('functionsResult');
+            const functions = ['toggleTranslateMenu', 'translateMessageTo', 'translateMessage', 'closeTranslation'];
+            let results = [];
+            
+            functions.forEach(func => {
+                const exists = typeof window[func] === 'function';
+                results.push(`${func}: ${exists ? '✅ DÉFINIE' : '❌ MANQUANTE'}`);
+            });
+            
+            const allExists = functions.every(func => typeof window[func] === 'function');
+            const status = allExists ? 'success' : 'error';
+            const message = allExists ? '✅ Toutes les fonctions sont chargées!' : '❌ Certaines fonctions manquent';
+            
+            showResult(resultDiv, `${message}<br><br>${results.join('<br>')}<br><br><strong>Note:</strong> Si les fonctions manquent, vérifiez que le fichier /js/translation.js est accessible.`, status);
+        }
+        
+        // Test avec textes prédéfinis
+        async function translatePredefined(text, targetLang) {
+            const resultDiv = document.getElementById('predefinedResult');
+            
+            showResult(resultDiv, `⏳ Traduction de "${text}" vers ${targetLang}...`, 'warning');
+            
+            // Utiliser l'ID 1 par défaut pour le test
+            try {
+                const response = await fetch(`/message/1/translate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: `lang=${targetLang}`
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    showResult(resultDiv, `❌ Erreur pour "${text}": ${data.error}`, 'error');
+                } else if (data.translation) {
+                    showResult(resultDiv, `✅ "${text}" → "${data.translation}" (${data.targetLanguage})`, 'success');
+                } else {
+                    showResult(resultDiv, `❓ Réponse inattendue pour "${text}": ${JSON.stringify(data)}`, 'warning');
+                }
+            } catch (error) {
+                showResult(resultDiv, `❌ Erreur réseau pour "${text}": ${error.message}`, 'error');
+            }
+        }
+        
+        // Afficher un résultat
+        function showResult(div, message, type) {
+            div.style.display = 'block';
+            div.innerHTML = message;
+            div.className = `result ${type}`;
+        }
+        
+        // Vérifier automatiquement les fonctions au chargement
+        window.addEventListener('load', () => {
+            // Attendre un peu pour que les scripts externes se chargent
+            setTimeout(() => {
+                checkFunctions();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

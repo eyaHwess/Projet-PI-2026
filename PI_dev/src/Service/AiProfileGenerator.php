@@ -29,7 +29,7 @@ class AiProfileGenerator
         }
 
         if ($this->apiKey === '') {
-            return null;
+            return $this->generateMockProfile($answers);
         }
 
         $goals = $answers['goals'] ?? '';
@@ -88,13 +88,15 @@ PROMPT;
                     'max_tokens' => 800,
                 ],
                 'timeout' => 30,
+                'verify_peer' => false,
+                'verify_host' => false,
             ]);
 
             $data = $response->toArray();
             $content = $data['choices'][0]['message']['content'] ?? null;
 
             if ($content === null || $content === '') {
-                return null;
+                return $this->generateMockProfile($answers);
             }
 
             $content = trim($content);
@@ -104,12 +106,12 @@ PROMPT;
 
             $decoded = json_decode($content, true);
             if (!\is_array($decoded)) {
-                return null;
+                return $this->generateMockProfile($answers);
             }
 
             return $this->normalizeProfile($decoded);
         } catch (\Throwable) {
-            return null;
+            return $this->generateMockProfile($answers);
         }
     }
 
