@@ -9,14 +9,6 @@ services:
         autowire: true
         autoconfigure: true
 
-    # Client HTTP natif pour Stripe (évite ext-curl)
-    stripe.http_client:
-        class: Symfony\Component\HttpClient\NativeHttpClient
-
-    App\HttpClient\StripeSymfonyHttpClient:
-        arguments:
-            $httpClient: '@stripe.http_client'
-
     App\:
         resource: '../src/'
         exclude:

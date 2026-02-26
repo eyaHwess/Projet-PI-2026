@@ -3,31 +3,27 @@
 namespace App\Service;
 
 use App\Entity\Session;
-use App\HttpClient\StripeSymfonyHttpClient;
-use Stripe\ApiRequestor;
 use Stripe\Checkout\Session as StripeCheckoutSession;
 use Stripe\Exception\ApiErrorException;
 use Stripe\StripeClient;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class StripeService
 {
-    private const CURRENCY = 'eur';
+    private const CURRENCY = 'usd';
+    private StripeClient $client;
 
     public function __construct(
-        #[Autowire(param: 'stripe.secret_key')]
+        #[Autowire(env: 'STRIPE_SECRET_KEY')]
         private string $secretKey,
-        private UrlGeneratorInterface $urlGenerator,
-        private StripeSymfonyHttpClient $stripeHttpClient,
     ) {
-        // Utiliser Symfony HttpClient au lieu de cURL (évite ext-curl)
-        ApiRequestor::setHttpClient($this->stripeHttpClient);
+        \Stripe\Stripe::setApiKey($this->secretKey);
+        $this->client = new StripeClient($this->secretKey);
     }
 
     private function getClient(): StripeClient
     {
-        return new StripeClient($this->secretKey);
+        return $this->client;
     }
 
     /**
