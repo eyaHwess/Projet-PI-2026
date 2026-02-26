@@ -34,6 +34,192 @@
         flex-direction: column;
     }
 
+    /* User Profile Section */
+    .user-profile-section {
+        padding: 16px 20px;
+        border-bottom: 1px solid #e4e6eb;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: linear-gradient(135deg, #667eea08 0%, #764ba208 100%);
+    }
+
+    .user-profile-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 18px;
+        flex-shrink: 0;
+        object-fit: cover;
+        overflow: hidden;
+        border: 3px solid white;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+    }
+
+    .user-profile-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .user-profile-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .user-profile-name {
+        font-size: 16px;
+        font-weight: 700;
+        color: #050505;
+        margin-bottom: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .user-profile-status {
+        font-size: 13px;
+        color: #65676b;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .status-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #28a745;
+        display: inline-block;
+        animation: pulse-status 2s infinite;
+    }
+
+    @keyframes pulse-status {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.5;
+        }
+    }
+
+    /* Members Section in Sidebar */
+    .members-section {
+        border-top: 1px solid #e4e6eb;
+        background: #ffffff;
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    .members-header {
+        padding: 16px 20px 12px;
+        border-bottom: 1px solid #e4e6eb;
+        background: #f8f9fa;
+    }
+
+    .members-header h3 {
+        font-size: 14px;
+        font-weight: 700;
+        color: #050505;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .members-list-sidebar {
+        padding: 8px 0;
+    }
+
+    .member-item-sidebar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 20px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .member-item-sidebar:hover {
+        background: #f0f2f5;
+    }
+
+    .member-avatar-sidebar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 14px;
+        flex-shrink: 0;
+        position: relative;
+        object-fit: cover;
+        overflow: hidden;
+    }
+
+    .member-avatar-sidebar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .online-indicator {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 12px;
+        height: 12px;
+        background: #28a745;
+        border: 2px solid white;
+        border-radius: 50%;
+        box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .member-info-sidebar {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .member-name-sidebar {
+        font-size: 14px;
+        font-weight: 600;
+        color: #050505;
+        margin-bottom: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .member-role-sidebar {
+        font-size: 12px;
+        color: #65676b;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .member-role-sidebar.owner {
+        color: #ffc107;
+        font-weight: 600;
+    }
+
+    .member-role-sidebar.admin {
+        color: #0084ff;
+        font-weight: 600;
+    }
+
+    .member-role-sidebar i {
+        font-size: 11px;
+    }
+
     .conversations-header {
         padding: 20px;
         border-bottom: 1px solid #e4e6eb;
@@ -86,10 +272,14 @@
         cursor: pointer;
         transition: background 0.2s;
         border-left: 3px solid transparent;
+        text-decoration: none;
+        color: inherit;
     }
 
     .conversation-item:hover {
         background: #f0f2f5;
+        text-decoration: none;
+        color: inherit;
     }
 
     .conversation-item.active {
@@ -149,6 +339,23 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+
+    .no-results-message {
+        text-align: center;
+        padding: 40px 20px;
+        color: #65676b;
+    }
+
+    .no-results-message i {
+        font-size: 48px;
+        opacity: 0.3;
+        margin-bottom: 12px;
+        display: block;
+    }
+
+    .no-results-message p {
+        margin: 0;
     }
 
     .conversation-badge {
@@ -2979,27 +3186,123 @@
 <div class="chat-app">
     <!-- LEFT SIDEBAR - Conversations -->
     <div class="conversations-sidebar">
+        {# User Profile Section #}
+        {% if app.user %}
+            <div class="user-profile-section">
+                <div class="user-profile-avatar">
+                    {% if app.user.hasProfilePicture() %}
+                        <img src="{{ vich_uploader_asset(app.user, 'profilePictureFile') }}" alt="{{ app.user.firstName }} {{ app.user.lastName }}">
+                    {% else %}
+                        {{ app.user.firstName|first }}{{ app.user.lastName|first }}
+                    {% endif %}
+                </div>
+                <div class="user-profile-info">
+                    <div class="user-profile-name">{{ app.user.firstName }} {{ app.user.lastName }}</div>
+                    <div class="user-profile-status">
+                        <span class="status-indicator"></span>
+                        En ligne
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
         <div class="conversations-header">
             <h2>Chats</h2>
             <div class="search-box">
                 <i class="fas fa-search"></i>
-                <input type="text" placeholder="Search">
+                <input type="text" id="conversationSearch" placeholder="Search" oninput="searchConversations(this.value)">
             </div>
         </div>
         <div class="conversations-list">
-            <div class="conversation-item active">
-                <div class="conversation-avatar">
-                    {{ goal.title|first|upper }}
-                </div>
-                <div class="conversation-info">
-                    <div class="conversation-top">
-                        <span class="conversation-name">{{ goal.title }}</span>
-                        <span class="conversation-time">Now</span>
+            {% if userGoals is defined and userGoals|length > 0 %}
+                {% for userGoal in userGoals %}
+                    {% if userGoal.chatroom %}
+                        <a href="{{ path('message_chatroom', {goalId: userGoal.id}) }}" class="conversation-item {% if userGoal.id == goal.id %}active{% endif %}" style="text-decoration: none; color: inherit;">
+                            <div class="conversation-avatar">
+                                {{ userGoal.title|first|upper }}
+                            </div>
+                            <div class="conversation-info">
+                                <div class="conversation-top">
+                                    <span class="conversation-name">{{ userGoal.title }}</span>
+                                    <span class="conversation-time">
+                                        {% if userGoal.chatroom.messages|length > 0 %}
+                                            {% set lastMessage = userGoal.chatroom.messages|last %}
+                                            {{ lastMessage.createdAt|date('H:i') }}
+                                        {% else %}
+                                            Now
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <div class="conversation-preview">
+                                    {% if userGoal.chatroom.messages|length > 0 %}
+                                        {% set lastMessage = userGoal.chatroom.messages|last %}
+                                        {% if lastMessage.content %}
+                                            {{ lastMessage.content|length > 40 ? lastMessage.content|slice(0, 40) ~ '...' : lastMessage.content }}
+                                        {% elseif lastMessage.imageName or lastMessage.fileName %}
+                                            📎 Fichier joint
+                                        {% else %}
+                                            {{ userGoal.goalParticipations|length }} members
+                                        {% endif %}
+                                    {% else %}
+                                        {{ userGoal.goalParticipations|length }} members
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </a>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <div class="conversation-item active">
+                    <div class="conversation-avatar">
+                        {{ goal.title|first|upper }}
                     </div>
-                    <div class="conversation-preview">
-                        {{ goal.goalParticipations|length }} members
+                    <div class="conversation-info">
+                        <div class="conversation-top">
+                            <span class="conversation-name">{{ goal.title }}</span>
+                            <span class="conversation-time">Now</span>
+                        </div>
+                        <div class="conversation-preview">
+                            {{ goal.goalParticipations|length }} members
+                        </div>
                     </div>
                 </div>
+            {% endif %}
+        </div>
+
+        {# Members Section #}
+        <div class="members-section">
+            <div class="members-header">
+                <h3>Membres ({{ goal.goalParticipations|filter(p => p.isApproved)|length }})</h3>
+            </div>
+            <div class="members-list-sidebar">
+                {% for participation in goal.goalParticipations|filter(p => p.isApproved) %}
+                    {% set member = participation.user %}
+                    <div class="member-item-sidebar">
+                        <div class="member-avatar-sidebar">
+                            {% if member.hasProfilePicture() %}
+                                <img src="{{ vich_uploader_asset(member, 'profilePictureFile') }}" alt="{{ member.firstName }} {{ member.lastName }}">
+                            {% else %}
+                                {{ member.firstName|first }}{{ member.lastName|first }}
+                            {% endif %}
+                            {# Online status indicator #}
+                            {% if member.isOnline() %}
+                                <span class="online-indicator"></span>
+                            {% endif %}
+                        </div>
+                        <div class="member-info-sidebar">
+                            <div class="member-name-sidebar">{{ member.firstName }} {{ member.lastName }}</div>
+                            <div class="member-role-sidebar {% if participation.getRole() == 'OWNER' %}owner{% elseif participation.canModerate() %}admin{% endif %}">
+                                {% if participation.getRole() == 'OWNER' %}
+                                    <i class="fas fa-crown"></i> Propriétaire
+                                {% elseif participation.canModerate() %}
+                                    <i class="fas fa-shield-alt"></i> Admin
+                                {% else %}
+                                    <i class="fas fa-user"></i> Membre
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
             </div>
         </div>
     </div>
@@ -3055,6 +3358,12 @@
                             <form method="post" action="{{ path('chatroom_archive', {id: chatroom.id}) }}" style="display: inline;">
                                 <button type="submit" class="workflow-btn workflow-btn-archive" title="Archiver le chatroom" onclick="return confirm('Archiver ce chatroom ? Il passera en lecture seule.')">
                                     <i class="fas fa-archive"></i> Archiver
+                                </button>
+                            </form>
+                        {% elseif chatroom.state == 'archived' %}
+                            <form method="post" action="{{ path('chatroom_unarchive', {id: chatroom.id}) }}" style="display: inline;">
+                                <button type="submit" class="workflow-btn workflow-btn-unlock" title="Désarchiver le chatroom">
+                                    <i class="fas fa-box-open"></i> Désarchiver
                                 </button>
                             </form>
                         {% endif %}
@@ -3282,9 +3591,36 @@
                                          onclick="openImagePreview('{{ message.attachmentPath }}')">
                                 {% endif %}
 
-                                {# 📷 VichUploader : aperçu image #}
+                                {# 📷 VichUploader : aperçu image (seulement pour les vraies images, pas les PDF) #}
                                 {% if message.imageName %}
-                                    <img src="{{ vich_uploader_asset(message, 'imageFile') }}" alt="{{ message.imageName }}" class="message-image" onclick="openImagePreview('{{ vich_uploader_asset(message, 'imageFile') }}')">
+                                    {% set isImageFile = message.imageName|lower ends with '.jpg' or 
+                                                         message.imageName|lower ends with '.jpeg' or 
+                                                         message.imageName|lower ends with '.png' or 
+                                                         message.imageName|lower ends with '.gif' or 
+                                                         message.imageName|lower ends with '.webp' or
+                                                         message.imageName|lower ends with '.bmp' %}
+                                    {% set isPdfFile = message.imageName|lower ends with '.pdf' %}
+                                    
+                                    {% if isImageFile %}
+                                        <img src="{{ vich_uploader_asset(message, 'imageFile') }}" alt="{{ message.imageName }}" class="message-image" onclick="openImagePreview('{{ vich_uploader_asset(message, 'imageFile') }}')">
+                                    {% elseif isPdfFile %}
+                                        {# 📄 Si un PDF est dans imageName (erreur), l'afficher comme fichier téléchargeable #}
+                                        <div class="message-file">
+                                            <div class="file-icon">
+                                                <i class="fas fa-file-pdf"></i>
+                                            </div>
+                                            <div class="file-info">
+                                                <div class="file-name">{{ message.imageName }}</div>
+                                                <div class="file-meta">{{ message.formattedImageSize }} · PDF</div>
+                                            </div>
+                                            <a href="{{ vich_uploader_asset(message, 'imageFile') }}" download="{{ message.imageName }}" class="file-download" title="Télécharger">
+                                                <i class="fas fa-download"></i>
+                                            </a>
+                                        </div>
+                                    {% else %}
+                                        {# Afficher comme image par défaut si extension inconnue #}
+                                        <img src="{{ vich_uploader_asset(message, 'imageFile') }}" alt="{{ message.imageName }}" class="message-image" onclick="openImagePreview('{{ vich_uploader_asset(message, 'imageFile') }}')">
+                                    {% endif %}
                                 {% endif %}
 
                                 {% if message.attachmentType == 'audio' %}
@@ -4354,6 +4690,73 @@
 
     // Search functionality
     let searchTimeout = null;
+
+    // Search conversations in sidebar
+    function searchConversations(query) {
+        const conversationItems = document.querySelectorAll('.conversation-item');
+        const searchQuery = query.toLowerCase().trim();
+
+        conversationItems.forEach(item => {
+            const conversationName = item.querySelector('.conversation-name');
+            const conversationPreview = item.querySelector('.conversation-preview');
+            
+            if (!conversationName) return;
+
+            const name = conversationName.textContent.toLowerCase();
+            const preview = conversationPreview ? conversationPreview.textContent.toLowerCase() : '';
+            
+            // Check if query matches name or preview
+            if (searchQuery === '' || name.includes(searchQuery) || preview.includes(searchQuery)) {
+                item.style.display = 'flex';
+                
+                // Highlight matching text
+                if (searchQuery !== '') {
+                    highlightText(conversationName, searchQuery);
+                    if (conversationPreview) {
+                        highlightText(conversationPreview, searchQuery);
+                    }
+                } else {
+                    // Remove highlights
+                    conversationName.innerHTML = conversationName.textContent;
+                    if (conversationPreview) {
+                        conversationPreview.innerHTML = conversationPreview.textContent;
+                    }
+                }
+            } else {
+                item.style.display = 'none';
+            }
+        });
+
+        // Show "No results" message if no conversations match
+        const visibleItems = Array.from(conversationItems).filter(item => item.style.display !== 'none');
+        const conversationsList = document.querySelector('.conversations-list');
+        let noResultsMsg = document.getElementById('noConversationsResults');
+        
+        if (visibleItems.length === 0 && searchQuery !== '') {
+            if (!noResultsMsg) {
+                noResultsMsg = document.createElement('div');
+                noResultsMsg.id = 'noConversationsResults';
+                noResultsMsg.className = 'no-results-message';
+                noResultsMsg.innerHTML = `
+                    <i class="fas fa-search" style="font-size: 48px; opacity: 0.3; margin-bottom: 12px;"></i>
+                    <p style="font-size: 16px; color: #65676b;">Aucune conversation trouvée</p>
+                    <p style="font-size: 13px; color: #8a8d91;">Essayez un autre terme de recherche</p>
+                `;
+                noResultsMsg.style.cssText = 'text-align: center; padding: 40px 20px; color: #65676b;';
+                conversationsList.appendChild(noResultsMsg);
+            }
+        } else if (noResultsMsg) {
+            noResultsMsg.remove();
+        }
+    }
+
+    // Helper function to highlight text
+    function highlightText(element, query) {
+        const text = element.textContent;
+        const regex = new RegExp(`(${query})`, 'gi');
+        const highlightedText = text.replace(regex, '<mark style="background: #fff3cd; color: #856404; padding: 2px 4px; border-radius: 3px; font-weight: 600;">$1</mark>');
+        element.innerHTML = highlightedText;
+    }
 
     function toggleSearchBar() {
         const searchBar = document.getElementById('searchBar');

@@ -626,6 +626,9 @@ final class MessageController extends AbstractController
             ]);
         }
 
+        // Get all user's goals with chatrooms for the conversations list
+        $userGoals = $goalRepository->findGoalsWithChatroomsByUser($user);
+
         return $this->render($template, [
             'chatroom' => $chatroom,
             'goal' => $goal,
@@ -634,6 +637,7 @@ final class MessageController extends AbstractController
             'currentUserParticipation' => $currentUserParticipation,
             'isMember' => true,
             'translationLanguages' => $translator->getSupportedLanguages(),
+            'userGoals' => $userGoals,
         ]);
     }
 

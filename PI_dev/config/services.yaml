@@ -43,3 +43,6 @@ services:
             $translationProvider: '%translation.provider%'
             $deeplApiKey: '%translation.deepl_api_key%'
             $googleApiKey: '%translation.google_api_key%'
+
+    # Workflow State Machine - Alias pour injection
+    Symfony\Component\Workflow\WorkflowInterface $chatroomStateMachine: '@state_machine.chatroom_state_machine'

@@ -25,6 +25,9 @@ framework:
                 archive:
                     from: [active, locked]
                     to: archived
+                unarchive:
+                    from: archived
+                    to: active
                 delete:
                     from: [active, locked, archived]
                     to: deleted

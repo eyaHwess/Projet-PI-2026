@@ -109,6 +109,36 @@ class ChatroomStateController extends AbstractController
         return $this->redirectToRoute('message_chatroom', ['goalId' => $goal->getId()]);
     }
 
+    #[Route('/{id}/unarchive', name: 'chatroom_unarchive', methods: ['POST'])]
+    public function unarchive(Chatroom $chatroom, WorkflowInterface $chatroomStateMachine): Response
+    {
+        $user = $this->getUser();
+        
+        if (!$user) {
+            $this->addFlash('error', 'Vous devez être connecté');
+            return $this->redirectToRoute('app_login');
+        }
+
+        $goal = $chatroom->getGoal();
+        $participation = $goal->getUserParticipation($user);
+
+        if (!$participation || !$participation->canModerate()) {
+            $this->addFlash('error', 'Vous n\'avez pas la permission de désarchiver ce chatroom');
+            return $this->redirectToRoute('message_chatroom', ['goalId' => $goal->getId()]);
+        }
+
+        if (!$chatroomStateMachine->can($chatroom, 'unarchive')) {
+            $this->addFlash('error', 'Impossible de désarchiver ce chatroom dans son état actuel');
+            return $this->redirectToRoute('message_chatroom', ['goalId' => $goal->getId()]);
+        }
+
+        $chatroomStateMachine->apply($chatroom, 'unarchive');
+        $this->entityManager->flush();
+
+        $this->addFlash('success', '🟢 Chatroom désarchivé. Le chatroom est à nouveau actif.');
+        return $this->redirectToRoute('message_chatroom', ['goalId' => $goal->getId()]);
+    }
+
     #[Route('/{id}/delete', name: 'chatroom_delete', methods: ['POST'])]
     public function delete(Chatroom $chatroom, WorkflowInterface $chatroomStateMachine): Response
     {

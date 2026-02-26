@@ -104,4 +104,23 @@ class GoalRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Find all goals where user is a participant (approved) with their chatrooms
+     * @return Goal[]
+     */
+    public function findGoalsWithChatroomsByUser(User $user): array
+    {
+        return $this->createQueryBuilder('g')
+            ->leftJoin('g.goalParticipations', 'gp')
+            ->leftJoin('g.chatroom', 'c')
+            ->addSelect('gp', 'c')
+            ->where('gp.user = :user')
+            ->andWhere('gp.status = :status')
+            ->setParameter('user', $user)
+            ->setParameter('status', 'APPROVED')
+            ->orderBy('g.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }
