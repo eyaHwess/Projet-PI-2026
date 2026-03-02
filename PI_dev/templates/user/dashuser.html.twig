@@ -422,6 +422,64 @@
             transform: translateY(-2px);
         }
         
+        /* Floating Reclamation Button */
+        .fab-reclamation {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 1050;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .fab-reclamation .fab-btn {
+            width: 62px;
+            height: 62px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FF6B6B, #FF8E8E);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            box-shadow: 0 6px 24px rgba(255, 107, 107, 0.45);
+            transition: all 0.3s;
+            animation: fabPulse 2.5s infinite;
+        }
+
+        .fab-reclamation:hover .fab-btn {
+            transform: scale(1.12);
+            box-shadow: 0 10px 32px rgba(255, 107, 107, 0.6);
+            color: white;
+        }
+
+        .fab-reclamation .fab-label {
+            background: rgba(50, 50, 50, 0.82);
+            color: white;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 0.2rem 0.65rem;
+            border-radius: 50px;
+            white-space: nowrap;
+            letter-spacing: 0.03em;
+            opacity: 0;
+            transform: translateY(4px);
+            transition: all 0.25s;
+        }
+
+        .fab-reclamation:hover .fab-label {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @keyframes fabPulse {
+            0%, 100% { box-shadow: 0 6px 24px rgba(255, 107, 107, 0.45); }
+            50% { box-shadow: 0 6px 32px rgba(255, 107, 107, 0.75), 0 0 0 10px rgba(255, 107, 107, 0.12); }
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .hero-section {
@@ -547,7 +605,7 @@
                     </div>
                     <h3 class="action-title">Mes objectifs</h3>
                     <p class="action-description">Suivez vos progrès et définissez de nouveaux objectifs à atteindre</p>
-                    <a href="{{ path('goal_list') }}" class="action-btn" style="--card-color-1: #E2C2E8; --card-color-2: #EDD5F0;">
+                    <a href="{{ path('app_goal_index') }}" class="action-btn" style="--card-color-1: #E2C2E8; --card-color-2: #EDD5F0;">
                         <i class="bi bi-flag-fill"></i>
                         Gérer mes objectifs
                     </a>
@@ -629,7 +687,7 @@
                                     <i class="bi bi-flag"></i>
                                 </div>
                                 <p class="mb-3">Aucun objectif pour le moment</p>
-                                <a href="{{ path('goal_list') }}" class="btn-view-all">
+                                <a href="{{ path('app_goal_index') }}" class="btn-view-all">
                                     <i class="bi bi-plus-circle"></i>
                                     Créer un objectif
                                 </a>
@@ -657,7 +715,7 @@
                                 </div>
                             {% endfor %}
                             <div class="p-3 text-center border-top">
-                                <a href="{{ path('goal_list') }}" class="btn-view-all">
+                                <a href="{{ path('app_goal_index') }}" class="btn-view-all">
                                     Voir tous les objectifs
                                     <i class="bi bi-arrow-right"></i>
                                 </a>
@@ -682,7 +740,7 @@
                                 <i class="bi bi-repeat"></i>
                             </div>
                             <p class="mb-3">{{ routinesCount }} routine(s) associée(s) à vos objectifs</p>
-                            <a href="{{ path('goal_list') }}" class="btn-view-all">
+                            <a href="{{ path('app_goal_index') }}" class="btn-view-all">
                                 <i class="bi bi-eye"></i>
                                 Voir mes objectifs
                             </a>
@@ -737,6 +795,15 @@
             </div>
         </div>
     </div>
+
+    <!-- Floating Reclamation Button -->
+    <a href="{{ path('reclamation_index') }}" class="fab-reclamation" title="Mes réclamations">
+        <div class="fab-btn">
+            <i class="bi bi-megaphone-fill"></i>
+        </div>
+        <span class="fab-label">Réclamation</span>
+    </a>
+
 {% endblock %}
 
 

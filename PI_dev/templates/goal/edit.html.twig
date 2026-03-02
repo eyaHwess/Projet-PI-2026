@@ -1,63 +1,397 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Modifier le Goal{% endblock %}
+{% block title %}Modifier l'objectif{% endblock %}
+
+{% block stylesheets %}
+<style>
+:root {
+    --primary:       #5b4cdb;
+    --primary-dark:  #4a3cb8;
+    --primary-light: #ede9fb;
+    --border:        #e9ecef;
+    --bg:            #f5f6fa;
+    --text:          #212529;
+    --muted:         #6c757d;
+}
+
+body { background: var(--bg); font-family: 'Inter', -apple-system, sans-serif; }
+
+/* Page header */
+.page-header {
+    background: white;
+    border-bottom: 1px solid var(--border);
+    padding: 1.1rem 0;
+    margin-bottom: 1.5rem;
+}
+.page-header h1 { font-size: 1.4rem; font-weight: 700; color: var(--text); margin: 0; }
+.breadcrumb { font-size: 0.85rem; margin: 0.25rem 0 0; }
+.breadcrumb-item a { color: var(--primary); text-decoration: none; }
+
+/* Card */
+.form-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+.form-card-header {
+    padding: 1.4rem 1.6rem 1rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.form-card-icon {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    background: var(--primary-light);
+    color: var(--primary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; flex-shrink: 0;
+}
+.form-card-title { font-size: 1.1rem; font-weight: 700; color: var(--text); margin: 0; }
+.form-card-subtitle { font-size: 0.82rem; color: var(--muted); margin: 2px 0 0; }
+.form-card-body { padding: 1.6rem; }
+
+/* Form fields */
+.field-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+}
+.field-input {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 0.93rem;
+    color: var(--text);
+    background: white;
+    transition: border-color .2s, box-shadow .2s;
+    outline: none;
+    font-family: inherit;
+}
+.field-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(91,76,219,.12);
+}
+.field-input.is-invalid { border-color: #dc3545; }
+.invalid-feedback { font-size: 0.8rem; color: #dc3545; margin-top: 4px; }
+
+/* Priority cards */
+.priority-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+.priority-card {
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 10px;
+    cursor: pointer;
+    text-align: center;
+    transition: all .2s;
+    background: white;
+}
+.priority-card:hover { border-color: var(--primary); background: var(--primary-light); }
+.priority-card.selected { border-color: var(--primary); background: var(--primary-light); box-shadow: 0 0 0 3px rgba(91,76,219,.1); }
+.priority-card.selected-high   { border-color: #ef4444; background: #fff5f5; box-shadow: 0 0 0 3px rgba(239,68,68,.1); }
+.priority-card.selected-medium { border-color: #f59e0b; background: #fffbeb; box-shadow: 0 0 0 3px rgba(245,158,11,.1); }
+.priority-card.selected-low    { border-color: #22c55e; background: #f0fdf4; box-shadow: 0 0 0 3px rgba(34,197,94,.1); }
+.priority-icon { font-size: 1.4rem; margin-bottom: 4px; }
+.priority-name { font-size: 0.82rem; font-weight: 600; color: var(--text); }
+
+/* Status selector */
+.status-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.status-card {
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 10px;
+    transition: all .2s; background: white;
+}
+.status-card:hover { border-color: var(--primary); background: var(--primary-light); }
+.status-card.selected { border-color: var(--primary); background: var(--primary-light); }
+.status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.status-name { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+
+/* Divider */
+.field-divider { height: 1px; background: var(--border); margin: 1.4rem 0; }
+
+/* Actions */
+.form-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 1.2rem 1.6rem;
+    border-top: 1px solid var(--border);
+    background: #fafafa;
+}
+.btn-cancel {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 20px; border-radius: 10px;
+    font-size: 0.9rem; font-weight: 600;
+    color: var(--muted); background: white;
+    border: 1.5px solid var(--border);
+    text-decoration: none; transition: all .2s; cursor: pointer;
+}
+.btn-cancel:hover { border-color: #adb5bd; color: var(--text); background: #f8f9fa; }
+.btn-save {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 24px; border-radius: 10px;
+    font-size: 0.9rem; font-weight: 700;
+    color: white; background: var(--primary);
+    border: none; transition: all .2s; cursor: pointer;
+    box-shadow: 0 2px 10px rgba(91,76,219,.3);
+}
+.btn-save:hover { background: var(--primary-dark); box-shadow: 0 4px 16px rgba(91,76,219,.4); transform: translateY(-1px); }
+
+/* Info sidebar */
+.info-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    padding: 1.4rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,.04);
+    margin-bottom: 1rem;
+}
+.info-card-title { font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.info-tip {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 12px; border-radius: 10px;
+    background: var(--primary-light);
+    font-size: 0.83rem; color: var(--primary);
+    font-weight: 500; line-height: 1.5; margin-bottom: 8px;
+}
+.info-tip:last-child { margin-bottom: 0; }
+.info-tip-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+
+/* Layout */
+.edit-layout { display: flex; gap: 1.5rem; align-items: flex-start; }
+.edit-layout-main { flex: 0 0 calc(63% - 0.75rem); min-width: 0; }
+.edit-layout-side { flex: 0 0 calc(37% - 0.75rem); min-width: 0; position: sticky; top: 80px; }
+@media (max-width: 900px) {
+    .edit-layout { flex-direction: column; }
+    .edit-layout-main, .edit-layout-side { flex: 0 0 100%; width: 100%; position: static; }
+}
+
+/* Hide native select */
+select.field-input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236c757d' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+</style>
+{% endblock %}
 
 {% block body %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0">
-                        <i class="fas fa-edit"></i> Modifier le Goal
-                    </h3>
-                </div>
-                <div class="card-body">
-                    {{ form_start(form) }}
-                        <div class="mb-3">
-                            {{ form_label(form.title, 'Titre', {'label_attr': {'class': 'form-label'}}) }}
-                            {{ form_widget(form.title, {'attr': {'class': 'form-control'}}) }}
-                            {{ form_errors(form.title) }}
-                        </div>
-
-                        <div class="mb-3">
-                            {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label'}}) }}
-                            {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 5}}) }}
-                            {{ form_errors(form.description) }}
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                {{ form_label(form.startDate, 'Date de début', {'label_attr': {'class': 'form-label'}}) }}
-                                {{ form_widget(form.startDate, {'attr': {'class': 'form-control'}}) }}
-                                {{ form_errors(form.startDate) }}
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                {{ form_label(form.endDate, 'Date de fin', {'label_attr': {'class': 'form-label'}}) }}
-                                {{ form_widget(form.endDate, {'attr': {'class': 'form-control'}}) }}
-                                {{ form_errors(form.endDate) }}
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            {{ form_label(form.status, 'Statut', {'label_attr': {'class': 'form-label'}}) }}
-                            {{ form_widget(form.status, {'attr': {'class': 'form-control'}}) }}
-                            {{ form_errors(form.status) }}
-                        </div>
-
-                        <div class="d-flex justify-content-between">
-                            <a href="{{ path('goal_list') }}" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Annuler
-                            </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Enregistrer les modifications
-                            </button>
-                        </div>
-                    {{ form_end(form) }}
-                </div>
-            </div>
-        </div>
+<!-- Page header -->
+<div class="page-header">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a href="{{ path('app_goal_index') }}">Mes objectifs</a></li>
+                <li class="breadcrumb-item active">Modifier</li>
+            </ol>
+        </nav>
+        <h1><i class="bi bi-pencil-square me-2" style="color:var(--primary)"></i>Modifier l'objectif</h1>
     </div>
 </div>
+
+<div class="container pb-5">
+    <div class="edit-layout">
+
+        <!-- ── Main form ── -->
+        <div class="edit-layout-main">
+            {{ form_start(form, {'attr': {'id': 'editForm', 'novalidate': 'novalidate'}}) }}
+
+            <div class="form-card">
+                <div class="form-card-header">
+                    <div class="form-card-icon">🎯</div>
+                    <div>
+                        <div class="form-card-title">Informations de l'objectif</div>
+                        <div class="form-card-subtitle">Modifie les détails de ton objectif</div>
+                    </div>
+                </div>
+                <div class="form-card-body">
+
+                    <!-- Titre -->
+                    <div class="mb-3">
+                        <label class="field-label">Titre de l'objectif <span style="color:#ef4444">*</span></label>
+                        {{ form_widget(form.title, {'attr': {'class': 'field-input', 'placeholder': 'Ex : Courir un 10km en 3 mois'}}) }}
+                        {{ form_errors(form.title) }}
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-3">
+                        <label class="field-label">Description</label>
+                        {{ form_widget(form.description, {'attr': {'class': 'field-input', 'rows': 4, 'placeholder': 'Décris ton objectif, tes motivations, les étapes clés...'}}) }}
+                        {{ form_errors(form.description) }}
+                    </div>
+
+                    <div class="field-divider"></div>
+
+                    <!-- Dates -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="field-label">📅 Date de début</label>
+                            {{ form_widget(form.startDate, {'attr': {'class': 'field-input'}}) }}
+                            {{ form_errors(form.startDate) }}
+                        </div>
+                        <div class="col-6">
+                            <label class="field-label">🏁 Date de fin</label>
+                            {{ form_widget(form.endDate, {'attr': {'class': 'field-input'}}) }}
+                            {{ form_errors(form.endDate) }}
+                        </div>
+                    </div>
+
+                    <div class="field-divider"></div>
+
+                    <!-- Priorité -->
+                    <div class="mb-3">
+                        <label class="field-label">Priorité</label>
+                        <div class="priority-grid" id="priorityGrid">
+                            <div class="priority-card" data-val="high" onclick="setPriority('high', this)">
+                                <div class="priority-icon">🔴</div>
+                                <div class="priority-name">Haute</div>
+                            </div>
+                            <div class="priority-card" data-val="medium" onclick="setPriority('medium', this)">
+                                <div class="priority-icon">🟡</div>
+                                <div class="priority-name">Moyenne</div>
+                            </div>
+                            <div class="priority-card" data-val="low" onclick="setPriority('low', this)">
+                                <div class="priority-icon">🟢</div>
+                                <div class="priority-name">Basse</div>
+                            </div>
+                        </div>
+                        <div style="display:none">{{ form_widget(form.priority, {'attr': {'id': 'prioritySelect'}}) }}</div>
+                        {{ form_errors(form.priority) }}
+                    </div>
+
+                    <div class="field-divider"></div>
+
+                    <!-- Statut -->
+                    <div class="mb-1">
+                        <label class="field-label">Statut</label>
+                        <div class="status-grid" id="statusGrid">
+                            <div class="status-card" data-val="active" onclick="setStatus('active', this)">
+                                <div class="status-dot" style="background:#22c55e"></div>
+                                <div class="status-name">✅ Active</div>
+                            </div>
+                            <div class="status-card" data-val="paused" onclick="setStatus('paused', this)">
+                                <div class="status-dot" style="background:#f59e0b"></div>
+                                <div class="status-name">⏸ En pause</div>
+                            </div>
+                            <div class="status-card" data-val="completed" onclick="setStatus('completed', this)">
+                                <div class="status-dot" style="background:#3b82f6"></div>
+                                <div class="status-name">🏆 Complétée</div>
+                            </div>
+                            <div class="status-card" data-val="cancelled" onclick="setStatus('cancelled', this)">
+                                <div class="status-dot" style="background:#ef4444"></div>
+                                <div class="status-name">❌ Annulée</div>
+                            </div>
+                        </div>
+                        <div style="display:none">{{ form_widget(form.status, {'attr': {'id': 'statusSelect'}}) }}</div>
+                        {{ form_errors(form.status) }}
+                    </div>
+
+                </div><!-- /form-card-body -->
+
+                <div class="form-actions">
+                    <a href="{{ path('app_goal_index') }}" class="btn-cancel">
+                        <i class="bi bi-arrow-left"></i> Annuler
+                    </a>
+                    <button type="submit" class="btn-save">
+                        <i class="bi bi-check2-circle"></i> Enregistrer les modifications
+                    </button>
+                </div>
+            </div><!-- /form-card -->
+
+            {{ form_end(form) }}
+        </div><!-- /edit-layout-main -->
+
+        <!-- ── Sidebar ── -->
+        <div class="edit-layout-side">
+            <div class="info-card">
+                <div class="info-card-title">
+                    <span>💡</span> Conseils pour bien modifier
+                </div>
+                <div class="info-tip">
+                    <span class="info-tip-icon">🎯</span>
+                    Un titre clair et précis aide à rester motivé. Évite les formulations vagues.
+                </div>
+                <div class="info-tip">
+                    <span class="info-tip-icon">📅</span>
+                    Assure-toi que la date de fin est réaliste — ni trop proche ni trop lointaine.
+                </div>
+                <div class="info-tip">
+                    <span class="info-tip-icon">🔴</span>
+                    Reserve la priorité <strong>Haute</strong> aux objectifs vraiment urgents. Trop de rouge dilue l'importance.
+                </div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-card-title">
+                    <span>📊</span> Statuts disponibles
+                </div>
+                <div style="display:flex;flex-direction:column;gap:8px;font-size:.85rem">
+                    <div style="display:flex;align-items:center;gap:10px;padding:8px;background:#f0fdf4;border-radius:8px">
+                        <div style="width:8px;height:8px;border-radius:50%;background:#22c55e;flex-shrink:0"></div>
+                        <div><strong>Active</strong> — en cours de réalisation</div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;padding:8px;background:#fffbeb;border-radius:8px">
+                        <div style="width:8px;height:8px;border-radius:50%;background:#f59e0b;flex-shrink:0"></div>
+                        <div><strong>En pause</strong> — temporairement suspendue</div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;padding:8px;background:#eff6ff;border-radius:8px">
+                        <div style="width:8px;height:8px;border-radius:50%;background:#3b82f6;flex-shrink:0"></div>
+                        <div><strong>Complétée</strong> — objectif atteint 🏆</div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;padding:8px;background:#fff5f5;border-radius:8px">
+                        <div style="width:8px;height:8px;border-radius:50%;background:#ef4444;flex-shrink:0"></div>
+                        <div><strong>Annulée</strong> — objectif abandonné</div>
+                    </div>
+                </div>
+            </div>
+        </div><!-- /edit-layout-side -->
+
+    </div><!-- /edit-layout -->
+</div>
+
+<script>
+// ── Priority ──
+function setPriority(val, el) {
+    document.querySelectorAll('#priorityGrid .priority-card').forEach(c => {
+        c.className = 'priority-card';
+    });
+    const cls = { high: 'selected-high', medium: 'selected-medium', low: 'selected-low' };
+    el.classList.add(cls[val] || 'selected');
+    const sel = document.getElementById('prioritySelect');
+    if (sel) sel.value = val;
+}
+
+// ── Status ──
+function setStatus(val, el) {
+    document.querySelectorAll('#statusGrid .status-card').forEach(c => {
+        c.classList.remove('selected');
+    });
+    el.classList.add('selected');
+    const sel = document.getElementById('statusSelect');
+    if (sel) sel.value = val;
+}
+
+// ── Init: highlight current values ──
+window.addEventListener('DOMContentLoaded', () => {
+    // Priority
+    const pSel = document.getElementById('prioritySelect');
+    if (pSel && pSel.value) {
+        const pCard = document.querySelector('#priorityGrid [data-val="' + pSel.value + '"]');
+        if (pCard) setPriority(pSel.value, pCard);
+    }
+
+    // Status
+    const sSel = document.getElementById('statusSelect');
+    if (sSel && sSel.value) {
+        const sCard = document.querySelector('#statusGrid [data-val="' + sSel.value.toLowerCase() + '"]');
+        if (sCard) setStatus(sSel.value.toLowerCase(), sCard);
+    }
+});
+</script>
 {% endblock %}

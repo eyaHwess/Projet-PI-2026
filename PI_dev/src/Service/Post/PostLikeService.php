@@ -31,7 +31,7 @@ class PostLikeService
         // Check if user already liked this post
         $existingLike = $this->postLikeRepository->findOneBy([
             'post' => $post,
-            'Liker' => $user
+            'liker' => $user
         ]);
 
         if ($existingLike) {
@@ -71,7 +71,7 @@ class PostLikeService
 
         $like = $this->postLikeRepository->findOneBy([
             'post' => $post,
-            'Liker' => $user
+            'liker' => $user
         ]);
 
         return $like !== null;

@@ -6,6 +6,7 @@ use App\Entity\Activity;
 use App\Entity\Routine;
 use App\Form\ActivityType;
 use App\Repository\ActivityRepository;
+use App\Service\ActivityReminderService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -18,7 +19,8 @@ class ActivityController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private ActivityRepository $activityRepository
+        private ActivityRepository     $activityRepository,
+        private ActivityReminderService $reminderService,
     ) {
     }
 
@@ -278,3 +280,5 @@ class ActivityController extends AbstractController
         ]);
     }
 }
+
+

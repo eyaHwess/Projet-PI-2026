@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Message;
 use App\Entity\MessageReaction;
 use App\Repository\MessageReactionRepository;
+use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -14,7 +15,11 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/message')]
 class MessageReactionController extends AbstractController
 {
-    #[Route('/{id}/react', name: 'message_react', methods: ['POST'], requirements: ['id' => '\d+'])]
+    public function __construct(
+        private NotificationService $notificationService,
+    ) {}
+
+    #[Route('/{id}/react', name: 'message_react_toggle', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function react(
         Message $message,
         Request $request,
@@ -63,6 +68,31 @@ class MessageReactionController extends AbstractController
             $em->flush();
             $action = 'added';
             $hasReacted = true;
+
+            // Notify the message author (skip self-reactions)
+            $author = $message->getAuthor();
+            if ($author && $author->getId() !== $user->getId()) {
+                $reactionLabel = match($reactionType) {
+                    'like'  => 'liked 👍',
+                    'clap'  => 'clapped 👏 for',
+                    'fire'  => 'reacted 🔥 to',
+                    'heart' => 'loved ❤️',
+                    'love'  => 'loved ❤️',
+                    'wow'   => 'reacted 😮 to',
+                    default => 'reacted to',
+                };
+                $preview = $message->getContent()
+                    ? (mb_strlen($message->getContent()) > 40
+                        ? mb_substr($message->getContent(), 0, 40) . '…'
+                        : $message->getContent())
+                    : 'your message';
+
+                $this->notificationService->createAndPublish(
+                    $author,
+                    'message_reaction',
+                    sprintf('%s %s %s "%s"', $user->getFirstName(), $user->getLastName(), $reactionLabel, $preview)
+                );
+            }
         }
 
         // Recalculer des compteurs fiables (inclut 0 si absent)

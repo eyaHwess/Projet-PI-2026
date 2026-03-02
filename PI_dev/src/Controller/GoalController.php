@@ -9,6 +9,7 @@ use App\Entity\Message;
 use App\Entity\Suggestion;
 use App\Entity\User;
 use App\Form\GoalType;
+use App\GoalHistoryBundle\Service\GoalHistoryLogger;
 use App\Repository\ChatroomRepository;
 use App\Repository\GoalRepository;
 use App\Repository\SuggestionRepository;
@@ -40,6 +41,7 @@ class GoalController extends AbstractController
         private StatusManager $statusManager,
         private AiAssistantService $aiAssistantService,
         private ChartService $chartService,
+        private GoalHistoryLogger $goalHistoryLogger,
     ) {
     }
 
@@ -190,13 +192,73 @@ class GoalController extends AbstractController
             throw $this->createAccessDeniedException('Cet objectif ne vous appartient pas.');
         }
 
+        // Auto-create chatroom + owner participation for old goals
+        if (!$goal->getChatroom()) {
+            $chatroom = new Chatroom();
+            $chatroom->setCreatedAt(new \DateTime());
+            $chatroom->setGoal($goal);
+            $this->entityManager->persist($chatroom);
+
+            $existingParticipation = $this->entityManager
+                ->getRepository(GoalParticipation::class)
+                ->findOneBy(['user' => $goal->getUser(), 'goal' => $goal]);
+
+            if (!$existingParticipation) {
+                $participation = new GoalParticipation();
+                $participation->setGoal($goal);
+                $participation->setUser($goal->getUser());
+                $participation->setRole(GoalParticipation::ROLE_OWNER);
+                $participation->setStatus(GoalParticipation::STATUS_APPROVED);
+                $participation->setCreatedAt(new \DateTime());
+                $this->entityManager->persist($participation);
+            }
+            $this->entityManager->flush();
+        }
+
         $progressChart = $this->chartService->createGoalProgressChart($goal);
         $burndownChart = $this->chartService->createBurndownChart($goal);
+
+        $goalHistory = $this->goalHistoryLogger->getHistoryForGoal($goal, 30);
+
+        // Calculate raw chart data for direct Chart.js rendering (avoids UX bundle issues)
+        $totalRoutines = $goal->getRoutines()->count();
+        $completedRoutines = 0;
+        foreach ($goal->getRoutines() as $routine) {
+            $total = $routine->getActivities()->count();
+            if ($total > 0) {
+                $completed = 0;
+                foreach ($routine->getActivities() as $act) {
+                    if ($act->getStatus() === 'completed') { $completed++; }
+                }
+                if ($completed === $total) { $completedRoutines++; }
+            }
+        }
+        $progressData = [
+            'completed' => $completedRoutines,
+            'remaining' => max(0, $totalRoutines - $completedRoutines),
+        ];
+
+        $totalActivities = 0;
+        $completedActivities = 0;
+        foreach ($goal->getRoutines() as $routine) {
+            foreach ($routine->getActivities() as $act) {
+                $totalActivities++;
+                if ($act->getStatus() === 'completed') { $completedActivities++; }
+            }
+        }
+        $burndownData = [
+            'total' => $totalActivities,
+            'completed' => $completedActivities,
+            'remaining' => max(0, $totalActivities - $completedActivities),
+        ];
 
         return $this->render('goal/show.html.twig', [
             'goal' => $goal,
             'progressChart' => $progressChart,
             'burndownChart' => $burndownChart,
+            'progressData' => $progressData,
+            'burndownData' => $burndownData,
+            'goalHistory' => $goalHistory,
         ]);
     }
 

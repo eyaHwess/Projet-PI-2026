@@ -10,6 +10,8 @@
             <i class="fas fa-comment"></i>
         {% elseif notification.type == 'goal_invitation' %}
             <i class="fas fa-bullseye"></i>
+        {% elseif notification.type == 'message_reaction' %}
+            <i class="fas fa-smile"></i>
         {% else %}
             <i class="fas fa-bell"></i>
         {% endif %}

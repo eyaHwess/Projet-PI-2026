@@ -1,0 +1,217 @@
+{% for message in chatroom.messages %}
+    {% if message.isPinned %}
+        <div class="pinned-message-box">
+            <div class="pinned-header">
+                <i class="fas fa-thumbtack"></i> Message Épinglé
+                {% if app.user %}
+                    <form method="post" action="{{ path('message_unpin', {id: message.id}) }}" style="display: inline;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('unpin' ~ message.id) }}">
+                        <button type="submit" class="unpin-btn"><i class="fas fa-times"></i></button>
+                    </form>
+                {% endif %}
+            </div>
+            <div class="pinned-content">
+                <strong>{{ message.author.firstName }} {{ message.author.lastName }}:</strong>
+                {{ message.content }}
+            </div>
+        </div>
+    {% endif %}
+{% endfor %}
+
+{% for message in chatroom.messages %}
+    {% if app.user and message.author.id == app.user.id %}
+        <div class="message-sent">
+            <div class="message-content">
+                <div class="message-bubble" style="position: relative;" data-message-id="{{ message.id }}">
+                    {% if message.isReply %}
+                        <div class="reply-reference">
+                            <i class="fas fa-reply"></i>
+                            <div class="reply-info">
+                                <strong>{{ message.replyTo.author.firstName }} {{ message.replyTo.author.lastName }}</strong>
+                                <span class="reply-preview">{{ message.replyTo.content|length > 50 ? message.replyTo.content|slice(0, 50) ~ '...' : message.replyTo.content }}</span>
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if message.imageName %}
+                        <div class="message-attachment">
+                            <a href="/uploads/messages/{{ message.imageName }}" target="_blank" class="attachment-image-link">
+                                <img src="/uploads/messages/{{ message.imageName }}" alt="image" class="attachment-image" style="max-width:300px;max-height:300px;border-radius:8px;">
+                            </a>
+                        </div>
+                    {% elseif message.fileName %}
+                        <div class="message-attachment">
+                            <a href="/uploads/messages/{{ message.fileName }}" target="_blank" class="attachment-file">
+                                <i class="fas fa-file attachment-icon"></i>
+                                <span class="attachment-name">{{ message.fileName }}</span>
+                                <i class="fas fa-download attachment-download"></i>
+                            </a>
+                        </div>
+                    {% elseif message.hasAttachment %}
+                        <div class="message-attachment">
+                            {% if message.attachmentType == 'audio' %}
+                                <div class="voice-message-player">
+                                    <button type="button" class="voice-play-btn" onclick="playVoiceMessage({{ message.id }}, '{{ message.attachmentPath }}')">
+                                        <i class="fas fa-play"></i>
+                                    </button>
+                                    <div class="voice-duration">{{ message.formattedDuration }}</div>
+                                </div>
+                            {% elseif message.attachmentType == 'image' %}
+                                <a href="{{ message.attachmentPath }}" target="_blank" class="attachment-image-link">
+                                    <img src="{{ message.attachmentPath }}" alt="{{ message.attachmentOriginalName }}" class="attachment-image" style="max-width:300px;max-height:300px;border-radius:8px;">
+                                </a>
+                            {% else %}
+                                <a href="{{ message.attachmentPath }}" target="_blank" class="attachment-file">
+                                    <i class="fas fa-file attachment-icon"></i>
+                                    <span class="attachment-name">{{ message.attachmentOriginalName }}</span>
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                    {% if message.content %}
+                        <span class="message-text">{{ message.content }}</span>
+                    {% endif %}
+                    {% if message.isEdited %}<span class="edited-badge">Edited</span>{% endif %}
+                    <button type="button" class="translate-message-btn" title="Traduire" onclick="translateMessage({{ message.id }})">
+                        <i class="fas fa-globe"></i>
+                    </button>
+                    <button type="button" class="reply-message-btn" title="Répondre" onclick="setReplyTo({{ message.id }}, '{{ message.author.firstName|e('js') }}', '{{ message.content|e('js')|slice(0, 50) }}')">
+                        <i class="fas fa-reply"></i>
+                    </button>
+                    <button type="button" class="edit-message-btn" title="Modifier" onclick="openEditModal({{ message.id }}, '{{ message.content|e('js') }}')">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    {% if currentUserParticipation and currentUserParticipation.canModerate() %}
+                        <button type="button" class="delete-message-btn" title="Supprimer" onclick="openDeleteModal({{ message.id }})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    {% endif %}
+                </div>
+                <div id="translation-{{ message.id }}" class="message-translation" style="display: none;"></div>
+                <div class="message-reactions">
+                    {% for type, emoji in {'like': '👍', 'clap': '👏', 'fire': '🔥', 'heart': '❤️'} %}
+                        <form method="post" action="{{ path('message_react', {id: message.id, type: type}) }}" style="display: inline;">
+                            <input type="hidden" name="_token" value="{{ csrf_token('react' ~ message.id ~ type) }}">
+                            <button type="submit" class="reaction-btn {% if message.hasUserReacted(app.user, type) %}active{% endif %}">
+                                {{ emoji }} <span class="count">{{ message.getReactionCount(type) }}</span>
+                            </button>
+                        </form>
+                    {% endfor %}
+                    {% if not message.isPinned and currentUserParticipation and currentUserParticipation.canModerate() %}
+                        <form method="post" action="{{ path('message_pin', {id: message.id}) }}" style="display: inline;">
+                            <input type="hidden" name="_token" value="{{ csrf_token('pin' ~ message.id) }}">
+                            <button type="submit" class="pin-btn" title="Épingler"><i class="fas fa-thumbtack"></i></button>
+                        </form>
+                    {% endif %}
+                </div>
+                <div class="message-time">
+                    {{ message.createdAt|date('g:i A') }} | {{ message.createdAt|date('M d') }}
+                    {% if app.user %}
+                        <span class="read-status">
+                            {% set readCount = readReceiptRepo.getReadCount(message) %}
+                            {% if readCount > 0 %}
+                                <i class="fas fa-check-double" style="color: #4fc3f7;" title="Lu par {{ readCount }} personne(s)"></i>
+                            {% else %}
+                                <i class="fas fa-check" style="color: #999;" title="Envoyé"></i>
+                            {% endif %}
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="message-avatar">
+                {% if app.user %}{{ app.user.firstName|first }}{{ app.user.lastName|first }}{% else %}?{% endif %}
+            </div>
+        </div>
+    {% else %}
+        <div class="message-received">
+            <div class="message-avatar">{{ message.author.firstName|first }}{{ message.author.lastName|first }}</div>
+            <div class="message-content">
+                <div class="message-bubble">
+                    <span class="message-author-name">{{ message.author.firstName }} {{ message.author.lastName }}</span>
+                    {% if message.isReply %}
+                        <div class="reply-reference">
+                            <i class="fas fa-reply"></i>
+                            <div class="reply-info">
+                                <strong>{{ message.replyTo.author.firstName }} {{ message.replyTo.author.lastName }}</strong>
+                                <span class="reply-preview">{{ message.replyTo.content|length > 50 ? message.replyTo.content|slice(0, 50) ~ '...' : message.replyTo.content }}</span>
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if message.imageName %}
+                        <div class="message-attachment">
+                            <a href="/uploads/messages/{{ message.imageName }}" target="_blank" class="attachment-image-link">
+                                <img src="/uploads/messages/{{ message.imageName }}" alt="image" class="attachment-image" style="max-width:300px;max-height:300px;border-radius:8px;">
+                            </a>
+                        </div>
+                    {% elseif message.fileName %}
+                        <div class="message-attachment">
+                            <a href="/uploads/messages/{{ message.fileName }}" target="_blank" class="attachment-file">
+                                <i class="fas fa-file attachment-icon"></i>
+                                <span class="attachment-name">{{ message.fileName }}</span>
+                                <i class="fas fa-download attachment-download"></i>
+                            </a>
+                        </div>
+                    {% elseif message.hasAttachment %}
+                        <div class="message-attachment">
+                            {% if message.attachmentType == 'audio' %}
+                                <div class="voice-message-player">
+                                    <button type="button" class="voice-play-btn" onclick="playVoiceMessage({{ message.id }}, '{{ message.attachmentPath }}')">
+                                        <i class="fas fa-play"></i>
+                                    </button>
+                                    <div class="voice-duration">{{ message.formattedDuration }}</div>
+                                </div>
+                            {% elseif message.attachmentType == 'image' %}
+                                <a href="{{ message.attachmentPath }}" target="_blank" class="attachment-image-link">
+                                    <img src="{{ message.attachmentPath }}" alt="{{ message.attachmentOriginalName }}" class="attachment-image" style="max-width:300px;max-height:300px;border-radius:8px;">
+                                </a>
+                            {% else %}
+                                <a href="{{ message.attachmentPath }}" target="_blank" class="attachment-file">
+                                    <i class="fas fa-file attachment-icon"></i>
+                                    <span class="attachment-name">{{ message.attachmentOriginalName }}</span>
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                    {% if message.content %}
+                        <span class="message-text">{{ message.content }}</span>
+                    {% endif %}
+                    <div id="translation-{{ message.id }}" class="message-translation" style="display: none;"></div>
+                </div>
+                {% if app.user %}
+                    <div class="message-reactions">
+                        {% for type, emoji in {'like': '👍', 'clap': '👏', 'fire': '🔥', 'heart': '❤️'} %}
+                            <form method="post" action="{{ path('message_react', {id: message.id, type: type}) }}" style="display: inline;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('react' ~ message.id ~ type) }}">
+                                <button type="submit" class="reaction-btn {% if message.hasUserReacted(app.user, type) %}active{% endif %}">
+                                    {{ emoji }} <span class="count">{{ message.getReactionCount(type) }}</span>
+                                </button>
+                            </form>
+                        {% endfor %}
+                        {% if not message.isPinned and currentUserParticipation and currentUserParticipation.canModerate() %}
+                            <form method="post" action="{{ path('message_pin', {id: message.id}) }}" style="display: inline;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('pin' ~ message.id) }}">
+                                <button type="submit" class="pin-btn" title="Épingler"><i class="fas fa-thumbtack"></i></button>
+                            </form>
+                        {% endif %}
+                        <button type="button" class="reply-btn" title="Répondre" onclick="setReplyTo({{ message.id }}, '{{ message.author.firstName|e('js') }}', '{{ message.content|e('js')|slice(0, 50) }}')">
+                            <i class="fas fa-reply"></i>
+                        </button>
+                        {% if currentUserParticipation and currentUserParticipation.canModerate() %}
+                            <button type="button" class="delete-btn" title="Supprimer" onclick="openDeleteModal({{ message.id }})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            <button type="button" class="translate-btn-inline" onclick="translateMessage({{ message.id }})" title="Traduire">
+                                <i class="fas fa-globe"></i> Traduire
+                            </button>
+                        {% endif %}
+                    </div>
+                {% endif %}
+                <div class="message-time">{{ message.createdAt|date('g:i A') }} | {{ message.createdAt|date('M d') }}</div>
+            </div>
+        </div>
+    {% endif %}
+{% else %}
+    <div class="text-center text-muted py-5">
+        <i class="fas fa-comments fa-3x mb-3"></i>
+        <p>No messages yet. Start the conversation!</p>
+    </div>
+{% endfor %}

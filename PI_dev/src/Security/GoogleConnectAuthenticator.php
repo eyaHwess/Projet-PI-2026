@@ -26,12 +26,15 @@ class GoogleConnectAuthenticator extends AbstractAuthenticator
 
     public function supports(Request $request): ?bool
     {
-        return $request->attributes->get('_route') === 'connect_google_check';
+        // Ne jamais intercepter automatiquement : GoogleController appelle
+        // authenticateUser() manuellement après avoir récupéré l'utilisateur.
+        return false;
     }
 
     public function authenticate(Request $request): Passport
     {
-        throw new \LogicException('authenticate() ne doit pas être appelé. Utiliser authenticateUser() dans GoogleController.');
+        // Non utilisé : support() retourne toujours false.
+        throw new \LogicException('authenticate() ne doit pas être appelé.');
     }
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response

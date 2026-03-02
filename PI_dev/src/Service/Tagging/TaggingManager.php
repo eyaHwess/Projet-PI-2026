@@ -30,8 +30,7 @@ class TaggingManager
 
         return match ($strategy) {
             self::STRATEGY_EMBEDDING => $this->embeddingTaggingService->generateTagsForPost($post, $maxTags),
-            self::STRATEGY_TFIDF,
-            $default => $this->tfIdfTaggingService->generateTagsForPost($post, $maxTags),
+            default => $this->tfIdfTaggingService->generateTagsForPost($post, $maxTags),
         };
     }
 
@@ -46,8 +45,7 @@ class TaggingManager
 
         return match ($strategy) {
             self::STRATEGY_EMBEDDING => $this->embeddingTaggingService->regenerateTagsForPost($post, $maxTags),
-            self::STRATEGY_TFIDF,
-            $default => $this->tfIdfTaggingService->regenerateTagsForPost($post, $maxTags),
+            default => $this->tfIdfTaggingService->regenerateTagsForPost($post, $maxTags),
         };
     }
 }

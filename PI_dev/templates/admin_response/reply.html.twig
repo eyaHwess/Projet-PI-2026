@@ -1,0 +1,122 @@
+{% extends 'admin/base_admin.html.twig' %}
+
+{% block title %}Répondre à la Réclamation{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card bg-transparent border rounded-3">
+                <div class="card-header bg-transparent border-bottom">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h3 class="mb-0">💌 Répondre à la Réclamation</h3>
+                            <p class="mb-0 text-muted">Rédigez une réponse pour résoudre cette réclamation</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <a href="{{ path('admin_reclamation_list') }}" class="btn btn-light btn-sm">
+                                <i class="bi bi-arrow-left me-1"></i>Retour à la liste
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12">
+                            {# Reclamation Details #}
+                            <div class="card border mb-4">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Détails de la réclamation</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="avatar avatar-sm me-3">
+                                            <div class="avatar-img rounded-circle bg-primary text-white d-flex align-items-center justify-content-center">
+                                                {{ reclamation.user.firstName|slice(0,1) }}{{ reclamation.user.lastName|slice(0,1) }}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0">{{ reclamation.user.firstName }} {{ reclamation.user.lastName }}</h6>
+                                            <small class="text-muted">{{ reclamation.user.email }}</small>
+                                        </div>
+                                        <div class="ms-auto">
+                                            {% if reclamation.status.name == 'PENDING' %}
+                                                <span class="badge bg-warning text-dark">{{ reclamation.status.value }}</span>
+                                            {% else %}
+                                                <span class="badge bg-success">{{ reclamation.status.value }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <span class="badge bg-info me-2">{{ reclamation.type.value }}</span>
+                                        <small class="text-muted">
+                                            <i class="bi bi-calendar3"></i>
+                                            {{ reclamation.createdAt|date('d/m/Y à H:i') }}
+                                        </small>
+                                    </div>
+                                    
+                                    <div class="bg-light p-3 rounded">
+                                        <p class="mb-0">{{ reclamation.content }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {# AI Suggested Response #}
+                            {% if aiSuggestion is defined and aiSuggestion %}
+                            <div class="card border mb-4" style="border-color: #93c5fd !important; background: linear-gradient(135deg, #dbeafe 0%, #fce7f3 100%);">
+                                <div class="card-header" style="background-color: #bfdbfe; border-bottom-color: #93c5fd;">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <h5 class="card-title mb-0">
+                                            <i class="bi bi-stars" style="color: #f9a8d4;"></i> 
+                                            Suggestion IA
+                                        </h5>
+                                        <span class="badge" style="background-color: #f9a8d4; color: white;">
+                                            <i class="bi bi-robot"></i> Généré par AI
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <p class="mb-3 text-dark" style="line-height: 1.6;">{{ aiSuggestion }}</p>
+                                    <div class="alert alert-info mb-0" style="background-color: #e0f2fe; border-color: #93c5fd;">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        <small>Cette réponse a été pré-remplie automatiquement. Vous pouvez l'accepter, la modifier ou la remplacer complètement.</small>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            {# Response Form #}
+                            <div class="card border">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">✍️ Votre réponse</h5>
+                                </div>
+                                <div class="card-body">
+                                    {{ form_start(form) }}
+                                        <div class="mb-3">
+                                            {{ form_label(form.content, 'Réponse détaillée', {'label_attr': {'class': 'form-label'}}) }}
+                                            {{ form_widget(form.content, {'attr': {'class': 'form-control', 'rows': '6', 'placeholder': 'Rédigez votre réponse ici...', 'id': 'response-content'}}) }}
+                                            {{ form_errors(form.content) }}
+                                        </div>
+                                        
+                                        <div class="d-flex justify-content-between">
+                                            <a href="{{ path('admin_reclamation_list') }}" class="btn btn-light">
+                                                <i class="bi bi-arrow-left me-1"></i>Annuler
+                                            </a>
+                                            <button type="submit" class="btn btn-success">
+                                                <i class="bi bi-send me-1"></i>Envoyer la réponse
+                                            </button>
+                                        </div>
+                                    {{ form_end(form) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

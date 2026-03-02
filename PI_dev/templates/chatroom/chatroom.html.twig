@@ -3017,7 +3017,7 @@
                     <button type="button" class="search-toggle-btn" onclick="toggleGroupInfo()" title="Group Info">
                         <i class="fas fa-info-circle"></i>
                     </button>
-                    <a href="{{ path('goal_show', {id: goal.id}) }}" class="btn btn-outline-secondary btn-sm">
+                    <a href="{{ path('app_goal_show', {id: goal.id}) }}" class="btn btn-outline-secondary btn-sm">
                         <i class="fas fa-arrow-left"></i> Back
                     </a>
                 </div>
@@ -3117,8 +3117,8 @@
                                                 </a>
                                             {% elseif message.imageName %}
                                                 {# VichUploader image #}
-                                                <a href="{{ vich_uploader_asset(message, 'imageFile') }}" target="_blank" class="attachment-image-link">
-                                                    <img src="{{ vich_uploader_asset(message, 'imageFile') }}" alt="{{ message.imageName }}" class="attachment-image">
+                                                <a href="{{ '/uploads/messages/' ~ message.imageName }}" target="_blank" class="attachment-image-link">
+                                                    <img src="{{ '/uploads/messages/' ~ message.imageName }}" alt="{{ message.imageName }}" class="attachment-image">
                                                 </a>
                                             {% else %}
                                                 <a href="{{ message.attachmentPath }}" target="_blank" class="attachment-file">
@@ -3294,8 +3294,8 @@
                                                 </a>
                                             {% elseif message.imageName %}
                                                 {# VichUploader image #}
-                                                <a href="{{ vich_uploader_asset(message, 'imageFile') }}" target="_blank" class="attachment-image-link">
-                                                    <img src="{{ vich_uploader_asset(message, 'imageFile') }}" alt="{{ message.imageName }}" class="attachment-image">
+                                                <a href="{{ '/uploads/messages/' ~ message.imageName }}" target="_blank" class="attachment-image-link">
+                                                    <img src="{{ '/uploads/messages/' ~ message.imageName }}" alt="{{ message.imageName }}" class="attachment-image">
                                                 </a>
                                             {% else %}
                                                 <a href="{{ message.attachmentPath }}" target="_blank" class="attachment-file">
@@ -3435,7 +3435,7 @@
                         <div class="non-member-content">
                             <h3 class="non-member-title">Vous n'êtes pas membre de ce goal</h3>
                             <p class="non-member-text">Rejoignez ce goal pour participer à la conversation et envoyer des messages</p>
-                            <a href="{{ path('goal_join', {id: goal.id}) }}" class="btn-join-goal">
+                            <a href="{{ path('app_goal_join', {id: goal.id}) }}" class="btn-join-goal">
                                 <i class="fas fa-user-plus"></i> Rejoindre le goal
                             </a>
                         </div>
@@ -3861,31 +3861,22 @@ function refreshMessages() {
     const currentScrollTop = chatMessages.scrollTop;
     const isScrolledToBottom = currentScrollTop + chatMessages.clientHeight >= currentScrollHeight - 50;
     
-    // Fetch new messages via AJAX
-    fetch(window.location.href, {
+    // Fetch new messages via dedicated endpoint (returns only messages HTML)
+    fetch('{{ path('chatroom_messages', {id: chatroom.id}) }}', {
         headers: {
             'X-Requested-With': 'XMLHttpRequest'
         }
     })
     .then(response => response.text())
     .then(html => {
-        // Parse the HTML response
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const newMessages = doc.getElementById('chatMessages');
-        
-        if (newMessages) {
-            // Update only the messages content
-            const currentMessages = chatMessages.innerHTML;
-            const newContent = newMessages.innerHTML;
-            
-            if (currentMessages !== newContent) {
-                chatMessages.innerHTML = newContent;
-                
-                // Auto-scroll if user was at bottom
-                if (isScrolledToBottom) {
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                }
+        const newContent = html.trim();
+        const currentContent = chatMessages.innerHTML;
+
+        if (currentContent !== newContent) {
+            chatMessages.innerHTML = newContent;
+
+            if (isScrolledToBottom) {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
             }
         }
     })
@@ -4699,30 +4690,20 @@ async function handleFormSubmit(event) {
                 console.log('✓ Message sent successfully!');
                 // Clear form
                 const inputField = form.querySelector('.chat-input');
-                if (inputField) {
-                    inputField.value = '';
-                    console.log('✓ Input field cleared');
-                }
+                if (inputField) inputField.value = '';
                 
                 const fileInput = document.querySelector('input[type="file"][name*="attachment"]');
-                if (fileInput) {
-                    fileInput.value = '';
-                    console.log('✓ File input cleared');
-                }
+                if (fileInput) fileInput.value = '';
                 
                 const filePreview = document.getElementById('filePreview');
-                if (filePreview) {
-                    filePreview.style.display = 'none';
-                    console.log('✓ File preview hidden');
-                }
+                if (filePreview) filePreview.style.display = 'none';
                 
                 cancelReply();
                 
-                // Fetch new messages immediately
-                console.log('Fetching new messages...');
+                // Fetch new messages to show the sent message (including any image)
                 setTimeout(() => {
                     fetchNewMessages();
-                }, 300);
+                }, 500);
             } else {
                 console.error('✗ Server returned error:', result);
                 alert(result.error || 'Erreur lors de l\'envoi du message');
@@ -5063,7 +5044,7 @@ async function approveRequest(userId) {
     const goalId = {{ goal.id }};
     
     try {
-        const response = await fetch(`/goal/${goalId}/approve-request/${userId}`, {
+        const response = await fetch(`/goals/${goalId}/approve-request/${userId}`, {
             method: 'POST',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
@@ -5093,7 +5074,7 @@ async function rejectRequest(userId) {
     const goalId = {{ goal.id }};
     
     try {
-        const response = await fetch(`/goal/${goalId}/reject-request/${userId}`, {
+        const response = await fetch(`/goals/${goalId}/reject-request/${userId}`, {
             method: 'POST',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'

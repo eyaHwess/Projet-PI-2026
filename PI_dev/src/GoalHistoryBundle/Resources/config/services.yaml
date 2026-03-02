@@ -1,0 +1,28 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    # ── Repository ────────────────────────────────────────────────────────
+    App\GoalHistoryBundle\Repository\GoalHistoryRepository:
+        public: true
+
+    # ── Core logger service (inject this anywhere you need history logging) ──
+    App\GoalHistoryBundle\Service\GoalHistoryLogger:
+        arguments:
+            $entityManager: '@doctrine.orm.entity_manager'
+            $repository: '@App\GoalHistoryBundle\Repository\GoalHistoryRepository'
+            $logger: '@?logger'
+        public: true
+
+    # ── Event listener (auto-wired via #[AsEventListener]) ───────────────
+    App\GoalHistoryBundle\EventListener\GoalHistoryListener:
+        arguments:
+            $historyLogger: '@App\GoalHistoryBundle\Service\GoalHistoryLogger'
+        tags:
+            - { name: kernel.event_listener, event: App\GoalHistoryBundle\Event\GoalCreatedEvent,            method: onGoalCreated }
+            - { name: kernel.event_listener, event: App\GoalHistoryBundle\Event\GoalUpdatedEvent,            method: onGoalUpdated }
+            - { name: kernel.event_listener, event: App\GoalHistoryBundle\Event\GoalStatusChangedEvent,      method: onStatusChanged }
+            - { name: kernel.event_listener, event: App\GoalHistoryBundle\Event\GoalDeletedEvent,            method: onGoalDeleted }
+            - { name: kernel.event_listener, event: App\GoalHistoryBundle\Event\GoalMilestoneCompletedEvent, method: onMilestoneCompleted }

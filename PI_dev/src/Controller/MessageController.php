@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Message;
 use App\Entity\MessageReaction;
 use App\Repository\MessageReactionRepository;
+use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -17,7 +18,8 @@ final class MessageController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private \App\Service\ModerationService $moderationService
+        private \App\Service\ModerationService $moderationService,
+        private NotificationService $notificationService,
     ) {}
 
     /**
@@ -266,6 +268,31 @@ final class MessageController extends AbstractController
 
         $this->entityManager->flush();
 
+        // Notify message author when a reaction is added (not when removed), skip self-reactions
+        if ($action === 'added') {
+            $author = $message->getAuthor();
+            if ($author && $author->getId() !== $user->getId()) {
+                $reactionLabel = match($type) {
+                    'like'  => 'liked',
+                    'clap'  => 'clapped for',
+                    'fire'  => 'reacted 🔥 to',
+                    'heart' => 'loved',
+                    default => 'reacted to',
+                };
+                $preview = $message->getContent()
+                    ? (mb_strlen($message->getContent()) > 40
+                        ? mb_substr($message->getContent(), 0, 40) . '…'
+                        : $message->getContent())
+                    : 'your message';
+
+                $this->notificationService->createAndPublish(
+                    $author,
+                    'message_reaction',
+                    sprintf('%s %s %s "%s"', $user->getFirstName(), $user->getLastName(), $reactionLabel, $preview)
+                );
+            }
+        }
+
         // Return updated counts
         return new JsonResponse([
             'success' => true,
@@ -431,7 +458,7 @@ final class MessageController extends AbstractController
                 return new JsonResponse(['success' => false, 'error' => 'Ce goal n\'a pas de chatroom.'], 404);
             }
             $this->addFlash('error', 'Ce goal n\'a pas de chatroom.');
-            return $this->redirectToRoute('goal_list');
+            return $this->redirectToRoute('app_goal_index');
         }
         
         // Check if user is a member of this goal
@@ -439,23 +466,35 @@ final class MessageController extends AbstractController
             'user' => $user,
             'goal' => $goal
         ]);
-        
+
+        // Auto-create participation for the goal owner (handles goals created before this logic existed)
+        if (!$currentUserParticipation && $goal->getUser() === $user) {
+            $currentUserParticipation = new \App\Entity\GoalParticipation();
+            $currentUserParticipation->setUser($user);
+            $currentUserParticipation->setGoal($goal);
+            $currentUserParticipation->setRole(\App\Entity\GoalParticipation::ROLE_OWNER);
+            $currentUserParticipation->setStatus(\App\Entity\GoalParticipation::STATUS_APPROVED);
+            $currentUserParticipation->setCreatedAt(new \DateTime());
+            $em->persist($currentUserParticipation);
+            $em->flush();
+        }
+
         // Vérifier que l'utilisateur est membre
         if (!$currentUserParticipation) {
             $this->addFlash('error', 'Vous devez rejoindre ce goal pour accéder au chatroom.');
-            return $this->redirectToRoute('goal_list');
+            return $this->redirectToRoute('app_goal_index');
         }
         
         // Vérifier que la participation est approuvée
         if (!$currentUserParticipation->isApproved()) {
             $this->addFlash('warning', 'Votre demande d\'accès est en attente d\'approbation.');
-            return $this->redirectToRoute('goal_list');
+            return $this->redirectToRoute('app_goal_index');
         }
 
         // Vérifier l'état du chatroom
         if ($chatroom->getState() === 'deleted') {
             $this->addFlash('error', 'Ce chatroom a été supprimé.');
-            return $this->redirectToRoute('goal_list');
+            return $this->redirectToRoute('app_goal_index');
         }
         
         // Use modern template
@@ -480,7 +519,9 @@ final class MessageController extends AbstractController
         $form = $this->createForm(\App\Form\MessageType::class, $message);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
+        $isAjaxPost = $request->isMethod('POST') && ($request->isXmlHttpRequest() || $request->headers->get('X-Requested-With') === 'XMLHttpRequest');
+
+        if ($form->isSubmitted() && ($form->isValid() || $isAjaxPost)) {
             // Vérifier que le chatroom n'est pas verrouillé ou archivé
             if ($chatroom->getState() === 'locked') {
                 if ($request->isXmlHttpRequest() || $request->headers->get('X-Requested-With') === 'XMLHttpRequest') {
@@ -505,22 +546,47 @@ final class MessageController extends AbstractController
             }
 
             try {
-                // VichUploader: route form attachment to imageFile or file
-                $attachmentFile = $form->get('attachment')->getData();
-                
-                if ($attachmentFile) {
-                    $mimeType = $attachmentFile->getMimeType();
-                    if (str_starts_with($mimeType ?? '', 'image/')) {
-                        $message->setImageFile($attachmentFile);
+                // Handle file upload manually — always read from raw request files
+                $attachmentFile = null;
+                $rawFiles = $request->files->get('message');
+                if (is_array($rawFiles) && isset($rawFiles['attachment']) && $rawFiles['attachment'] instanceof \Symfony\Component\HttpFoundation\File\UploadedFile) {
+                    $attachmentFile = $rawFiles['attachment'];
+                } elseif ($form->isSubmitted()) {
+                    $attachmentFile = $form->get('attachment')->getData();
+                }
+
+                if ($attachmentFile instanceof \Symfony\Component\HttpFoundation\File\UploadedFile) {
+                    $mimeType    = $attachmentFile->getMimeType() ?? '';
+                    $fileSize    = $attachmentFile->getSize(); // must be read BEFORE move()
+                    $uploadDir   = $this->getParameter('kernel.project_dir') . '/public/uploads/messages';
+                    if (!is_dir($uploadDir)) {
+                        mkdir($uploadDir, 0775, true);
+                    }
+                    $originalName = pathinfo($attachmentFile->getClientOriginalName(), PATHINFO_FILENAME);
+                    $safeFilename = preg_replace('/[^a-zA-Z0-9_-]/', '_', $originalName);
+                    $ext          = $attachmentFile->guessExtension() ?? $attachmentFile->getClientOriginalExtension();
+                    $newFilename  = $safeFilename . '_' . uniqid() . '.' . $ext;
+                    $attachmentFile->move($uploadDir, $newFilename); // file is moved here
+
+                    if (str_starts_with($mimeType, 'image/')) {
+                        $message->setImageName($newFilename);
+                        $message->setImageSize($fileSize);
                     } else {
-                        $message->setFile($attachmentFile);
+                        $message->setFileName($newFilename);
+                        $message->setFileSize($fileSize);
+                        $message->setFileType($mimeType);
                     }
                 }
 
-                // Content is optional if there's an attachment (Vich or legacy)
+                // Get content - fallback to raw POST data if form didn't bind
+                if (!$message->getContent()) {
+                    $rawData = $request->request->all('message');
+                    if (!empty($rawData['content'])) {
+                        $message->setContent($rawData['content']);
+                    }
+                }
                 $contentValue = $message->getContent();
-                $hasAttachment = $attachmentFile || $message->getImageFile() || $message->getFile()
-                    || $message->getImageName() || $message->getFileName();
+                $hasAttachment = $message->getImageName() || $message->getFileName();
                 
                 if ((empty($contentValue) || trim($contentValue) === '') && !$hasAttachment) {
                     if ($request->isXmlHttpRequest() || $request->headers->get('X-Requested-With') === 'XMLHttpRequest') {
@@ -593,9 +659,12 @@ final class MessageController extends AbstractController
                 // For AJAX requests, return JSON
                 if ($request->isXmlHttpRequest() || $request->headers->get('X-Requested-With') === 'XMLHttpRequest') {
                     return new JsonResponse([
-                        'success' => true,
-                        'message' => 'Message envoyé!',
-                        'messageId' => $message->getId()
+                        'success'   => true,
+                        'message'   => 'Message envoyé!',
+                        'messageId' => $message->getId(),
+                        'imageUrl'  => $message->getImageName() ? '/uploads/messages/' . $message->getImageName() : null,
+                        'fileUrl'   => $message->getFileName()  ? '/uploads/messages/' . $message->getFileName()  : null,
+                        'fileName'  => $message->getFileName(),
                     ]);
                 }
                 
@@ -857,7 +926,7 @@ final class MessageController extends AbstractController
 
         if (!$participation || !$participation->isApproved()) {
             $this->addFlash('error', 'Vous devez être membre de ce goal');
-            return $this->redirectToRoute('goal_list');
+            return $this->redirectToRoute('app_goal_index');
         }
 
         $privateChatrooms = $privateChatroomRepository->findByUserAndGoal($user, $goal);
@@ -896,7 +965,7 @@ final class MessageController extends AbstractController
 
         if (!$participation || !$participation->isApproved()) {
             $this->addFlash('error', 'Vous devez être membre de ce goal');
-            return $this->redirectToRoute('goal_list');
+            return $this->redirectToRoute('app_goal_index');
         }
 
         // Get all approved members of the goal except current user
@@ -964,14 +1033,30 @@ final class MessageController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // VichUploader: route form attachment to imageFile or file
+            // Handle file upload manually
             $attachmentFile = $form->get('attachment')->getData();
-            if ($attachmentFile) {
-                $mimeType = $attachmentFile->getMimeType();
-                if (str_starts_with($mimeType ?? '', 'image/')) {
-                    $message->setImageFile($attachmentFile);
+            if (!$attachmentFile) {
+                $rawFiles = $request->files->get('message');
+                if (is_array($rawFiles) && isset($rawFiles['attachment'])) {
+                    $attachmentFile = $rawFiles['attachment'];
+                }
+            }
+            if ($attachmentFile instanceof \Symfony\Component\HttpFoundation\File\UploadedFile) {
+                $mimeType = $attachmentFile->getMimeType() ?? '';
+                $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/messages';
+                if (!is_dir($uploadDir)) { mkdir($uploadDir, 0775, true); }
+                $safeFilename = preg_replace('/[^a-zA-Z0-9_-]/', '_', pathinfo($attachmentFile->getClientOriginalName(), PATHINFO_FILENAME));
+                $ext = $attachmentFile->guessExtension() ?? $attachmentFile->getClientOriginalExtension();
+                $newFilename = $safeFilename . '_' . uniqid() . '.' . $ext;
+                $size = $attachmentFile->getSize();
+                $attachmentFile->move($uploadDir, $newFilename);
+                if (str_starts_with($mimeType, 'image/')) {
+                    $message->setImageName($newFilename);
+                    $message->setImageSize($size);
                 } else {
-                    $message->setFile($attachmentFile);
+                    $message->setFileName($newFilename);
+                    $message->setFileSize($size);
+                    $message->setFileType($mimeType);
                 }
             }
 

@@ -110,3 +110,8 @@ services:
             $translationProvider: '%translation.provider%'
             $deeplApiKey: '%translation.deepl_api_key%'
             $googleApiKey: '%translation.google_api_key%'
+
+    # AI Response Service for reclamations
+    App\Service\AIResponseService:
+        arguments:
+            $openaiApiKey: '%openai.api_key%'

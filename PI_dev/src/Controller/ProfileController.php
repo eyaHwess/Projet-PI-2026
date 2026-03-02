@@ -4,8 +4,10 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Enum\PostStatus;
+use App\Repository\GoalParticipationRepository;
 use App\Service\AiProfileGenerator;
 use App\Service\LoginHistoryService;
+use App\Service\Post\SavedPostService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,6 +19,8 @@ class ProfileController extends AbstractController
     public function __construct(
         private EntityManagerInterface $entityManager,
         private AiProfileGenerator $aiProfileGenerator,
+        private SavedPostService $savedPostService,
+        private GoalParticipationRepository $goalParticipationRepo,
     ) {
     }
 
@@ -74,21 +78,42 @@ class ProfileController extends AbstractController
     #[Route('/user/profile', name: 'app_user_profile', methods: ['GET'])]
     public function profile(LoginHistoryService $loginHistoryService): Response
     {
+        /** @var User $user */
         $user = $this->getUser();
 
-        $posts = array_values($user->getPosts()->filter(
+        $allPosts = $user->getPosts();
+
+        $publishedPosts = array_values($allPosts->filter(
             fn ($post) => $post->getStatus() === PostStatus::PUBLISHED->value
         )->toArray());
+
+        $draftPosts = array_values($allPosts->filter(
+            fn ($post) => $post->getStatus() === PostStatus::DRAFT->value
+        )->toArray());
+
+        $scheduledPosts = array_values($allPosts->filter(
+            fn ($post) => $post->getStatus() === PostStatus::SCHEDULED->value
+        )->toArray());
+
+        $savedPostEntities = $this->savedPostService->getSavedPostsByUser($user);
+        // getSavedPostsByUser returns SavedPost[] — extract the Post from each
+        $savedPosts = array_map(fn ($sp) => $sp->getPost(), $savedPostEntities);
+
+        $myChatrooms = $this->goalParticipationRepo->findApprovedByUser($user);
 
         $recentLogins = $loginHistoryService->getRecentLogins($user, 5);
         $suspiciousLoginsCount = $loginHistoryService->countSuspiciousLogins($user);
 
         return $this->render('user/profile.html.twig', [
-            'user' => $user,
-            'posts' => $posts,
-            'recentLogins' => $recentLogins,
+            'user'                 => $user,
+            'posts'                => $publishedPosts,
+            'draftPosts'           => $draftPosts,
+            'scheduledPosts'       => $scheduledPosts,
+            'savedPosts'           => $savedPosts,
+            'myChatrooms'          => $myChatrooms,
+            'recentLogins'         => $recentLogins,
             'suspiciousLoginsCount' => $suspiciousLoginsCount,
-            'hasOnboarded' => $user->isOnboarded(),
+            'hasOnboarded'         => $user->isOnboarded(),
         ]);
     }
 

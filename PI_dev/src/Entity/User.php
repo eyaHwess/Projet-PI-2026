@@ -161,6 +161,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: GoalParticipation::class, mappedBy: 'user', cascade: ['persist', 'remove'])]
     private Collection $goalParticipations;
 
+    /**
+     * @var Collection<int, Reclamation>
+     */
+    #[ORM\OneToMany(targetEntity: Reclamation::class, mappedBy: 'user', cascade: ['persist', 'remove'])]
+    private Collection $reclamations;
+
     public function __construct()
     {
         $this->roles = [UserRole::USER->value];
@@ -172,6 +178,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->postLikes = new ArrayCollection();
         $this->goals = new ArrayCollection();
         $this->goalParticipations = new ArrayCollection();
+        $this->reclamations = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -487,4 +494,26 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function isOnboarded(): bool { return $this->isOnboarded; }
     public function setIsOnboarded(bool $isOnboarded): static { $this->isOnboarded = $isOnboarded; return $this; }
+
+    /** @return Collection<int, Reclamation> */
+    public function getReclamations(): Collection { return $this->reclamations; }
+
+    public function addReclamation(Reclamation $reclamation): static
+    {
+        if (!$this->reclamations->contains($reclamation)) {
+            $this->reclamations->add($reclamation);
+            $reclamation->setUser($this);
+        }
+        return $this;
+    }
+
+    public function removeReclamation(Reclamation $reclamation): static
+    {
+        if ($this->reclamations->removeElement($reclamation)) {
+            if ($reclamation->getUser() === $this) {
+                $reclamation->setUser(null);
+            }
+        }
+        return $this;
+    }
 }

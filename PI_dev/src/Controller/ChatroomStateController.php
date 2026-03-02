@@ -137,7 +137,7 @@ class ChatroomStateController extends AbstractController
         $this->entityManager->flush();
 
         $this->addFlash('success', '🔴 Chatroom supprimé (soft delete). Le chatroom n\'est plus accessible.');
-        return $this->redirectToRoute('goal_show', ['id' => $goal->getId()]);
+        return $this->redirectToRoute('app_goal_show', ['id' => $goal->getId()]);
     }
 
     #[Route('/{id}/restore', name: 'chatroom_restore', methods: ['POST'])]
@@ -155,12 +155,12 @@ class ChatroomStateController extends AbstractController
 
         if (!$participation || $participation->getRole() !== 'OWNER') {
             $this->addFlash('error', 'Seul le créateur du goal peut restaurer le chatroom');
-            return $this->redirectToRoute('goal_show', ['id' => $goal->getId()]);
+            return $this->redirectToRoute('app_goal_show', ['id' => $goal->getId()]);
         }
 
         if (!$chatroomStateMachine->can($chatroom, 'restore')) {
             $this->addFlash('error', 'Impossible de restaurer ce chatroom');
-            return $this->redirectToRoute('goal_show', ['id' => $goal->getId()]);
+            return $this->redirectToRoute('app_goal_show', ['id' => $goal->getId()]);
         }
 
         $chatroomStateMachine->apply($chatroom, 'restore');

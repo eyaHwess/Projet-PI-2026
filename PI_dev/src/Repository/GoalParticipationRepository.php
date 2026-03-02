@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\GoalParticipation;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -16,28 +17,19 @@ class GoalParticipationRepository extends ServiceEntityRepository
         parent::__construct($registry, GoalParticipation::class);
     }
 
-//    /**
-//     * @return GoalParticipation[] Returns an array of GoalParticipation objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('g')
-//            ->andWhere('g.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('g.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
-
-//    public function findOneBySomeField($value): ?GoalParticipation
-//    {
-//        return $this->createQueryBuilder('g')
-//            ->andWhere('g.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+    /**
+     * @return GoalParticipation[]
+     */
+    public function findApprovedByUser(User $user): array
+    {
+        return $this->createQueryBuilder('gp')
+            ->join('gp.goal', 'g')
+            ->where('gp.user = :user')
+            ->andWhere('gp.status = :status')
+            ->setParameter('user', $user)
+            ->setParameter('status', GoalParticipation::STATUS_APPROVED)
+            ->orderBy('gp.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

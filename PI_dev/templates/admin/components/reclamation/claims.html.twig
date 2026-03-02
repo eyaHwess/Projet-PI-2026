@@ -25,9 +25,10 @@
                     <!-- Table head -->
                     <thead>
                         <tr>
-                            <th class="border-0 rounded-start">User who claimed</th>
-                            <th class="border-0">Date of claim</th>
-                            <th class="border-0 rounded-end">Action</th>
+                            <th class="border-0 rounded-start">Utilisateur</th>
+                            <th class="border-0">Type / Statut</th>
+                            <th class="border-0">Date</th>
+                            <th class="border-0 rounded-end">Actions</th>
                         </tr>
                     </thead>
 
@@ -39,16 +40,28 @@
                             <td>
                                 <div class="d-flex align-items-center position-relative">
                                     <!-- Avatar -->
-                                    <div class="avatar avatar-md">
-                                        <img src="{{ asset(claim.user.avatar) }}" class="rounded-circle" alt="avatar">
+                                    <div class="avatar avatar-md me-2">
+                                        {% if claim.user.photoUrl %}
+                                            <img src="{{ asset(claim.user.photoUrl) }}" class="rounded-circle" style="width:40px;height:40px;object-fit:cover;" alt="avatar">
+                                        {% else %}
+                                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center text-white fw-bold" style="width:40px;height:40px;">
+                                                {{ claim.user.firstName|first|upper }}
+                                            </div>
+                                        {% endif %}
                                     </div>
-
                                     <div class="mb-0 ms-2">
-                                        <h6 class="mb-0">
-                                            <a href="#" class="stretched-link">{{ claim.user.name }}</a>
-                                        </h6>
+                                        <h6 class="mb-0">{{ claim.user.firstName }} {{ claim.user.lastName }}</h6>
+                                        <small class="text-muted">{{ claim.user.email }}</small>
                                     </div>
                                 </div>
+                            </td>
+
+                            <!-- Type + Status -->
+                            <td>
+                                <span class="badge bg-info text-dark me-1">{{ claim.type.value }}</span>
+                                <span class="badge {% if claim.status.name == 'PENDING' %}bg-warning text-dark{% elseif claim.status.name == 'ANSWERED' %}bg-success{% else %}bg-secondary{% endif %}">
+                                    {{ claim.status.value }}
+                                </span>
                             </td>
 
                             <!-- Date of claim -->
@@ -56,19 +69,22 @@
 
                             <!-- Actions -->
                             <td>
-                                <a href="#" 
-                                   class="text-decoration-none fw-semibold"
-                                   style="color: #17a2b8; font-size: 1rem;"
+                                <a href="{{ path('admin_reclamation_reply', {id: claim.id}) }}"
+                                   class="btn btn-sm btn-outline-info me-1">
+                                    <i class="bi bi-reply"></i> Répondre
+                                </a>
+                                <a href="#"
+                                   class="btn btn-sm btn-outline-secondary"
                                    data-bs-toggle="modal"
                                    data-bs-target="#claimModal{{ claim.id }}">
-                                    View
+                                    <i class="bi bi-eye"></i> Voir
                                 </a>
                             </td>
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="3" class="text-center py-5">
-                                <p class="mb-0">No claims found.</p>
+                            <td colspan="4" class="text-center py-5">
+                                <p class="mb-0">Aucune réclamation trouvée.</p>
                             </td>
                         </tr>
                         {% endfor %}

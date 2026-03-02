@@ -3284,7 +3284,7 @@
 
                                 {# 📷 VichUploader : aperçu image #}
                                 {% if message.imageName %}
-                                    <img src="{{ vich_uploader_asset(message, 'imageFile') }}" alt="{{ message.imageName }}" class="message-image" onclick="openImagePreview('{{ vich_uploader_asset(message, 'imageFile') }}')">
+                                    <img src="{{ '/uploads/messages/' ~ message.imageName }}" alt="{{ message.imageName }}" class="message-image" onclick="openImagePreview('{{ '/uploads/messages/' ~ message.imageName }}')">
                                 {% endif %}
 
                                 {% if message.attachmentType == 'audio' %}
@@ -3361,7 +3361,7 @@
                                             <div class="file-name">{{ message.fileName }}</div>
                                             <div class="file-meta">{{ message.formattedGeneralFileSize }}{% if message.fileType %} · {{ message.fileType }}{% endif %}</div>
                                         </div>
-                                        <a href="{{ vich_uploader_asset(message, 'file') }}" download="{{ message.fileName }}" class="file-download" title="Télécharger">
+                                        <a href="{{ '/uploads/messages/' ~ message.fileName }}" download="{{ message.fileName }}" class="file-download" title="Télécharger">
                                             <i class="fas fa-download"></i>
                                         </a>
                                     </div>
@@ -3703,8 +3703,6 @@
                         </div>
                     </div>
                     
-                {# Rendre uniquement le token CSRF, sans ré-afficher les autres champs (imageFile, file, ...) #}
-                {{ form_widget(form._token) }}
                 {{ form_end(form, {'render_rest': false}) }}
             {% endif %}
             {% endif %} {# End of active state check #}
@@ -3734,8 +3732,8 @@
             </div>
             <div class="section-content">
                 {% for message in chatroom.messages|filter(m => m.attachmentType == 'image' or m.imageName)|slice(0, 6) %}
-                    <div class="media-item" onclick="openImagePreview('{{ message.imageName ? vich_uploader_asset(message, 'imageFile') : message.attachmentPath }}')">
-                        <img src="{{ message.imageName ? vich_uploader_asset(message, 'imageFile') : message.attachmentPath }}" alt="Photo">
+                    <div class="media-item" onclick="openImagePreview('{{ message.imageName ? '/uploads/messages/' ~ message.imageName : message.attachmentPath }}')">
+                        <img src="{{ message.imageName ? '/uploads/messages/' ~ message.imageName : message.attachmentPath }}" alt="Photo">
                         <div class="media-overlay">
                             <i class="fas fa-search-plus"></i>
                         </div>
@@ -4722,6 +4720,7 @@
             
             // Send the request
             xhr.open('POST', this.action);
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
             xhr.send(formData);
         } else {
             // No file, allow normal form submission

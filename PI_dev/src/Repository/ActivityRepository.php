@@ -30,7 +30,7 @@ class ActivityRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return Activity[] Returns activities with reminders
+     * @return Activity[] Activities whose reminder is due (reminderAt <= $now)
      */
     public function findUpcomingReminders(\DateTimeInterface $date): array
     {
@@ -43,5 +43,15 @@ class ActivityRepository extends ServiceEntityRepository
             ->setParameter('completed', 'completed')
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * Alias used by ActivityReminderService.
+     *
+     * @return Activity[]
+     */
+    public function findPendingReminders(\DateTimeInterface $now): array
+    {
+        return $this->findUpcomingReminders($now);
     }
 }

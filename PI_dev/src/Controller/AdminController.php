@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Repository\CoachingRequestRepository;
 use App\Repository\GoalRepository;
 use App\Repository\PostRepository;
+use App\Repository\ReclamationRepository;
 use App\Repository\RoutineRepository;
 use App\Repository\SessionRepository;
 use App\Repository\UserRepository;
@@ -24,7 +25,8 @@ final class AdminController extends AbstractController
         private CoachingRequestRepository $coachingRequestRepository,
         private SessionRepository $sessionRepository,
         private GoalRepository $goalRepository,
-        private RoutineRepository $routineRepository
+        private RoutineRepository $routineRepository,
+        private ReclamationRepository $reclamationRepository
     ) {
     }
 
@@ -312,19 +314,37 @@ final class AdminController extends AbstractController
     #[Route('/admin/claims', name: 'admin_claims')]
     public function claims(Request $request): Response
     {
-        // Pas d'entité Réclamation en BDD : liste vide (à brancher quand l'entité existera)
-        $currentPage = 1;
-        $totalItems = 0;
-        $totalPages = 1;
         $itemsPerPage = 10;
+        $currentPage = max(1, $request->query->getInt('page', 1));
+
+        $qb = $this->reclamationRepository->createQueryBuilder('r')
+            ->leftJoin('r.user', 'u')
+            ->addSelect('u')
+            ->orderBy('r.createdAt', 'DESC');
+
+        $totalItems = $this->reclamationRepository->createQueryBuilder('r')
+            ->select('COUNT(r.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+        $totalPages = max(1, (int) ceil($totalItems / $itemsPerPage));
+        $currentPage = min($currentPage, $totalPages);
+
+        $claims = $qb->setFirstResult(($currentPage - 1) * $itemsPerPage)
+            ->setMaxResults($itemsPerPage)
+            ->getQuery()
+            ->getResult();
+
+        $startItem = $totalItems === 0 ? 0 : ($currentPage - 1) * $itemsPerPage + 1;
+        $endItem = min($currentPage * $itemsPerPage, $totalItems);
+
         return $this->render('admin/components/reclamation/claims.html.twig', [
-            'claims' => [],
+            'claims' => $claims,
             'currentPage' => $currentPage,
             'totalPages' => $totalPages,
             'totalItems' => $totalItems,
             'itemsPerPage' => $itemsPerPage,
-            'startItem' => 0,
-            'endItem' => 0,
+            'startItem' => $startItem,
+            'endItem' => $endItem,
         ]);
     }
 
@@ -499,7 +519,7 @@ final class AdminController extends AbstractController
                 'posts' => 0,
                 'comments' => 0,
                 'chatrooms' => 0,
-                'claims' => 0,
+                'claims' => $this->reclamationRepository->count([]),
             ],
             'growthData' => $growthData,
             'forecastData' => [

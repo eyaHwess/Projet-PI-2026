@@ -29,16 +29,32 @@
         </div>
 
         <div class="col-12">
-            <div class="form-check">
-                {{ form_widget(form.hasReminder, {'attr': {'class': 'form-check-input'}}) }}
-                {{ form_label(form.hasReminder, null, {'label_attr': {'class': 'form-check-label'}}) }}
+            <div class="p-3 border rounded-3" style="background:#f8f5ff; border-color:#d8b4fe !important;">
+                <div class="form-check d-flex align-items-center gap-2 mb-0">
+                    {{ form_widget(form.hasReminder, {'attr': {'class': 'form-check-input', 'style': 'width:1.2em;height:1.2em;cursor:pointer;accent-color:#7c3aed'}}) }}
+                    <label class="form-check-label fw-semibold" style="cursor:pointer;color:#5b21b6">
+                        🔔 Activer un rappel pour cette activité
+                    </label>
+                </div>
             </div>
         </div>
 
         <div class="col-12" id="reminderField" {% if not form.hasReminder.vars.checked %}style="display: none;"{% endif %}>
-            {{ form_label(form.reminderAt, null, {'label_attr': {'class': 'form-label'}}) }}
-            {{ form_widget(form.reminderAt, {'attr': {'class': 'form-control form-control-lg'}}) }}
-            {{ form_errors(form.reminderAt) }}
+            <div class="p-3 border rounded-3" style="background:#fefce8; border-color:#fde68a !important;">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span>⏰</span>
+                    {{ form_label(form.reminderAt, 'Date et heure du rappel', {'label_attr': {'class': 'form-label mb-0 fw-semibold', 'style': 'color:#92400e'}}) }}
+                </div>
+                {{ form_widget(form.reminderAt, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                {{ form_errors(form.reminderAt) }}
+                <small class="text-muted mt-1 d-block">Le rappel sera envoyé à cette date et heure précises.</small>
+            </div>
+<script>
+    document.querySelector('input[name="{{ form.hasReminder.vars.full_name }}"]')?.addEventListener('change', function() {
+        document.getElementById('reminderField').style.display = this.checked ? 'block' : 'none';
+    });
+</script>
+
         </div>
     </div>
 
@@ -51,9 +67,3 @@
         </button>
     </div>
 {{ form_end(form) }}
-
-<script>
-    document.querySelector('input[name="{{ form.hasReminder.vars.full_name }}"]')?.addEventListener('change', function() {
-        document.getElementById('reminderField').style.display = this.checked ? 'block' : 'none';
-    });
-</script>

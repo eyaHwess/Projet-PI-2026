@@ -577,12 +577,19 @@ async function addComment(postId) {
                 }
             }
         } else {
-            const error = await response.json();
-            // Check if it's a moderation error
-            if (error.error && error.moderation) {
-                showModerationWarning(error.error);
-            } else {
-                alert(error.error || 'Failed to add comment');
+            try {
+                const errData = await response.json();
+                if (errData.error) {
+                    if (typeof showModerationWarning === 'function') {
+                        showModerationWarning(errData.error);
+                    } else {
+                        alert(errData.error);
+                    }
+                } else {
+                    alert('Failed to add comment. Please try again.');
+                }
+            } catch(e) {
+                alert('Failed to add comment. Please try again.');
             }
         }
     } catch (error) {
@@ -701,12 +708,14 @@ async function savePost(postId) {
             // Reload the page to show updated content
             window.location.reload();
         } else {
-            const error = await response.json();
-            // Check if it's a moderation error
-            if (error.error && error.moderation) {
-                showModerationWarning(error.error);
+            let errData = {};
+            try { errData = await response.json(); } catch(e) {}
+            const msg = errData.error || errData.message || 'Failed to update post. Please try again.';
+            // Show moderation modal for any error (moderation or otherwise)
+            if (typeof showModerationWarning === 'function' && errData.error) {
+                showModerationWarning(msg);
             } else {
-                alert(error.error || 'Failed to update post. Please try again.');
+                alert(msg);
             }
         }
     } catch (error) {
@@ -842,12 +851,13 @@ async function saveComment(commentId, postId) {
             // Reload page to show updated comment
             window.location.reload();
         } else {
-            const error = await response.json();
-            // Check if it's a moderation error
-            if (error.error && error.moderation) {
-                showModerationWarning(error.error);
+            let errData = {};
+            try { errData = await response.json(); } catch(e) {}
+            const msg = errData.error || errData.message || 'Failed to update comment. Please try again.';
+            if (typeof showModerationWarning === 'function' && errData.error) {
+                showModerationWarning(msg);
             } else {
-                alert(error.error || 'Failed to update comment. Please try again.');
+                alert(msg);
             }
         }
     } catch (error) {
@@ -1118,7 +1128,20 @@ async function submitReply(parentCommentId, postId) {
                 commentCountElement.textContent = currentCount + 1;
             }
         } else {
-            alert('Failed to add reply. Please try again.');
+            try {
+                const errData = await response.json();
+                if (errData.error) {
+                    if (typeof showModerationWarning === 'function') {
+                        showModerationWarning(errData.error);
+                    } else {
+                        alert(errData.error);
+                    }
+                } else {
+                    alert('Failed to add reply. Please try again.');
+                }
+            } catch(e) {
+                alert('Failed to add reply. Please try again.');
+            }
         }
     } catch (error) {
         console.error('Error adding reply:', error);

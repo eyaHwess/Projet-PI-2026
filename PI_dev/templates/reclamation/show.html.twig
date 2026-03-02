@@ -1,0 +1,136 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails de la Réclamation{% endblock %}
+
+{% block body %}
+<div class="max-w-5xl mx-auto px-4 py-8">
+    <div class="bg-gradient-to-br from-pink-50 to-purple-50 rounded-2xl shadow-lg border border-purple-100 p-8">
+        <div class="flex items-center justify-between mb-8">
+            <h1 class="text-3xl font-bold bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent flex items-center gap-3">
+                <div class="w-12 h-12 bg-gradient-to-r from-pink-300 to-purple-300 rounded-full flex items-center justify-center">
+                    <i class="bi bi-chat-dots text-white text-xl"></i>
+                </div>
+                Détails de la Réclamation
+            </h1>
+            <a href="{{ path('reclamation_index') }}" class="text-gray-600 hover:text-gray-800 flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-white hover:shadow-md transition-all duration-300">
+                <i class="bi bi-arrow-left"></i>
+                Retour à mes réclamations
+            </a>
+        </div>
+
+        {# Reclamation Details #}
+        <div class="bg-white border-2 border-purple-100 rounded-2xl p-8 mb-8 shadow-sm">
+            <div class="flex items-center gap-4 mb-6">
+                <span class="px-4 py-2 text-sm font-semibold rounded-full
+                    {% if reclamation.status.name == 'PENDING' %}
+                        bg-gradient-to-r from-yellow-200 to-orange-200 text-orange-800
+                    {% elseif reclamation.status.name == 'ANSWERED' %}
+                        bg-gradient-to-r from-green-200 to-emerald-200 text-emerald-800
+                    {% else %}
+                        bg-gradient-to-r from-gray-200 to-slate-200 text-slate-800
+                    {% endif %}">
+                    {{ reclamation.status.value }}
+                </span>
+                <span class="px-3 py-1 text-sm bg-gradient-to-r from-blue-200 to-indigo-200 text-indigo-800 rounded-full font-medium">
+                    {{ reclamation.type.value }}
+                </span>
+                <span class="text-sm text-gray-500 ml-auto flex items-center gap-2">
+                    <i class="bi bi-calendar3 text-purple-400"></i>
+                    {{ reclamation.createdAt|date('d/m/Y à H:i') }}
+                </span>
+            </div>
+            
+            <div class="grid grid-cols-1 {% if reclamation.photoPath %}lg:grid-cols-3{% endif %} gap-6">
+                <div class="{% if reclamation.photoPath %}lg:col-span-2{% endif %}">
+                    <div class="prose max-w-none">
+                        <p class="text-gray-700 leading-relaxed text-lg">{{ reclamation.content }}</p>
+                    </div>
+                </div>
+                
+                {% if reclamation.photoPath %}
+                    <div class="lg:col-span-1">
+                        <div class="bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl p-4">
+                            <h4 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                <i class="bi bi-image text-purple-500"></i>
+                                Photo jointe
+                            </h4>
+                            <img src="{{ asset(reclamation.photoPath) }}" 
+                                 alt="Photo de la réclamation" 
+                                 class="w-full h-48 object-cover rounded-lg border-2 border-white shadow-md cursor-pointer hover:shadow-lg transition-shadow"
+                                 onclick="openImageModal('{{ asset(reclamation.photoPath) }}')">
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {# Responses Section #}
+        <div>
+            <h2 class="text-2xl font-semibold bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent mb-6 flex items-center gap-3">
+                <div class="w-8 h-8 bg-gradient-to-r from-pink-300 to-purple-300 rounded-full flex items-center justify-center">
+                    <i class="bi bi-chat-left-text text-white text-sm"></i>
+                </div>
+                Réponses de l'équipe support
+            </h2>
+
+            {% if reclamation.responses|length > 0 %}
+                <div class="space-y-6">
+                    {% for response in reclamation.responses %}
+                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-400 p-6 rounded-r-2xl shadow-sm">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-10 h-10 bg-gradient-to-r from-blue-400 to-indigo-400 rounded-full flex items-center justify-center">
+                                    <i class="bi bi-person-badge text-white"></i>
+                                </div>
+                                <div>
+                                    <span class="font-semibold text-blue-800">Équipe Support</span>
+                                    <span class="text-sm text-blue-600 ml-4 flex items-center gap-1">
+                                        <i class="bi bi-clock"></i>
+                                        {{ response.createdAt|date('d/m/Y à H:i') }}
+                                    </span>
+                                </div>
+                            </div>
+                            <p class="text-gray-700 leading-relaxed pl-13">{{ response.content }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-12 bg-white rounded-2xl border-2 border-dashed border-purple-200">
+                    <div class="w-16 h-16 bg-gradient-to-r from-purple-200 to-pink-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="bi bi-hourglass-split text-purple-400 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-600 mb-2">En attente de réponse</h3>
+                    <p class="text-gray-500">Notre équipe examine votre réclamation et vous répondra bientôt.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{# Image Modal #}
+<div id="imageModal" class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden flex items-center justify-center p-4">
+    <div class="relative max-w-4xl max-h-full">
+        <img id="modalImage" src="" alt="Photo agrandie" class="max-w-full max-h-full rounded-lg">
+        <button onclick="closeImageModal()" class="absolute top-4 right-4 bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-full w-10 h-10 flex items-center justify-center transition-all">
+            <i class="bi bi-x-lg"></i>
+        </button>
+    </div>
+</div>
+
+<script>
+function openImageModal(imageSrc) {
+    document.getElementById('modalImage').src = imageSrc;
+    document.getElementById('imageModal').classList.remove('hidden');
+}
+
+function closeImageModal() {
+    document.getElementById('imageModal').classList.add('hidden');
+}
+
+// Close modal when clicking outside the image
+document.getElementById('imageModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeImageModal();
+    }
+});
+</script>
+{% endblock %}

@@ -17,7 +17,7 @@ class PostService
     ) {}
 
     
-    public function createPost(string $title, string $content, User $user, string $status = null, array $images = [], ?\DateTimeImmutable $scheduledAt = null): Post
+    public function createPost(string $title, string $content, User $user, ?string $status = null, array $images = [], ?\DateTimeImmutable $scheduledAt = null): Post
     {
         $post = new Post();
         $post->setTitle($title);
@@ -48,7 +48,7 @@ class PostService
         return $post;
     }
 
-    public function editPost(int $postId, string $title, string $content, User $user, string $status = null): Post
+    public function editPost(int $postId, string $title, string $content, User $user, ?string $status = null): Post
     {
         $post = $this->postRepository->find($postId);
 

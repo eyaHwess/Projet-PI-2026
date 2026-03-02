@@ -103,37 +103,31 @@
 
                         <!-- Notification dropdown START -->
                         {% embed 'admin/components/notification/notification_dropdown.html.twig' with {
-                            notifications_count: 2
+                            notifications_count: adminPendingReclamations
                         } %}
 
                             {% block notifications %}
 
-                                {% include 'admin/components/notification/notification_item.html.twig' with {
-                                    avatar: asset('adminDashboard/assets/images/avatar/08.jpg'),
-                                    name: 'Joan Wallace',
-                                    message: 'Congratulate <b>Joan Wallace</b> for graduating from <b>Microverse university</b>',
-                                    actionText: 'Say congrats'
-                                } %}
-
-                                {% include 'admin/components/notification/notification_item.html.twig' with {
-                                    avatar: asset('adminDashboard/assets/images/avatar/02.jpg'),
-                                    title: 'Larry Lawson added a new course',
-                                    message: "What's new! Find out about new features",
-                                    actionText: 'View detail'
-                                } %}
-
-                                {% include 'admin/components/notification/notification_item.html.twig' with {
-                                    avatar: asset('adminDashboard/assets/images/avatar/05.jpg'),
-                                    title: 'New request to apply for Instructor',
-                                    actionText: 'View detail'
-                                } %}
-
-                                {% include 'admin/components/notification/notification_item.html.twig' with {
-                                    avatar: asset('adminDashboard/assets/images/avatar/03.jpg'),
-                                    title: 'Update v2.3 completed successfully',
-                                    message: "What's new! Find out about new features",
-                                    time: '5 min ago'
-                                } %}
+                                {% if adminRecentReclamations is empty %}
+                                    <li>
+                                        <div class="list-group-item-action border-0 border-bottom d-flex p-3 text-muted">
+                                            <i class="bi bi-bell-slash me-2 mt-1"></i>
+                                            Aucune réclamation pour le moment.
+                                        </div>
+                                    </li>
+                                {% else %}
+                                    {% for reclamation in adminRecentReclamations %}
+                                        {% include 'admin/components/notification/notification_item.html.twig' with {
+                                            link: path('admin_reclamation_reply', {id: reclamation.id}),
+                                            name: reclamation.user.firstName ~ ' ' ~ reclamation.user.lastName,
+                                            avatar: reclamation.user.photoUrl ? asset(reclamation.user.photoUrl) : null,
+                                            title: 'Réclamation — ' ~ reclamation.type.value,
+                                            message: reclamation.content|slice(0, 60) ~ (reclamation.content|length > 60 ? '…' : ''),
+                                            actionText: reclamation.status.name == 'PENDING' ? '⏳ En attente' : (reclamation.status.name == 'ANSWERED' ? '✅ Répondu' : reclamation.status.value),
+                                            time: reclamation.createdAt|date('d/m/Y H:i')
+                                        } %}
+                                    {% endfor %}
+                                {% endif %}
 
                             {% endblock %}
 
@@ -153,10 +147,16 @@
                             data-bs-display="static"
                             data-bs-toggle="dropdown"
                             aria-expanded="false">
-
-                                <img class="avatar-img rounded-circle"
-                                    src="{{ asset(user_avatar|default('adminDashboard/assets/images/avatar/01.jpg')) }}"
-                                    alt="avatar">
+                                {% if app.user and app.user.photoUrl %}
+                                    <img class="avatar-img rounded-circle"
+                                        src="{{ asset(app.user.photoUrl) }}"
+                                        alt="{{ app.user.firstName }}">
+                                {% else %}
+                                    <div class="avatar-img rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold"
+                                         style="width:36px;height:36px;font-size:1rem;">
+                                        {{ app.user ? app.user.firstName|first|upper : 'A' }}
+                                    </div>
+                                {% endif %}
                             </a>
 
                             <!-- Profile dropdown START -->
@@ -169,18 +169,25 @@
 
                                         <!-- Avatar -->
                                         <div class="avatar me-3 mb-3">
-                                            <img class="avatar-img rounded-circle shadow"
-                                                src="{{ asset(user_avatar|default('adminDashboard/assets/images/avatar/01.jpg')) }}"
-                                                alt="avatar">
+                                            {% if app.user and app.user.photoUrl %}
+                                                <img class="avatar-img rounded-circle shadow"
+                                                    src="{{ asset(app.user.photoUrl) }}"
+                                                    alt="{{ app.user.firstName }}">
+                                            {% else %}
+                                                <div class="avatar-img rounded-circle shadow bg-primary d-flex align-items-center justify-content-center text-white fw-bold"
+                                                     style="width:48px;height:48px;font-size:1.2rem;">
+                                                    {{ app.user ? app.user.firstName|first|upper : 'A' }}
+                                                </div>
+                                            {% endif %}
                                         </div>
 
                                         <!-- User info -->
                                         <div>
-                                            <a class="h6 mt-2 mt-sm-0" href="#">
-                                                {{ app.user.fullName|default('Lori Ferguson') }}
+                                            <a class="h6 mt-2 mt-sm-0" href="{{ path('app_user_profile') }}">
+                                                {{ app.user ? app.user.firstName ~ ' ' ~ app.user.lastName : 'Admin' }}
                                             </a>
-                                            <p class="small m-0">
-                                                {{ app.user.email|default('example@gmail.com') }}
+                                            <p class="small m-0 text-muted">
+                                                {{ app.user ? app.user.email : '' }}
                                             </p>
                                         </div>
 
@@ -191,26 +198,20 @@
 
                                 <!-- Links -->
                                 <li>
-                                    <a class="dropdown-item" href="#">
-                                        <i class="bi bi-person fa-fw me-2"></i> Edit Profile
+                                    <a class="dropdown-item" href="{{ path('app_user_profile') }}">
+                                        <i class="bi bi-person fa-fw me-2"></i> Mon profil
                                     </a>
                                 </li>
 
                                 <li>
-                                    <a class="dropdown-item" href="#">
-                                        <i class="bi bi-gear fa-fw me-2"></i> Account Settings
+                                    <a class="dropdown-item" href="{{ path('app_user_profile') }}">
+                                        <i class="bi bi-gear fa-fw me-2"></i> Paramètres
                                     </a>
                                 </li>
 
                                 <li>
-                                    <a class="dropdown-item" href="#">
-                                        <i class="bi bi-info-circle fa-fw me-2"></i> Help
-                                    </a>
-                                </li>
-
-                                <li>
-                                    <a class="dropdown-item bg-danger-soft-hover" href="#">
-                                        <i class="bi bi-power fa-fw me-2"></i> Sign Out
+                                    <a class="dropdown-item bg-danger-soft-hover" href="{{ path('app_logout') }}">
+                                        <i class="bi bi-power fa-fw me-2"></i> Déconnexion
                                     </a>
                                 </li>
 

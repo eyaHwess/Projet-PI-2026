@@ -115,7 +115,41 @@
         font-size: 22px;
         font-weight: 700;
         color: #333;
-        margin-bottom: 15px;
+        margin-bottom: 8px;
+    }
+
+    .goal-creator {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+    .goal-creator-avatar {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #e0e0e0;
+        flex-shrink: 0;
+    }
+    .goal-creator-initials {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        font-size: 0.7rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .goal-creator-name {
+        font-size: 0.82rem;
+        color: #888;
+        font-weight: 500;
+    }
+    .goal-creator-name::before {
+        content: 'Par ';
+        color: #aaa;
+        font-weight: 400;
     }
 
     .goal-description {
@@ -322,7 +356,7 @@
     <!-- Header -->
     <div class="goals-header">
         <h1 class="goals-title">🎯 Goals</h1>
-        <a href="{{ path('goal_new') }}" class="btn-create">
+        <a href="{{ path('app_goal_new') }}" class="btn-create">
             <i class="fas fa-plus"></i>
             Créer un Goal
         </a>
@@ -353,6 +387,20 @@
             {% for goal in goals %}
                 <div class="goal-card">
                     <h3 class="goal-title">{{ goal.title }}</h3>
+                    {% if goal.user %}
+                    <div class="goal-creator">
+                        {% if goal.user.profilePictureName %}
+                            <img src="{{ asset('uploads/profile_pictures/' ~ goal.user.profilePictureName) }}" alt="avatar" class="goal-creator-avatar">
+                        {% else %}
+                            <div class="goal-creator-avatar goal-creator-initials">
+                                {{ goal.user.firstName ? goal.user.firstName|first|upper : goal.user.email|first|upper }}
+                            </div>
+                        {% endif %}
+                        <span class="goal-creator-name">
+                            {{ goal.user.firstName ? goal.user.firstName ~ ' ' ~ goal.user.lastName : goal.user.email }}
+                        </span>
+                    </div>
+                    {% endif %}
                     <p class="goal-description">{{ goal.description|slice(0, 100) }}{% if goal.description|length > 100 %}...{% endif %}</p>
                     
                     <div class="goal-meta">
@@ -389,12 +437,12 @@
                                         <i class="fas fa-clock"></i> En attente d'approbation
                                     </button>
                                 {% elseif userParticipation.isApproved() %}
-                                    <a href="{{ path('goal_leave', {id: goal.id}) }}" class="btn btn-danger">
+                                    <a href="{{ path('app_goal_leave', {id: goal.id}) }}" class="btn btn-danger">
                                         <i class="fas fa-sign-out-alt"></i> Quitter
                                     </a>
                                 {% endif %}
                             {% else %}
-                                <a href="{{ path('goal_join', {id: goal.id}) }}" class="btn btn-success">
+                                <a href="{{ path('app_goal_join', {id: goal.id}) }}" class="btn btn-success">
                                     <i class="fas fa-user-plus"></i> Rejoindre
                                 </a>
                             {% endif %}
@@ -408,10 +456,6 @@
                             {% elseif userParticipation and userParticipation.isApproved() %}
                                 <a href="{{ path('message_chatroom', {goalId: goal.id}) }}" class="btn btn-primary" style="position: relative;">
                                     <i class="fas fa-comments"></i> Chatroom
-                                    {% set unreadCount = readReceiptRepo.getUnreadCountForUserInChatroom(app.user, goal.chatroom.id) %}
-                                    {% if unreadCount > 0 %}
-                                        <span class="unread-badge">{{ unreadCount }}</span>
-                                    {% endif %}
                                 </a>
                             {% elseif userParticipation and userParticipation.isPending() %}
                                 <button class="btn btn-warning" disabled title="Votre demande est en attente d'approbation">
@@ -424,18 +468,18 @@
                             {% endif %}
                         {% endif %}
 
-                        <a href="{{ path('goal_show', {id: goal.id}) }}" class="btn btn-outline">
+                        <a href="{{ path('app_goal_show', {id: goal.id}) }}" class="btn btn-outline">
                             <i class="fas fa-eye"></i> Détails
                         </a>
 
                         {% if app.user and goal.canUserModifyGoal(app.user) %}
-                            <a href="{{ path('goal_edit', {id: goal.id}) }}" class="btn btn-warning">
+                            <a href="{{ path('app_goal_edit', {id: goal.id}) }}" class="btn btn-warning">
                                 <i class="fas fa-edit"></i> Modifier
                             </a>
                         {% endif %}
 
                         {% if app.user and goal.canUserDeleteGoal(app.user) %}
-                            <form method="post" action="{{ path('goal_delete', {id: goal.id}) }}" style="display: inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce goal ? Cette action est irréversible.');">
+                            <form method="post" action="{{ path('app_goal_delete', {id: goal.id}) }}" style="display: inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce goal ? Cette action est irréversible.');">
                                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ goal.id) }}">
                                 <button type="submit" class="btn btn-danger">
                                     <i class="fas fa-trash"></i> Supprimer
@@ -451,7 +495,7 @@
             <div class="empty-state-icon">🎯</div>
             <h2 class="empty-state-title">Aucun Goal pour le moment</h2>
             <p class="empty-state-text">Créez votre premier goal et commencez votre aventure!</p>
-            <a href="{{ path('goal_new') }}" class="btn-create">
+            <a href="{{ path('app_goal_new') }}" class="btn-create">
                 <i class="fas fa-plus"></i>
                 Créer mon premier Goal
             </a>

@@ -18,25 +18,37 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class FavoriteController extends AbstractController
 {
     #[Route('/favorites', name: 'app_favorites')]
+    #[IsGranted('ROLE_USER')]
     public function index(
         GoalRepository $goalRepository,
         RoutineRepository $routineRepository,
         ActivityRepository $activityRepository
     ): Response {
+        $user = $this->getUser();
+
         $favoriteGoals = $goalRepository->createQueryBuilder('g')
             ->where('g.isFavorite = true')
+            ->andWhere('g.user = :user')
+            ->setParameter('user', $user)
             ->orderBy('g.createdAt', 'DESC')
             ->getQuery()
             ->getResult();
-        
+
         $favoriteRoutines = $routineRepository->createQueryBuilder('r')
+            ->join('r.goal', 'g')
             ->where('r.isFavorite = true')
+            ->andWhere('g.user = :user')
+            ->setParameter('user', $user)
             ->orderBy('r.createdAt', 'DESC')
             ->getQuery()
             ->getResult();
-        
+
         $favoriteActivities = $activityRepository->createQueryBuilder('a')
+            ->join('a.routine', 'r')
+            ->join('r.goal', 'g')
             ->where('a.isFavorite = true')
+            ->andWhere('g.user = :user')
+            ->setParameter('user', $user)
             ->orderBy('a.createdAt', 'DESC')
             ->getQuery()
             ->getResult();

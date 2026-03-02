@@ -29,11 +29,18 @@ class CalendarController extends AbstractController
     #[Route('/events', name: '_events', methods: ['GET'])]
     public function events(): JsonResponse
     {
+        $user = $this->getUser();
+        if (!$user) {
+            return new JsonResponse([]);
+        }
+
         $events = [];
 
-        // Récupérer tous les objectifs avec deadline
+        // Récupérer les objectifs avec deadline de l'utilisateur connecté
         $goals = $this->goalRepository->createQueryBuilder('g')
             ->where('g.deadline IS NOT NULL')
+            ->andWhere('g.user = :user')
+            ->setParameter('user', $user)
             ->getQuery()
             ->getResult();
 
@@ -56,9 +63,12 @@ class CalendarController extends AbstractController
             ];
         }
 
-        // Récupérer toutes les routines avec deadline
+        // Récupérer les routines avec deadline de l'utilisateur connecté (via goal)
         $routines = $this->routineRepository->createQueryBuilder('r')
+            ->join('r.goal', 'g')
             ->where('r.deadline IS NOT NULL')
+            ->andWhere('g.user = :user')
+            ->setParameter('user', $user)
             ->getQuery()
             ->getResult();
 
@@ -83,8 +93,14 @@ class CalendarController extends AbstractController
             ];
         }
 
-        // Récupérer toutes les activités
-        $activities = $this->activityRepository->findAll();
+        // Récupérer les activités de l'utilisateur connecté (via routine → goal)
+        $activities = $this->activityRepository->createQueryBuilder('a')
+            ->join('a.routine', 'r')
+            ->join('r.goal', 'g')
+            ->andWhere('g.user = :user')
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getResult();
 
         foreach ($activities as $activity) {
             // Ajouter l'activité avec son heure de début

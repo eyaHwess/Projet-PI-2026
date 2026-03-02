@@ -1,836 +1,948 @@
 <!doctype html>
-<html lang="en">
-
+<html lang="fr">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Kayouta – Organise ta journée</title>
-    <meta name="description"
-        content="Kayouta est votre espace pour organiser vos journées, créer des routines puissantes et suivre vos objectifs au quotidien.">
-    <meta name="application-name" content="Kayouta">
-    <meta name="author" content="Kayouta">
-    <link rel="manifest" href="{{ asset('images/manifest.json') }}">
-    <meta name="keywords"
-        content="routines, organisation quotidienne, objectifs, coaching, productivité, bien-être">
-    <meta name="creator" content="Kayouta">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="Kayouta">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta property="og:title" content="Kayouta – Organise ta journée et tes routines">
-    <meta property="og:description"
-        content="Kayouta t’aide à structurer ta journée, créer des routines et suivre tes objectifs pour progresser chaque jour.">
-    <meta property="og:image" content="{{ asset('images/opengraph-image.png') }}">
-    <meta property="og:image:width" content="1280">
-    <meta property="og:image:height" content="640">
-    <meta property="og:image:type" content="image/png">
-    <meta property="og:type" content="website">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Kayouta – Organise ta journée et tes routines">
-    <meta name="twitter:description"
-        content="Organise ton quotidien, crée des routines et deviens chaque jour une meilleure version de toi-même avec Kayouta.">
-    <meta name="twitter:image" content="{{ asset('images/opengraph-image.png') }}">
-    <meta name="twitter:image:width" content="1280">
-    <meta name="twitter:image:height" content="640">
-    <meta name="twitter:image:type" content="image/png">
-    <link rel="icon" href="{{ asset('images/favicon.ico') }}" sizes="48x48" type="image/x-icon">
-    <link rel="icon" href="{{ asset('images/icon0.svg') }}" sizes="any" type="image/svg+xml">
-    <link rel="icon" href="{{ asset('images/icon1.png') }}" sizes="96x96" type="image/png">
-    <link rel="apple-touch-icon" href="{{ asset('images/apple-icon.png') }}" sizes="180x180" type="image/png">
-    <link rel="stylesheet" href="{{ asset('styles/home/output.css') }}">
+    <title>Kayouta – Organise ta vie, atteins tes objectifs</title>
+    <meta name="description" content="Kayouta t'aide à créer des routines, fixer des objectifs et te connecter avec un coach personnel. Rejoins des milliers d'utilisateurs qui transforment leur quotidien.">
+    <link rel="icon" href="{{ asset('images/favicon.ico') }}" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Syne:wght@700;800&display=swap" rel="stylesheet">
     <style>
-        /* Navbar: liens et boutons visibles sur fond blanc */
-        nav a:not([style*="background"]) { color: #27272a !important; }
-        nav a:not([style*="background"]):hover { color: #7c3aed !important; }
-        nav button { color: #27272a !important; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --purple:    #7c3aed;
+            --purple-l:  #9f67f7;
+            --purple-d:  #5b21b6;
+            --purple-10: #f5f3ff;
+            --purple-20: #ede9fe;
+            --zinc-900:  #18181b;
+            --zinc-600:  #52525b;
+            --zinc-400:  #a1a1aa;
+            --zinc-200:  #e4e4e7;
+            --white:     #ffffff;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #fff;
+            color: var(--zinc-900);
+            overflow-x: hidden;
+        }
+
+        /* ─── NAVBAR ─── */
+        .navbar {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 5%;
+            height: 68px;
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(124,58,237,.1);
+            transition: background .3s;
+        }
+        .navbar.scrolled { background: rgba(255,255,255,0.97); box-shadow: 0 2px 20px rgba(0,0,0,.07); }
+        .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .nav-logo img { height: 32px; }
+        .nav-links { display: flex; align-items: center; gap: 6px; }
+        .nav-links a {
+            padding: 7px 14px; border-radius: 8px;
+            font-size: .9rem; font-weight: 500; color: var(--zinc-600);
+            text-decoration: none; transition: color .2s, background .2s;
+        }
+        .nav-links a:hover { color: var(--purple); background: var(--purple-10); }
+        .nav-cta {
+            display: flex; gap: 10px; align-items: center;
+        }
+        .btn-ghost {
+            padding: 9px 20px; border-radius: 10px;
+            font-size: .9rem; font-weight: 600; color: var(--zinc-600);
+            background: transparent; border: 1.5px solid var(--zinc-200);
+            cursor: pointer; text-decoration: none; transition: all .2s;
+        }
+        .btn-ghost:hover { border-color: var(--purple-l); color: var(--purple); }
+        .btn-primary {
+            padding: 9px 22px; border-radius: 10px;
+            font-size: .9rem; font-weight: 600; color: #fff;
+            background: var(--purple); border: none;
+            cursor: pointer; text-decoration: none; transition: all .2s;
+            box-shadow: 0 2px 12px rgba(124,58,237,.35);
+        }
+        .btn-primary:hover { background: var(--purple-d); box-shadow: 0 4px 20px rgba(124,58,237,.45); transform: translateY(-1px); }
+        .nav-hamburger { display: none; background: none; border: none; cursor: pointer; padding: 6px; }
+
+        /* ─── HERO ─── */
+        .hero {
+            min-height: 100vh;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center;
+            padding: 120px 5% 80px;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-bg {
+            position: absolute; inset: 0; z-index: 0;
+            background: radial-gradient(ellipse 80% 60% at 50% -10%, #ede9fe 0%, #fff 70%);
+        }
+        .hero-orb {
+            position: absolute; border-radius: 50%; filter: blur(80px); opacity: .35; pointer-events: none;
+        }
+        .hero-orb-1 { width: 500px; height: 500px; background: #7c3aed; top: -150px; left: -100px; }
+        .hero-orb-2 { width: 400px; height: 400px; background: #a855f7; top: 0; right: -100px; }
+        .hero-orb-3 { width: 300px; height: 300px; background: #e879f9; bottom: 0; left: 30%; }
+
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 6px 16px 6px 8px;
+            background: rgba(255,255,255,.8); backdrop-filter: blur(10px);
+            border: 1.5px solid rgba(124,58,237,.2);
+            border-radius: 100px; font-size: .82rem; font-weight: 600;
+            color: var(--purple); margin-bottom: 28px; position: relative; z-index: 1;
+            animation: fadeInUp .6s ease both;
+        }
+        .hero-badge-dot {
+            width: 20px; height: 20px; border-radius: 50%;
+            background: var(--purple); color: #fff;
+            display: flex; align-items: center; justify-content: center; font-size: .7rem;
+        }
+        .hero-title {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(2.4rem, 6vw, 4.8rem);
+            font-weight: 800; line-height: 1.08; letter-spacing: -.03em;
+            max-width: 820px; position: relative; z-index: 1;
+            animation: fadeInUp .7s .1s ease both;
+        }
+        .hero-title .gradient-text {
+            background: linear-gradient(135deg, #7c3aed, #c026d3, #ec4899);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero-sub {
+            font-size: 1.15rem; color: var(--zinc-600); max-width: 560px;
+            line-height: 1.7; margin-top: 20px; position: relative; z-index: 1;
+            animation: fadeInUp .7s .2s ease both;
+        }
+        .hero-actions {
+            display: flex; gap: 14px; margin-top: 36px; position: relative; z-index: 1;
+            animation: fadeInUp .7s .3s ease both; flex-wrap: wrap; justify-content: center;
+        }
+        .btn-hero-primary {
+            padding: 14px 32px; border-radius: 12px;
+            font-size: 1rem; font-weight: 700; color: #fff;
+            background: linear-gradient(135deg, var(--purple), #9333ea);
+            border: none; cursor: pointer; text-decoration: none;
+            box-shadow: 0 8px 30px rgba(124,58,237,.4);
+            transition: all .25s; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-hero-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(124,58,237,.5); }
+        .btn-hero-secondary {
+            padding: 14px 28px; border-radius: 12px;
+            font-size: 1rem; font-weight: 600; color: var(--zinc-600);
+            background: rgba(255,255,255,.9); border: 1.5px solid var(--zinc-200);
+            cursor: pointer; text-decoration: none; transition: all .25s;
+            display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-hero-secondary:hover { border-color: var(--purple-l); color: var(--purple); background: var(--purple-10); }
+        .hero-social-proof {
+            display: flex; align-items: center; gap: 12px; margin-top: 40px;
+            position: relative; z-index: 1; animation: fadeInUp .7s .4s ease both;
+        }
+        .hero-avatars { display: flex; }
+        .hero-avatars span {
+            width: 34px; height: 34px; border-radius: 50%;
+            border: 2px solid #fff; margin-left: -10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .7rem; font-weight: 700; color: #fff;
+        }
+        .hero-avatars span:first-child { margin-left: 0; }
+        .hero-social-text { font-size: .87rem; color: var(--zinc-600); }
+        .hero-social-text strong { color: var(--zinc-900); }
+        .hero-stars { color: #f59e0b; letter-spacing: -2px; font-size: .9rem; }
+
+        /* ─── FLOATING CARD (hero preview) ─── */
+        .hero-preview {
+            margin-top: 60px; position: relative; z-index: 1;
+            width: 100%; max-width: 860px;
+            animation: fadeInUp .8s .5s ease both;
+        }
+        .hero-preview-card {
+            background: rgba(255,255,255,.9); backdrop-filter: blur(20px);
+            border: 1px solid rgba(124,58,237,.15);
+            border-radius: 20px; padding: 24px;
+            box-shadow: 0 25px 80px rgba(124,58,237,.12), 0 2px 0 rgba(255,255,255,.8) inset;
+        }
+        .preview-header {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 20px;
+        }
+        .preview-dot { width: 12px; height: 12px; border-radius: 50%; }
+        .preview-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+        .preview-stat {
+            background: var(--purple-10); border-radius: 12px; padding: 16px;
+            display: flex; flex-direction: column; gap: 6px;
+        }
+        .preview-stat-num { font-size: 1.6rem; font-weight: 800; color: var(--purple); font-family: 'Syne', sans-serif; }
+        .preview-stat-label { font-size: .78rem; color: var(--zinc-600); font-weight: 500; }
+        .preview-progress {
+            margin-top: 16px; background: var(--purple-20); border-radius: 12px; padding: 16px;
+        }
+        .preview-progress-label { display: flex; justify-content: space-between; font-size: .82rem; font-weight: 600; margin-bottom: 10px; }
+        .progress-bar-wrap { background: var(--zinc-200); border-radius: 100px; height: 8px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; border-radius: 100px; background: linear-gradient(90deg, var(--purple), #c026d3); }
+
+        /* ─── STATS STRIP ─── */
+        .stats-strip {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            border-top: 1px solid var(--zinc-200); border-bottom: 1px solid var(--zinc-200);
+            padding: 40px 5%;
+        }
+        .stat-item {
+            text-align: center; padding: 20px;
+            border-right: 1px solid var(--zinc-200);
+        }
+        .stat-item:last-child { border-right: none; }
+        .stat-num { font-family: 'Syne', sans-serif; font-size: 2.8rem; font-weight: 800; color: var(--purple); }
+        .stat-label { font-size: .9rem; color: var(--zinc-600); margin-top: 6px; line-height: 1.4; }
+
+        /* ─── SECTION HEADER ─── */
+        .section-tag {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 5px 14px; border-radius: 100px;
+            background: var(--purple-20); color: var(--purple);
+            font-size: .8rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+        .section-title {
+            font-family: 'Syne', sans-serif; font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 800; letter-spacing: -.02em; line-height: 1.15;
+        }
+        .section-sub { font-size: 1rem; color: var(--zinc-600); line-height: 1.7; max-width: 480px; margin-top: 12px; }
+
+        /* ─── FEATURES ─── */
+        .features-section { padding: 100px 5%; }
+        .features-inner { max-width: 1200px; margin: 0 auto; }
+        .features-header { text-align: center; margin-bottom: 64px; }
+        .features-header .section-sub { margin: 12px auto 0; }
+        .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .feature-card {
+            background: #fff; border: 1.5px solid var(--zinc-200);
+            border-radius: 20px; padding: 28px;
+            transition: all .3s; position: relative; overflow: hidden;
+        }
+        .feature-card::before {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(135deg, var(--purple-10), transparent);
+            opacity: 0; transition: opacity .3s;
+        }
+        .feature-card:hover { border-color: rgba(124,58,237,.3); transform: translateY(-4px); box-shadow: 0 16px 48px rgba(124,58,237,.12); }
+        .feature-card:hover::before { opacity: 1; }
+        .feature-card.featured {
+            background: linear-gradient(135deg, #7c3aed, #9333ea);
+            border-color: transparent; color: #fff;
+        }
+        .feature-card.featured .feature-label { color: rgba(255,255,255,.7); }
+        .feature-card.featured .feature-desc { color: rgba(255,255,255,.8); }
+        .feature-icon {
+            width: 48px; height: 48px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; margin-bottom: 18px; position: relative; z-index: 1;
+        }
+        .feature-label { font-size: .8rem; font-weight: 700; color: var(--purple); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; position: relative; z-index: 1; }
+        .feature-title { font-family: 'Syne', sans-serif; font-size: 1.15rem; font-weight: 700; margin-bottom: 10px; position: relative; z-index: 1; }
+        .feature-desc { font-size: .9rem; color: var(--zinc-600); line-height: 1.6; position: relative; z-index: 1; }
+        .feature-card.featured .feature-label { color: rgba(255,255,255,.7); }
+
+        /* ─── HOW IT WORKS ─── */
+        .how-section { padding: 100px 5%; background: var(--purple-10); }
+        .how-inner { max-width: 1100px; margin: 0 auto; }
+        .how-header { text-align: center; margin-bottom: 64px; }
+        .how-header .section-sub { margin: 12px auto 0; }
+        .how-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; position: relative; }
+        .how-steps::before {
+            content: ''; position: absolute; top: 40px; left: 10%; right: 10%; height: 2px;
+            background: linear-gradient(90deg, var(--purple), #c026d3);
+            z-index: 0;
+        }
+        .how-step { text-align: center; padding: 0 20px; position: relative; z-index: 1; }
+        .step-num {
+            width: 80px; height: 80px; border-radius: 50%;
+            background: #fff; border: 3px solid var(--purple);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 800; color: var(--purple);
+            margin: 0 auto 20px; box-shadow: 0 4px 20px rgba(124,58,237,.2);
+        }
+        .step-title { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+        .step-desc { font-size: .87rem; color: var(--zinc-600); line-height: 1.6; }
+
+        /* ─── TEAM ─── */
+        .team-section { padding: 100px 5%; }
+        .team-inner { max-width: 1200px; margin: 0 auto; }
+        .team-header { text-align: center; margin-bottom: 64px; }
+        .team-header .section-sub { margin: 12px auto 0; }
+        .team-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 28px; }
+        .team-card {
+            width: 210px; text-align: center;
+            background: #fff; border: 1.5px solid var(--zinc-200);
+            border-radius: 20px; padding: 28px 20px 22px;
+            transition: all .3s;
+        }
+        .team-card:hover { border-color: rgba(124,58,237,.3); transform: translateY(-6px); box-shadow: 0 16px 40px rgba(124,58,237,.12); }
+        .team-avatar-circle {
+            width: 80px; height: 80px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 800; color: #fff;
+            margin: 0 auto 16px;
+            box-shadow: 0 4px 16px rgba(0,0,0,.12);
+        }
+        .team-name { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 4px; }
+        .team-role { font-size: .8rem; color: var(--zinc-400); font-weight: 500; }
+        .team-badge {
+            display: inline-block; margin-top: 10px;
+            padding: 3px 10px; border-radius: 100px;
+            font-size: .72rem; font-weight: 600; color: var(--purple); background: var(--purple-20);
+        }
+
+        /* ─── TESTIMONIALS ─── */
+        .testimonials-section { padding: 100px 5%; background: linear-gradient(180deg, #fff 0%, var(--purple-10) 100%); }
+        .testimonials-inner { max-width: 1100px; margin: 0 auto; }
+        .testimonials-header { text-align: center; margin-bottom: 64px; }
+        .testimonials-header .section-sub { margin: 12px auto 0; }
+        .testimonials-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; align-items: start; }
+        .testimonial-card {
+            background: #fff; border: 1.5px solid var(--zinc-200);
+            border-radius: 20px; padding: 28px;
+            transition: all .3s;
+        }
+        .testimonial-card:hover { border-color: rgba(124,58,237,.2); box-shadow: 0 12px 40px rgba(124,58,237,.1); }
+        .testimonial-card.featured {
+            background: linear-gradient(135deg, #7c3aed, #9333ea);
+            border: none; transform: scale(1.03);
+            box-shadow: 0 20px 60px rgba(124,58,237,.35);
+        }
+        .stars { color: #f59e0b; font-size: 1rem; letter-spacing: -1px; margin-bottom: 16px; }
+        .testimonial-card.featured .stars { color: #fde68a; }
+        .testimonial-text { font-size: .93rem; line-height: 1.7; color: var(--zinc-600); }
+        .testimonial-card.featured .testimonial-text { color: rgba(255,255,255,.9); }
+        .testimonial-author { display: flex; align-items: center; gap: 12px; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--zinc-200); }
+        .testimonial-card.featured .testimonial-author { border-top-color: rgba(255,255,255,.2); }
+        .author-avatar {
+            width: 40px; height: 40px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .8rem; font-weight: 700; color: var(--purple); background: var(--purple-20);
+            flex-shrink: 0;
+        }
+        .testimonial-card.featured .author-avatar { color: #7c3aed; background: #fff; }
+        .author-name { font-weight: 700; font-size: .9rem; }
+        .testimonial-card.featured .author-name { color: #fff; }
+        .author-role { font-size: .78rem; color: var(--zinc-400); }
+        .testimonial-card.featured .author-role { color: rgba(255,255,255,.6); }
+
+        /* ─── FAQ ─── */
+        .faq-section { padding: 100px 5%; }
+        .faq-inner { max-width: 760px; margin: 0 auto; }
+        .faq-header { text-align: center; margin-bottom: 48px; }
+        .faq-header .section-sub { margin: 12px auto 0; }
+        .faq-item {
+            border: 1.5px solid var(--zinc-200); border-radius: 14px;
+            margin-bottom: 12px; overflow: hidden; transition: border-color .2s;
+        }
+        .faq-item:hover { border-color: rgba(124,58,237,.3); }
+        .faq-item[open] { border-color: rgba(124,58,237,.4); }
+        .faq-summary {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 18px 22px; cursor: pointer; list-style: none;
+            font-weight: 600; font-size: .95rem;
+            user-select: none;
+        }
+        .faq-summary::-webkit-details-marker { display: none; }
+        .faq-icon {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: var(--purple-20); color: var(--purple);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; flex-shrink: 0; transition: transform .3s, background .2s;
+        }
+        .faq-item[open] .faq-icon { transform: rotate(45deg); background: var(--purple); color: #fff; }
+        .faq-body { padding: 0 22px 18px; font-size: .9rem; color: var(--zinc-600); line-height: 1.7; }
+
+        /* ─── CTA BANNER ─── */
+        .cta-section { padding: 40px 5% 80px; }
+        .cta-card {
+            max-width: 1100px; margin: 0 auto;
+            background: linear-gradient(135deg, #7c3aed 0%, #9333ea 50%, #c026d3 100%);
+            border-radius: 28px; padding: 64px 60px;
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 40px; position: relative; overflow: hidden;
+            box-shadow: 0 30px 80px rgba(124,58,237,.3);
+        }
+        .cta-card::before {
+            content: ''; position: absolute; inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        .cta-text { position: relative; z-index: 1; }
+        .cta-title { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; color: #fff; margin-bottom: 12px; line-height: 1.2; }
+        .cta-sub { font-size: 1rem; color: rgba(255,255,255,.8); line-height: 1.6; max-width: 400px; }
+        .cta-actions { display: flex; gap: 14px; flex-shrink: 0; position: relative; z-index: 1; flex-wrap: wrap; justify-content: flex-end; }
+        .btn-cta-white {
+            padding: 14px 28px; border-radius: 12px; font-size: .95rem; font-weight: 700;
+            color: var(--purple); background: #fff; border: none; cursor: pointer;
+            text-decoration: none; transition: all .2s; white-space: nowrap;
+        }
+        .btn-cta-white:hover { background: var(--purple-10); transform: translateY(-2px); }
+        .btn-cta-outline {
+            padding: 14px 28px; border-radius: 12px; font-size: .95rem; font-weight: 600;
+            color: #fff; background: rgba(255,255,255,.15); border: 1.5px solid rgba(255,255,255,.4);
+            cursor: pointer; text-decoration: none; transition: all .2s; white-space: nowrap;
+        }
+        .btn-cta-outline:hover { background: rgba(255,255,255,.25); }
+
+        /* ─── FOOTER ─── */
+        .footer { padding: 60px 5% 40px; border-top: 1px solid var(--zinc-200); }
+        .footer-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; }
+        .footer-brand-logo { height: 30px; margin-bottom: 14px; }
+        .footer-brand-desc { font-size: .88rem; color: var(--zinc-600); line-height: 1.7; max-width: 260px; }
+        .footer-col-title { font-weight: 700; font-size: .88rem; text-transform: uppercase; letter-spacing: .07em; color: var(--zinc-900); margin-bottom: 16px; }
+        .footer-links { display: flex; flex-direction: column; gap: 10px; }
+        .footer-links a { font-size: .9rem; color: var(--zinc-600); text-decoration: none; transition: color .2s; }
+        .footer-links a:hover { color: var(--purple); }
+        .footer-links span { font-size: .9rem; color: var(--zinc-600); }
+        .footer-bottom { max-width: 1100px; margin: 48px auto 0; padding-top: 24px; border-top: 1px solid var(--zinc-200); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+        .footer-copy { font-size: .83rem; color: var(--zinc-400); }
+        .footer-badge { display: inline-flex; align-items: center; gap: 6px; font-size: .8rem; color: var(--zinc-400); }
+
+        /* ─── ANIMATIONS ─── */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .reveal { opacity: 0; transform: translateY(30px); transition: opacity .7s ease, transform .7s ease; }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+
+        /* ─── MOBILE MENU ─── */
+        .mobile-overlay { display: none; position: fixed; inset: 0; z-index: 200; }
+        .mobile-menu {
+            position: fixed; top: 0; right: -320px; bottom: 0; width: 300px; z-index: 201;
+            background: #fff; padding: 24px; box-shadow: -20px 0 60px rgba(0,0,0,.15);
+            transition: right .3s ease; display: flex; flex-direction: column; gap: 8px;
+        }
+        .mobile-menu.open { right: 0; }
+        .mobile-overlay.open { display: block; background: rgba(0,0,0,.3); }
+        .mobile-menu-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .mobile-menu a { padding: 12px 16px; border-radius: 10px; font-weight: 500; font-size: .95rem; color: var(--zinc-600); text-decoration: none; transition: all .2s; display: block; }
+        .mobile-menu a:hover { background: var(--purple-10); color: var(--purple); }
+        .mobile-menu-ctas { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--zinc-200); }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 960px) {
+            .nav-links { display: none; }
+            .nav-cta { display: none; }
+            .nav-hamburger { display: flex; }
+            .features-grid { grid-template-columns: repeat(2, 1fr); }
+            .how-steps { grid-template-columns: repeat(2, 1fr); gap: 32px; }
+            .how-steps::before { display: none; }
+            .testimonials-grid { grid-template-columns: 1fr; }
+            .testimonial-card.featured { transform: none; }
+            .cta-card { flex-direction: column; padding: 40px 32px; text-align: center; }
+            .cta-actions { justify-content: center; }
+            .footer-inner { grid-template-columns: 1fr 1fr; }
+            .stats-strip { grid-template-columns: 1fr; }
+            .stat-item { border-right: none; border-bottom: 1px solid var(--zinc-200); }
+            .stat-item:last-child { border-bottom: none; }
+        }
+        @media (max-width: 640px) {
+            .features-grid { grid-template-columns: 1fr; }
+            .how-steps { grid-template-columns: 1fr; }
+            .hero-preview-card .preview-grid { grid-template-columns: 1fr 1fr; }
+            .footer-inner { grid-template-columns: 1fr; }
+            .team-grid { gap: 16px; }
+            .team-card { width: 160px; padding: 20px 14px 16px; }
+        }
     </style>
 </head>
-
 <body>
 
-    <div class="invisible" style="translate: none; rotate: none; scale: none; visibility: visible; opacity: 1; transform: translate(0px, 0px);">
-        <nav class="fixed w-full top-0 z-50 px-4 md:px-16 lg:px-24 xl:px-32 py-4 border-b transition-all duration-300 border-neutral-300">
-            <div class="max-w-7xl mx-auto flex items-center justify-between">
-                <a href="{{ path('app_home') }}">
-                    <img alt="Logo Kayouta" width="135" height="36" src="{{ asset('images/logo.svg') }}">
-                </a>
-                <div class="hidden md:flex gap-3 items-center">
-                    {% if app.user %}
-                        <a href="{{ path('app_home') }}" class="py-1 px-3 text-zinc-800 hover:text-purple-600">Accueil</a>
-                        {% if is_granted('ROLE_USER') and not is_granted('ROLE_COACH') %}
-                            <a href="{{ path('goal_list') }}" class="py-1 px-3 text-zinc-800 hover:text-purple-600">Mes objectifs</a>
-                        {% elseif is_granted('ROLE_COACH') %}
-                            <a href="{{ path('app_coach_index') }}" class="py-1 px-3 text-zinc-800 hover:text-purple-600">Mes coachings</a>
-                        {% endif %}
-                        <a href="#features" class="py-1 px-3 text-zinc-800 hover:text-purple-600">Fonctionnalités</a>
-                        <a href="#testimonials" class="py-1 px-3 text-zinc-800 hover:text-purple-600">Motivation</a>
-                    {% else %}
-                        <a href="{{ path('app_home') }}" class="py-1 px-3 text-zinc-800 hover:text-purple-600">Accueil</a>
-                        <a href="#features" class="py-1 px-3 text-zinc-800 hover:text-purple-600">Fonctionnalités</a>
-                        <a href="#testimonials" class="py-1 px-3 text-zinc-800 hover:text-purple-600">Motivation</a>
-                    {% endif %}
-                </div>
-                <button id="openMenu" class="md:hidden p-2 text-zinc-800 hover:text-purple-600" aria-label="Menu">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu size-6.5" aria-hidden="true">
-                        <path d="M4 5h16"></path>
-                        <path d="M4 12h16"></path>
-                        <path d="M4 19h16"></path>
-                    </svg>
-                </button>
-                {% if app.user %}
-                    {% if is_granted('ROLE_USER') and not is_granted('ROLE_COACH') %}
-                        <a href="{{ path('goal_list') }}" class="hidden md:inline-block py-2.5 px-6 rounded-full font-medium text-white hover:opacity-90" style="background-color: #7c3aed;">
-                            Mes objectifs
-                        </a>
-                    {% elseif is_granted('ROLE_COACH') %}
-                        <a href="{{ path('app_coach_index') }}" class="hidden md:inline-block py-2.5 px-6 rounded-full font-medium text-white hover:opacity-90" style="background-color: #7c3aed;">
-                            Voir les coaches
-                        </a>
-                    {% endif %}
-                {% else %}
-                    <a href="{{ path('app_register') }}" class="hidden md:inline-block py-2.5 px-6 rounded-full font-medium text-white hover:opacity-90" style="background-color: #7c3aed;">
-                        Commencer
-                    </a>
-                {% endif %}
-            </div>
-        </nav>
+<!-- ─── NAVBAR ─── -->
+<nav class="navbar" id="navbar">
+    <a href="{{ path('app_home') }}" class="nav-logo">
+        <img src="{{ asset('images/dayflow_logo.png') }}" alt="DayFlow">
+        <span style="font-weight:800;font-size:1.1rem;color:#18181b;letter-spacing:-.02em;">DayFlow</span>
+    </a>
+    <div class="nav-links">
+        <a href="#features">Fonctionnalités</a>
+        <a href="#how">Comment ça marche</a>
+        <a href="#team">Équipe</a>
+        <a href="#testimonials">Avis</a>
+        <a href="#faq">FAQ</a>
     </div>
-    <div id="mobileMenu" class="fixed top-0 right-0 z-50 w-full bg-white shadow-xl shadow-black/5 transition-all duration-300 ease-in-out h-0 overflow-hidden">
-        <div class="flex items-center justify-between p-4">
-            <img alt="Logo Kayouta" width="135" height="36" src="{{ asset('images/logo.svg') }}">
-            <svg id="closeMenu" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x size-6.5" aria-hidden="true">
-                <path d="M18 6 6 18"></path>
-                <path d="m6 6 12 12"></path>
-            </svg>
-        </div>
-        <div class="flex flex-col gap-4 p-4 text-base">
-            <a href="{{ path('app_home') }}" class="py-1 px-3 text-zinc-800">Accueil</a>
-            {% if app.user %}
-                {% if is_granted('ROLE_USER') and not is_granted('ROLE_COACH') %}
-                    <a href="{{ path('goal_list') }}" class="py-1 px-3 text-zinc-800">Mes objectifs</a>
-                {% elseif is_granted('ROLE_COACH') %}
-                    <a href="{{ path('app_coach_index') }}" class="py-1 px-3 text-zinc-800">Mes coachings</a>
-                {% endif %}
-            {% endif %}
-            <a href="#features" class="py-1 px-3 text-zinc-800">Fonctionnalités</a>
-            <a href="#testimonials" class="py-1 px-3 text-zinc-800">Motivation</a>
-            {% if app.user %}
-                {% if is_granted('ROLE_USER') and not is_granted('ROLE_COACH') %}
-                    <a href="{{ path('goal_list') }}" class="py-2.5 px-6 w-max text-sm font-medium text-white rounded-full hover:opacity-90" style="background-color: #7c3aed;">
-                        Mes objectifs
-                    </a>
-                {% elseif is_granted('ROLE_COACH') %}
-                    <a href="{{ path('app_coach_index') }}" class="py-2.5 px-6 w-max text-sm font-medium text-white rounded-full hover:opacity-90" style="background-color: #7c3aed;">
-                        Voir les coaches
-                    </a>
-                {% endif %}
-            {% else %}
-                <a href="{{ path('app_register') }}" class="py-2.5 px-6 w-max text-sm font-medium text-white rounded-full hover:opacity-90" style="background-color: #7c3aed;">
-                    Commencer
-                </a>
-            {% endif %}
-        </div>
+    <div class="nav-cta">
+        <a href="{{ path('app_login') }}" class="btn-ghost">Connexion</a>
+        <a href="{{ path('app_register') }}" class="btn-primary">Commencer gratuitement</a>
+    </div>
+    <button class="nav-hamburger" id="hamburger" aria-label="Menu">
+        <svg width="22" height="22" fill="none" stroke="#52525b" stroke-width="2" stroke-linecap="round">
+            <line x1="3" y1="6" x2="19" y2="6"/><line x1="3" y1="11" x2="19" y2="11"/><line x1="3" y1="16" x2="19" y2="16"/>
+        </svg>
+    </button>
+</nav>
+
+<!-- Mobile menu -->
+<div class="mobile-overlay" id="mobileOverlay"></div>
+<div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-menu-header">
+        <img src="{{ asset('images/dayflow_logo.png') }}" alt="DayFlow" style="height:28px">
+        <span style="font-weight:800;font-size:1rem;color:#18181b;letter-spacing:-.02em;">DayFlow</span>
+        <button id="closeMenu" style="background:none;border:none;cursor:pointer;font-size:1.5rem;color:#52525b;">✕</button>
+    </div>
+    <a href="#features">Fonctionnalités</a>
+    <a href="#how">Comment ça marche</a>
+    <a href="#team">Équipe</a>
+    <a href="#testimonials">Avis utilisateurs</a>
+    <a href="#faq">FAQ</a>
+    <div class="mobile-menu-ctas">
+        <a href="{{ path('app_login') }}" class="btn-ghost" style="text-align:center;">Connexion</a>
+        <a href="{{ path('app_register') }}" class="btn-primary" style="text-align:center;">Commencer gratuitement</a>
+    </div>
+</div>
+
+<!-- ─── HERO ─── -->
+<section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+    <div class="hero-orb hero-orb-3"></div>
+
+    <div class="hero-badge">
+        <span class="hero-badge-dot">✨</span>
+        Nouveau · Assistant IA pour tes objectifs
     </div>
 
-    <!-- Hero Section -->
-    <section class="bg-[url('{{ asset('images/hero-gradient-bg.png') }}')] bg-cover bg-center bg-no-repeat px-4 md:px-16 lg:px-24 xl:px-32">
-        <div class="max-w-7xl mx-auto flex flex-col items-center justify-center h-screen">
-            <div class="flex items-center gap-2 bg-white/50 backdrop-blur p-1 rounded-full">
-                <span class="px-3 text-sm text-zinc-700 font-medium">
-                    Crée des habitudes solides et prends le contrôle de tes journées.
-                </span>
-            </div>
-            <div class="relative">
-                <h1 class="text-center font-urbanist text-5xl/15 md:text-6xl/18 mt-4 font-bold max-w-2xl">
-                    Organise ta journée, booste tes routines.
-                </h1>
-                <div class="absolute -top-5 right-13 hidden md:block">
-                    <div class="bg-purple-600 shadow-[inset_0_4px_4px_rgba(255,255,255,0.25),0_4px_10px_rgba(0,0,0,0.15)] p-2 aspect-square rounded-lg text-white rotate-15">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkle" aria-hidden="true">
-                            <path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"></path>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-            <p class="text-center text-base/7 text-zinc-500 max-w-lg mt-4">
-                Kayouta t’aide à planifier ta journée, suivre tes routines et avancer vers tes objectifs,
-                pas à pas, chaque jour.
-            </p>
-            <div class="flex flex-col md:flex-row items-center gap-4 mt-6 w-full md:w-auto">
-                <a href="{{ path('goal_list') }}" class="py-3 md:py-2.5 w-full md:w-auto px-8 border border-purple-300 bg-linear-to-tl from-purple-700 to-purple-600 text-white text-center rounded-full">
-                    Mes Objectifs</a>
-                <a href="#features" class="relative py-3 md:py-2.5 w-full md:w-auto px-8 bg-white/50 text-gray-600 font-medium text-center border border-white rounded-full">
-                    Découvrir
-                    <div class="absolute size-8 pointer-events-none right-0 top-full -translate-y-1/2">
-                        <img alt="mouse-arrow" width="24" height="24" src="{{ asset('images/mouse-arrow.svg') }}">
-                    </div>
-                </a>
-            </div>
+    <h1 class="hero-title">
+        Organise ta vie,<br>
+        <span class="gradient-text">atteins tes objectifs</span>
+    </h1>
+
+    <p class="hero-sub">
+        Kayouta t'aide à créer des routines durables, fixer des objectifs clairs et te connecter avec un coach personnel — le tout en un seul endroit.
+    </p>
+
+    <div class="hero-actions">
+        <a href="{{ path('app_register') }}" class="btn-hero-primary">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            Créer mon compte gratuit
+        </a>
+        <a href="#features" class="btn-hero-secondary">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+            Voir les fonctionnalités
+        </a>
+    </div>
+
+    <div class="hero-social-proof">
+        <div class="hero-avatars">
+            <span style="background:#7c3aed">EA</span>
+            <span style="background:#9333ea">EH</span>
+            <span style="background:#ec4899">RT</span>
+            <span style="background:#06b6d4">RZ</span>
+            <span style="background:#10b981">SB</span>
         </div>
-    </section>
-
-    <!-- Stats Section -->
-    <section class="border-y border-gray-200 py-10 px-4 md:px-16 lg:px-24 xl:px-32">
-        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div class="flex flex-col items-center gap-4 text-center">
-                <h3 class="text-4xl font-semibold font-urbanist"><span class="">50</span>+</h3>
-                <p class="text-gray-500">routines créées pour structurer la journée</p>
-            </div>
-            <div class="flex flex-col items-center gap-4 text-center">
-                <h3 class="text-4xl font-semibold font-urbanist"><span class="">80</span>%</h3>
-                <p class="text-gray-500">d’utilisateurs se sentent plus organisés</p>
-            </div>
-            <div class="flex flex-col items-center gap-4 text-center">
-                <h3 class="text-4xl font-semibold font-urbanist"><span class="">7</span>j/7</h3>
-                <p class="text-gray-500">une vue claire de tes objectifs</p>
-            </div>
+        <div>
+            <div class="hero-stars">★★★★★</div>
+            <div class="hero-social-text"><strong>+500 utilisateurs</strong> font confiance à Kayouta</div>
         </div>
-    </section>
+    </div>
 
-    <!-- Features Section -->
-    <section id="features" class="px-4 md:px-16 lg:px-24 xl:px-32">
-        <div class="grid grid-cols-1 md:grid-cols-2 border-x md:divide-x border-gray-200 divide-gray-200 max-w-7xl mx-auto">
-            <div>
-                <div class="p-4 pt-16 md:p-16 flex flex-col items-start md:sticky md:top-26">
-                    <div class="flex flex-col gap-6 md:items-start items-center">
-                        <div class="flex flex-col md:flex-row items-center gap-4">
-                            <div class="bg-purple-600 shadow-[inset_0_4px_4px_rgba(255,255,255,0.25),0_4px_10px_rgba(0,0,0,0.15)] p-2 aspect-square rounded-lg text-white -rotate-15">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkle" aria-hidden="true">
-                                    <path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"></path>
-                                </svg>
-                            </div>
-                            <h2 class="text-4xl font-semibold font-urbanist">Pensé pour tes routines</h2>
-                        </div>
-                        <p class="text-zinc-500 text-base/7 md:text-left text-center max-w-sm">
-                            Tout ce qu’il te faut pour planifier ta journée, créer des routines et suivre tes objectifs,
-                            dans une interface simple et motivante.
-                        </p>
-                    </div>
-                    <div class="p-4 md:p-6 bg-purple-600 w-full rounded-xl mt-12">
-                        <p class="text-lg text-white">
-                            Commence petit : une routine du matin, un objectif clair, et observe tes progrès jour après jour.
-                        </p>
-                    </div>
+    <!-- Dashboard preview card -->
+    <div class="hero-preview">
+        <div class="hero-preview-card">
+            <div class="preview-header">
+                <div class="preview-dot" style="background:#ef4444"></div>
+                <div class="preview-dot" style="background:#f59e0b"></div>
+                <div class="preview-dot" style="background:#22c55e"></div>
+                <span style="font-size:.82rem;color:#a1a1aa;margin-left:8px;font-weight:500">Tableau de bord Kayouta</span>
+            </div>
+            <div class="preview-grid">
+                <div class="preview-stat">
+                    <div class="preview-stat-num">12</div>
+                    <div class="preview-stat-label">Objectifs actifs</div>
+                </div>
+                <div class="preview-stat" style="background:#fef3c7">
+                    <div class="preview-stat-num" style="color:#d97706">87%</div>
+                    <div class="preview-stat-label">Taux de complétion</div>
+                </div>
+                <div class="preview-stat" style="background:#dcfce7">
+                    <div class="preview-stat-num" style="color:#16a34a">21</div>
+                    <div class="preview-stat-label">Jours consécutifs</div>
                 </div>
             </div>
-            <div class="p-4 pt-16 md:p-16 space-y-6">
-                <div class="bg-purple-200 flex flex-col items-start p-6 rounded-xl w-full md:sticky md:top-26">
-                    <div class="bg-purple-600 p-2 text-white rounded-md">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bot" aria-hidden="true">
-                            <path d="M12 8V4H8"></path>
-                            <rect width="16" height="12" x="4" y="8" rx="2"></rect>
-                            <path d="M2 14h2"></path>
-                            <path d="M20 14h2"></path>
-                            <path d="M15 13v2"></path>
-                            <path d="M9 13v2"></path>
-                        </svg>
-                    </div>
-                    <p class="text-base font-medium mt-4">AI Agent Builder</p>
-                    <p class="text-sm text-gray-600 mt-2">
-                        Design intelligent agents with modular logic, memory and tools - no complex setup required.
-                    </p>
+            <div class="preview-progress">
+                <div class="preview-progress-label">
+                    <span>Routine du matin</span>
+                    <span style="color:#7c3aed">73%</span>
                 </div>
-                <div class="bg-green-100 flex flex-col items-start p-6 rounded-xl w-full md:sticky md:top-26">
-                    <div class="bg-green-500 p-2 text-white rounded-md">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-workflow" aria-hidden="true">
-                            <rect width="8" height="8" x="3" y="3" rx="2"></rect>
-                            <path d="M7 11v4a2 2 0 0 0 2 2h4"></path>
-                            <rect width="8" height="8" x="13" y="13" rx="2"></rect>
-                        </svg>
-                    </div>
-                    <p class="text-base font-medium mt-4">Workflow Orchestration</p>
-                    <p class="text-sm text-gray-600 mt-2">
-                        Chain actions, triggers and decisions to automate multi-step workflows reliably.
-                    </p>
-                </div>
-                <div class="bg-indigo-100 flex flex-col items-start p-6 rounded-xl w-full md:sticky md:top-26">
-                    <div class="bg-indigo-500 p-2 text-white rounded-md">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plug" aria-hidden="true">
-                            <path d="M12 22v-5"></path>
-                            <path d="M15 8V2"></path>
-                            <path d="M17 8a1 1 0 0 1 1 1v4a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1z"></path>
-                            <path d="M9 8V2"></path>
-                        </svg>
-                    </div>
-                    <p class="text-base font-medium mt-4">Plug &amp; Play Integrations</p>
-                    <p class="text-sm text-gray-600 mt-2">
-                        Connect APIs, databases and third-party tools seamlessly with built-in connectors.
-                    </p>
-                </div>
-                <div class="bg-pink-100 flex flex-col items-start p-6 rounded-xl w-full md:sticky md:top-26">
-                    <div class="bg-pink-500 p-2 text-white rounded-md">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-check" aria-hidden="true">
-                            <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z">
-                            </path>
-                            <path d="m9 12 2 2 4-4"></path>
-                        </svg>
-                    </div>
-                    <p class="text-base font-medium mt-4">Production-Ready Security</p>
-                    <p class="text-sm text-gray-600 mt-2">
-                        Built-in safeguards, rate limits and isolation to run agents safely at scale and protect your data.
-                    </p>
-                </div>
-                <div class="bg-lime-100 flex flex-col items-start p-6 rounded-xl w-full md:sticky md:top-26">
-                    <div class="bg-lime-500 p-2 text-white rounded-md">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chart-no-axes-column-increasing" aria-hidden="true">
-                            <path d="M5 21v-6"></path>
-                            <path d="M12 21V9"></path>
-                            <path d="M19 21V3"></path>
-                        </svg>
-                    </div>
-                    <p class="text-base font-medium mt-4">Real-Time Monitoring</p>
-                    <p class="text-sm text-gray-600 mt-2">
-                        Track executions, logs and performance metrics in real time and get insights into your agent's behavior.
-                    </p>
-                </div>
-                <div class="bg-gray-50 flex flex-col items-start p-6 rounded-xl w-full md:sticky md:top-26">
-                    <div class="bg-purple-600 p-2 text-white rounded-md">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cpu" aria-hidden="true">
-                            <path d="M12 20v2"></path><path d="M12 2v2"></path><path d="M17 20v2"></path><path d="M17 2v2"></path><path d="M2 12h2"></path><path d="M2 17h2"></path><path d="M2 7h2"></path><path d="M20 12h2"></path><path d="M20 17h2"></path><path d="M20 7h2"></path><path d="M7 20v2"></path><path d="M7 2v2"></path><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="8" y="8" width="8" height="8" rx="1"></rect>
-                        </svg>
-                    </div>
-                    <p class="text-base font-medium mt-4">Scalable Infrastructure</p>
-                    <p class="text-sm text-gray-600 mt-2">
-                        Run agents efficiently across workloads with automatic scaling and optimization.
-                    </p>
-                </div>
+                <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:73%"></div></div>
             </div>
-        </div>
-    </section>
-
-
-    <!-- Faq Section -->
-    <section class="border-y border-gray-200">
-        <div class="px-4 md:px-16 lg:px-24 xl:px-32">
-            <div class="p-4 pt-20 md:p-20 flex flex-col items-center max-w-7xl mx-auto justify-center border-x border-gray-200">
-                <div class="flex flex-col gap-6 items-center">
-                    <div class="bg-purple-600 shadow-[inset_0_4px_4px_rgba(255,255,255,0.25),0_4px_10px_rgba(0,0,0,0.15)] p-2 aspect-square rounded-lg text-white -rotate-15">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-question-mark" aria-hidden="true">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                            <path d="M12 17h.01"></path>
-                        </svg>
-                    </div>
-                    <h2 class="text-4xl font-semibold font-urbanist">Got questions?</h2>
-                    <p class="text-zinc-500 text-base/7 text-center max-w-lg">
-                        Everything you need to know about Buildify, AI agents and how to get started.
-                    </p>
+            <div class="preview-progress" style="background:#fff0f9;margin-top:8px">
+                <div class="preview-progress-label">
+                    <span>Objectif sport</span>
+                    <span style="color:#ec4899">45%</span>
                 </div>
+                <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:45%;background:linear-gradient(90deg,#ec4899,#f43f5e)"></div></div>
             </div>
         </div>
     </div>
-    <div class="px-4 md:px-16 lg:px-24 xl:px-32 border-t border-gray-200">
-        <div class="grid grid-cols-1 md:grid-cols-2 divide-x divide-gray-200 border-x border-gray-200 max-w-7xl mx-auto">
-            <div class="p-4 pt-20 md:p-20 space-y-6">
-                <details class="group bg-gray-50 border border-gray-200 rounded-xl" open="">
-                    <summary class="flex items-center justify-between p-6 select-none">
-                        <h3 class="font-medium text-base">What is Buildify?</h3>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down group-open:rotate-180" aria-hidden="true">
-                            <path d="m6 9 6 6 6-6"></path>
-                        </svg>
-                    </summary>
-                    <p class="text-sm/6 text-zinc-500 max-w-md p-6 pt-0">
-                        Buildify is a platform designed to help
-                        teams build, deploy and scale AI agents efficiently. It provides tools for agent
-                        creation, workflow orchestration and production-ready execution.
-                    </p>
-                </details>
-                <details class="group bg-gray-50 border border-gray-200 rounded-xl">
-                    <summary class="flex items-center justify-between p-6 select-none">
-                        <h3 class="font-medium text-base">
-                            Do I need prior AI or ML experience to use Buildify?
-                        </h3>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down group-open:rotate-180" aria-hidden="true">
-                            <path d="m6 9 6 6 6-6"></path>
-                        </svg>
-                    </summary>
-                    <p class="text-sm/6 text-zinc-500 max-w-md p-6 pt-0">No. Buildify is designed for both
-                        developers and non-experts, offering simple abstractions while still allowing advanced
-                        customization when needed.
-                    </p>
-                </details>
-                <details class="group bg-gray-50 border border-gray-200 rounded-xl">
-                    <summary class="flex items-center justify-between p-6 select-none">
-                        <h3 class="font-medium text-base">Can I integrate Buildify with my existing tools?</h3>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down group-open:rotate-180" aria-hidden="true">
-                            <path d="m6 9 6 6 6-6"></path>
-                        </svg>
-                    </summary>
-                    <p class="text-sm/6 text-zinc-500 max-w-md p-6 pt-0">Yes. Buildify supports plug-and-play
-                        integrations with APIs, databases and third-party services to fit seamlessly into your
-                        existing stack.
-                    </p>
-                </details>
-                    <details class="group bg-gray-50 border border-gray-200 rounded-xl">
-                        <summary class="flex items-center justify-between p-6 select-none">
-                            <h3 class="font-medium text-base">Is Buildify suitable for production use?</h3>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down group-open:rotate-180" aria-hidden="true">
-                                <path d="m6 9 6 6 6-6"></path>
-                            </svg>
-                        </summary>
-                        <p class="text-sm/6 text-zinc-500 max-w-md p-6 pt-0">Absolutely. Buildify includes
-                            monitoring, security controls and scalable infrastructure to ensure reliable
-                            performance in real-world production environments.
-                        </p>
-                    </details>
-                    <details class="group bg-gray-50 border border-gray-200 rounded-xl">
-                        <summary class="flex items-center justify-between p-6 select-none">
-                            <h3 class="font-medium text-base">Can I customize or extend AI agents?</h3>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down group-open:rotate-180" aria-hidden="true">
-                                <path d="m6 9 6 6 6-6"></path>
-                            </svg>
-                        </summary>
-                        <p class="text-sm/6 text-zinc-500 max-w-md p-6 pt-0">Yes. You can customize agent logic,
-                            workflows and integrations or extend functionality using your own services and APIs.
-                        </p>
-                    </details>
-                </div>
-                <div class="p-4 pt-20 md:p-20">
-                    <div class="sticky top-30 flex items-center justify-between gap-5 p-6 bg-purple-1000 w-full rounded-xl mt-12">
-                        <h3 class="text-lg text-white text-balance">
-                            Still have questions? Our team help you get started.
-                        </h3>
-                        <a href="#!" class="bg-white w-max shrink-0 hover:bg-gray-100 px-5 py-2 rounded-full">
-                            Contact support
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+</section>
 
-    <!-- Team Section -->
-    <section class="border-b border-gray-200 px-4 md:px-16 lg:px-24 xl:px-32">
-        <div class="pt-20 pb-32 flex flex-col items-center max-w-7xl mx-auto justify-center border-x border-gray-200">
-            <div class="flex flex-col gap-6 items-center">
-                <div class="flex flex-col md:flex-row items-center gap-4">
-                    <div class="bg-purple-600 shadow-[inset_0_4px_4px_rgba(255,255,255,0.25),0_4px_10px_rgba(0,0,0,0.15)] p-2 aspect-square rounded-lg text-white -rotate-15">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-handshake" aria-hidden="true">
-                            <path d="m11 17 2 2a1 1 0 1 0 3-3"></path>
-                            <path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4"></path>
-                            <path d="m21 3 1 11h-2"></path>
-                            <path d="M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3"></path>
-                            <path d="M3 4h8"></path>
-                        </svg>
-                    </div>
-                    <h2 class="text-4xl font-semibold font-urbanist">Meet Our Team</h2>
-                </div>
-                <p class="text-zinc-500 text-base/7 text-center max-w-lg">
-                    A passionate team of builders, designers,
-                    and engineers shaping the future of AI-powered products.
-                </p>
-            </div>
-            <div class="flex flex-wrap items-center justify-center gap-10 md:gap-6 mt-24">
-                <div class="flex flex-col">
-                    <img alt="Donald Jackman" class="w-52 h-64 object-cover rounded-lg" src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?q=80&amp;w=600">
-                    <h3 class="text-lg font-medium mt-2">Donald Jackman</h3>
-                    <p class="text-zinc-500">Founder &amp; CEO</p>
-                </div>
-                <div class="flex flex-col">
-                    <img alt="Michael Brown" class="w-52 h-64 object-cover rounded-lg" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&amp;w=600">
-                    <h3 class="text-lg font-medium mt-2">Michael Brown</h3>
-                    <p class="text-zinc-500">Head of Engineering</p>
-                </div>
-                <div class="flex flex-col">
-                    <img alt="Olivia Martinez" class="w-52 h-64 object-cover rounded-lg" src="https://images.unsplash.com/flagged/photo-1573740144655-bbb6e88fb18a?q=80&amp;w=735&amp;auto=format&amp;fit=crop">
-                    <h3 class="text-lg font-medium mt-2">Olivia Martinez</h3>
-                    <p class="text-zinc-500">Product Designer</p>
-                </div>
-                <div class="flex flex-col">
-                    <img alt="Ethan Walker" class="w-52 h-64 object-cover rounded-lg" src="https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&amp;w=687&amp;auto=format&amp;fit=crop">
-                    <h3 class="text-lg font-medium mt-2">Ethan Walker</h3>
-                    <p class="text-zinc-500">AI Systems Engineer</p>
-                </div>
-                <div class="flex flex-col">
-                    <img alt="Sophia Lee" class="w-52 h-64 object-cover rounded-lg" src="https://images.unsplash.com/photo-1546961329-78bef0414d7c?q=80&amp;w=687&amp;auto=format&amp;fit=crop">
-                    <h3 class="text-lg font-medium mt-2">Sophia Lee</h3>
-                    <p class="text-zinc-500">UX Researcher</p>
-                </div>
-            </div>
-        </div>
-    </section>
+<!-- ─── STATS ─── -->
+<div class="stats-strip reveal">
+    <div class="stat-item">
+        <div class="stat-num">500+</div>
+        <div class="stat-label">routines créées par nos utilisateurs</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-num">87%</div>
+        <div class="stat-label">se sentent plus organisés en 2 semaines</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-num">7j/7</div>
+        <div class="stat-label">suivi continu de ta progression</div>
+    </div>
+</div>
 
-    <!-- Pricing Section -->
-    <section id="pricing" class="border-b border-gray-200 px-4 md:px-16 lg:px-24 xl:px-32">
-        <div class="p-4 pt-20 flex flex-col items-center max-w-7xl mx-auto justify-center border-x border-gray-200">
-            <div class="flex flex-col gap-6 items-center">
-                <div class="flex flex-col md:flex-row items-center gap-4">
-                    <div class="bg-purple-600 shadow-[inset_0_4px_4px_rgba(255,255,255,0.25),0_4px_10px_rgba(0,0,0,0.15)] p-2 aspect-square rounded-lg text-white -rotate-15">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-dollar-sign" aria-hidden="true">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path>
-                            <path d="M12 18V6"></path>
-                        </svg>
-                    </div>
-                    <h2 class="text-4xl font-semibold font-urbanist">Simple, transparent pricing</h2>
-                </div>
-                <p class="text-zinc-500 text-base/7 text-center max-w-lg">Choose a plan that fits your team - scale
-                    as you build, launch and grow with AI agents.
-                </p>
+<!-- ─── FEATURES ─── -->
+<section class="features-section" id="features">
+    <div class="features-inner">
+        <div class="features-header reveal">
+            <div class="section-tag">⚡ Fonctionnalités</div>
+            <h2 class="section-title">Tout ce dont tu as besoin<br>pour réussir</h2>
+            <p class="section-sub">Une plateforme complète pour ta productivité, ton bien-être et ta croissance personnelle.</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card reveal">
+                <div class="feature-icon" style="background:#ede9fe">🤖</div>
+                <div class="feature-label">IA & Smart</div>
+                <div class="feature-title">Objectifs assistés par IA</div>
+                <div class="feature-desc">Notre assistant IA te propose des suggestions d'objectifs personnalisés selon ton profil et tes aspirations.</div>
             </div>
-            <div class="p-1 mt-10 border border-purple-300 bg-purple-100 rounded-full">
-                <button class="px-6 py-2 rounded-full cursor-pointer bg-purple-600 text-white">
-                    Monthly
-                </button>
-                <button class="relative px-6 py-2 rounded-full cursor-pointer text-purple-600">
-                    Yearly
-                    <span class="absolute -top-8 -right-8 rotate-15 bg-green-100 rounded-full px-2 py-1 text-xs text-green-500">
-                        20% OFF
-                    </span>
-                </button>
+            <div class="feature-card featured reveal">
+                <div class="feature-icon" style="background:rgba(255,255,255,.2)">🎯</div>
+                <div class="feature-label">Core</div>
+                <div class="feature-title">Suivi des objectifs</div>
+                <div class="feature-desc">Fixe des objectifs SMART avec dates limites, priorités et jalons. Visualise ta progression avec des graphiques burndown détaillés.</div>
             </div>
-            <div class="flex flex-wrap items-start justify-center gap-10 md:gap-4 px-4 mt-12">
-                <div class="p-5 pb-8 w-full sm:max-w-64 rounded-xl border border-gray-200 bg-white">
-                    <div class="w-max border border-gray-200 p-2 aspect-square rounded-lg text-purple-600 bg-white">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rocket" aria-hidden="true">
-                            <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path>
-                            <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path>
-                            <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path>
-                            <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-lg font-medium mt-6">Free</h3>
-                    <p class="text-zinc-500">Explore Buildify and create your first AI agents.</p>
-                    <p class="text-3xl font-semibold mt-4">$0/mo</p>
-                    <a href="#" class="block text-center py-2.5 rounded-full mt-6 text-zinc-600 bg-gray-50 border border-gray-200">
-                        Start Free
-                    </a>
-                    <div class="space-y-2 mt-6">
-                        <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-purple-600" aria-hidden="true">
-                                <path d="M20 6 9 17l-5-5"></path>
-                            </svg>
-                            <p class="text-zinc-500">Up to 3 AI agents</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-purple-600" aria-hidden="true">
-                                <path d="M20 6 9 17l-5-5"></path>
-                            </svg>
-                            <p class="text-zinc-500">Basic workflow builder</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-purple-600" aria-hidden="true">
-                                <path d="M20 6 9 17l-5-5"></path>
-                            </svg>
-                            <p class="text-zinc-500">Community support</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-purple-600" aria-hidden="true">
-                                <path d="M20 6 9 17l-5-5"></path>
-                            </svg>
-                            <p class="text-zinc-500">Limited execution runs</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-purple-600" aria-hidden="true">
-                                <path d="M20 6 9 17l-5-5"></path>
-                            </svg>
-                            <p class="text-zinc-500">Starter integrations</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="p-5 pb-8 w-full sm:max-w-64 rounded-xl border border-gray-200 bg-white">
-                    <div class="w-max border border-gray-200 p-2 aspect-square rounded-lg text-purple-600 bg-white">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user" aria-hidden="true">
-                            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
-                    </div>
-                    <h3 class="text-lg font-medium mt-6">Starter</h3>
-                    <p class="text-zinc-500">For individuals building and testing AI-powered ideas.</p>
-                    <p class="text-3xl font-semibold mt-4">$19/mo</p>
-                    <a href="{{ path('goal_list') }}" class="block text-center py-2.5 rounded-full mt-6 text-zinc-600 bg-gray-50 border border-gray-200 hover:bg-gray-100 transition-colors">
-                        Commencer
-                    </a>
-                    <div class="space-y-2 mt-6">
-                        <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-purple-600" aria-hidden="true">
-                                <path d="M20 6 9 17l-5-5"></path>
-                            </svg>
-                            <p class="text-zinc-500">Up to 10 AI agents</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-purple-600" aria-hidden="true">
-                                <path d="M20 6 9 17l-5-5"></path>
-                            </svg>
-                            <p class="text-zinc-500">Advanced workflows</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-purple-600" aria-hidden="true">
-                                <path d="M20 6 9 17l-5-5"></path>
-                            </svg>
-                            <p class="text-zinc-500">API &amp; webhook access</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-purple-600" aria-hidden="true">
-                                <path d="M20 6 9 17l-5-5"></path>
-                            </svg>
-                            <p class="text-zinc-500">Execution logs</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-purple-600" aria-hidden="true">
-                                <path d="M20 6 9 17l-5-5"></path>
-                            </svg>
-                            <p class="text-zinc-500">Email support</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="p-5 pb-8 w-full sm:max-w-64 rounded-xl border border-gray-200 bg-linear-to-br from-violet-50 to-violet-100">
-                    <div class="w-max border border-gray-200 p-2 aspect-square rounded-lg text-purple-600 bg-white">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users" aria-hidden="true">
-                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                            <path d="M16 3.128a4 4 0 0 1 0 7.744"></path>
-                            <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-                            <circle cx="9" cy="7" r="4"></circle>
-                        </svg>
-                    </div>
-                    <h3 class="text-lg font-medium mt-6">Pro</h3>
-                    <p class="text-zinc-500">Best for startups and growing product teams.</p>
-                    <p class="text-3xl font-semibold mt-4">$49/mo</p>
-                    <a href="#" class="block text-center py-2.5 rounded-full mt-6 text-zinc-600 bg-gray-50 border border-gray-200">
-                        Upgrade to Pro
-                    </a>
-                    <div class="space-y-2 mt-6">
-                        <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-purple-600" aria-hidden="true">
-                                <path d="M20 6 9 17l-5-5"></path>
-                            </svg>
-                            <p class="text-zinc-500">Unlimited AI agents</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-purple-600" aria-hidden="true">
-                                <path d="M20 6 9 17l-5-5"></path>
-                            </svg>
-                            <p class="text-zinc-500">Priority execution</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-purple-600" aria-hidden="true">
-                                <path d="M20 6 9 17l-5-5"></path>
-                            </svg>
-                            <p class="text-zinc-500">Real-time monitoring</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-purple-600" aria-hidden="true">
-                                <path d="M20 6 9 17l-5-5"></path>
-                            </svg>
-                            <p class="text-zinc-500">Team collaboration</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-purple-600" aria-hidden="true">
-                                <path d="M20 6 9 17l-5-5"></path>
-                            </svg>
-                            <p class="text-zinc-500">Priority support</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="p-5 pb-8 w-full sm:max-w-64 rounded-xl border border-gray-200 bg-purple-600 text-white">
-                    <div class="w-max border border-gray-200 p-2 aspect-square rounded-lg text-white">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user" aria-hidden="true">
-                            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
-                    </div>
-                    <h3 class="text-lg font-medium mt-6">Enterprise</h3>
-                    <p class="text-white">Custom solutions for large teams and enterprises.</p>
-                    <p class="text-3xl font-semibold mt-4">$149/mo</p>
-                    <a href="#" class="block text-center py-2.5 rounded-full mt-6 text-zinc-600 bg-gray-50 border border-gray-200">
-                        Contact Sales
-                    </a>
-                    <div class="space-y-2 mt-6">
-                        <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-white" aria-hidden="true">
-                                <path d="M20 6 9 17l-5-5"></path>
-                            </svg>
-                            <p class="text-white">Custom agent limits</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-white" aria-hidden="true">
-                                <path d="M20 6 9 17l-5-5"></path>
-                            </svg>
-                            <p class="text-white">Dedicated infrastructure</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-white" aria-hidden="true">
-                                <path d="M20 6 9 17l-5-5"></path>
-                            </svg>
-                            <p class="text-white">Advanced security controls</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-white" aria-hidden="true">
-                                <path d="M20 6 9 17l-5-5"></path>
-                            </svg>
-                            <p class="text-white">SLA &amp; compliance support</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check size-4 text-white" aria-hidden="true">
-                                <path d="M20 6 9 17l-5-5"></path>
-                            </svg>
-                            <p class="text-white">Dedicated account manager</p>
-                        </div>
-                    </div>
-                </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon" style="background:#dcfce7">📅</div>
+                <div class="feature-label">Routines</div>
+                <div class="feature-title">Gestion des routines</div>
+                <div class="feature-desc">Crée tes routines du matin, du soir ou sportives. Suis tes activités hebdomadaires avec des graphiques clairs.</div>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon" style="background:#dbeafe">🤝</div>
+                <div class="feature-label">Coaching</div>
+                <div class="feature-title">Coaching personnalisé IA</div>
+                <div class="feature-desc">Trouve ton coach idéal grâce au matching IA. Nos coachs certifiés t'accompagnent dans ta transformation.</div>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon" style="background:#fce7f3">💬</div>
+                <div class="feature-label">Communauté</div>
+                <div class="feature-title">Chatrooms & communauté</div>
+                <div class="feature-desc">Rejoins des chatrooms dédiés à chaque objectif, partage tes avancées et reste inspiré par ta communauté.</div>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon" style="background:#fef3c7">✨</div>
+                <div class="feature-label">Profil</div>
+                <div class="feature-title">Profil IA & archétype</div>
+                <div class="feature-desc">Découvre ton archétype personnel généré par IA et construis ton identité dans la communauté Kayouta.</div>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- Testimonial Section -->
-    <section id="testimonials" class="px-4 md:px-16 lg:px-24 xl:px-32 border-b border-gray-200">
-        <div class="p-4 pt-20 md:p-20 flex flex-col items-center max-w-7xl mx-auto justify-center border-x border-gray-200">
-            <div class="flex flex-col gap-6 items-center">
-                <div class="flex flex-col md:flex-row items-center gap-4">
-                    <div class="bg-purple-600 shadow-[inset_0_4px_4px_rgba(255,255,255,0.25),0_4px_10px_rgba(0,0,0,0.15)] p-2 aspect-square rounded-lg text-white -rotate-15">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-check" aria-hidden="true">
-                            <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path>
-                            <path d="m9 12 2 2 4-4"></path>
-                        </svg>
-                    </div>
-                    <h2 class="text-4xl font-semibold font-urbanist">What our users say</h2>
-                </div>
-                <p class="text-zinc-500 text-base/7 text-center max-w-lg">
-                    Teams trust Buildify to build, deploy and
-                    scale reliable AI agents in real-world production.
-                </p>
-            </div>
-            <div class="flex flex-wrap gap-8 items-center justify-center mt-24">
-                <div class="p-6 rounded-xl max-w-80 shadow-[0_4px_20px_rgba(0,0,0,0.10)] bg-white">
-                    <div class="flex items-center gap-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 fill-purple-600 text-purple-600" aria-hidden="true">
-                            <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
-                        </svg>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 fill-purple-600 text-purple-600" aria-hidden="true">
-                            <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
-                        </svg>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 fill-purple-600 text-purple-600" aria-hidden="true">
-                            <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
-                        </svg>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 fill-purple-600 text-purple-600" aria-hidden="true">
-                            <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
-                        </svg>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 fill-purple-600 text-purple-600" aria-hidden="true">
-                            <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
-                        </svg>
-                    </div>
-                    <p class="my-4 text-base/7 text-zinc-500">
-                        Buildify helped us launch AI agents in days instead of
-                        weeks. The workflow orchestration and monitoring are incredibly solid.
-                    </p>
-                    <div class="flex items-center gap-2 pt-3">
-                        <img class="size-10 rounded-full object-cover" alt="John Doe" src="https://images.unsplash.com/photo-1546961329-78bef0414d7c?q=80&amp;w=687&amp;auto=format&amp;fit=crop">
-                        <div>
-                            <p class="font-medium text-gray-800 ">John Doe</p>
-                            <p class="text-xs text-zinc-500">@johndoe</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="p-6 rounded-xl max-w-80 shadow-[0_4px_20px_rgba(0,0,0,0.10)] bg-purple-600">
-                    <div class="flex items-center gap-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 text-white fill-white" aria-hidden="true">
-                            <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
-                        </svg>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 text-white fill-white" aria-hidden="true">
-                            <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
-                        </svg>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 text-white fill-white" aria-hidden="true">
-                            <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
-                        </svg>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 text-white fill-white" aria-hidden="true">
-                            <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
-                        </svg>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 text-white fill-white" aria-hidden="true">
-                            <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
-                        </svg>
-                    </div>
-                    <p class="my-4 text-base/7 text-white">
-                        The simplicity is what impressed me most. We were able to
-                        integrate AI agents into our existing stack without friction.
-                    </p>
-                    <div class="flex items-center gap-2 pt-3">
-                        <img class="size-10 rounded-full object-cover" alt="Jane Doe" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&amp;w=600">
-                        <div>
-                            <p class="font-medium text-white">Jane Doe</p>
-                            <p class="text-xs text-white">@janedoe</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="p-6 rounded-xl max-w-80 shadow-[0_4px_20px_rgba(0,0,0,0.10)] bg-white">
-                    <div class="flex items-center gap-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 fill-purple-600 text-purple-600" aria-hidden="true">
-                            <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
-                        </svg><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 fill-purple-600 text-purple-600" aria-hidden="true">
-                            <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
-                        </svg>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 fill-purple-600 text-purple-600" aria-hidden="true">
-                            <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
-                        </svg>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 fill-purple-600 text-purple-600" aria-hidden="true">
-                            <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
-                        </svg>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star size-5 fill-purple-600 text-purple-600" aria-hidden="true">
-                            <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
-                        </svg>
-                    </div>
-                    <p class="my-4 text-base/7 text-zinc-500">Reliable, scalable and developer-friendly. Buildify feels
-                        production-ready from day one.
-                    </p>
-                    <div class="flex items-center gap-2 pt-3">
-                        <img class="size-10 rounded-full object-cover" alt="Bob Smith" src="https://images.unsplash.com/flagged/photo-1573740144655-bbb6e88fb18a?q=80&amp;w=735&amp;auto=format&amp;fit=crop">
-                        <div>
-                            <p class="font-medium text-gray-800 ">Bob Smith</p>
-                            <p class="text-xs text-zinc-500">@bobsmith</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <a href="#" class="mt-20 px-8 py-2.5 rounded-full bg-purple-100  border border-purple-300 text-purple-600">
-                See more
-            </a>
+<!-- ─── HOW IT WORKS ─── -->
+<section class="how-section" id="how">
+    <div class="how-inner">
+        <div class="how-header reveal">
+            <div class="section-tag">🚀 Démarrage rapide</div>
+            <h2 class="section-title">Prêt en 4 étapes simples</h2>
+            <p class="section-sub">Commence à transformer ta vie en quelques minutes, sans configuration complexe.</p>
         </div>
-    </section>
+        <div class="how-steps">
+            <div class="how-step reveal">
+                <div class="step-num">1</div>
+                <div class="step-title">Crée ton compte</div>
+                <div class="step-desc">Inscription en 30 secondes avec ton email ou Google. Ton profil IA est généré automatiquement.</div>
+            </div>
+            <div class="how-step reveal">
+                <div class="step-num">2</div>
+                <div class="step-title">Définis tes objectifs</div>
+                <div class="step-desc">L'assistant IA te suggère des objectifs adaptés à ton profil. Choisis, personnalise et valide.</div>
+            </div>
+            <div class="how-step reveal">
+                <div class="step-num">3</div>
+                <div class="step-title">Crée tes routines</div>
+                <div class="step-desc">Attache des routines à chaque objectif et structure ta journée pour progresser chaque jour.</div>
+            </div>
+            <div class="how-step reveal">
+                <div class="step-num">4</div>
+                <div class="step-title">Suis & perfectionne</div>
+                <div class="step-desc">Visualise tes progrès, connecte-toi à un coach et célèbre chaque victoire avec ta communauté.</div>
+            </div>
+        </div>
+    </div>
+</section>
 
-    <!-- Footer -->
-    <footer class="px-4 md:px-16 lg:px-24 xl:px-32">
-        <div class="border-x border-gray-200 px-4 md:px-12 max-w-7xl mx-auto pt-40">
-            <div class="flex flex-col md:flex-row items-start justify-between relative p-8 md:p-12 overflow-hidden pb-32 md:pb-42 bg-linear-to-t from-orange-50 to-orange-100 rounded-t-2xl">
-                <div class="max-w-72">
-                    <img alt="Logo" width="135" height="35" class="h-62 w-auto absolute -bottom-18 opacity-7 select-none pointer-events-none" src="{{ asset('images/logo-colored.svg') }}">
-                    <img alt="Logo" width="135" height="35" class="h-9" src="{{ asset('images/logo-colored.svg') }}">
-                    <p class="text-zinc-500 mt-4 pb-6">
-                        For further assistance or additional inquiries, feel free to contact us
-                    </p>
-                    <p class="text-zinc-500 mt-4 pb-6">Copyright 2026 ©<a href="https://prebuiltui.com/" target="_blank">PrebuiltUI.</a>
-Distributed by <a href="https://themewagon.com" target="_blank">ThemeWagon</a></p>
+<!-- ─── TEAM ─── -->
+<section class="team-section" id="team">
+    <div class="team-inner">
+        <div class="team-header reveal">
+            <div class="section-tag">👩‍💻 L'équipe</div>
+            <h2 class="section-title">Créé avec passion par</h2>
+            <p class="section-sub">5 étudiantes ingénieures à ESPRIT qui ont imaginé et développé Kayouta de A à Z.</p>
+        </div>
+        <div class="team-grid">
+            <div class="team-card reveal">
+                <div class="team-avatar-circle" style="background:linear-gradient(135deg,#7c3aed,#9333ea)">EA</div>
+                <div class="team-name">Eya Abdellaoui</div>
+                <div class="team-role">Dev Full-Stack</div>
+                <span class="team-badge">ESPRIT 2026</span>
+            </div>
+            <div class="team-card reveal">
+                <div class="team-avatar-circle" style="background:linear-gradient(135deg,#ec4899,#f43f5e)">EH</div>
+                <div class="team-name">Eya Hwess</div>
+                <div class="team-role">Dev Full-Stack</div>
+                <span class="team-badge">ESPRIT 2026</span>
+            </div>
+            <div class="team-card reveal">
+                <div class="team-avatar-circle" style="background:linear-gradient(135deg,#10b981,#06b6d4)">RT</div>
+                <div class="team-name">Roua Taboubi</div>
+                <div class="team-role">Dev Full-Stack</div>
+                <span class="team-badge">ESPRIT 2026</span>
+            </div>
+            <div class="team-card reveal">
+                <div class="team-avatar-circle" style="background:linear-gradient(135deg,#3b82f6,#6366f1)">RZ</div>
+                <div class="team-name">Ranim Zaghbib</div>
+                <div class="team-role">Dev Full-Stack</div>
+                <span class="team-badge">ESPRIT 2026</span>
+            </div>
+            <div class="team-card reveal">
+                <div class="team-avatar-circle" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">SB</div>
+                <div class="team-name">Shaima Barouni</div>
+                <div class="team-role">Dev Full-Stack</div>
+                <span class="team-badge">ESPRIT 2026</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── TESTIMONIALS ─── -->
+<section class="testimonials-section" id="testimonials">
+    <div class="testimonials-inner">
+        <div class="testimonials-header reveal">
+            <div class="section-tag">💬 Témoignages</div>
+            <h2 class="section-title">Ils ont transformé leur quotidien</h2>
+            <p class="section-sub">Des milliers d'utilisateurs font confiance à Kayouta pour atteindre leurs objectifs.</p>
+        </div>
+        <div class="testimonials-grid">
+            <div class="testimonial-card reveal">
+                <div class="stars">★★★★★</div>
+                <p class="testimonial-text">« Kayouta a complètement changé ma façon de m'organiser. En 3 semaines, j'ai réussi à instaurer une routine du matin que j'essayais de tenir depuis des années. Les graphiques de progression sont vraiment motivants ! »</p>
+                <div class="testimonial-author">
+                    <div class="author-avatar">SA</div>
+                    <div>
+                        <div class="author-name">Salma A.</div>
+                        <div class="author-role">Étudiante en médecine</div>
+                    </div>
                 </div>
-                <div>
-                    <p class="uppercase font-semibold text-orange-600 text-base">Social</p>
-                    <div class="flex flex-col mt-6 gap-3">
-                        <a href="#!" class="flex items-center gap-2 text-purple-600">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-twitter" aria-hidden="true">
-                                <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path>
-                            </svg>
-                            <p>Twitter</p>
-                        </a>
-                        <a href="#!" class="flex items-center gap-2 text-purple-600">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-linkedin" aria-hidden="true">
-                                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
-                                <rect width="4" height="12" x="2" y="9"></rect>
-                                <circle cx="4" cy="4" r="2"></circle>
-                            </svg>
-                            <p>Linkedin</p>
-                        </a>
-                        <a href="#!" class="flex items-center gap-2 text-purple-600">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-instagram" aria-hidden="true">
-                                <rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect>
-                                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                                <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line>
-                            </svg>
-                            <p>Instagram</p>
-                        </a>
+            </div>
+            <div class="testimonial-card featured reveal">
+                <div class="stars">★★★★★</div>
+                <p class="testimonial-text">« Le matching avec mon coach a été bluffant. En décrivant simplement mon objectif, l'IA m'a recommandé un coach parfaitement aligné avec mes besoins. Ma productivité a doublé en un mois. »</p>
+                <div class="testimonial-author">
+                    <div class="author-avatar">YB</div>
+                    <div>
+                        <div class="author-name">Yassine B.</div>
+                        <div class="author-role">Entrepreneur</div>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-card reveal">
+                <div class="stars">★★★★★</div>
+                <p class="testimonial-text">« Les chatrooms par objectif sont une excellente idée ! Partager mes progrès avec des gens qui ont les mêmes buts que moi m'a vraiment aidée à rester motivée. L'appli est super bien conçue. »</p>
+                <div class="testimonial-author">
+                    <div class="author-avatar" style="background:#fce7f3;color:#ec4899">LM</div>
+                    <div>
+                        <div class="author-name">Lina M.</div>
+                        <div class="author-role">Coach sportive</div>
                     </div>
                 </div>
             </div>
         </div>
-    </footer>
-    <script src="{{ asset('assets/script.js') }}"></script>
+    </div>
+</section>
+
+<!-- ─── FAQ ─── -->
+<section class="faq-section" id="faq">
+    <div class="faq-inner">
+        <div class="faq-header reveal">
+            <div class="section-tag">❓ FAQ</div>
+            <h2 class="section-title">Questions fréquentes</h2>
+            <p class="section-sub">Tout ce que tu dois savoir sur Kayouta pour démarrer en toute confiance.</p>
+        </div>
+        <details class="faq-item reveal" open>
+            <summary class="faq-summary">
+                <span>C'est quoi Kayouta ?</span>
+                <div class="faq-icon">+</div>
+            </summary>
+            <p class="faq-body">Kayouta est une plateforme de bien-être et de productivité qui t'aide à créer des routines, fixer des objectifs SMART et te connecter avec des coachs professionnels. Tout est centralisé dans une interface intuitive et motivante.</p>
+        </details>
+        <details class="faq-item reveal">
+            <summary class="faq-summary">
+                <span>Comment fonctionne le système d'objectifs ?</span>
+                <div class="faq-icon">+</div>
+            </summary>
+            <p class="faq-body">Tu crées un objectif avec une date limite et une priorité. L'IA te suggère des objectifs adaptés à ton profil. Tu attaches des routines à chaque objectif pour structurer ta progression. Des graphiques burndown te permettent de visualiser ton avancement en temps réel.</p>
+        </details>
+        <details class="faq-item reveal">
+            <summary class="faq-summary">
+                <span>Comment trouver mon coach idéal ?</span>
+                <div class="faq-icon">+</div>
+            </summary>
+            <p class="faq-body">Décris ton objectif dans notre formulaire. Notre système IA analyse ton message et te présente les coachs les plus compatibles avec ton profil, avec un score de compatibilité et les raisons du match. Tu choisis et tu envoies ta demande.</p>
+        </details>
+        <details class="faq-item reveal">
+            <summary class="faq-summary">
+                <span>Kayouta est-il gratuit ?</span>
+                <div class="faq-icon">+</div>
+            </summary>
+            <p class="faq-body">Oui ! La création de compte, la gestion des objectifs, des routines et l'accès à la communauté sont entièrement gratuits. Le coaching individuel peut faire l'objet d'une session payante selon le coach choisi.</p>
+        </details>
+        <details class="faq-item reveal">
+            <summary class="faq-summary">
+                <span>Je peux me connecter avec Google ?</span>
+                <div class="faq-icon">+</div>
+            </summary>
+            <p class="faq-body">Oui, tu peux te connecter en un clic avec ton compte Google. Si tu t'inscris pour la première fois, un compte Kayouta sera automatiquement créé avec tes informations Google.</p>
+        </details>
+    </div>
+</section>
+
+<!-- ─── CTA BANNER ─── -->
+<section class="cta-section">
+    <div class="cta-card reveal">
+        <div class="cta-text">
+            <div class="cta-title">Prêt(e) à transformer<br>ta vie dès aujourd'hui ?</div>
+            <div class="cta-sub">Rejoins des milliers d'utilisateurs qui utilisent Kayouta pour atteindre leurs objectifs et vivre mieux chaque jour.</div>
+        </div>
+        <div class="cta-actions">
+            <a href="{{ path('app_register') }}" class="btn-cta-white">Créer mon compte gratuit</a>
+            <a href="{{ path('app_login') }}" class="btn-cta-outline">Se connecter</a>
+        </div>
+    </div>
+</section>
+
+<!-- ─── FOOTER ─── -->
+<footer class="footer">
+    <div class="footer-inner">
+        <div>
+            <img src="{{ asset('images/dayflow_logo.png') }}" alt="DayFlow" class="footer-brand-logo">
+            <p class="footer-brand-desc">La plateforme qui t'aide à créer des routines durables, fixer des objectifs et devenir la meilleure version de toi-même.</p>
+        </div>
+        <div>
+            <div class="footer-col-title">Navigation</div>
+            <div class="footer-links">
+                <a href="{{ path('app_home') }}">Accueil</a>
+                <a href="#features">Fonctionnalités</a>
+                <a href="#team">Équipe</a>
+                <a href="#faq">FAQ</a>
+            </div>
+        </div>
+        <div>
+            <div class="footer-col-title">Compte</div>
+            <div class="footer-links">
+                <a href="{{ path('app_login') }}">Connexion</a>
+                <a href="{{ path('app_register') }}">Inscription</a>
+                <a href="{{ path('connect_google') }}">Connexion Google</a>
+            </div>
+        </div>
+        <div>
+            <div class="footer-col-title">L'équipe</div>
+            <div class="footer-links">
+                <span>Eya Abdellaoui</span>
+                <span>Eya Hwess</span>
+                <span>Roua Taboubi</span>
+                <span>Ranim Zaghbib</span>
+                <span>Shaima Barouni</span>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <div class="footer-copy">© {{ "now"|date("Y") }} Kayouta — Projet PI 2026 · ESPRIT</div>
+        <div class="footer-badge">
+            <svg width="14" height="14" fill="none" stroke="#a1a1aa" stroke-width="2" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
+            Réalisé avec passion à ESPRIT
+        </div>
+    </div>
+</footer>
+
+<script>
+// Navbar scroll effect
+const navbar = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 20);
+});
+
+// Mobile menu
+const hamburger = document.getElementById('hamburger');
+const mobileMenu = document.getElementById('mobileMenu');
+const mobileOverlay = document.getElementById('mobileOverlay');
+const closeMenu = document.getElementById('closeMenu');
+
+function openMobileMenu() {
+    mobileMenu.classList.add('open');
+    mobileOverlay.classList.add('open');
+}
+function closeMobileMenu() {
+    mobileMenu.classList.remove('open');
+    mobileOverlay.classList.remove('open');
+}
+hamburger.addEventListener('click', openMobileMenu);
+closeMenu.addEventListener('click', closeMobileMenu);
+mobileOverlay.addEventListener('click', closeMobileMenu);
+mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMobileMenu));
+
+// Scroll reveal
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+        if (e.isIntersecting) {
+            e.target.classList.add('visible');
+            observer.unobserve(e.target);
+        }
+    });
+}, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// Smooth anchor scroll
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+        const id = a.getAttribute('href').slice(1);
+        const el = document.getElementById(id);
+        if (el) {
+            e.preventDefault();
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    });
+});
+
+// Progress bar animation on load
+window.addEventListener('load', () => {
+    document.querySelectorAll('.progress-bar-fill').forEach(bar => {
+        const target = bar.style.width;
+        bar.style.width = '0%';
+        bar.style.transition = 'width 1.5s cubic-bezier(.4,0,.2,1) .8s';
+        setTimeout(() => { bar.style.width = target; }, 100);
+    });
+});
+</script>
 </body>
-
 </html>
-
-

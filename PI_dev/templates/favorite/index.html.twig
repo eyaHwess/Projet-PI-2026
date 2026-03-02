@@ -1,225 +1,413 @@
-{% extends 'base_modern.html.twig' %}
+{% extends 'base.html.twig' %}
 
 {% block title %}Mes Favoris{% endblock %}
 
-{% block navbar_actions %}
-    <a href="{{ path('app_goal_index') }}" class="btn-modern btn-modern-secondary">
-        <i class="bi bi-bullseye"></i> Mes Objectifs
-    </a>
+{% block stylesheets %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #5b4cdb;
+            --primary-hover: #4a3cb8;
+            --primary-light: #e8e6f9;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f8f9fa;
+        }
+        .navbar-custom {
+            background: #fff !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+            padding: 1rem 0;
+        }
+        .navbar-custom .nav-link { color: #212529 !important; }
+        .navbar-custom .nav-link:hover { color: var(--primary-color) !important; }
+        .page-hero {
+            background: linear-gradient(135deg, #5b4cdb 0%, #4a3cb8 100%);
+            padding: 120px 0 60px;
+            color: #fff;
+        }
+        .page-hero h1 { font-weight: 800; font-size: 2.5rem; }
+        .fav-card {
+            background: #fff;
+            border: 2px solid #e9ecef;
+            border-radius: 20px;
+            padding: 1.5rem;
+            height: 100%;
+            transition: all .3s ease;
+            box-shadow: 0 2px 10px rgba(0,0,0,.05);
+            position: relative;
+        }
+        .fav-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-color);
+            box-shadow: 0 10px 30px rgba(91,76,219,.15);
+        }
+        .fav-card a.card-link {
+            position: absolute; inset: 0;
+            border-radius: 20px;
+            z-index: 0;
+        }
+        .fav-card > *:not(a.card-link) { position: relative; z-index: 1; }
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+        }
+        .section-icon {
+            width: 2.5rem; height: 2.5rem;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+        }
+        .status-badge {
+            padding: .3rem .8rem;
+            border-radius: 50px;
+            font-size: .7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .status-active    { background: #d1fae5; color: #065f46; }
+        .status-completed { background: #dbeafe; color: #1e40af; }
+        .status-paused    { background: #fef3c7; color: #92400e; }
+        .status-draft     { background: #f3f4f6; color: #374151; }
+        .status-failed    { background: #fee2e2; color: #991b1b; }
+        .progress-bar-custom {
+            height: 8px;
+            border-radius: 10px;
+            background: linear-gradient(90deg,#5b4cdb 0%,#4a3cb8 100%);
+        }
+        .btn-heart {
+            background: none; border: none; padding: 0; cursor: pointer;
+            transition: transform .2s;
+        }
+        .btn-heart:hover { transform: scale(1.25); }
+        .empty-hero {
+            text-align: center; padding: 80px 20px;
+        }
+        .empty-icon {
+            width: 100px; height: 100px;
+            background: #fff0f3;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 3rem;
+        }
+        .btn-primary-custom {
+            background: linear-gradient(135deg,#5b4cdb 0%,#4a3cb8 100%);
+            border: none; color: #fff;
+            padding: .75rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all .3s;
+            box-shadow: 0 4px 15px rgba(91,76,219,.3);
+            display: inline-flex; align-items: center; gap: .5rem;
+        }
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(91,76,219,.4);
+            color: #fff;
+        }
+        @keyframes heartPop {
+            0%   { transform: scale(1); }
+            40%  { transform: scale(1.45); }
+            70%  { transform: scale(.9); }
+            100% { transform: scale(1); }
+        }
+        .popping { animation: heartPop .35s ease; }
+        .toast-container { position:fixed; top:100px; right:20px; z-index:9999; }
+        .toast-custom { border-radius:15px; box-shadow:0 10px 40px rgba(0,0,0,.15); min-width:280px; }
+    </style>
 {% endblock %}
 
 {% block body %}
-    <!-- Page Header -->
-    <div class="page-header-modern">
-        <h1 class="page-header-modern-title">
-            <i class="bi bi-heart-fill" style="color: var(--danger);"></i>
-            Mes Favoris
-        </h1>
-        <p class="page-header-modern-subtitle">
-            Retrouvez tous vos objectifs, routines et activités favoris en un seul endroit
-        </p>
-        
-        <div class="page-header-modern-actions">
-            <a href="{{ path('app_goal_index') }}" class="btn-modern btn-modern-secondary">
-                <i class="bi bi-bullseye"></i> Objectifs
-            </a>
-            <a href="{{ path('app_calendar') }}" class="btn-modern btn-modern-secondary">
-                <i class="bi bi-calendar3"></i> Calendrier
-            </a>
-            <a href="{{ path('app_consistency_heatmap') }}" class="btn-modern btn-modern-secondary">
-                <i class="bi bi-graph-up"></i> Consistency
-            </a>
-            <a href="{{ path('app_time_investment_analytics') }}" class="btn-modern btn-modern-secondary">
-                <i class="bi bi-clock-history"></i> Time Analytics
-            </a>
+    {# ── Navbar ── #}
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+        <div class="container-fluid px-4 px-md-5">
+            <a class="navbar-brand fw-bold" href="{{ path('app_home') }}"></a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto gap-2">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('app_goal_index') }}">
+                            <i class="bi bi-bullseye me-1"></i>Mes Objectifs
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-bold" style="color:var(--primary-color)!important"
+                           href="{{ path('app_favorites') }}">
+                            <i class="bi bi-heart-fill me-1" style="color:#ef4444"></i>Favoris
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    {# ── Hero ── #}
+    <div class="page-hero">
+        <div class="container">
+            <div class="d-flex align-items-center gap-3 mb-2">
+                <i class="bi bi-heart-fill fs-1" style="color:#ff6b9d"></i>
+                <h1 class="mb-0">Mes Favoris</h1>
+            </div>
+            <p class="mb-0 opacity-75 fs-5">
+                Vos objectifs, routines et activités marqués comme favoris
+            </p>
         </div>
     </div>
 
-    {% if favoriteGoals|length == 0 and favoriteRoutines|length == 0 and favoriteActivities|length == 0 %}
-        <!-- Empty State -->
-        <div class="card-modern text-center" style="padding: var(--space-2xl);">
-            <div class="avatar-modern avatar-modern-lg" style="width: 120px; height: 120px; margin: 0 auto var(--space-xl); font-size: 3rem; background: #FFEBEE; color: var(--danger);">
-                <i class="bi bi-heart"></i>
+    <div class="container py-5">
+
+        {% set totalFavs = favoriteGoals|length + favoriteRoutines|length + favoriteActivities|length %}
+
+        {% if totalFavs == 0 %}
+            {# ── Empty state ── #}
+            <div class="empty-hero">
+                <div class="empty-icon">❤️</div>
+                <h2 class="fw-bold mb-3">Aucun favori pour l'instant</h2>
+                <p class="text-muted fs-5 mb-4">
+                    Cliquez sur le cœur <i class="bi bi-heart-fill text-danger"></i> sur n'importe quel objectif pour l'ajouter ici.
+                </p>
+                <a href="{{ path('app_goal_index') }}" class="btn-primary-custom text-decoration-none">
+                    <i class="bi bi-bullseye"></i> Voir mes objectifs
+                </a>
             </div>
-            <h2 style="font-size: var(--font-size-3xl); margin-bottom: var(--space-md);">Aucun favori</h2>
-            <p style="font-size: var(--font-size-lg); color: var(--gray-600); margin-bottom: var(--space-xl);">
-                Ajoutez des objectifs, routines ou activités à vos favoris en cliquant sur le cœur
-            </p>
-            <a href="{{ path('app_goal_index') }}" class="btn-modern btn-modern-primary btn-modern-lg">
-                <i class="bi bi-bullseye"></i> Voir mes objectifs
-            </a>
-        </div>
-    {% else %}
-        <!-- Favorite Goals -->
-        {% if favoriteGoals|length > 0 %}
-            <div class="mb-xl">
-                <div class="d-flex align-items-center gap-md mb-lg">
-                    <div class="avatar-modern" style="background: var(--primary-lightest); color: var(--primary-color);">
+
+        {% else %}
+
+            {# ══ Favorite Goals ══ #}
+            {% if favoriteGoals|length > 0 %}
+            <div class="mb-5">
+                <div class="section-title">
+                    <div class="section-icon" style="background:#e8e6f9;color:var(--primary-color)">
                         <i class="bi bi-bullseye"></i>
                     </div>
-                    <h2 style="font-size: var(--font-size-2xl); font-weight: 700; margin: 0;">
-                        Objectifs favoris
-                        <span style="color: var(--gray-500); font-size: var(--font-size-lg); font-weight: 500;">({{ favoriteGoals|length }})</span>
-                    </h2>
+                    Objectifs favoris
+                    <span class="text-muted fw-normal fs-6">({{ favoriteGoals|length }})</span>
                 </div>
-                
-                <div class="grid-modern grid-modern-3">
+                <div class="row g-4">
                     {% for goal in favoriteGoals %}
-                        <div class="card-modern" style="cursor: pointer;" onclick="window.location.href='{{ path('app_goal_show', {id: goal.id}) }}'">
-                            <!-- Goal Icon & Favorite -->
-                            <div class="d-flex align-items-center justify-content-between mb-md">
-                                <div class="avatar-modern" style="background: var(--primary-lightest); color: var(--primary-color);">
-                                    <i class="bi bi-bullseye"></i>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="fav-card">
+                            <a class="card-link" href="{{ path('app_goal_show', {id: goal.id}) }}"></a>
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="rounded p-2" style="background:#e8e6f9">
+                                        <i class="bi bi-bullseye" style="color:var(--primary-color);font-size:1.3rem"></i>
+                                    </div>
+                                    <h5 class="fw-bold mb-0">{{ goal.title }}</h5>
                                 </div>
-                                <i class="bi bi-heart-fill" style="font-size: 1.25rem; color: var(--danger);"></i>
+                                <button class="btn-heart btn-unfav-goal" data-goal-id="{{ goal.id }}" title="Retirer des favoris">
+                                    <i class="bi bi-heart-fill" style="font-size:1.3rem;color:#ef4444"></i>
+                                </button>
                             </div>
-                            
-                            <!-- Goal Title -->
-                            <h3 style="font-size: var(--font-size-lg); font-weight: 700; margin-bottom: var(--space-xs); color: var(--gray-900);">
-                                {{ goal.title }}
-                            </h3>
-                            
-                            <!-- Goal Description -->
                             {% if goal.description %}
-                                <p style="color: var(--gray-600); font-size: var(--font-size-sm); margin-bottom: var(--space-md); line-height: 1.5;">
-                                    {{ goal.description|slice(0, 80) }}{% if goal.description|length > 80 %}...{% endif %}
-                                </p>
+                                <p class="text-muted small mb-3">{{ goal.description|slice(0,90) }}{% if goal.description|length > 90 %}…{% endif %}</p>
                             {% endif %}
-                            
-                            <!-- Progress -->
-                            <div class="mb-md">
-                                <div class="d-flex justify-content-between align-items-center mb-sm">
-                                    <span style="font-size: var(--font-size-xs); color: var(--gray-600); font-weight: 600;">Progression</span>
-                                    <span style="font-size: var(--font-size-base); font-weight: 700; color: var(--primary-color);">{{ goal.progressPercentage }}%</span>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="status-badge status-{{ goal.status }}">{{ goal.status|upper }}</span>
+                                {% if goal.priority %}
+                                    <small class="text-muted">
+                                        {% if goal.priority == 'high' %}🔴{% elseif goal.priority == 'medium' %}🟡{% else %}🟢{% endif %}
+                                        {{ goal.priority|capitalize }}
+                                    </small>
+                                {% endif %}
+                            </div>
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <small class="text-muted">Progression</small>
+                                    <small class="fw-bold">{{ goal.progressPercentage }}%</small>
                                 </div>
-                                <div class="progress-modern">
-                                    <div class="progress-modern-bar" style="width: {{ goal.progressPercentage }}%;"></div>
+                                <div class="progress" style="height:8px">
+                                    <div class="progress-bar progress-bar-custom" style="width:{{ goal.progressPercentage }}%"></div>
                                 </div>
                             </div>
-                            
-                            <!-- Meta Info -->
-                            <div style="font-size: var(--font-size-xs); color: var(--gray-600);">
-                                <div class="d-flex align-items-center gap-sm">
-                                    <i class="bi bi-list-ul" style="color: var(--gray-500);"></i>
-                                    <span>{{ goal.routines|length }} Routine(s)</span>
-                                </div>
+                            <div class="d-flex justify-content-between mt-3 pt-3 border-top">
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar me-1"></i>{{ goal.startDate|date('d/m/Y') }}
+                                </small>
+                                <small class="text-muted">
+                                    <i class="bi bi-list-ul me-1"></i>{{ goal.routines|length }} routine(s)
+                                </small>
                             </div>
                         </div>
+                    </div>
                     {% endfor %}
                 </div>
             </div>
-        {% endif %}
+            {% endif %}
 
-        <!-- Favorite Routines -->
-        {% if favoriteRoutines|length > 0 %}
-            <div class="mb-xl">
-                <div class="d-flex align-items-center gap-md mb-lg">
-                    <div class="avatar-modern" style="background: #E0F2F1; color: var(--accent-teal);">
+            {# ══ Favorite Routines ══ #}
+            {% if favoriteRoutines|length > 0 %}
+            <div class="mb-5">
+                <div class="section-title">
+                    <div class="section-icon" style="background:#d1fae5;color:#059669">
                         <i class="bi bi-repeat"></i>
                     </div>
-                    <h2 style="font-size: var(--font-size-2xl); font-weight: 700; margin: 0;">
-                        Routines favorites
-                        <span style="color: var(--gray-500); font-size: var(--font-size-lg); font-weight: 500;">({{ favoriteRoutines|length }})</span>
-                    </h2>
+                    Routines favorites
+                    <span class="text-muted fw-normal fs-6">({{ favoriteRoutines|length }})</span>
                 </div>
-                
-                <div class="grid-modern grid-modern-3">
+                <div class="row g-4">
                     {% for routine in favoriteRoutines %}
-                        <div class="card-modern" style="cursor: pointer;" onclick="window.location.href='{{ path('app_routine_show', {goalId: routine.goal.id, id: routine.id}) }}'">
-                            <!-- Routine Icon & Favorite -->
-                            <div class="d-flex align-items-center justify-content-between mb-md">
-                                <div class="avatar-modern" style="background: #E0F2F1; color: var(--accent-teal);">
-                                    <i class="bi bi-repeat"></i>
-                                </div>
-                                <i class="bi bi-heart-fill" style="font-size: 1.25rem; color: var(--danger);"></i>
-                            </div>
-                            
-                            <!-- Routine Title -->
-                            <h3 style="font-size: var(--font-size-lg); font-weight: 700; margin-bottom: var(--space-xs); color: var(--gray-900);">
-                                {{ routine.title }}
-                            </h3>
-                            
-                            <!-- Routine Description -->
-                            {% if routine.description %}
-                                <p style="color: var(--gray-600); font-size: var(--font-size-sm); margin-bottom: var(--space-md); line-height: 1.5;">
-                                    {{ routine.description|slice(0, 80) }}{% if routine.description|length > 80 %}...{% endif %}
-                                </p>
-                            {% endif %}
-                            
-                            <!-- Meta Info -->
-                            <div style="font-size: var(--font-size-xs); color: var(--gray-600);">
-                                <div class="d-flex align-items-center gap-sm mb-xs">
-                                    <i class="bi bi-check-circle" style="color: var(--gray-500);"></i>
-                                    <span>{{ routine.activities|length }} Activité(s)</span>
-                                </div>
-                                <div class="d-flex align-items-center gap-sm">
-                                    <i class="bi bi-bullseye" style="color: var(--gray-500);"></i>
-                                    <span>{{ routine.goal.title }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-        {% endif %}
-
-        <!-- Favorite Activities -->
-        {% if favoriteActivities|length > 0 %}
-            <div class="mb-xl">
-                <div class="d-flex align-items-center gap-md mb-lg">
-                    <div class="avatar-modern" style="background: #FFF3E0; color: var(--accent-orange);">
-                        <i class="bi bi-check-circle"></i>
-                    </div>
-                    <h2 style="font-size: var(--font-size-2xl); font-weight: 700; margin: 0;">
-                        Activités favorites
-                        <span style="color: var(--gray-500); font-size: var(--font-size-lg); font-weight: 500;">({{ favoriteActivities|length }})</span>
-                    </h2>
-                </div>
-                
-                <div class="grid-modern grid-modern-3">
-                    {% for activity in favoriteActivities %}
-                        <div class="card-modern">
-                            <!-- Activity Icon & Favorite -->
-                            <div class="d-flex align-items-center justify-content-between mb-md">
-                                <div class="avatar-modern" style="background: #FFF3E0; color: var(--accent-orange);">
-                                    <i class="bi bi-check-circle"></i>
-                                </div>
-                                <i class="bi bi-heart-fill" style="font-size: 1.25rem; color: var(--danger);"></i>
-                            </div>
-                            
-                            <!-- Activity Title -->
-                            <h3 style="font-size: var(--font-size-lg); font-weight: 700; margin-bottom: var(--space-md); color: var(--gray-900);">
-                                {{ activity.title }}
-                            </h3>
-                            
-                            <!-- Status Badge -->
-                            <div class="mb-md">
-                                <span class="badge-modern badge-modern-{{ activity.status == 'completed' ? 'success' : (activity.status == 'in_progress' ? 'warning' : 'info') }}" style="font-size: 0.7rem;">
-                                    {{ activity.status|upper }}
-                                </span>
-                            </div>
-                            
-                            <!-- Meta Info -->
-                            <div style="font-size: var(--font-size-xs); color: var(--gray-600);">
-                                <div class="d-flex align-items-center gap-sm mb-xs">
-                                    <i class="bi bi-clock" style="color: var(--gray-500);"></i>
-                                    <span>{{ activity.startTime|date('d/m/Y H:i') }}</span>
-                                </div>
-                                {% if activity.duration %}
-                                    <div class="d-flex align-items-center gap-sm mb-xs">
-                                        <i class="bi bi-hourglass-split" style="color: var(--gray-500);"></i>
-                                        <span>Durée: {{ activity.duration|date('H:i') }}</span>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="fav-card">
+                            <a class="card-link" href="{{ path('app_routine_show', {goalId: routine.goal.id, id: routine.id}) }}"></a>
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="rounded p-2" style="background:#d1fae5">
+                                        <i class="bi bi-repeat" style="color:#059669;font-size:1.3rem"></i>
                                     </div>
-                                {% endif %}
-                                <div class="d-flex align-items-center gap-sm">
-                                    <i class="bi bi-repeat" style="color: var(--gray-500);"></i>
-                                    <span>{{ activity.routine.title }}</span>
+                                    <h5 class="fw-bold mb-0">{{ routine.title }}</h5>
                                 </div>
+                                <button class="btn-heart btn-unfav-routine" data-routine-id="{{ routine.id }}" title="Retirer des favoris">
+                                    <i class="bi bi-heart-fill" style="font-size:1.3rem;color:#ef4444"></i>
+                                </button>
+                            </div>
+                            {% if routine.description %}
+                                <p class="text-muted small mb-3">{{ routine.description|slice(0,90) }}{% if routine.description|length > 90 %}…{% endif %}</p>
+                            {% endif %}
+                            <div class="d-flex justify-content-between mt-3 pt-3 border-top">
+                                <small class="text-muted">
+                                    <i class="bi bi-bullseye me-1"></i>{{ routine.goal.title|slice(0,25) }}
+                                </small>
+                                <small class="text-muted">
+                                    <i class="bi bi-list-check me-1"></i>{{ routine.activities|length }} activité(s)
+                                </small>
                             </div>
                         </div>
+                    </div>
                     {% endfor %}
                 </div>
             </div>
+            {% endif %}
+
+            {# ══ Favorite Activities ══ #}
+            {% if favoriteActivities|length > 0 %}
+            <div class="mb-5">
+                <div class="section-title">
+                    <div class="section-icon" style="background:#fef3c7;color:#d97706">
+                        <i class="bi bi-lightning-fill"></i>
+                    </div>
+                    Activités favorites
+                    <span class="text-muted fw-normal fs-6">({{ favoriteActivities|length }})</span>
+                </div>
+                <div class="row g-4">
+                    {% for activity in favoriteActivities %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="fav-card">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="rounded p-2" style="background:#fef3c7">
+                                        <i class="bi bi-lightning-fill" style="color:#d97706;font-size:1.3rem"></i>
+                                    </div>
+                                    <h5 class="fw-bold mb-0">{{ activity.title }}</h5>
+                                </div>
+                                <button class="btn-heart btn-unfav-activity" data-activity-id="{{ activity.id }}" title="Retirer des favoris">
+                                    <i class="bi bi-heart-fill" style="font-size:1.3rem;color:#ef4444"></i>
+                                </button>
+                            </div>
+                            <div class="mb-3">
+                                <span class="status-badge status-{{ activity.status|replace({'_':'-'}) }}">{{ activity.status|upper }}</span>
+                            </div>
+                            <div class="d-flex flex-column gap-1 mt-3 pt-3 border-top">
+                                <small class="text-muted">
+                                    <i class="bi bi-clock me-1"></i>{{ activity.startTime|date('d/m/Y H:i') }}
+                                </small>
+                                {% if activity.duration %}
+                                <small class="text-muted">
+                                    <i class="bi bi-hourglass-split me-1"></i>Durée : {{ activity.duration|date('H') }}h{{ activity.duration|date('i') }}min
+                                </small>
+                                {% endif %}
+                                <small class="text-muted">
+                                    <i class="bi bi-repeat me-1"></i>{{ activity.routine.title|slice(0,30) }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
         {% endif %}
-    {% endif %}
+    </div>
+
+    {# ── Toast ── #}
+    <div class="toast-container">
+        <div id="toast" class="toast toast-custom" role="alert">
+            <div class="toast-header">
+                <span id="toastIcon" class="me-2"></span>
+                <strong class="me-auto">Favoris</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body" id="toastMsg"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function showToast(msg, type) {
+            const el = document.getElementById('toast');
+            document.getElementById('toastMsg').textContent = msg;
+            document.getElementById('toastIcon').innerHTML =
+                type === 'success'
+                    ? '<i class="bi bi-check-circle-fill text-success"></i>'
+                    : '<i class="bi bi-x-circle-fill text-danger"></i>';
+            new bootstrap.Toast(el, { delay: 2500 }).show();
+        }
+
+        function popHeart(btn) {
+            btn.classList.remove('popping');
+            void btn.offsetWidth;
+            btn.classList.add('popping');
+        }
+
+        async function toggleFav(url, btn, card) {
+            popHeart(btn);
+            try {
+                const res  = await fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    // fade out the card since it's no longer a favorite
+                    card.style.transition = 'opacity .4s, transform .4s';
+                    card.style.opacity = '0';
+                    card.style.transform = 'scale(.95)';
+                    setTimeout(() => {
+                        const col = card.closest('.col-md-6, .col-lg-4, [class*="col"]');
+                        (col || card).remove();
+                        // If section is empty, reload to show empty state
+                        if (!document.querySelector('.btn-unfav-goal, .btn-unfav-routine, .btn-unfav-activity')) {
+                            location.reload();
+                        }
+                    }, 420);
+                }
+            } catch(e) { showToast('Erreur', 'error'); }
+        }
+
+        // Goals
+        document.querySelectorAll('.btn-unfav-goal').forEach(btn => {
+            btn.addEventListener('click', e => {
+                e.stopPropagation();
+                toggleFav(`/goal/${btn.dataset.goalId}/toggle-favorite`, btn, btn.closest('.fav-card'));
+            });
+        });
+        // Routines
+        document.querySelectorAll('.btn-unfav-routine').forEach(btn => {
+            btn.addEventListener('click', e => {
+                e.stopPropagation();
+                toggleFav(`/routine/${btn.dataset.routineId}/toggle-favorite`, btn, btn.closest('.fav-card'));
+            });
+        });
+        // Activities
+        document.querySelectorAll('.btn-unfav-activity').forEach(btn => {
+            btn.addEventListener('click', e => {
+                e.stopPropagation();
+                toggleFav(`/activity/${btn.dataset.activityId}/toggle-favorite`, btn, btn.closest('.fav-card'));
+            });
+        });
+    </script>
 {% endblock %}

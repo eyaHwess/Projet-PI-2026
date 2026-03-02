@@ -6,11 +6,8 @@ use App\Repository\MessageRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Vich\UploaderBundle\Mapping\Annotation as Vich;
-use Symfony\Component\HttpFoundation\File\File;
 
 #[ORM\Entity(repositoryClass: MessageRepository::class)]
-#[Vich\Uploadable]
 class Message
 {
     #[ORM\Id]
@@ -51,20 +48,14 @@ class Message
     #[ORM\Column(type: 'integer', nullable: true)]
     private ?int $audioDuration = null;
 
-    // VichUploader fields for images
-    #[Vich\UploadableField(mapping: 'message_images', fileNameProperty: 'imageName', size: 'imageSize')]
-    private ?File $imageFile = null;
-
+    // Image upload (managed manually)
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $imageName = null;
 
     #[ORM\Column(type: 'integer', nullable: true)]
     private ?int $imageSize = null;
 
-    // VichUploader for general files (documents, audio, video, etc.)
-    #[Vich\UploadableField(mapping: 'message_files', fileNameProperty: 'fileName', size: 'fileSize')]
-    private ?File $file = null;
-
+    // File upload (managed manually)
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $fileName = null;
 
@@ -299,21 +290,6 @@ class Message
         return $this->replyTo !== null;
     }
 
-    // VichUploader methods for images
-    public function setImageFile(?File $imageFile = null): void
-    {
-        $this->imageFile = $imageFile;
-
-        if (null !== $imageFile) {
-            $this->updatedAt = new \DateTime();
-        }
-    }
-
-    public function getImageFile(): ?File
-    {
-        return $this->imageFile;
-    }
-
     public function setImageName(?string $imageName): void
     {
         $this->imageName = $imageName;
@@ -360,22 +336,6 @@ class Message
         }
 
         return round($size, 2) . ' ' . $units[$unitIndex];
-    }
-
-    // VichUploader methods for general files
-    public function setFile(?File $file = null): void
-    {
-        $this->file = $file;
-
-        if (null !== $file) {
-            $this->updatedAt = new \DateTime();
-            $this->fileType = $file->getMimeType();
-        }
-    }
-
-    public function getFile(): ?File
-    {
-        return $this->file;
     }
 
     public function setFileName(?string $fileName): void

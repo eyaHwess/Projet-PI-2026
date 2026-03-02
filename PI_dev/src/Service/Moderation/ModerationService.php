@@ -25,8 +25,8 @@ class ModerationService
         private LoggerInterface $logger,
         private LoggerInterface $moderationLogger,
         private string $apiKey,
+        private EventDispatcherInterface $eventDispatcher,
         private float $toxicityThreshold = 0.7,
-        private EventDispatcherInterface $eventDispatcher
     ) {
     }
 

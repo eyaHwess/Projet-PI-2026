@@ -159,6 +159,61 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.15);
             min-width: 300px;
         }
+
+        /* ── Timer ── */
+        .timer-box {
+            background: linear-gradient(135deg, #f3e8ff 0%, #ede9fe 100%);
+            border: 1.5px solid #d8b4fe;
+            border-radius: 14px;
+            padding: 0.75rem 1rem;
+            margin-top: 0.75rem;
+        }
+        .timer-display {
+            font-size: 1.6rem;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 2px;
+            color: #5b21b6;
+            text-align: center;
+            line-height: 1;
+        }
+        .timer-display.timer-warning { color: #d97706; }
+        .timer-display.timer-danger  { color: #dc2626; animation: pulse-red 1s infinite; }
+        .timer-display.timer-done    { color: #059669; }
+        .timer-progress {
+            height: 5px;
+            border-radius: 50px;
+            background: #e9d5ff;
+            margin: 0.5rem 0;
+            overflow: hidden;
+        }
+        .timer-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #9333ea, #7c3aed);
+            border-radius: 50px;
+            transition: width 1s linear, background 0.5s;
+        }
+        .timer-progress-bar.warn  { background: linear-gradient(90deg, #f59e0b, #d97706); }
+        .timer-progress-bar.danger { background: linear-gradient(90deg, #ef4444, #dc2626); }
+        .timer-progress-bar.done  { background: linear-gradient(90deg, #10b981, #059669); width: 0% !important; }
+        .btn-timer {
+            padding: 0.3rem 0.75rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-timer-start  { background:#9333ea; color:#fff; }
+        .btn-timer-start:hover  { background:#7e22ce; }
+        .btn-timer-pause  { background:#f59e0b; color:#fff; }
+        .btn-timer-pause:hover  { background:#d97706; }
+        .btn-timer-reset  { background:#e9ecef; color:#374151; }
+        .btn-timer-reset:hover  { background:#dee2e6; }
+        @keyframes pulse-red {
+            0%,100% { opacity:1; } 50% { opacity:0.5; }
+        }
     </style>
 {% endblock %}
 
@@ -174,7 +229,7 @@
                         <a class="nav-link" href="{{ path('app_home') }}">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active fw-bold" style="color: var(--orange-primary);" href="{{ path('goal_list') }}">Mes Objectifs</a>
+                        <a class="nav-link active fw-bold" style="color: var(--orange-primary);" href="{{ path('app_goal_index') }}">Mes Objectifs</a>
                     </li>
                 </ul>
             </div>
@@ -203,6 +258,30 @@
                         <button id="deleteRoutineBtn" class="btn btn-outline-danger" title="Supprimer la routine">
                             <i class="bi bi-trash me-1"></i>Supprimer
                         </button>
+                    </div>
+                </div>
+            </div>
+
+            {# ── Charts section ── #}
+            <div class="row g-4 mb-4">
+                <div class="col-md-7">
+                    <div class="goal-header-card" style="border-radius:16px;padding:1.5rem;box-shadow:0 2px 10px rgba(0,0,0,0.05)">
+                        <h5 class="fw-bold mb-3">
+                            <i class="bi bi-bar-chart-fill me-2 text-orange"></i>Activités de la semaine
+                        </h5>
+                        <div style="position:relative;height:220px">
+                            {{ render_chart(weeklyChart) }}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <div class="goal-header-card" style="border-radius:16px;padding:1.5rem;box-shadow:0 2px 10px rgba(0,0,0,0.05)">
+                        <h5 class="fw-bold mb-3">
+                            <i class="bi bi-clock-history me-2 text-orange"></i>Temps investi
+                        </h5>
+                        <div style="position:relative;height:220px">
+                            {{ render_chart(timeChart) }}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -247,26 +326,78 @@
             {% if activities|length > 0 %}
                 <div class="row g-4">
                     {% for activity in activities %}
+                        {# Duration in seconds for the JS timer #}
+                        {% set dur_h = activity.duration|date('H')|number_format %}
+                        {% set dur_m = activity.duration|date('i')|number_format %}
+                        {% set dur_seconds = (dur_h * 3600) + (dur_m * 60) %}
                         <div class="col-md-6 col-lg-4">
-                            <div class="activity-card">
+                            <div class="activity-card" id="activity-card-{{ activity.id }}">
                                 <div class="d-flex justify-content-between align-items-start mb-3">
                                     <h5 class="fw-bold mb-0">{{ activity.title }}</h5>
-                                    {% if activity.hasReminder %}
-                                        <i class="bi bi-bell-fill text-warning fs-5"></i>
+                                    <div class="d-flex gap-1 align-items-center">
+                                        {% if activity.hasReminder %}
+                                            <i class="bi bi-bell-fill text-warning fs-5" title="Rappel activé"></i>
+                                        {% endif %}
+                                        {% if activity.priority == 'high' %}
+                                            <span class="badge rounded-pill" style="background:#fee2e2;color:#991b1b;font-size:0.65rem">🔴 Haute</span>
+                                        {% elseif activity.priority == 'medium' %}
+                                            <span class="badge rounded-pill" style="background:#fef3c7;color:#92400e;font-size:0.65rem">🟡 Moy.</span>
+                                        {% elseif activity.priority == 'low' %}
+                                            <span class="badge rounded-pill" style="background:#d1fae5;color:#065f46;font-size:0.65rem">🟢 Basse</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="mb-2">
+                                    <div class="d-flex align-items-center mb-1">
+                                        <i class="bi bi-calendar-event me-2" style="color:var(--primary-color);"></i>
+                                        <small class="text-muted">Début : {{ activity.startTime|date('d/m/Y H:i') }}</small>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-hourglass-split me-2" style="color:var(--primary-color);"></i>
+                                        <small class="text-muted">Durée planifiée : {{ activity.duration|date('H') }}h{{ activity.duration|date('i') }}min</small>
+                                    </div>
+                                </div>
+
+                                {# ── Timer ── #}
+                                <div class="timer-box" id="timer-box-{{ activity.id }}" data-activity-id="{{ activity.id }}" data-total="{{ dur_seconds }}" data-status="{{ activity.status }}">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <small class="fw-semibold text-muted" style="font-size:0.72rem">⏱ TIMER</small>
+                                        <small class="text-muted timer-status-label" style="font-size:0.7rem">
+                                            {% if activity.status == 'completed' %}Terminé ✅{% elseif activity.status == 'in_progress' %}En cours…{% else %}Prêt{% endif %}
+                                        </small>
+                                    </div>
+                                    <div class="timer-progress">
+                                        <div class="timer-progress-bar{% if activity.status == 'completed' %} done{% endif %}" style="width:{% if activity.status == 'completed' %}0%{% else %}100%{% endif %}"></div>
+                                    </div>
+                                    <div class="timer-display{% if activity.status == 'completed' %} timer-done{% endif %}">
+                                        {% if activity.status == 'completed' %}
+                                            00:00:00
+                                        {% else %}
+                                            {{ '%02d'|format(dur_h) }}:{{ '%02d'|format(dur_m) }}:00
+                                        {% endif %}
+                                    </div>
+                                    {% if activity.status != 'completed' and activity.status != 'cancelled' %}
+                                    <div class="timer-btn-row d-flex gap-2 justify-content-center mt-2">
+                                        <button class="btn-timer btn-timer-start timer-start-btn" title="Démarrer / Reprendre">
+                                            <i class="bi bi-play-fill"></i> Démarrer
+                                        </button>
+                                        <button class="btn-timer btn-timer-pause timer-pause-btn" style="display:none" title="Pause">
+                                            <i class="bi bi-pause-fill"></i> Pause
+                                        </button>
+                                        <button class="btn-timer btn-timer-reset timer-reset-btn" title="Réinitialiser">
+                                            <i class="bi bi-arrow-counterclockwise"></i>
+                                        </button>
+                                    </div>
+                                    {% elseif activity.status == 'completed' %}
+                                    <div class="timer-btn-row text-center mt-1">
+                                        <small class="text-success fw-bold">🎉 Activité terminée !</small>
+                                    </div>
                                     {% endif %}
                                 </div>
-                                <div class="mb-3">
-                                    <div class="d-flex align-items-center mb-2">
-                                        <i class="bi bi-clock me-2" style="color: var(--primary-color);"></i>
-                                        <small class="text-muted">Début: {{ activity.startTime|date('d/m/Y H:i') }}</small>
-                                    </div>
-                                    <div class="d-flex align-items-center mb-2">
-                                        <i class="bi bi-hourglass-split me-2" style="color: var(--primary-color);"></i>
-                                        <small class="text-muted">Durée: {{ activity.duration|date('H:i') }}</small>
-                                    </div>
-                                </div>
-                                <div class="pt-3 border-top">
-                                    <span class="status-badge status-{{ activity.status|lower|replace({'_': '-'}) }} mb-3 d-inline-block">{{ activity.status|upper }}</span>
+
+                                <div class="pt-3 border-top mt-3">
+                                    <span class="status-badge status-{{ activity.status|lower|replace({'_': '-'}) }} mb-3 d-inline-block activity-status-badge" id="status-badge-{{ activity.id }}">{{ activity.status|upper }}</span>
                                     <div class="d-flex gap-2 mt-2">
                                         <button class="btn btn-outline-primary btn-sm flex-fill edit-activity-btn" data-activity-id="{{ activity.id }}" title="Modifier">
                                             <i class="bi bi-pencil me-1"></i>Modifier
@@ -348,7 +479,11 @@
                 modalContent.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-orange" role="status"><span class="visually-hidden">Chargement...</span></div></div>';
                 activityModal.show();
                 document.body.style.overflow = 'hidden';
-                fetch(url)
+                fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
                     .then(r => r.text())
                     .then(html => {
                         modalContent.innerHTML = html;
@@ -369,6 +504,22 @@
             function initForm() {
                 const form = modalContent.querySelector('form');
                 if (!form) return;
+
+                // ── Rappel : toggle champ reminderAt ──
+                const reminderCheckbox = form.querySelector('input[type="checkbox"][name*="hasReminder"]');
+                const reminderField    = form.querySelector('#reminderField');
+                if (reminderCheckbox && reminderField) {
+                    // état initial
+                    reminderField.style.display = reminderCheckbox.checked ? 'block' : 'none';
+                    // toggle au clic
+                    reminderCheckbox.addEventListener('change', function () {
+                        reminderField.style.display = this.checked ? 'block' : 'none';
+                        if (!this.checked) {
+                            const reminderInput = reminderField.querySelector('input');
+                            if (reminderInput) reminderInput.value = '';
+                        }
+                    });
+                }
 
                 form.addEventListener('submit', async (e) => {
                     e.preventDefault();
@@ -717,6 +868,171 @@
             document.getElementById('routineModal').addEventListener('hidden.bs.modal', function () {
                 document.body.style.overflow = '';
             });
+
+            // ════════════════════════════════════════════
+            //  TIMERS D'ACTIVITÉ
+            // ════════════════════════════════════════════
+            const timers = {}; // { activityId: { interval, remaining, total, running } }
+
+            function fmt(sec) {
+                const h = Math.floor(sec / 3600);
+                const m = Math.floor((sec % 3600) / 60);
+                const s = sec % 60;
+                return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+            }
+
+            function updateTimerUI(box, state) {
+                const display  = box.querySelector('.timer-display');
+                const bar      = box.querySelector('.timer-progress-bar');
+                const label    = box.querySelector('.timer-status-label');
+                const pct      = state.total > 0 ? (state.remaining / state.total) * 100 : 0;
+
+                display.textContent = fmt(state.remaining);
+
+                // colour thresholds
+                display.classList.remove('timer-warning','timer-danger','timer-done');
+                bar.classList.remove('warn','danger','done');
+                if (state.remaining <= 0) {
+                    display.classList.add('timer-done');
+                    bar.classList.add('done');
+                    bar.style.width = '0%';
+                    label.textContent = 'Terminé ✅';
+                } else if (pct <= 15) {
+                    display.classList.add('timer-danger');
+                    bar.classList.add('danger');
+                    bar.style.width = pct + '%';
+                } else if (pct <= 30) {
+                    display.classList.add('timer-warning');
+                    bar.classList.add('warn');
+                    bar.style.width = pct + '%';
+                } else {
+                    bar.style.width = pct + '%';
+                    if (state.running) {
+                        label.textContent = 'En cours…';
+                    }
+                    // Don't overwrite 'Prêt' / 'En pause ⏸' set elsewhere
+                }
+            }
+
+            async function updateActivityStatus(activityId, status) {
+                try {
+                    await fetch(`/routines/{{ routine.id }}/activities/${activityId}/status`, {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: `status=${status}`
+                    });
+                    // Update badge in DOM
+                    const badge = document.getElementById(`status-badge-${activityId}`);
+                    if (badge) {
+                        const labels = { pending:'PENDING', in_progress:'IN_PROGRESS', completed:'COMPLETED' };
+                        badge.textContent = labels[status] || status.toUpperCase();
+                        badge.className = `status-badge status-${status.replace('_','-')} mb-3 d-inline-block activity-status-badge`;
+                    }
+                } catch(e) { console.warn('Erreur maj statut', e); }
+            }
+
+            function initTimer(box) {
+                const id    = box.dataset.activityId;
+                const total = parseInt(box.dataset.total, 10);
+
+                // Require a valid positive duration
+                if (!total || isNaN(total) || total <= 0) return;
+
+                timers[id] = { interval: null, remaining: total, total, running: false };
+
+                const startBtn = box.querySelector('.timer-start-btn');
+                const pauseBtn = box.querySelector('.timer-pause-btn');
+                const resetBtn = box.querySelector('.timer-reset-btn');
+                const label    = box.querySelector('.timer-status-label');
+
+                // No controls for completed/cancelled activities
+                if (!startBtn) return;
+
+                function show(btn, visible) {
+                    if (btn) btn.style.display = visible ? '' : 'none';
+                }
+
+                startBtn.addEventListener('click', () => {
+                    const st = timers[id];
+                    if (st.running || st.remaining <= 0) return;
+
+                    st.running = true;
+                    show(startBtn, false);
+                    show(pauseBtn, true);
+
+                    // Mark as in_progress on first start
+                    if (box.dataset.status === 'pending' || box.dataset.status === '') {
+                        box.dataset.status = 'in_progress';
+                        updateActivityStatus(id, 'in_progress');
+                    }
+                    if (label) label.textContent = 'En cours…';
+
+                    st.interval = setInterval(() => {
+                        st.remaining = Math.max(0, st.remaining - 1);
+                        updateTimerUI(box, st);
+
+                        if (st.remaining <= 0) {
+                            clearInterval(st.interval);
+                            st.running = false;
+                            show(startBtn, false);
+                            show(pauseBtn, false);
+                            if (resetBtn) resetBtn.style.display = 'none';
+
+                            // Auto-complete
+                            updateActivityStatus(id, 'completed');
+                            box.dataset.status = 'completed';
+
+                            // Replace button row with done message
+                            const btnRow = box.querySelector('.timer-btn-row');
+                            if (btnRow) {
+                                btnRow.innerHTML = '<small class="text-success fw-bold">🎉 Activité terminée !</small>';
+                            }
+
+                            showToast('✅ Activité terminée ! Bravo !', 'success');
+                        }
+                    }, 1000);
+                });
+
+                if (pauseBtn) {
+                    pauseBtn.addEventListener('click', () => {
+                        const st = timers[id];
+                        if (!st.running) return;
+                        clearInterval(st.interval);
+                        st.running = false;
+                        show(startBtn, true);
+                        show(pauseBtn, false);
+                        if (label) label.textContent = 'En pause ⏸';
+                    });
+                }
+
+                if (resetBtn) {
+                    resetBtn.addEventListener('click', () => {
+                        const st = timers[id];
+                        clearInterval(st.interval);
+                        st.running = false;
+                        st.remaining = st.total;
+                        show(startBtn, true);
+                        show(pauseBtn, false);
+                        startBtn.disabled = false;
+                        if (label) label.textContent = 'Prêt';
+                        updateTimerUI(box, st);
+                    });
+                }
+
+                // Set correct initial label
+                if (label && !label.textContent.includes('Terminé')) {
+                    label.textContent = 'Prêt';
+                }
+
+                // Initial render
+                updateTimerUI(box, timers[id]);
+            }
+
+            // Boot all timers on page
+            document.querySelectorAll('.timer-box').forEach(box => initTimer(box));
         });
     </script>
 {% endblock %}

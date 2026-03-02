@@ -2,6 +2,185 @@
 
 {% block title %}Moderation Logs{% endblock %}
 
+{% block stylesheets %}
+{{ parent() }}
+<style>
+/* ── Moderation Log — scoped styles ── */
+:root {
+    --mod-bg:        #f8fafc;
+    --mod-card:      #ffffff;
+    --mod-border:    #e2e8f0;
+    --mod-text:      #1e293b;
+    --mod-muted:     #64748b;
+    --mod-primary:   #6366f1;
+    --mod-danger:    #ef4444;
+    --mod-warning:   #f59e0b;
+    --mod-success:   #10b981;
+    --mod-info:      #3b82f6;
+}
+
+/* badge-soft base */
+.badge-soft {
+    display: inline-flex; align-items: center; gap: .25rem;
+    padding: .2rem .65rem; border-radius: 50px;
+    font-size: .72rem; font-weight: 600; line-height: 1.4;
+    background: #f1f5f9; color: #475569;
+    border: 1px solid #e2e8f0;
+    white-space: nowrap;
+}
+/* severity */
+.badge-sev-high   { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
+.badge-sev-med    { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+.badge-sev-low    { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
+/* status */
+.badge-status-pending  { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+.badge-status-reviewed { background: #d1fae5; color: #065f46; border-color: #a7f3d0; }
+/* role */
+.badge-role { background: #ede9fe; color: #5b21b6; border-color: #ddd6fe; }
+
+/* mod card */
+.mod-card {
+    border: 1px solid var(--mod-border);
+    border-radius: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,.05);
+    background: var(--mod-card);
+    overflow: hidden;
+}
+.mod-card-footer {
+    border-top: 1px solid var(--mod-border);
+    padding: .75rem 1.25rem;
+    background: #f8fafc;
+}
+
+/* toolbar */
+.mod-logs-toolbar .form-control,
+.mod-logs-toolbar .form-select { border-radius: .5rem; border-color: var(--mod-border); font-size: .85rem; }
+.mod-logs-toolbar .form-control:focus,
+.mod-logs-toolbar .form-select:focus { border-color: var(--mod-primary); box-shadow: 0 0 0 3px rgba(99,102,241,.12); }
+
+/* table */
+.mod-logs-table thead th {
+    background: #f8fafc; font-size: .75rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .05em;
+    color: var(--mod-muted); padding: .85rem 1rem;
+    border-bottom: 2px solid var(--mod-border);
+}
+.mod-logs-table tbody tr { transition: background .15s; }
+.mod-logs-table tbody tr:hover { background: #f8fafc; }
+.mod-logs-table tbody td { padding: .85rem 1rem; vertical-align: middle; border-color: var(--mod-border); }
+.mod-excerpt { max-width: 260px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--mod-muted); font-size: .83rem; }
+.mod-user-line { font-size: .87rem; color: var(--mod-text); }
+.mod-muted { color: var(--mod-muted); }
+
+/* action button */
+.mod-action-btn {
+    background: #f1f5f9; border: 1px solid var(--mod-border);
+    color: var(--mod-text); font-size: .8rem; font-weight: 600;
+    border-radius: .5rem; padding: .3rem .75rem;
+    transition: background .15s;
+}
+.mod-action-btn:hover { background: #e2e8f0; }
+.mod-btn-soft {
+    background: #f1f5f9; border-color: var(--mod-border);
+    color: var(--mod-text); font-size: .8rem; border-radius: .5rem;
+}
+.mod-btn-soft:hover { background: #e2e8f0; }
+.mod-btn-soft-primary {
+    background: var(--mod-primary); border-color: var(--mod-primary);
+    color: #fff; font-size: .8rem; border-radius: .5rem; font-weight: 600;
+}
+.mod-btn-soft-primary:hover { background: #4f46e5; }
+
+/* ── In-content overlay ── */
+.mod-incontent-overlay {
+    display: none;
+    position: fixed;
+    top: 0; bottom: 0;
+    left: 0; right: 0;
+    background: rgba(15,23,42,.45);
+    backdrop-filter: blur(3px);
+    z-index: 1050;
+    align-items: center;
+    justify-content: center;
+}
+.mod-incontent-overlay.open {
+    display: flex;
+}
+
+.mod-incontent-panel {
+    background: var(--mod-card);
+    border-radius: 1.25rem;
+    box-shadow: 0 20px 60px rgba(0,0,0,.2);
+    width: 100%;
+    max-width: 600px;
+    max-height: 85vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    margin: 1rem;
+}
+
+.mod-confirm-panel { max-width: 420px; }
+
+/* panel header */
+.mod-panel-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    padding: 1.4rem 1.5rem 1rem;
+    border-bottom: 1px solid var(--mod-border);
+    gap: 1rem;
+}
+.mod-panel-title { font-weight: 800; font-size: 1.05rem; color: var(--mod-text); margin: 0; }
+.mod-panel-subtitle { font-size: .83rem; color: var(--mod-muted); margin-top: .2rem; }
+.mod-panel-close {
+    background: #f1f5f9; border: none; border-radius: .5rem;
+    width: 2rem; height: 2rem; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--mod-muted); flex-shrink: 0;
+    transition: background .15s, color .15s;
+}
+.mod-panel-close:hover { background: #e2e8f0; color: var(--mod-text); }
+
+/* panel body */
+.mod-panel-body { padding: 1.25rem 1.5rem; flex: 1; }
+
+.mod-kv {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: .75rem; margin-bottom: 1rem;
+}
+@media(max-width:500px){ .mod-kv{ grid-template-columns: 1fr 1fr; } }
+.mod-kv-label { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--mod-muted); margin-bottom: .25rem; }
+.mod-kv-value { font-size: .87rem; color: var(--mod-text); font-weight: 600; }
+
+.mod-signals { margin-bottom: 1rem; }
+
+.mod-preview {
+    background: #f8fafc; border: 1px solid var(--mod-border);
+    border-radius: .6rem; padding: .75rem 1rem;
+    font-size: .87rem; color: #475569; line-height: 1.6;
+    white-space: pre-wrap; word-break: break-word;
+    max-height: 150px; overflow-y: auto;
+    margin-top: .4rem;
+}
+
+/* panel footer */
+.mod-panel-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--mod-border);
+    display: flex; justify-content: flex-end; gap: .6rem;
+    background: #f8fafc; border-radius: 0 0 1.25rem 1.25rem;
+}
+
+.mod-hidden { display: none; }
+
+/* col widths */
+.col-date     { width: 140px; }
+.col-user     { width: 200px; }
+.col-entity   { width: 100px; }
+.col-severity { width: 90px; }
+.col-status   { width: 100px; }
+.col-action   { width: 110px; }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid py-4">
     {% set pendingCount = 0 %}

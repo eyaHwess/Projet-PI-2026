@@ -15,11 +15,14 @@ security:
             provider: app_user_provider
             user_checker: App\Security\AppUserChecker
 
+            custom_authenticators:
+                - App\Security\GoogleConnectAuthenticator
+
             form_login:
                 login_path: app_login
                 check_path: app_login
-                username_parameter: email
-                password_parameter: password
+                username_parameter: _username
+                password_parameter: _password
                 enable_csrf: true
                 success_handler: App\Security\LoginSuccessHandler
                 failure_handler: App\Security\LoginFailureHandler
@@ -35,6 +38,8 @@ security:
         - { path: ^/connect, roles: PUBLIC_ACCESS }
         - { path: ^/user/add, roles: PUBLIC_ACCESS }
         - { path: ^/register, roles: PUBLIC_ACCESS }
+        - { path: ^/reset-password, roles: PUBLIC_ACCESS }
+        - { path: ^/landing, roles: PUBLIC_ACCESS }
         - { path: ^/demo, roles: PUBLIC_ACCESS }
 
         # Goal/Routine/Activity system

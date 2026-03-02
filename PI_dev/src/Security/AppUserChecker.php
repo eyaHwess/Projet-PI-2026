@@ -16,7 +16,8 @@ class AppUserChecker implements UserCheckerInterface
         }
 
         // Compte créé via Google sans mot de passe : bloquer le login email/mot de passe
-        if ($user->getPassword() === null || $user->getPassword() === '') {
+        // mais laisser passer si l'utilisateur se connecte via Google (googleId présent)
+        if (($user->getPassword() === null || $user->getPassword() === '') && !$user->getGoogleId()) {
             throw new CustomUserMessageAuthenticationException(
                 'Ce compte utilise la connexion Google. Utilisez le bouton « Se connecter avec Google » ci-dessous.'
             );
@@ -30,8 +31,8 @@ class AppUserChecker implements UserCheckerInterface
             return;
         }
 
-        if (!$user->isEnabled()) {
-            throw new CustomUserMessageAuthenticationException('Votre compte est désactivé.');
+        if ($user->getStatus() === 'BANNED' || $user->getStatus() === 'INACTIVE') {
+            throw new CustomUserMessageAuthenticationException('Votre compte est désactivé ou banni.');
         }
     }
 }

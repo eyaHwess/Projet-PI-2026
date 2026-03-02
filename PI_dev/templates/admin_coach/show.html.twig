@@ -15,7 +15,7 @@
 {% block body %}
     <section style="padding-top: 2rem; padding-bottom: 60px;">
         <div class="container">
-            <a href="{{ path('app_admin_coach_index') }}" class="btn btn-link text-decoration-none mb-4 text-secondary">
+            <a href="{{ path('coaches_list') }}" class="btn btn-link text-decoration-none mb-4 text-secondary">
                 <i class="bi bi-arrow-left me-1"></i>Retour
             </a>
             <div class="detail-card">
@@ -25,8 +25,8 @@
                         <p class="text-muted mb-0">{{ coach.email }}</p>
                     </div>
                     <div class="d-flex gap-2">
-                        <a href="{{ path('app_admin_coach_edit', {id: coach.id}) }}" class="btn btn-orange btn-sm">Modifier</a>
-                        <form action="{{ path('app_admin_coach_delete', {id: coach.id}) }}" method="post" onsubmit="return confirm('Retirer le rôle coach de cet utilisateur ?');">
+                        <a href="{{ path('admin_user_detail', {id: coach.id}) }}" class="btn btn-orange btn-sm">Modifier</a>
+                        <form action="{{ path('admin_user_detail', {id: coach.id}) }}" method="post" onsubmit="return confirm('Retirer le rôle coach de cet utilisateur ?');">
                             <input type="hidden" name="_token" value="{{ csrf_token('delete-coach' ~ coach.id) }}">
                             <button type="submit" class="btn btn-outline-danger btn-sm">Retirer coach</button>
                         </form>

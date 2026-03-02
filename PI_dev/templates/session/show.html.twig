@@ -606,9 +606,9 @@
                                         <div class="timeline-title">Session confirmée</div>
                                         <div class="timeline-date">
                                             <i class="bi bi-calendar-event"></i>
-                                            {% if session.confirmedAt %}
-                                                {{ session.confirmedAt|date('d/m/Y à H:i') }}
-                                            {% else %}
+                                            {% if session.scheduledAt %}
+                                                {{ session.scheduledAt|date('d/m/Y à H:i') }}
+                                            {% elseif session.updatedAt %}
                                                 {{ session.updatedAt|date('d/m/Y à H:i') }}
                                             {% endif %}
                                         </div>

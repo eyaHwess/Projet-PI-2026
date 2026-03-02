@@ -139,7 +139,7 @@
                         <a class="nav-link" href="{{ path('app_home') }}">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active fw-bold text-orange" href="{{ path('goal_list') }}">Mes Objectifs</a>
+                        <a class="nav-link active fw-bold text-orange" href="{{ path('app_goal_index') }}">Mes Objectifs</a>
                     </li>
                     <li class="nav-item ms-3">
                         <button id="newGoalBtn" class="btn btn-orange">
@@ -154,7 +154,7 @@
     <!-- Hero Section -->
     <section class="hero-section">
         <div class="container">
-            <div class="row align-items-center mb-5">
+            <div class="row align-items-center mb-4">
                 <div class="col-lg-8">
                     <span class="badge bg-light text-orange px-4 py-2 rounded-pill mb-3 d-inline-flex align-items-center">
                         <i class="bi bi-check-circle-fill me-2"></i>Suivi d'objectifs
@@ -170,6 +170,50 @@
                     </button>
                 </div>
             </div>
+
+            {# Overview chart #}
+            {% if overviewChart is defined %}
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="goal-card" style="padding:1.5rem">
+                        <h6 class="fw-bold mb-3">
+                            <i class="bi bi-pie-chart-fill me-2" style="color:var(--primary-color)"></i>Vue d'ensemble
+                        </h6>
+                        <div style="position:relative;height:200px">
+                            {{ render_chart(overviewChart) }}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-8 d-flex align-items-center">
+                    <div class="row g-3 w-100">
+                        <div class="col-6">
+                            <div class="goal-card text-center py-3">
+                                <div class="display-6 fw-bold" style="color:var(--primary-color)">{{ goals|length }}</div>
+                                <div class="text-muted small mt-1">Total objectifs</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="goal-card text-center py-3">
+                                <div class="display-6 fw-bold text-success">{{ goals|filter(g => g.status == 'completed')|length }}</div>
+                                <div class="text-muted small mt-1">Terminés</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="goal-card text-center py-3">
+                                <div class="display-6 fw-bold text-primary">{{ goals|filter(g => g.status == 'active')|length }}</div>
+                                <div class="text-muted small mt-1">Actifs</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="goal-card text-center py-3">
+                                <div class="display-6 fw-bold text-warning">{{ goals|filter(g => g.status == 'paused')|length }}</div>
+                                <div class="text-muted small mt-1">En pause</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
 
             <!-- Filters and Sort -->
             <div class="row g-3 mb-4">

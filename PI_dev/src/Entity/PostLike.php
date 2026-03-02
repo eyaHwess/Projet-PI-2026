@@ -22,7 +22,7 @@ class PostLike
     #[ORM\ManyToOne(inversedBy: 'postLikes')]
     #[ORM\JoinColumn(nullable: false)]
     #[Assert\NotNull(message: 'User who likes the post is required.')]
-    private ?User $Liker = null;
+    private ?User $liker = null;
 
     public function getId(): ?int
     {
