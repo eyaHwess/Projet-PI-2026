@@ -200,7 +200,7 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
 
         <!-- ── Main form ── -->
         <div class="edit-layout-main">
-            {{ form_start(form, {'attr': {'id': 'editForm', 'novalidate': 'novalidate'}}) }}
+            {{ form_start(form, {'attr': {'id': 'editForm', 'novalidate': 'novalidate', 'data-priority-name': form.priority.vars.full_name, 'data-status-name': form.status.vars.full_name}}) }}
 
             <div class="form-card">
                 <div class="form-card-header">
@@ -356,42 +356,64 @@ select.field-input { appearance: none; background-image: url("data:image/svg+xml
 </div>
 
 <script>
-// ── Priority ──
-function setPriority(val, el) {
-    document.querySelectorAll('#priorityGrid .priority-card').forEach(c => {
-        c.className = 'priority-card';
-    });
-    const cls = { high: 'selected-high', medium: 'selected-medium', low: 'selected-low' };
-    el.classList.add(cls[val] || 'selected');
-    const sel = document.getElementById('prioritySelect');
-    if (sel) sel.value = val;
-}
+(function() {
+    var priorityName = document.getElementById('editForm').getAttribute('data-priority-name') || 'goal[priority]';
+    var statusName  = document.getElementById('editForm').getAttribute('data-status-name')  || 'goal[status]';
 
-// ── Status ──
-function setStatus(val, el) {
-    document.querySelectorAll('#statusGrid .status-card').forEach(c => {
-        c.classList.remove('selected');
-    });
-    el.classList.add('selected');
-    const sel = document.getElementById('statusSelect');
-    if (sel) sel.value = val;
-}
-
-// ── Init: highlight current values ──
-window.addEventListener('DOMContentLoaded', () => {
-    // Priority
-    const pSel = document.getElementById('prioritySelect');
-    if (pSel && pSel.value) {
-        const pCard = document.querySelector('#priorityGrid [data-val="' + pSel.value + '"]');
-        if (pCard) setPriority(pSel.value, pCard);
+    function getPriorityField() {
+        var sel = document.getElementById('prioritySelect');
+        if (sel && typeof sel.value !== 'undefined') return sel;
+        return document.querySelector('#editForm [name="' + priorityName.replace(/"/g, '\\"') + '"]');
+    }
+    function getStatusField() {
+        var sel = document.getElementById('statusSelect');
+        if (sel && typeof sel.value !== 'undefined') return sel;
+        return document.querySelector('#editForm [name="' + statusName.replace(/"/g, '\\"') + '"]');
     }
 
-    // Status
-    const sSel = document.getElementById('statusSelect');
-    if (sSel && sSel.value) {
-        const sCard = document.querySelector('#statusGrid [data-val="' + sSel.value.toLowerCase() + '"]');
-        if (sCard) setStatus(sSel.value.toLowerCase(), sCard);
-    }
-});
+    window.setPriority = function(val, el) {
+        document.querySelectorAll('#priorityGrid .priority-card').forEach(function(c) { c.className = 'priority-card'; });
+        var cls = { high: 'selected-high', medium: 'selected-medium', low: 'selected-low' };
+        el.classList.add(cls[val] || 'selected');
+        var field = getPriorityField();
+        if (field) field.value = val;
+    };
+
+    window.setStatus = function(val, el) {
+        document.querySelectorAll('#statusGrid .status-card').forEach(function(c) { c.classList.remove('selected'); });
+        el.classList.add('selected');
+        var field = getStatusField();
+        if (field) field.value = val;
+    };
+
+    window.addEventListener('DOMContentLoaded', function() {
+        var pField = getPriorityField();
+        if (pField && pField.value) {
+            var pCard = document.querySelector('#priorityGrid [data-val="' + pField.value + '"]');
+            if (pCard) setPriority(pField.value, pCard);
+        }
+        var sField = getStatusField();
+        if (sField && sField.value) {
+            var sCard = document.querySelector('#statusGrid [data-val="' + sField.value.toLowerCase() + '"]');
+            if (sCard) setStatus(sField.value.toLowerCase(), sCard);
+        }
+
+        // Sync priority/status from selected cards right before submit (ensures value is sent)
+        document.getElementById('editForm').addEventListener('submit', function() {
+            var pCard = document.querySelector('#priorityGrid .priority-card.selected-high, #priorityGrid .priority-card.selected-medium, #priorityGrid .priority-card.selected-low');
+            if (pCard) {
+                var pVal = pCard.getAttribute('data-val');
+                var pf = getPriorityField();
+                if (pf) pf.value = pVal;
+            }
+            var sCard = document.querySelector('#statusGrid .status-card.selected');
+            if (sCard) {
+                var sVal = sCard.getAttribute('data-val');
+                var sf = getStatusField();
+                if (sf) sf.value = sVal;
+            }
+        });
+    });
+})();
 </script>
 {% endblock %}

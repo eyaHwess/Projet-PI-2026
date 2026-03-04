@@ -72,10 +72,12 @@ class GoalType extends AbstractType
             ->add('status', ChoiceType::class, [
                 'label' => 'Statut',
                 'choices' => [
+                    'Brouillon' => 'draft',
                     'Active' => 'active',
-                    'Terminé' => 'completed',
                     'En pause' => 'paused',
-                    'Annulé' => 'cancelled'
+                    'Terminé' => 'completed',
+                    'Échoué' => 'failed',
+                    'Archivé' => 'archived',
                 ],
                 'attr' => [
                     'class' => 'w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500'

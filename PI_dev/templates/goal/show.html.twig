@@ -44,11 +44,138 @@
             color: white;
         }
         .content-section {
-            background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
-            padding-top: 120px;
+            background: #f8f9fc;
+            padding-top: 100px;
             padding-bottom: 60px;
             min-height: 100vh;
         }
+
+        /* ── Goal hero (partie haute) ── */
+        .goal-hero {
+            background: linear-gradient(135deg, #ffffff 0%, #f5f3ff 50%, #ede9fe 100%);
+            border-radius: 24px;
+            padding: 2rem 2.25rem 2.25rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 24px rgba(91, 76, 219, 0.08), 0 1px 3px rgba(0,0,0,0.04);
+            border: 1px solid rgba(91, 76, 219, 0.12);
+            position: relative;
+            overflow: hidden;
+        }
+        .goal-hero::before {
+            content: '';
+            position: absolute;
+            top: -60px;
+            right: -60px;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(91, 76, 219, 0.06) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .goal-hero-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            text-decoration: none;
+            margin-bottom: 1.5rem;
+            padding: 0.4rem 0;
+            transition: color 0.2s, transform 0.2s;
+        }
+        .goal-hero-back:hover { color: var(--primary-hover); transform: translateX(-2px); }
+        .goal-hero-back i { font-size: 1.1rem; }
+        .goal-hero-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--primary-color);
+            margin-bottom: 0.35rem;
+        }
+        .goal-hero-title {
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            font-weight: 800;
+            color: #1f2937;
+            line-height: 1.25;
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.02em;
+        }
+        .goal-hero-desc {
+            font-size: 1rem;
+            color: #4b5563;
+            line-height: 1.55;
+            max-width: 42rem;
+            margin-bottom: 1.5rem;
+        }
+        .goal-hero-meta {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 1rem 1.5rem;
+        }
+        .goal-hero-status {
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        .goal-hero-progress-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .goal-hero-progress-label { font-size: 0.8rem; font-weight: 600; color: #6b7280; }
+        .goal-hero-progress-bar {
+            width: 120px;
+            height: 8px;
+            border-radius: 10px;
+            background: #e5e7eb;
+            overflow: hidden;
+        }
+        .goal-hero-progress-fill {
+            height: 100%;
+            border-radius: 10px;
+            background: linear-gradient(90deg, var(--primary-color), var(--primary-hover));
+            transition: width 0.4s ease;
+        }
+        .goal-hero-progress-pct {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        .goal-hero-dates {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .goal-hero-date {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.9rem;
+            background: rgba(255,255,255,0.8);
+            border: 1px solid rgba(91, 76, 219, 0.15);
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #374151;
+        }
+        .goal-hero-date i { color: var(--primary-color); font-size: 1rem; }
+        .goal-hero-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .goal-hero-head-left { flex: 1; min-width: 0; }
+        .goal-hero-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
+        .goal-hero-actions .btn { white-space: nowrap; }
+
         .goal-header-card {
             background: white;
             border: 2px solid #e9ecef;
@@ -78,10 +205,11 @@
             font-weight: 700;
             text-transform: uppercase;
         }
-        .status-active { background-color: #d1fae5; color: #065f46; }
-        .status-completed { background-color: #dbeafe; color: #1e40af; }
-        .status-paused { background-color: #fef3c7; color: #92400e; }
-        .status-cancelled { background-color: #f3f4f6; color: #374151; }
+        .status-active { background: linear-gradient(135deg, #d1fae5, #a7f3d0); color: #065f46; }
+        .status-completed { background: linear-gradient(135deg, #dbeafe, #bfdbfe); color: #1e40af; }
+        .status-paused { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #92400e; }
+        .status-cancelled { background: #f3f4f6; color: #374151; }
+        .status-failed { background: linear-gradient(135deg, #fee2e2, #fecaca); color: #b91c1c; }
         .visibility-badge {
             padding: 0.5rem 1rem;
             border-radius: 50px;
@@ -124,66 +252,139 @@
         .text-orange { color: var(--primary-color) !important; }
 
         /* History timeline */
-        .goal-history-section { padding: 0 0 3rem 0; }
-        .history-timeline { position: relative; padding-left: 2.5rem; }
-        .history-item { position: relative; margin-bottom: 1.5rem; }
+        .goal-history-section { padding: 0; }
+        .history-timeline { position: relative; padding-left: 2.75rem; }
+        .history-item { position: relative; margin-bottom: 1.25rem; }
+        .history-item:last-child { margin-bottom: 0; }
         .history-line {
             position: absolute;
-            left: -1.75rem;
-            top: 2rem;
-            bottom: -1.5rem;
-            width: 2px;
-            background: #e9ecef;
+            left: -1.6rem;
+            top: 2.25rem;
+            bottom: -1.25rem;
+            width: 3px;
+            background: linear-gradient(180deg, var(--primary-light) 0%, #e9ecef 100%);
+            border-radius: 2px;
         }
         .history-line-last { display: none; }
         .history-dot {
             position: absolute;
-            left: -2.15rem;
-            top: 0.25rem;
-            width: 32px;
-            height: 32px;
+            left: -2.35rem;
+            top: 0.15rem;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             border: 2px solid;
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
+        .history-dot i { font-size: 0.9rem; }
         .history-card {
-            background: white;
-            border: 1.5px solid #e9ecef;
-            border-radius: 14px;
-            padding: 1rem 1.25rem;
-            box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+            background: #fafbff;
+            border: 1px solid #e8e6f9;
+            border-radius: 16px;
+            padding: 1.1rem 1.35rem;
+            box-shadow: 0 2px 12px rgba(91, 76, 219, 0.06);
+            transition: box-shadow 0.2s ease, border-color 0.2s ease;
         }
+        .history-card:hover {
+            box-shadow: 0 4px 20px rgba(91, 76, 219, 0.1);
+            border-color: rgba(91, 76, 219, 0.25);
+        }
+        .history-card-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1.25rem;
+            flex-wrap: wrap;
+        }
+        .history-content { flex: 1; min-width: 0; }
         .history-action-badge {
             display: inline-block;
-            padding: 0.25rem 0.75rem;
+            padding: 0.3rem 0.85rem;
             border-radius: 50px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.04em;
         }
-        .history-desc { font-size: 0.875rem; color: #6b7280; }
-        .history-time { font-size: 0.8rem; }
+        .history-desc { font-size: 0.9rem; color: #4b5563; line-height: 1.45; }
+        .history-arrow { font-size: 0.75rem; color: var(--gray-text); }
+        .history-meta-right {
+            text-align: right;
+            flex-shrink: 0;
+        }
+        .history-time {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--gray-text);
+            font-weight: 500;
+        }
+        .history-time-hour { display: block; font-size: 0.75rem; color: #9ca3af; margin-top: 0.15rem; }
+        .history-user {
+            margin-top: 0.4rem;
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+        .history-user i { margin-right: 0.25rem; }
+        .history-user-system { color: #9ca3af; }
         .status-pill {
             display: inline-block;
-            padding: 0.2rem 0.6rem;
+            padding: 0.25rem 0.65rem;
             border-radius: 50px;
             font-size: 0.7rem;
             font-weight: 600;
             border: 1px solid currentColor;
         }
-        .status-pill-old { color: #9ca3af; background: #f9fafb; }
-        .status-pill-new { color: #059669; background: #d1fae5; }
+        .status-pill-old { color: #6b7280; background: #f3f4f6; }
+        .status-pill-new { color: #059669; background: #d1fae5; border-color: #059669; }
         .history-meta { display: flex; flex-wrap: wrap; gap: 0.4rem; }
         .meta-chip {
-            background: #f3f4f6;
-            border-radius: 6px;
-            padding: 0.2rem 0.5rem;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 0.3rem 0.6rem;
             font-size: 0.75rem;
             color: #374151;
         }
+
+        /* History section (always visible) */
+        .goal-history-wrapper .goal-header-card { margin-bottom: 0; }
+        .history-section-header { margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 2px solid #e8e6f9; }
+        .history-section-icon { color: var(--primary-color); }
+        .history-count-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 1.75rem;
+            height: 1.75rem;
+            padding: 0 0.5rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 700;
+            border-radius: 50px;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+        }
+        .history-empty-state {
+            text-align: center;
+            padding: 2.5rem 1.5rem;
+        }
+        .history-empty-icon {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 1.25rem;
+            background: linear-gradient(135deg, #e8e6f9 0%, #d4d1f5 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .history-empty-icon i { font-size: 2rem; color: var(--primary-color); }
+        .history-empty-title { font-weight: 600; color: #374151; margin-bottom: 0.35rem; }
+        .history-empty-desc { font-size: 0.9rem; color: var(--gray-text); margin: 0; }
     </style>
 {% endblock %}
 
@@ -206,53 +407,52 @@
     </nav>
 
     <div class="content-section">
-        <div class="container py-5">
-            <a href="{{ path('app_goal_index') }}" class="btn btn-link text-decoration-none mb-4 text-orange fw-semibold">
-                <i class="bi bi-arrow-left me-2"></i>Retour aux objectifs
-            </a>
-
-            <div class="goal-header-card">
-                <div class="d-flex justify-content-between align-items-start mb-4">
-                    <div>
-                        <h1 class="display-5 fw-bold mb-3">{{ goal.title }}</h1>
-                        {% if goal.description %}
-                            <p class="lead text-muted mb-0">{{ goal.description }}</p>
+        <div class="container py-4">
+            <header class="goal-hero">
+                <a href="{{ path('app_goal_index') }}" class="goal-hero-back">
+                    <i class="bi bi-arrow-left"></i>
+                    <span>Mes objectifs</span>
+                </a>
+                <div class="goal-hero-head">
+                    <div class="goal-hero-head-left">
+                        <p class="goal-hero-label">Détail de l'objectif</p>
+                        <h1 class="goal-hero-title">{{ goal.title }}</h1>
+                    </div>
+                    <div class="goal-hero-actions">
+                        <a href="{{ path('app_goal_edit', {id: goal.id}) }}" class="btn btn-outline-primary">
+                            <i class="bi bi-pencil me-1"></i>Modifier
+                        </a>
+                        {% if goal.chatroom %}
+                        <a href="{{ path('message_chatroom', {goalId: goal.id}) }}" class="btn btn-orange">
+                            <i class="bi bi-chat-dots me-1"></i>Chatroom
+                        </a>
                         {% endif %}
                     </div>
-                    <span class="status-badge status-{{ goal.status|lower }}">{{ goal.status|upper }}</span>
                 </div>
-
-                <div class="mb-4">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span class="text-muted fw-semibold">Progression</span>
-                        <span class="fw-bold fs-5" style="color: var(--primary-color);">{{ goal.progressPercentage }}%</span>
-                    </div>
-                    <div class="progress" style="height: 12px; border-radius: 10px; background-color: #e9ecef;">
-                        <div class="progress-bar-custom" style="width: {{ goal.progressPercentage }}%"></div>
-                    </div>
-                </div>
-
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <div class="info-box">
-                            <div class="d-flex align-items-center mb-2">
-                                <i class="bi bi-calendar-event me-2 fs-5" style="color: var(--primary-color);"></i>
-                                <small class="text-muted fw-semibold">Date de début</small>
-                            </div>
-                            <strong class="fs-5">{{ goal.startDate|date('d/m/Y') }}</strong>
+                {% if goal.description %}
+                    <p class="goal-hero-desc">{{ goal.description }}</p>
+                {% endif %}
+                <div class="goal-hero-meta">
+                    <span class="goal-hero-status status-{{ goal.status|lower }}">{{ goal.status|upper }}</span>
+                    <div class="goal-hero-progress-wrap">
+                        <span class="goal-hero-progress-label">Progression</span>
+                        <div class="goal-hero-progress-bar">
+                            <div class="goal-hero-progress-fill" style="width: {{ goal.progressPercentage }}%"></div>
                         </div>
+                        <span class="goal-hero-progress-pct">{{ goal.progressPercentage }}%</span>
                     </div>
-                    <div class="col-md-6">
-                        <div class="info-box">
-                            <div class="d-flex align-items-center mb-2">
-                                <i class="bi bi-calendar-check me-2 fs-5" style="color: var(--primary-color);"></i>
-                                <small class="text-muted fw-semibold">Date de fin</small>
-                            </div>
-                            <strong class="fs-5">{{ goal.endDate|date('d/m/Y') }}</strong>
-                        </div>
+                    <div class="goal-hero-dates">
+                        <span class="goal-hero-date">
+                            <i class="bi bi-calendar-event"></i>
+                            {{ goal.startDate|date('d/m/Y') }}
+                        </span>
+                        <span class="goal-hero-date">
+                            <i class="bi bi-calendar-check"></i>
+                            {{ goal.endDate|date('d/m/Y') }}
+                        </span>
                     </div>
                 </div>
-            </div>
+            </header>
 
             {# ── Charts section ── #}
             <div class="row g-4 mb-5">
@@ -333,8 +533,31 @@
                 </div>
             {% endif %}
 
-            {# ── History timeline ── #}
-            {% include 'goal/_history.html.twig' %}
+            {# ── Historique de l'objectif ── #}
+            <section class="goal-history-wrapper mt-5 mb-5">
+                <div class="goal-header-card">
+                    <div class="history-section-header">
+                        <h2 class="h4 fw-bold mb-0">
+                            <i class="bi bi-clock-history me-2 history-section-icon"></i>
+                            Historique de l'objectif
+                            {% if goalHistory is defined and goalHistory|length > 0 %}
+                                <span class="history-count-badge">{{ goalHistory|length }}</span>
+                            {% endif %}
+                        </h2>
+                    </div>
+                    {% if goalHistory is defined and goalHistory|length > 0 %}
+                        {% include 'goal/_history.html.twig' %}
+                    {% else %}
+                        <div class="history-empty-state">
+                            <div class="history-empty-icon">
+                                <i class="bi bi-journal-text"></i>
+                            </div>
+                            <p class="history-empty-title">Aucun événement pour le moment</p>
+                            <p class="history-empty-desc">Les créations, modifications de statut et jalons apparaîtront ici.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </section>
         </div>
     </div>
 {% endblock %}

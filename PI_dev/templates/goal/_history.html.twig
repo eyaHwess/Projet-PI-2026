@@ -1,90 +1,74 @@
-{# ── Goal History Timeline ────────────────────────────────────────────── #}
-{% if goalHistory is defined and goalHistory|length > 0 %}
-<div class="goal-history-section mt-5">
-    <div class="d-flex align-items-center justify-content-between mb-4">
-        <h2 class="h3 fw-bold mb-0">
-            <i class="bi bi-clock-history me-2" style="color:var(--primary-color)"></i>
-            Historique <span style="color:var(--primary-color)">({{ goalHistory|length }})</span>
-        </h2>
-    </div>
-
+{# Goal History Timeline – used inside goal show page history section #}
+<div class="goal-history-section">
     <div class="history-timeline">
         {% for entry in goalHistory %}
             {% set icon = 'bi-circle' %}
             {% set color = '#6b7280' %}
-            {% set bg    = '#f3f4f6' %}
+            {% set bg = '#f3f4f6' %}
 
             {% if entry.action == 'goal_created' %}
-                {% set icon  = 'bi-plus-circle-fill' %}
+                {% set icon = 'bi-plus-circle-fill' %}
                 {% set color = '#059669' %}
-                {% set bg    = '#d1fae5' %}
+                {% set bg = '#d1fae5' %}
             {% elseif entry.action == 'status_changed' %}
-                {% set icon  = 'bi-arrow-left-right' %}
+                {% set icon = 'bi-arrow-left-right' %}
                 {% set color = '#2563eb' %}
-                {% set bg    = '#dbeafe' %}
+                {% set bg = '#dbeafe' %}
             {% elseif entry.action == 'goal_updated' %}
-                {% set icon  = 'bi-pencil-fill' %}
+                {% set icon = 'bi-pencil-fill' %}
                 {% set color = '#d97706' %}
-                {% set bg    = '#fef3c7' %}
+                {% set bg = '#fef3c7' %}
             {% elseif entry.action == 'goal_deleted' %}
-                {% set icon  = 'bi-trash-fill' %}
+                {% set icon = 'bi-trash-fill' %}
                 {% set color = '#dc2626' %}
-                {% set bg    = '#fee2e2' %}
+                {% set bg = '#fee2e2' %}
             {% elseif entry.action == 'milestone_completed' %}
-                {% set icon  = 'bi-trophy-fill' %}
+                {% set icon = 'bi-trophy-fill' %}
                 {% set color = '#7c3aed' %}
-                {% set bg    = '#ede9fe' %}
+                {% set bg = '#ede9fe' %}
             {% elseif entry.action == 'priority_changed' %}
-                {% set icon  = 'bi-flag-fill' %}
+                {% set icon = 'bi-flag-fill' %}
                 {% set color = '#db2777' %}
-                {% set bg    = '#fce7f3' %}
+                {% set bg = '#fce7f3' %}
             {% elseif entry.action == 'progress_updated' %}
-                {% set icon  = 'bi-bar-chart-fill' %}
+                {% set icon = 'bi-bar-chart-fill' %}
                 {% set color = '#0891b2' %}
-                {% set bg    = '#cffafe' %}
+                {% set bg = '#cffafe' %}
             {% elseif entry.action == 'deadline_set' %}
-                {% set icon  = 'bi-alarm-fill' %}
+                {% set icon = 'bi-alarm-fill' %}
                 {% set color = '#b45309' %}
-                {% set bg    = '#fef3c7' %}
+                {% set bg = '#fef3c7' %}
             {% elseif entry.action == 'favorite_toggled' %}
-                {% set icon  = 'bi-star-fill' %}
+                {% set icon = 'bi-star-fill' %}
                 {% set color = '#ca8a04' %}
-                {% set bg    = '#fef9c3' %}
+                {% set bg = '#fef9c3' %}
             {% endif %}
 
-            <div class="history-item">
-                {# Connector line (hidden for last item) #}
+            <article class="history-item">
                 <div class="history-line {% if loop.last %}history-line-last{% endif %}"></div>
-
-                {# Icon dot #}
                 <div class="history-dot" style="background:{{ bg }};border-color:{{ color }}">
-                    <i class="bi {{ icon }}" style="color:{{ color }};font-size:0.8rem"></i>
+                    <i class="bi {{ icon }}" style="color:{{ color }}"></i>
                 </div>
-
-                {# Content card #}
                 <div class="history-card">
-                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
-                        <div>
+                    <div class="history-card-inner">
+                        <div class="history-content">
                             <span class="history-action-badge" style="background:{{ bg }};color:{{ color }}">
                                 {{ entry.actionLabel }}
                             </span>
-
                             {% if entry.description %}
-                                <p class="history-desc mb-0 mt-1">{{ entry.description }}</p>
+                                <p class="history-desc mb-0 mt-2">{{ entry.description }}</p>
                             {% endif %}
-
                             {% if entry.oldStatus and entry.newStatus %}
-                                <div class="d-flex align-items-center gap-2 mt-2">
+                                <div class="d-flex align-items-center gap-2 mt-2 flex-wrap">
                                     <span class="status-pill status-pill-old">{{ entry.oldStatus|upper }}</span>
-                                    <i class="bi bi-arrow-right text-muted" style="font-size:0.75rem"></i>
+                                    <i class="bi bi-arrow-right history-arrow"></i>
                                     <span class="status-pill status-pill-new">{{ entry.newStatus|upper }}</span>
                                 </div>
                             {% endif %}
-
-                            {% if entry.metadata %}
+                            {% if entry.metadata and entry.metadata|length > 0 %}
                                 <div class="history-meta mt-2">
                                     {% for key, val in entry.metadata %}
-                                        {% if val is iterable %}
+                                        {% if val is iterable and (val.old is defined or val.new is defined) %}
                                             <span class="meta-chip">
                                                 <strong>{{ key|replace({'_': ' '})|capitalize }}</strong>:
                                                 {{ val.old ?? '—' }} → {{ val.new ?? '—' }}
@@ -98,32 +82,25 @@
                                 </div>
                             {% endif %}
                         </div>
-
-                        <div class="text-end flex-shrink-0">
-                            <small class="history-time text-muted">
-                                <i class="bi bi-clock me-1"></i>
-                                {{ entry.createdAt|date('d/m/Y') }}
-                                <br>
-                                <span style="font-size:0.7rem">{{ entry.createdAt|date('H:i') }}</span>
-                            </small>
+                        <div class="history-meta-right">
+                            <time class="history-time" datetime="{{ entry.createdAt|date('c') }}">
+                                <i class="bi bi-calendar3 me-1"></i>{{ entry.createdAt|date('d/m/Y') }}
+                                <span class="history-time-hour">{{ entry.createdAt|date('H:i') }}</span>
+                            </time>
                             {% if entry.user %}
-                                <div class="mt-1">
-                                    <small class="text-muted" style="font-size:0.7rem">
-                                        <i class="bi bi-person me-1"></i>{{ entry.user.email }}
-                                    </small>
+                                <div class="history-user">
+                                    <i class="bi bi-person"></i>
+                                    <span>{{ entry.user.firstName ?? entry.user.email|slice(0, 20) }}</span>
                                 </div>
                             {% else %}
-                                <div class="mt-1">
-                                    <small class="text-muted" style="font-size:0.7rem">
-                                        <i class="bi bi-gear me-1"></i>Système
-                                    </small>
+                                <div class="history-user history-user-system">
+                                    <i class="bi bi-gear"></i> Système
                                 </div>
                             {% endif %}
                         </div>
                     </div>
                 </div>
-            </div>
+            </article>
         {% endfor %}
     </div>
 </div>
-{% endif %}

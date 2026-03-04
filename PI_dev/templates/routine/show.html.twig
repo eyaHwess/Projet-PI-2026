@@ -9,8 +9,8 @@
         :root {
             --primary-color: #9333ea;
             --primary-hover: #7e22ce;
-            --primary-light: #7e22ce;
-            --gray-light: #7e22ce;
+            --primary-light: #e9d5ff;
+            --gray-light: #f8f9fa;
             --gray-text: #6c757d;
         }
         body {
@@ -44,11 +44,78 @@
             color: white;
         }
         .content-section {
-            background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
-            padding-top: 120px;
+            background: #f8f9fc;
+            padding-top: 100px;
             padding-bottom: 60px;
             min-height: 100vh;
         }
+
+        /* ── Hero (même style que page objectif) ── */
+        .goal-hero {
+            background: linear-gradient(135deg, #ffffff 0%, #faf5ff 50%, #f3e8ff 100%);
+            border-radius: 24px;
+            padding: 2rem 2.25rem 2.25rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 24px rgba(147, 51, 234, 0.08), 0 1px 3px rgba(0,0,0,0.04);
+            border: 1px solid rgba(147, 51, 234, 0.12);
+            position: relative;
+            overflow: hidden;
+        }
+        .goal-hero::before {
+            content: '';
+            position: absolute;
+            top: -60px;
+            right: -60px;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(147, 51, 234, 0.06) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .goal-hero-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            text-decoration: none;
+            margin-bottom: 1.5rem;
+            padding: 0.4rem 0;
+            transition: color 0.2s, transform 0.2s;
+        }
+        .goal-hero-back:hover { color: var(--primary-hover); transform: translateX(-2px); }
+        .goal-hero-back i { font-size: 1.1rem; }
+        .goal-hero-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--primary-color);
+            margin-bottom: 0.35rem;
+        }
+        .goal-hero-title {
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            font-weight: 800;
+            color: #1f2937;
+            line-height: 1.25;
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.02em;
+        }
+        .goal-hero-desc {
+            font-size: 1rem;
+            color: #4b5563;
+            line-height: 1.55;
+            max-width: 42rem;
+            margin-bottom: 1.5rem;
+        }
+        .goal-hero-meta {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 1rem 1.5rem;
+        }
+        .goal-hero-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
         .routine-header-card {
             background: white;
             border: 2px solid #e9ecef;
@@ -237,21 +304,23 @@
     </nav>
 
     <div class="content-section">
-        <div class="container py-5">
-            <a href="{{ path('app_routine_index', {goalId: routine.goal.id}) }}" class="btn btn-link text-decoration-none mb-4 text-orange fw-semibold">
-                <i class="bi bi-arrow-left me-2"></i>Retour aux routines
-            </a>
-
-            <div class="routine-header-card">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div class="flex-grow-1">
-                        <h1 class="display-5 fw-bold mb-3">{{ routine.title }}</h1>
-                        {% if routine.description %}
-                            <p class="lead text-muted mb-0">{{ routine.description }}</p>
-                        {% endif %}
-                    </div>
-                    <div class="d-flex gap-2 align-items-start">
-                        <span class="visibility-badge visibility-{{ routine.visibility }}">{{ routine.visibility|upper }}</span>
+        <div class="container py-4">
+            <header class="goal-hero">
+                <a href="{{ path('app_routine_index', {goalId: routine.goal.id}) }}" class="goal-hero-back">
+                    <i class="bi bi-arrow-left"></i>
+                    <span>Retour aux routines</span>
+                </a>
+                <p class="goal-hero-label">Détail de la routine</p>
+                <h1 class="goal-hero-title">{{ routine.title }}</h1>
+                {% if routine.description %}
+                    <p class="goal-hero-desc">{{ routine.description }}</p>
+                {% endif %}
+                <div class="goal-hero-meta">
+                    <span class="visibility-badge visibility-{{ routine.visibility }}">{{ routine.visibility|upper }}</span>
+                    <span class="text-muted fw-semibold" style="font-size: 0.9rem;">
+                        <i class="bi bi-list-task me-1"></i>{{ activities|length }} activité(s)
+                    </span>
+                    <div class="goal-hero-actions" style="margin-left: auto;">
                         <button id="editRoutineBtn" class="btn btn-outline-primary" title="Modifier la routine">
                             <i class="bi bi-pencil me-1"></i>Modifier
                         </button>
@@ -260,7 +329,7 @@
                         </button>
                     </div>
                 </div>
-            </div>
+            </header>
 
             {# ── Charts section ── #}
             <div class="row g-4 mb-4">

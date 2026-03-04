@@ -271,10 +271,57 @@ class GoalController extends AbstractController
             throw $this->createAccessDeniedException('Vous n\'avez pas la permission de modifier ce goal.');
         }
 
+        // Sauvegarder les valeurs avant modification pour l'historique
+        $oldStatus = $goal->getStatus();
+        $oldPriority = $goal->getPriority();
+        $oldTitle = $goal->getTitle();
+        $oldDescription = $goal->getDescription();
+        $oldStartDate = $goal->getStartDate()?->format('Y-m-d');
+        $oldEndDate = $goal->getEndDate()?->format('Y-m-d');
+        $oldDeadline = $goal->getDeadline()?->format('Y-m-d');
+
         $form = $this->createForm(GoalType::class, $goal);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $user = $this->getUser();
+
+            // Historique : statut modifié
+            $newStatus = $goal->getStatus();
+            if ($newStatus !== $oldStatus) {
+                $this->goalHistoryLogger->logStatusChanged($goal, (string) $oldStatus, (string) $newStatus, $user);
+            }
+
+            // Historique : priorité modifiée
+            $newPriority = $goal->getPriority();
+            if ($newPriority !== $oldPriority) {
+                $this->goalHistoryLogger->logPriorityChanged($goal, $oldPriority, $newPriority, $user);
+            }
+
+            // Historique : autres champs modifiés (titre, description, dates)
+            $changedFields = [];
+            if ($goal->getTitle() !== $oldTitle) {
+                $changedFields['title'] = ['old' => $oldTitle, 'new' => $goal->getTitle()];
+            }
+            if ($goal->getDescription() !== $oldDescription) {
+                $changedFields['description'] = ['old' => $oldDescription, 'new' => $goal->getDescription()];
+            }
+            $newStart = $goal->getStartDate()?->format('Y-m-d');
+            $newEnd = $goal->getEndDate()?->format('Y-m-d');
+            $newDeadline = $goal->getDeadline()?->format('Y-m-d');
+            if ($newStart !== $oldStartDate) {
+                $changedFields['startDate'] = ['old' => $oldStartDate, 'new' => $newStart];
+            }
+            if ($newEnd !== $oldEndDate) {
+                $changedFields['endDate'] = ['old' => $oldEndDate, 'new' => $newEnd];
+            }
+            if ($newDeadline !== $oldDeadline) {
+                $changedFields['deadline'] = ['old' => $oldDeadline, 'new' => $newDeadline];
+            }
+            if ($changedFields !== []) {
+                $this->goalHistoryLogger->logUpdated($goal, $user, $changedFields);
+            }
+
             $this->entityManager->flush();
             $this->addFlash('success', 'Objectif modifié avec succès !');
             return $this->redirectToRoute('app_goal_index');
