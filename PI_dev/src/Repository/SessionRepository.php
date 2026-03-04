@@ -129,4 +129,19 @@ class SessionRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+    /**
+     * Nombre total de sessions où l'utilisateur est soit client, soit coach.
+     */
+    public function countAllForUser(User $user): int
+    {
+        return (int) $this->createQueryBuilder('s')
+            ->select('COUNT(s.id)')
+            ->join('s.coachingRequest', 'cr')
+            ->where('cr.user = :user')
+            ->orWhere('cr.coach = :user')
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

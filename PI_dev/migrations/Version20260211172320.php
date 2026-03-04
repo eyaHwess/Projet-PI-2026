@@ -20,12 +20,11 @@ final class Version20260211172320 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE chatroom ADD goal_id INT NOT NULL');
-        $this->addSql('ALTER TABLE chatroom ADD CONSTRAINT FK_1F3E6EC4667D1AFE FOREIGN KEY (goal_id) REFERENCES goal (id) NOT DEFERRABLE');
-        $this->addSql('CREATE UNIQUE INDEX UNIQ_1F3E6EC4667D1AFE ON chatroom (goal_id)');
-        $this->addSql('ALTER TABLE goal DROP CONSTRAINT fk_fcdceb2ecaf8a031');
-        $this->addSql('DROP INDEX uniq_fcdceb2ecaf8a031');
-        $this->addSql('ALTER TABLE goal DROP chatroom_id');
+        // chatroom already has goal_id + FK + unique index in many environments; avoid failing on duplicates.
+        // This migration's practical effect is to drop goal.chatroom_id (inverse mapping cleanup).
+        $this->addSql('ALTER TABLE goal DROP CONSTRAINT IF EXISTS fk_fcdceb2ecaf8a031');
+        $this->addSql('DROP INDEX IF EXISTS uniq_fcdceb2ecaf8a031');
+        $this->addSql('ALTER TABLE goal DROP COLUMN IF EXISTS chatroom_id');
     }
 
     public function down(Schema $schema): void

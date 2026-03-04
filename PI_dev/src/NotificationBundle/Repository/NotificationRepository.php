@@ -3,7 +3,7 @@
 namespace App\NotificationBundle\Repository;
 
 use App\Entity\User;
-use App\NotificationBundle\Entity\Notification;
+use App\Entity\Notification;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 

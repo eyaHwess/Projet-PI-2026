@@ -167,6 +167,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Reclamation::class, mappedBy: 'user', cascade: ['persist', 'remove'])]
     private Collection $reclamations;
 
+    /**
+     * @var Collection<int, DailyActivityLog>
+     */
+    #[ORM\OneToMany(targetEntity: DailyActivityLog::class, mappedBy: 'user', orphanRemoval: true)]
+    private Collection $dailyActivityLogs;
+
     public function __construct()
     {
         $this->roles = [UserRole::USER->value];
@@ -179,6 +185,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->goals = new ArrayCollection();
         $this->goalParticipations = new ArrayCollection();
         $this->reclamations = new ArrayCollection();
+        $this->dailyActivityLogs = new ArrayCollection();
+    }
+
+    /**
+     * @return Collection<int, DailyActivityLog>
+     */
+    public function getDailyActivityLogs(): Collection
+    {
+        return $this->dailyActivityLogs;
+    }
+
+    public function addDailyActivityLog(DailyActivityLog $log): static
+    {
+        if (!$this->dailyActivityLogs->contains($log)) {
+            $this->dailyActivityLogs->add($log);
+            $log->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDailyActivityLog(DailyActivityLog $log): static
+    {
+        if ($this->dailyActivityLogs->removeElement($log)) {
+            if ($log->getUser() === $this) {
+                $log->setUser(null);
+            }
+        }
+
+        return $this;
     }
 
     public function getId(): ?int

@@ -80,7 +80,14 @@ class GoalController extends AbstractController
         $pagination = $paginator->paginate(
             $queryBuilder,
             $request->query->getInt('page', 1),
-            4
+            4,
+            [
+                // We handle sorting manually via ?sort=&order=.
+                // Avoid KnpPaginator's SortableSubscriber interpreting "sort" and throwing
+                // "There is no component field [createdAt] in the given Query".
+                'sortFieldParameterName' => 'knp_sort',
+                'sortDirectionParameterName' => 'knp_direction',
+            ]
         );
 
         foreach ($pagination as $goal) {

@@ -184,6 +184,172 @@
             {% block body %}{% endblock %}
         </main>
 
+        <script>
+            (function () {
+                const btn = document.getElementById('notificationBtn');
+                const dropdown = document.getElementById('notificationDropdown');
+                const list = document.getElementById('notificationList');
+                const countEl = document.getElementById('notificationCount');
+                const markAllBtn = document.getElementById('markAllRead');
+
+                if (!btn || !dropdown || !list || !countEl) return;
+
+                function setCount(n) {
+                    const count = Number(n || 0);
+                    countEl.textContent = String(count);
+                    countEl.classList.toggle('hidden', count <= 0);
+                }
+
+                function escapeHtml(str) {
+                    return String(str ?? '')
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')
+                        .replace(/"/g, '&quot;')
+                        .replace(/'/g, '&#039;');
+                }
+
+                function formatRelative(iso) {
+                    if (!iso) return '';
+                    const d = new Date(iso);
+                    const diff = Date.now() - d.getTime();
+                    const sec = Math.floor(diff / 1000);
+                    if (sec < 60) return "à l'instant";
+                    const min = Math.floor(sec / 60);
+                    if (min < 60) return `il y a ${min} min`;
+                    const hr = Math.floor(min / 60);
+                    if (hr < 24) return `il y a ${hr} h`;
+                    const day = Math.floor(hr / 24);
+                    return `il y a ${day} j`;
+                }
+
+                function buildTargetUrl(item) {
+                    // Prefer deep links when possible
+                    if (item.source === 'realtime' && item.postId) {
+                        return `{{ path('post_list_view') }}#post${item.postId}`;
+                    }
+                    if (item.source === 'realtime' && item.commentId) {
+                        return `{{ path('post_list_view') }}#comment${item.commentId}`;
+                    }
+                    // Fallback: notifications page
+                    return `{{ path('notification_list') }}`;
+                }
+
+                async function fetchUnified() {
+                    try {
+                        const res = await fetch(`{{ path('notification_unified_fetch') }}`, {
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        });
+                        if (!res.ok) return null;
+                        return await res.json();
+                    } catch (e) {
+                        return null;
+                    }
+                }
+
+                async function refresh() {
+                    const data = await fetchUnified();
+                    if (!data) return;
+
+                    setCount(data.unreadCount ?? 0);
+
+                    const items = Array.isArray(data.notifications) ? data.notifications : [];
+                    if (items.length === 0) {
+                        list.innerHTML = `
+                            <div class="p-4 text-center text-gray-500 text-sm">
+                                Aucune notification
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    list.innerHTML = items.map((n) => {
+                        const unread = n.isRead === false;
+                        const time = formatRelative(n.createdAt);
+                        const message = escapeHtml(n.message);
+                        const sourceBadge = n.source === 'realtime' ? 'Social' : 'Coaching';
+                        return `
+                            <div class="notification-item ${unread ? 'unread' : ''}" data-id="${n.id}" data-source="${escapeHtml(n.source)}">
+                                <div class="d-flex justify-content-between align-items-start gap-2">
+                                    <div class="flex-grow-1">
+                                        <div class="small text-muted mb-1">${escapeHtml(sourceBadge)} • ${escapeHtml(time)}</div>
+                                        <div class="text-gray-800" style="font-size: 0.95rem;">${message}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+
+                async function markAllRead() {
+                    try {
+                        const res = await fetch(`{{ path('notification_unified_mark_all_read') }}`, {
+                            method: 'POST',
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        });
+                        if (res.ok) {
+                            await refresh();
+                        }
+                    } catch (e) {
+                        // ignore
+                    }
+                }
+
+                async function markOneRead(source, id) {
+                    if (!source || !id) return;
+                    const url = source === 'realtime'
+                        ? `/rt-notifications/${id}/mark-read`
+                        : `/notification/${id}/mark-read`;
+                    try {
+                        await fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                    } catch (e) {
+                        // ignore
+                    }
+                }
+
+                // global handler used by onclick=...
+                window.toggleNotifications = function (event) {
+                    if (event) event.stopPropagation();
+                    const isOpen = dropdown.classList.toggle('show');
+                    if (isOpen) refresh();
+                };
+
+                // Close on outside click
+                document.addEventListener('click', (e) => {
+                    if (!dropdown.classList.contains('show')) return;
+                    if (dropdown.contains(e.target) || btn.contains(e.target)) return;
+                    dropdown.classList.remove('show');
+                });
+
+                // Click on item -> mark read + navigate
+                list.addEventListener('click', async (e) => {
+                    const itemEl = e.target.closest('.notification-item');
+                    if (!itemEl) return;
+                    const id = itemEl.getAttribute('data-id');
+                    const source = itemEl.getAttribute('data-source');
+
+                    // best-effort mark read
+                    await markOneRead(source, id);
+                    // navigate
+                    const data = await fetchUnified();
+                    const found = data?.notifications?.find?.((n) => String(n.id) === String(id) && String(n.source) === String(source));
+                    window.location.href = buildTargetUrl(found || { source });
+                });
+
+                if (markAllBtn) {
+                    markAllBtn.addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        await markAllRead();
+                    });
+                }
+
+                // Initial count refresh (logged-in users)
+                refresh();
+            })();
+        </script>
+
+        {% block javascripts %}{% endblock %}
         
     </body>
 </html>

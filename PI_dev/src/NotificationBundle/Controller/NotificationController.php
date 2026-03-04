@@ -2,7 +2,7 @@
 
 namespace App\NotificationBundle\Controller;
 
-use App\NotificationBundle\Repository\NotificationRepository;
+use App\Repository\NotificationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;

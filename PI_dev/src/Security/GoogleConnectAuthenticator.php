@@ -43,7 +43,22 @@ class GoogleConnectAuthenticator extends AbstractAuthenticator
         if ($user instanceof User && !$user->isOnboarded()) {
             return new RedirectResponse($this->urlGenerator->generate('app_onboarding'));
         }
-        return new RedirectResponse($this->urlGenerator->generate('user_dashboard'));
+
+        $roles = $token->getRoleNames();
+
+        if (in_array('ROLE_ADMIN', $roles, true)) {
+            return new RedirectResponse($this->urlGenerator->generate('admin_dashboard'));
+        }
+
+        if (in_array('ROLE_COACH', $roles, true)) {
+            return new RedirectResponse($this->urlGenerator->generate('app_coaching_request_index'));
+        }
+
+        if (in_array('ROLE_USER', $roles, true)) {
+            return new RedirectResponse($this->urlGenerator->generate('user_dashboard'));
+        }
+
+        return new RedirectResponse($this->urlGenerator->generate('app_home'));
     }
 
     public function onAuthenticationFailure(Request $request, \Symfony\Component\Security\Core\Exception\AuthenticationException $exception): ?Response

@@ -17,16 +17,12 @@ services:
         public: true
 
     # Repository
-    App\NotificationBundle\Repository\NotificationRepository:
-        factory: ['@doctrine.orm.entity_manager', 'getRepository']
-        arguments:
-            - 'App\NotificationBundle\Entity\Notification'
-        public: true
+    App\Repository\NotificationRepository: ~
 
     # Controller
     App\NotificationBundle\Controller\NotificationController:
         arguments:
-            $notificationRepository: '@App\NotificationBundle\Repository\NotificationRepository'
+            $notificationRepository: '@App\Repository\NotificationRepository'
             $entityManager: '@doctrine.orm.entity_manager'
         tags: ['controller.service_arguments']
         public: true

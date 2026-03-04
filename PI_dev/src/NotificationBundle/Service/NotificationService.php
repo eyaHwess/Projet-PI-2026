@@ -4,7 +4,7 @@ namespace App\NotificationBundle\Service;
 
 use App\Entity\CoachingRequest;
 use App\Entity\User;
-use App\NotificationBundle\Entity\Notification;
+use App\Entity\Notification;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**

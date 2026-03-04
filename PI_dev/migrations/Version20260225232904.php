@@ -19,11 +19,11 @@ final class Version20260225232904 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        $this->addSql('ALTER TABLE "user" ADD specialities JSON DEFAULT NULL');
+        $this->addSql('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS specialities JSON DEFAULT NULL');
     }
 
     public function down(Schema $schema): void
     {
-        $this->addSql('ALTER TABLE "user" DROP specialities');
+        $this->addSql('ALTER TABLE "user" DROP COLUMN IF EXISTS specialities');
     }
 }
