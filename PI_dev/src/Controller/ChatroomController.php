@@ -4,12 +4,17 @@ namespace App\Controller;
 
 use App\Entity\Chatroom;
 use App\Entity\Message;
+use App\Entity\GoalParticipation;
+use App\Entity\User;
 use App\Form\MessageType;
 use App\Service\ModerationService;
+use App\Repository\UserRepository;
+use App\Repository\GoalParticipationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
 class ChatroomController extends AbstractController
@@ -107,10 +112,127 @@ class ChatroomController extends AbstractController
             ]);
         }
 
-        return $this->render('chatroom/chatroom.html.twig', [
+        return $this->render('chatroom/chatroom_modern.html.twig', [
             'chatroom' => $chatroom,
             'goal' => $goal,
             'form' => $form->createView(),
+            'userParticipation' => $participation,
+        ]);
+    }
+
+    /**
+     * Rechercher des utilisateurs pour les ajouter au chatroom
+     */
+    #[Route('/chatroom/{id}/search-users', name: 'chatroom_search_users', methods: ['GET'])]
+    public function searchUsers(
+        Chatroom $chatroom,
+        Request $request,
+        UserRepository $userRepo,
+        GoalParticipationRepository $gpRepo
+    ): JsonResponse {
+        $user = $this->getUser();
+        if (!$user) {
+            return new JsonResponse(['error' => 'Non authentifié'], 401);
+        }
+
+        $goal = $chatroom->getGoal();
+        
+        // Vérifier que l'utilisateur a le droit d'ajouter des membres
+        $userParticipation = $gpRepo->findOneBy(['goal' => $goal, 'user' => $user]);
+        if (!$userParticipation || !$userParticipation->canModerate()) {
+            return new JsonResponse(['error' => 'Accès refusé'], 403);
+        }
+
+        $query = $request->query->get('q', '');
+        
+        if (strlen($query) < 2) {
+            return new JsonResponse(['users' => []]);
+        }
+
+        // Rechercher les utilisateurs qui ne sont pas déjà membres
+        $allUsers = $userRepo->createQueryBuilder('u')
+            ->where('u.firstName LIKE :query OR u.lastName LIKE :query OR u.email LIKE :query')
+            ->setParameter('query', '%' . $query . '%')
+            ->setMaxResults(10)
+            ->getQuery()
+            ->getResult();
+
+        // Filtrer ceux qui sont déjà membres
+        $existingMemberIds = array_map(
+            fn($p) => $p->getUser()->getId(),
+            $gpRepo->findBy(['goal' => $goal])
+        );
+
+        $availableUsers = array_filter($allUsers, fn($u) => !in_array($u->getId(), $existingMemberIds));
+
+        $results = array_map(function($u) {
+            return [
+                'id' => $u->getId(),
+                'name' => $u->getFirstName() . ' ' . $u->getLastName(),
+                'email' => $u->getEmail(),
+                'hasProfilePicture' => $u->hasProfilePicture(),
+                'initials' => substr($u->getFirstName(), 0, 1) . substr($u->getLastName(), 0, 1)
+            ];
+        }, $availableUsers);
+
+        return new JsonResponse(['users' => array_values($results)]);
+    }
+
+    /**
+     * Ajouter un membre au chatroom (via GoalParticipation)
+     */
+    #[Route('/chatroom/{id}/add-member/{userId}', name: 'chatroom_add_member', methods: ['POST'])]
+    public function addMember(
+        Chatroom $chatroom,
+        int $userId,
+        UserRepository $userRepo,
+        GoalParticipationRepository $gpRepo,
+        EntityManagerInterface $em
+    ): JsonResponse {
+        $currentUser = $this->getUser();
+        if (!$currentUser) {
+            return new JsonResponse(['error' => 'Non authentifié'], 401);
+        }
+
+        $goal = $chatroom->getGoal();
+        
+        // Vérifier que l'utilisateur actuel a le droit d'ajouter des membres
+        $currentUserParticipation = $gpRepo->findOneBy(['goal' => $goal, 'user' => $currentUser]);
+        if (!$currentUserParticipation || !$currentUserParticipation->canModerate()) {
+            return new JsonResponse(['error' => 'Vous n\'avez pas la permission d\'ajouter des membres'], 403);
+        }
+
+        // Récupérer l'utilisateur à ajouter
+        $userToAdd = $userRepo->find($userId);
+        if (!$userToAdd) {
+            return new JsonResponse(['error' => 'Utilisateur introuvable'], 404);
+        }
+
+        // Vérifier si l'utilisateur n'est pas déjà membre
+        $existingParticipation = $gpRepo->findOneBy(['goal' => $goal, 'user' => $userToAdd]);
+        if ($existingParticipation) {
+            return new JsonResponse(['error' => 'Cet utilisateur est déjà membre'], 400);
+        }
+
+        // Créer la participation
+        $participation = new GoalParticipation();
+        $participation->setUser($userToAdd);
+        $participation->setGoal($goal);
+        $participation->setRole('MEMBER');
+        $participation->setStatus('APPROVED'); // Approuvé directement par l'admin
+        $participation->setCreatedAt(new \DateTime());
+
+        $em->persist($participation);
+        $em->flush();
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => $userToAdd->getFirstName() . ' ' . $userToAdd->getLastName() . ' a été ajouté au chatroom',
+            'user' => [
+                'id' => $userToAdd->getId(),
+                'name' => $userToAdd->getFirstName() . ' ' . $userToAdd->getLastName(),
+                'role' => 'MEMBER'
+            ]
         ]);
     }
 }

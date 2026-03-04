@@ -34,14 +34,26 @@ class TranslationService
     public function translate(string $text, string $target = 'en', string $source = 'auto'): string
     {
         try {
-            // Utiliser le provider configuré, avec MyMemory comme fallback
-            $result = match($this->provider) {
-                'deepl' => $this->translateWithDeepL($text, $target, $source),
-                'google' => $this->translateWithGoogle($text, $target, $source),
-                'libretranslate' => $this->translateWithLibreTranslate($text, $target, $source),
-                'mymemory' => $this->translateWithMyMemory($text, $target, $source),
-                default => $this->translateWithMyMemory($text, $target, $source),
-            };
+            // Langues supportées par DeepL
+            $deeplSupportedLanguages = ['en', 'fr', 'de', 'es', 'it', 'pt', 'nl', 'pl', 'ru', 'ja', 'zh'];
+            $targetLower = strtolower(substr($target, 0, 2));
+            
+            // Si DeepL est configuré mais la langue n'est pas supportée, utiliser MyMemory (plus fiable que LibreTranslate)
+            if ($this->provider === 'deepl' && !in_array($targetLower, $deeplSupportedLanguages)) {
+                $this->logger->info('DeepL does not support target language, using MyMemory', [
+                    'target' => $target
+                ]);
+                $result = $this->translateWithMyMemory($text, $target, $source);
+            } else {
+                // Utiliser le provider configuré
+                $result = match($this->provider) {
+                    'deepl' => $this->translateWithDeepL($text, $target, $source),
+                    'google' => $this->translateWithGoogle($text, $target, $source),
+                    'libretranslate' => $this->translateWithLibreTranslate($text, $target, $source),
+                    'mymemory' => $this->translateWithMyMemory($text, $target, $source),
+                    default => $this->translateWithMyMemory($text, $target, $source),
+                };
+            }
             
             // Si le résultat contient une erreur, essayer MyMemory en fallback
             if (str_starts_with($result, 'Erreur')) {
@@ -89,13 +101,13 @@ class TranslationService
 
     /**
      * Traduction avec LibreTranslate (gratuit)
-     * Utilise l'instance publique libretranslate.de (sans API key)
+     * Utilise l'instance publique libretranslate.com (sans API key)
      */
     private function translateWithLibreTranslate(string $text, string $target, string $source): string
     {
         try {
-            // Utiliser libretranslate.de qui est gratuit et sans API key
-            $url = 'https://libretranslate.de/translate';
+            // Utiliser libretranslate.com qui est gratuit et sans API key
+            $url = 'https://libretranslate.com/translate';
             
             $response = $this->client->request('POST', $url, [
                 'json' => [
@@ -104,7 +116,7 @@ class TranslationService
                     'target' => $target,
                     'format' => 'text',
                 ],
-                'timeout' => 8,
+                'timeout' => 10,
                 'headers' => [
                     'Content-Type' => 'application/json',
                     'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
@@ -166,12 +178,57 @@ class TranslationService
 
             $data = $response->toArray();
             
+            // Stratégie améliorée : utiliser le meilleur match au lieu du premier
+            $bestTranslation = null;
+            $bestQuality = 0;
+            
+            // Vérifier les matches alternatifs pour trouver le meilleur
+            if (isset($data['matches']) && is_array($data['matches'])) {
+                foreach ($data['matches'] as $match) {
+                    $translation = $match['translation'] ?? '';
+                    $quality = (int)($match['quality'] ?? 0);
+                    $matchScore = (float)($match['match'] ?? 0);
+                    
+                    // Ignorer les traductions vides ou identiques au texte original
+                    if (empty($translation) || $translation === $text) {
+                        continue;
+                    }
+                    
+                    // Ignorer les traductions qui contiennent le texte original (signe d'erreur)
+                    if (str_contains(strtolower($translation), strtolower($text))) {
+                        continue;
+                    }
+                    
+                    // Calculer un score combiné (qualité + match)
+                    $combinedScore = ($quality * 0.7) + ($matchScore * 100 * 0.3);
+                    
+                    if ($combinedScore > $bestQuality) {
+                        $bestQuality = $combinedScore;
+                        $bestTranslation = $translation;
+                    }
+                }
+            }
+            
+            // Si on a trouvé un bon match alternatif, l'utiliser
+            if ($bestTranslation !== null) {
+                $this->logger->info('MyMemory: Using best match', [
+                    'text' => substr($text, 0, 50),
+                    'translation' => substr($bestTranslation, 0, 50),
+                    'quality' => $bestQuality
+                ]);
+                return trim($bestTranslation);
+            }
+            
+            // Sinon, utiliser la traduction principale
             if (isset($data['responseData']['translatedText'])) {
                 $translated = trim($data['responseData']['translatedText']);
                 
                 // Vérifier que la traduction n'est pas vide et différente du texte original
                 if ($translated !== '' && $translated !== $text) {
-                    return $translated;
+                    // Vérifier que la traduction ne contient pas le texte original (signe d'erreur)
+                    if (!str_contains(strtolower($translated), strtolower($text))) {
+                        return $translated;
+                    }
                 }
                 
                 // Si la traduction est identique, retourner le texte original
@@ -207,14 +264,58 @@ class TranslationService
         if (preg_match('/\p{Cyrillic}/u', $text)) {
             return 'ru';
         }
+        if (preg_match('/\p{Han}/u', $text)) {
+            return 'zh';
+        }
+        if (preg_match('/\p{Hiragana}|\p{Katakana}/u', $text)) {
+            return 'ja';
+        }
+        
+        // Détecter le français par accents
         if (preg_match('/[àâçéèêëîïôùûüÿœ]/iu', $text)) {
             return 'fr';
         }
+        
+        // Détecter le français par mots courants (même sans accents)
+        $lowerText = strtolower($text);
+        $frenchWords = [
+            'bonjour', 'salut', 'merci', 'oui', 'non', 'je', 'tu', 'il', 'elle', 'nous', 'vous', 'ils', 'elles',
+            'le', 'la', 'les', 'un', 'une', 'des', 'du', 'de', 'au', 'aux',
+            'est', 'sont', 'suis', 'etre', 'avoir', 'faire', 'aller', 'voir', 'savoir', 'pouvoir', 'vouloir',
+            'avec', 'sans', 'pour', 'dans', 'sur', 'sous', 'comment', 'pourquoi', 'quand', 'qui', 'que', 'quoi',
+            'mais', 'ou', 'et', 'donc', 'car', 'bien', 'tres', 'plus', 'moins', 'aussi', 'encore', 'deja', 'toujours',
+            'tout', 'tous', 'toute', 'toutes', 'mon', 'ton', 'son', 'ma', 'ta', 'sa', 'mes', 'tes', 'ses',
+            'ce', 'cet', 'cette', 'ces', 'quel', 'quelle'
+        ];
+        
+        foreach ($frenchWords as $word) {
+            if (preg_match('/\b' . preg_quote($word, '/') . '\b/i', $lowerText)) {
+                return 'fr';
+            }
+        }
+        
+        // Détecter l'anglais par mots courants
+        $englishWords = [
+            'hello', 'hi', 'hey', 'thank', 'thanks', 'yes', 'no', 'the', 'a', 'an',
+            'i', 'you', 'he', 'she', 'it', 'we', 'they', 'am', 'is', 'are', 'was', 'were',
+            'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'should', 'could', 'can',
+            'with', 'without', 'for', 'in', 'on', 'at', 'to', 'from', 'how', 'why', 'when', 'where', 'what',
+            'but', 'or', 'and', 'so', 'if', 'very', 'too', 'more', 'most', 'all', 'some', 'any',
+            'this', 'that', 'these', 'those', 'my', 'your', 'his', 'her', 'our', 'their'
+        ];
+        
+        foreach ($englishWords as $word) {
+            if (preg_match('/\b' . preg_quote($word, '/') . '\b/i', $lowerText)) {
+                return 'en';
+            }
+        }
 
+        // Si aucune langue détectée, utiliser une heuristique basée sur la langue cible
         $t = strtolower(substr($target, 0, 2));
         return match ($t) {
             'en' => 'fr',
             'fr' => 'en',
+            'ar' => 'fr', // Pour l'arabe, supposer que la source est le français
             default => 'en',
         };
     }
@@ -458,11 +559,103 @@ class TranslationService
     }
 
     /**
+     * Détecte le contexte du message pour améliorer la traduction
+     * 
+     * @return array ['tone' => 'formal|informal', 'type' => 'greeting|question|statement|command']
+     */
+    private function detectContext(string $text): array
+    {
+        $lowerText = strtolower($text);
+        
+        // Détection du ton
+        $tone = 'informal'; // Par défaut
+        
+        // Indicateurs de formalité
+        $formalIndicators = [
+            'monsieur', 'madame', 'mademoiselle', 'veuillez', 'pourriez-vous', 'auriez-vous',
+            'sir', 'madam', 'please', 'could you', 'would you', 'may i',
+            'السيد', 'السيدة', 'من فضلك', 'هل يمكنك'
+        ];
+        
+        foreach ($formalIndicators as $indicator) {
+            if (str_contains($lowerText, $indicator)) {
+                $tone = 'formal';
+                break;
+            }
+        }
+        
+        // Détection du type de message
+        $type = 'statement'; // Par défaut
+        
+        // Salutations
+        $greetings = [
+            'bonjour', 'salut', 'hello', 'hi', 'hey', 'bonsoir', 'good morning', 'good evening',
+            'مرحبا', 'السلام عليكم', 'صباح الخير', 'مساء الخير'
+        ];
+        
+        foreach ($greetings as $greeting) {
+            if (str_contains($lowerText, $greeting)) {
+                $type = 'greeting';
+                break;
+            }
+        }
+        
+        // Questions
+        $questionWords = [
+            'comment', 'pourquoi', 'quand', 'où', 'qui', 'que', 'quoi', 'quel',
+            'how', 'why', 'when', 'where', 'who', 'what', 'which',
+            'كيف', 'لماذا', 'متى', 'أين', 'من', 'ماذا', 'ما'
+        ];
+        
+        foreach ($questionWords as $word) {
+            if (str_contains($lowerText, $word)) {
+                $type = 'question';
+                break;
+            }
+        }
+        
+        // Questions par ponctuation
+        if (str_ends_with(trim($text), '?') || str_contains($text, '؟')) {
+            $type = 'question';
+        }
+        
+        // Commandes/Impératifs
+        $commandWords = [
+            'fais', 'fait', 'faites', 'va', 'allez', 'viens', 'venez', 'donne', 'donnez',
+            'do', 'go', 'come', 'give', 'take', 'make', 'send',
+            'افعل', 'اذهب', 'تعال', 'أعط', 'خذ', 'أرسل'
+        ];
+        
+        foreach ($commandWords as $word) {
+            if (preg_match('/\b' . preg_quote($word, '/') . '\b/i', $lowerText)) {
+                $type = 'command';
+                break;
+            }
+        }
+        
+        return [
+            'tone' => $tone,
+            'type' => $type
+        ];
+    }
+
+    /**
      * Améliore la qualité des traductions avec des corrections post-traitement
+     * Utilise la détection de contexte et des règles linguistiques avancées
      * Utile pour MyMemory et autres providers de qualité moyenne
      */
     private function improveTranslation(string $text, string $targetLang, string $sourceLang = 'auto'): string
     {
+        // Détecter le contexte pour des corrections contextuelles
+        $context = $this->detectContext($text);
+        
+        // Log du contexte détecté pour monitoring
+        $this->logger->debug('Translation context detected', [
+            'tone' => $context['tone'],
+            'type' => $context['type'],
+            'text' => substr($text, 0, 50)
+        ]);
+        
         // Corrections pour le français
         if ($targetLang === 'fr') {
             $corrections = [
@@ -492,9 +685,9 @@ class TranslationService
                 'Il pleut des chats et des chiens' => 'Il pleut des cordes',
                 'il pleut des chats et des chiens' => 'il pleut des cordes',
                 
-                // Salutations et présentations
-                'Je suis' => 'Je m\'appelle',
-                'je suis' => 'je m\'appelle',
+                // Salutations et présentations (contexte: greeting)
+                'Je suis' => $context['type'] === 'greeting' ? 'Je m\'appelle' : 'Je suis',
+                'je suis' => $context['type'] === 'greeting' ? 'je m\'appelle' : 'je suis',
                 'Mon nom est' => 'Je m\'appelle',
                 'mon nom est' => 'je m\'appelle',
                 
@@ -529,10 +722,25 @@ class TranslationService
                 'finalement' => 'enfin',
             ];
             
+            // Corrections contextuelles pour ton formel
+            if ($context['tone'] === 'formal') {
+                $corrections['salut'] = 'bonjour';
+                $corrections['Salut'] = 'Bonjour';
+                $corrections['ciao'] = 'au revoir';
+                $corrections['Ciao'] = 'Au revoir';
+            }
+            
             foreach ($corrections as $wrong => $correct) {
                 // Utiliser une regex pour matcher les mots entiers
                 $pattern = '/\b' . preg_quote($wrong, '/') . '\b/iu';
                 $text = preg_replace($pattern, $correct, $text);
+            }
+            
+            // Correction grammaticale avancée : accord des verbes
+            // "je suis mariem" → "je m'appelle mariem" (dans contexte de présentation)
+            if ($context['type'] === 'greeting' && preg_match('/\bje suis ([A-Z][a-z]+)\b/i', $text, $matches)) {
+                $name = $matches[1];
+                $text = preg_replace('/\bje suis ' . preg_quote($name, '/') . '\b/i', 'je m\'appelle ' . $name, $text);
             }
         }
         
@@ -546,10 +754,6 @@ class TranslationService
                 'What is up' => 'What\'s up',
                 'Not worries' => 'No worries',
                 
-                // Salutations
-                'I am' => 'My name is',
-                'My name is' => 'I\'m',
-                
                 // Corrections grammaticales
                 'send me the' => 'send me the',
                 'meet you' => 'meet you',
@@ -562,10 +766,40 @@ class TranslationService
                 'for years' => 'for years',
             ];
             
+            // Corrections contextuelles pour ton formel
+            if ($context['tone'] === 'formal') {
+                $corrections['hi'] = 'hello';
+                $corrections['Hi'] = 'Hello';
+                $corrections['hey'] = 'hello';
+                $corrections['Hey'] = 'Hello';
+            }
+            
+            // Correction contextuelle pour présentations uniquement
+            if ($context['type'] === 'greeting' && preg_match('/\bI am ([A-Z][a-z]+)\b/', $text, $matches)) {
+                $name = $matches[1];
+                $text = preg_replace('/\bI am ' . preg_quote($name, '/') . '\b/', 'My name is ' . $name, $text);
+            }
+            
             foreach ($corrections as $wrong => $correct) {
                 $pattern = '/\b' . preg_quote($wrong, '/') . '\b/iu';
                 $text = preg_replace($pattern, $correct, $text);
             }
+        }
+        
+        // Corrections pour l'arabe
+        if ($targetLang === 'ar') {
+            // Corrections spécifiques pour l'arabe
+            // Améliorer la ponctuation arabe
+            $text = str_replace('?', '؟', $text); // Point d'interrogation arabe
+            $text = str_replace(',', '،', $text); // Virgule arabe
+            
+            // Corrections contextuelles pour ton formel
+            if ($context['tone'] === 'formal') {
+                $text = str_replace('مرحبا', 'السلام عليكم', $text); // Salutation formelle
+            }
+            
+            // Correction grammaticale : ordre des mots pour les présentations
+            // "مرحبا أنا [nom]" est correct, pas besoin de correction
         }
         
         // Corrections pour l'allemand
@@ -577,6 +811,12 @@ class TranslationService
                 'Hallo ich bin' => 'Hallo, ich heiße',
                 'hallo ich bin' => 'hallo, ich heiße',
             ];
+            
+            // Corrections contextuelles pour ton formel
+            if ($context['tone'] === 'formal') {
+                $corrections['Hallo'] = 'Guten Tag';
+                $corrections['hallo'] = 'guten tag';
+            }
             
             foreach ($corrections as $wrong => $correct) {
                 $pattern = '/\b' . preg_quote($wrong, '/') . '\b/iu';
@@ -593,11 +833,21 @@ class TranslationService
                 'buenos días yo soy' => 'buenos días, me llamo',
             ];
             
+            // Corrections contextuelles pour ton formel
+            if ($context['tone'] === 'formal') {
+                $corrections['Hola'] = 'Buenos días';
+                $corrections['hola'] = 'buenos días';
+            }
+            
             foreach ($corrections as $wrong => $correct) {
                 $pattern = '/\b' . preg_quote($wrong, '/') . '\b/iu';
                 $text = preg_replace($pattern, $correct, $text);
             }
         }
+        
+        // Nettoyage final : espaces multiples
+        $text = preg_replace('/\s+/', ' ', $text);
+        $text = trim($text);
         
         return $text;
     }

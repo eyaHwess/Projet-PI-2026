@@ -12,13 +12,12 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use App\Enum\UserRole;
 use App\Enum\UserStatus;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Vich\UploaderBundle\Mapping\Annotation as Vich;
+use Vich\UploaderBundle\Mapping\Attribute as Vich;
 use Symfony\Component\HttpFoundation\File\File;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ORM\Table(name: '`user`', uniqueConstraints: [
-    new ORM\UniqueConstraint(name: 'UNIQ_USER_EMAIL', columns: ['email'])
-])]
+#[ORM\Table(name: '`user`')]
+#[ORM\UniqueConstraint(name: 'UNIQ_USER_EMAIL', columns: ['email'])]
 #[Vich\Uploadable]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {

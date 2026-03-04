@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Modal Ajout Membre</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f2f5;
+        }
+        
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .test-button {
+            padding: 12px 24px;
+            background: #0084ff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .test-button:hover {
+            background: #0073e6;
+        }
+        
+        /* Modal Styles */
+        .add-member-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .add-member-modal.active {
+            display: flex;
+        }
+
+        .add-member-modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 0;
+            max-width: 550px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .add-member-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid #e4e6eb;
+        }
+
+        .add-member-modal-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #050505;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .add-member-modal-close {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: #f0f2f5;
+            border-radius: 50%;
+            color: #050505;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .add-member-modal-close:hover {
+            background: #e4e6eb;
+        }
+
+        .add-member-modal-body {
+            padding: 24px;
+        }
+
+        .user-search-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e4e6eb;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .user-search-input:focus {
+            border-color: #0084ff;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 12px;
+            background: #e7f3ff;
+            border-radius: 8px;
+            color: #0c5460;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test du Modal d'Ajout de Membre</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: Ouvrir le Modal</h2>
+        <p>Cliquez sur ce bouton pour ouvrir le modal :</p>
+        <button class="test-button" onclick="openAddMemberModal()">
+            <i class="fas fa-user-plus"></i> Ouvrir le Modal
+        </button>
+        <div id="test1Result" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Vérifier les Fonctions JavaScript</h2>
+        <button class="test-button" onclick="checkJavaScript()">
+            <i class="fas fa-code"></i> Vérifier JavaScript
+        </button>
+        <div id="test2Result" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Vérifier le DOM</h2>
+        <button class="test-button" onclick="checkDOM()">
+            <i class="fas fa-search"></i> Vérifier DOM
+        </button>
+        <div id="test3Result" class="result" style="display: none;"></div>
+    </div>
+
+    <!-- Modal -->
+    <div class="add-member-modal" id="addMemberModal">
+        <div class="add-member-modal-content">
+            <div class="add-member-modal-header">
+                <h3><i class="fas fa-user-plus"></i> Ajouter un membre</h3>
+                <button class="add-member-modal-close" onclick="closeAddMemberModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="add-member-modal-body">
+                <label for="userSearch">
+                    <i class="fas fa-search"></i> Rechercher un utilisateur
+                </label>
+                <input type="text" 
+                       id="userSearch" 
+                       class="user-search-input" 
+                       placeholder="Nom, prénom ou email...">
+                
+                <div style="margin-top: 20px; padding: 20px; background: #e7f3ff; border-radius: 8px;">
+                    <p><strong>✅ Le modal fonctionne !</strong></p>
+                    <p>Si vous voyez ce message, cela signifie que :</p>
+                    <ul>
+                        <li>Le modal s'ouvre correctement</li>
+                        <li>Le JavaScript fonctionne</li>
+                        <li>Le CSS est appliqué</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fonction pour ouvrir le modal
+        function openAddMemberModal() {
+            console.log('openAddMemberModal() appelée');
+            const modal = document.getElementById('addMemberModal');
+            if (modal) {
+                modal.classList.add('active');
+                showResult('test1Result', '✅ Modal ouvert avec succès !', 'success');
+            } else {
+                showResult('test1Result', '❌ Erreur : Modal introuvable dans le DOM', 'error');
+            }
+        }
+
+        // Fonction pour fermer le modal
+        function closeAddMemberModal() {
+            console.log('closeAddMemberModal() appelée');
+            const modal = document.getElementById('addMemberModal');
+            if (modal) {
+                modal.classList.remove('active');
+            }
+        }
+
+        // Vérifier les fonctions JavaScript
+        function checkJavaScript() {
+            let results = [];
+            
+            // Test 1: openAddMemberModal existe
+            if (typeof openAddMemberModal === 'function') {
+                results.push('✅ openAddMemberModal() existe');
+            } else {
+                results.push('❌ openAddMemberModal() n\'existe pas');
+            }
+            
+            // Test 2: closeAddMemberModal existe
+            if (typeof closeAddMemberModal === 'function') {
+                results.push('✅ closeAddMemberModal() existe');
+            } else {
+                results.push('❌ closeAddMemberModal() n\'existe pas');
+            }
+            
+            showResult('test2Result', results.join('<br>'), 'success');
+        }
+
+        // Vérifier le DOM
+        function checkDOM() {
+            let results = [];
+            
+            // Test 1: Modal existe
+            const modal = document.getElementById('addMemberModal');
+            if (modal) {
+                results.push('✅ Modal existe dans le DOM');
+                results.push(`   ID: ${modal.id}`);
+                results.push(`   Classes: ${modal.className}`);
+            } else {
+                results.push('❌ Modal introuvable dans le DOM');
+            }
+            
+            // Test 2: Input de recherche existe
+            const searchInput = document.getElementById('userSearch');
+            if (searchInput) {
+                results.push('✅ Input de recherche existe');
+            } else {
+                results.push('❌ Input de recherche introuvable');
+            }
+            
+            showResult('test3Result', results.join('<br>'), 'success');
+        }
+
+        // Afficher un résultat
+        function showResult(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = message;
+            element.className = 'result ' + type;
+            element.style.display = 'block';
+        }
+
+        // Fermer le modal en cliquant en dehors
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('addMemberModal');
+            if (event.target === modal) {
+                closeAddMemberModal();
+            }
+        });
+
+        // Fermer le modal avec Échap
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeAddMemberModal();
+            }
+        });
+
+        // Log au chargement
+        console.log('✅ Script de test chargé');
+        console.log('Modal element:', document.getElementById('addMemberModal'));
+    </script>
+</body>
+</html>

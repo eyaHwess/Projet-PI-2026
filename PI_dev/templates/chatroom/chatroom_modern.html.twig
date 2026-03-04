@@ -10,17 +10,19 @@
         box-sizing: border-box;
     }
 
+    html, body {
+        height: 100vh;
+        overflow: hidden; /* Empêcher le scroll de la page */
+    }
+
     body {
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         background: #f0f2f5;
-        /* Autoriser le scroll vertical si la fenêtre est plus petite que le chat */
-        overflow-x: hidden;
-        overflow-y: auto;
     }
 
     .chat-app {
         display: flex;
-        min-height: 100vh;
+        height: 100vh; /* Hauteur fixe à 100vh */
         max-width: 1920px;
         margin: 0 auto;
     }
@@ -32,6 +34,8 @@
         border-right: 1px solid #e4e6eb;
         display: flex;
         flex-direction: column;
+        height: 100vh; /* Hauteur fixe */
+        overflow: hidden; /* Empêcher le scroll global */
     }
 
     /* User Profile Section */
@@ -115,6 +119,9 @@
         background: #ffffff;
         flex: 1;
         overflow-y: auto;
+        min-height: 0; /* Important pour que flex fonctionne correctement avec overflow */
+        display: flex;
+        flex-direction: column;
     }
 
     .members-header {
@@ -133,6 +140,9 @@
 
     .members-list-sidebar {
         padding: 8px 0;
+        flex: 1;
+        overflow-y: auto;
+        min-height: 0; /* Important pour que flex fonctionne correctement avec overflow */
     }
 
     .member-item-sidebar {
@@ -263,6 +273,7 @@
     .conversations-list {
         flex: 1;
         overflow-y: auto;
+        min-height: 0; /* Important pour que flex fonctionne correctement avec overflow */
     }
 
     .conversation-item {
@@ -369,11 +380,12 @@
         margin-left: 8px;
     }
 
-    /* MAIN CHAT AREA */
+    /* MAIN CHAT AREA - Pattern recommandé pour applications chat */
     .chat-main {
-        flex: 1;
         display: flex;
         flex-direction: column;
+        height: 100vh;
+        flex: 1;
         background: #ffffff;
     }
 
@@ -384,6 +396,7 @@
         align-items: center;
         justify-content: space-between;
         background: #ffffff;
+        flex-shrink: 0; /* ✅ IMPORTANT: Ne se réduit jamais */
     }
 
     .chat-header-left {
@@ -456,6 +469,7 @@
     .flash-messages-container {
         padding: 12px 24px 0;
         background: #ffffff;
+        flex-shrink: 0; /* ✅ IMPORTANT: Ne se réduit jamais */
     }
 
     .flash-message {
@@ -560,6 +574,7 @@
         background: #ffffff;
         border-bottom: 1px solid #e4e6eb;
         flex-direction: column;
+        flex-shrink: 0; /* ✅ IMPORTANT: Ne se réduit jamais */
     }
 
     .search-bar.active {
@@ -723,6 +738,7 @@
         overflow-y: auto;
         padding: 20px 24px;
         background: #f0f2f5;
+        min-height: 0; /* ✅ IMPORTANT: Permet au flex de rétrécir correctement */
     }
 
     .message-group {
@@ -778,10 +794,12 @@
     }
 
     .message-bubble {
-        padding: 10px 16px;
+        max-width: 60%; /* Limite la largeur pour un rendu plus naturel */
+        padding: 10px 14px;
         border-radius: 18px;
         word-wrap: break-word;
         position: relative;
+        display: inline-block; /* Important pour que max-width fonctionne */
     }
 
     .message:not(.own) .message-bubble {
@@ -798,10 +816,13 @@
 
     .message-image {
         max-width: 300px;
+        max-height: 250px;
         border-radius: 12px;
         margin-top: 4px;
         cursor: pointer;
         transition: transform 0.2s;
+        object-fit: cover; /* Maintient les proportions et remplit l'espace */
+        display: block;
     }
 
     .message-image:hover {
@@ -1106,6 +1127,15 @@
         border-radius: 6px;
         font-size: 11px;
         font-weight: 600;
+    }
+
+    .translation-provider {
+        font-size: 9px;
+        font-weight: 600;
+        color: #8b9dc3;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        opacity: 0.7;
     }
 
     .translated-text-inner .spinner i {
@@ -2405,13 +2435,13 @@
         color: #050505;
     }
 
-    /* INPUT AREA */
+    /* INPUT AREA - Pattern recommandé pour applications chat */
     .chat-input-area {
-        position: relative;
-        padding: 12px 16px;
         border-top: 1px solid #e4e6eb;
+        padding: 12px 16px;
         background: #ffffff;
         box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.04);
+        flex-shrink: 0; /* ✅ IMPORTANT: Ne se réduit jamais, reste toujours visible */
     }
 
     .chat-input-wrapper {
@@ -2695,6 +2725,7 @@
         border-left: 1px solid #e4e6eb;
         display: flex;
         flex-direction: column;
+        height: 100vh; /* Hauteur fixe */
         overflow-y: auto;
     }
 
@@ -3105,6 +3136,7 @@
         align-items: center;
         justify-content: space-between;
         gap: 16px;
+        flex-shrink: 0; /* Ne se réduit pas */
     }
 
     .state-banner.locked {
@@ -3385,12 +3417,20 @@
                     </div>
                 {% endif %}
 
+                {# Bouton Ajouter un membre - Toujours visible pour test #}
+                <button class="header-btn" id="addMemberBtn" title="Ajouter un membre">
+                    <i class="fas fa-user-plus"></i>
+                </button>
+
+                {# Boutons masqués - Sous-groupes privés
                 <a href="{{ path('message_private_chatrooms_list', {goalId: goal.id}) }}" class="header-btn" title="Voir les sous-groupes privés">
                     <i class="fas fa-users"></i>
                 </a>
                 <a href="{{ path('message_private_chatroom_create', {goalId: goal.id}) }}" class="header-btn" title="Créer un sous-groupe privé">
                     <i class="fas fa-user-plus"></i>
                 </a>
+                #}
+                
                 <button class="header-btn" onclick="toggleSearchBar()" title="Rechercher dans les messages">
                     <i class="fas fa-search"></i>
                 </button>
@@ -5128,10 +5168,7 @@
             xhr.send(formData);
         } else {
             // No file, allow normal form submission
-            // After successful submission, cancel reply
-            setTimeout(() => {
-                cancelReply();
-            }, 100);
+            // Scroll to bottom will happen after page reload
         }
     });
 
@@ -5313,6 +5350,8 @@
                 if (mutation.addedNodes.length > 0) {
                     // Réinitialiser les boutons de traduction
                     initTranslateButtons();
+                    // Scroll automatique vers le bas quand nouveau message (smooth)
+                    scrollToBottom(true);
                 }
             });
         });
@@ -5324,12 +5363,24 @@
         });
     }
 
-    // Auto-scroll to bottom on load
-    document.addEventListener('DOMContentLoaded', () => {
+    // Function to scroll to bottom of messages
+    function scrollToBottom(smooth = false) {
         const messagesContainer = document.getElementById('messagesContainer');
         if (messagesContainer) {
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            if (smooth) {
+                messagesContainer.scrollTo({
+                    top: messagesContainer.scrollHeight,
+                    behavior: 'smooth'
+                });
+            } else {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
         }
+    }
+
+    // Auto-scroll to bottom on load
+    document.addEventListener('DOMContentLoaded', () => {
+        scrollToBottom();
 
         // Initialiser les boutons de traduction
         initTranslateButtons();
@@ -5351,6 +5402,567 @@
                     }
                 }
             });
+        }
+    });
+</script>
+
+<!-- Modal Ajouter un Membre -->
+<div class="add-member-modal" id="addMemberModal">
+    <div class="add-member-modal-content">
+        <div class="add-member-modal-header">
+            <h3><i class="fas fa-user-plus"></i> Ajouter un membre</h3>
+            <button class="add-member-modal-close" id="closeModalBtn">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="add-member-modal-body">
+            <!-- Recherche d'utilisateurs -->
+            <div class="search-user-section">
+                <label for="userSearch" class="search-label">
+                    <i class="fas fa-search"></i> Rechercher un utilisateur
+                </label>
+                <input type="text" 
+                       id="userSearch" 
+                       class="user-search-input" 
+                       placeholder="Nom, prénom ou email...">
+                
+                <div class="search-results-list" id="searchResultsList"></div>
+            </div>
+
+            <div class="divider">
+                <span>OU</span>
+            </div>
+            
+            <!-- Lien d'invitation -->
+            <div class="invite-link-section">
+                <p class="add-member-description">Partagez ce lien d'invitation :</p>
+                
+                <div class="invite-link-container">
+                    <input type="text" 
+                           id="inviteLink" 
+                           class="invite-link-input" 
+                           value="{{ url('goal_show', {id: goal.id}) }}" 
+                           readonly>
+                    <button class="copy-link-btn" id="copyLinkBtn">
+                        <i class="fas fa-copy"></i> Copier
+                    </button>
+                </div>
+                
+                <div class="invite-info">
+                    <i class="fas fa-info-circle"></i>
+                    Les personnes qui cliquent sur ce lien pourront demander à rejoindre le groupe.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Modal Ajouter un Membre */
+    .add-member-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 10000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .add-member-modal.active {
+        display: flex;
+    }
+
+    .add-member-modal-content {
+        background: white;
+        border-radius: 16px;
+        padding: 0;
+        max-width: 550px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .add-member-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 24px;
+        border-bottom: 1px solid #e4e6eb;
+        position: sticky;
+        top: 0;
+        background: white;
+        z-index: 1;
+    }
+
+    .add-member-modal-header h3 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #050505;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .add-member-modal-header h3 i {
+        color: #0084ff;
+    }
+
+    .add-member-modal-close {
+        width: 32px;
+        height: 32px;
+        border: none;
+        background: #f0f2f5;
+        border-radius: 50%;
+        color: #050505;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+
+    .add-member-modal-close:hover {
+        background: #e4e6eb;
+        transform: scale(1.1);
+    }
+
+    .add-member-modal-body {
+        padding: 24px;
+    }
+
+    /* Section de recherche */
+    .search-user-section {
+        margin-bottom: 24px;
+    }
+
+    .search-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #050505;
+        margin-bottom: 12px;
+    }
+
+    .search-label i {
+        color: #0084ff;
+    }
+
+    .user-search-input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e4e6eb;
+        border-radius: 8px;
+        font-size: 14px;
+        outline: none;
+        transition: all 0.2s;
+    }
+
+    .user-search-input:focus {
+        border-color: #0084ff;
+        box-shadow: 0 0 0 3px rgba(0, 132, 255, 0.1);
+    }
+
+    .search-results-list {
+        margin-top: 12px;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .search-result-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+    }
+
+    .search-result-item:hover {
+        background: #f0f2f5;
+        border-color: #e4e6eb;
+    }
+
+    .search-result-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+
+    .search-result-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .search-result-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: #050505;
+        margin-bottom: 2px;
+    }
+
+    .search-result-email {
+        font-size: 12px;
+        color: #65676b;
+    }
+
+    .add-user-btn {
+        padding: 8px 16px;
+        border: none;
+        background: #0084ff;
+        color: white;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+
+    .add-user-btn:hover {
+        background: #0073e6;
+        transform: scale(1.05);
+    }
+
+    .add-user-btn:disabled {
+        background: #e4e6eb;
+        color: #65676b;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .search-no-results {
+        text-align: center;
+        padding: 20px;
+        color: #65676b;
+        font-size: 14px;
+    }
+
+    .search-loading {
+        text-align: center;
+        padding: 20px;
+        color: #0084ff;
+    }
+
+    /* Divider */
+    .divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        margin: 24px 0;
+    }
+
+    .divider::before,
+    .divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid #e4e6eb;
+    }
+
+    .divider span {
+        padding: 0 16px;
+        color: #65676b;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    /* Section lien d'invitation */
+    .invite-link-section {
+        margin-top: 24px;
+    }
+
+    .add-member-description {
+        font-size: 14px;
+        color: #65676b;
+        margin-bottom: 12px;
+    }
+
+    .invite-link-container {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .invite-link-input {
+        flex: 1;
+        padding: 12px 16px;
+        border: 1px solid #e4e6eb;
+        border-radius: 8px;
+        font-size: 13px;
+        font-family: 'Courier New', monospace;
+        background: #f0f2f5;
+        color: #050505;
+        outline: none;
+    }
+
+    .invite-link-input:focus {
+        border-color: #0084ff;
+        background: white;
+    }
+
+    .copy-link-btn {
+        padding: 12px 20px;
+        border: none;
+        background: #0084ff;
+        color: white;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+
+    .copy-link-btn:hover {
+        background: #0073e6;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 132, 255, 0.3);
+    }
+
+    .copy-link-btn:active {
+        transform: translateY(0);
+    }
+
+    .copy-link-btn.copied {
+        background: #28a745;
+    }
+
+    .invite-info {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 12px 16px;
+        background: #e7f3ff;
+        border-left: 3px solid #0084ff;
+        border-radius: 8px;
+        font-size: 13px;
+        color: #0c5460;
+        line-height: 1.5;
+    }
+
+    .invite-info i {
+        color: #0084ff;
+        margin-top: 2px;
+        flex-shrink: 0;
+    }
+</style>
+
+<script>
+    // Attacher tous les event listeners une fois le DOM chargé
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🚀 Initialisation du modal d\'ajout de membre...');
+        
+        // Bouton d'ouverture du modal
+        const addMemberBtn = document.getElementById('addMemberBtn');
+        if (addMemberBtn) {
+            addMemberBtn.addEventListener('click', openAddMemberModal);
+            console.log('✅ Event listener attaché au bouton d\'ouverture');
+        } else {
+            console.error('❌ Bouton d\'ouverture introuvable');
+        }
+        
+        // Bouton de fermeture du modal
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        if (closeModalBtn) {
+            closeModalBtn.addEventListener('click', closeAddMemberModal);
+            console.log('✅ Event listener attaché au bouton de fermeture');
+        }
+        
+        // Input de recherche
+        const userSearchInput = document.getElementById('userSearch');
+        if (userSearchInput) {
+            userSearchInput.addEventListener('input', function() {
+                searchUsersToAdd(this.value);
+            });
+            console.log('✅ Event listener attaché à l\'input de recherche');
+        }
+        
+        // Bouton de copie du lien
+        const copyLinkBtn = document.getElementById('copyLinkBtn');
+        if (copyLinkBtn) {
+            copyLinkBtn.addEventListener('click', copyInviteLink);
+            console.log('✅ Event listener attaché au bouton de copie');
+        }
+        
+        console.log('✅ Initialisation terminée');
+    });
+
+    // Ouvrir le modal d'ajout de membre
+    function openAddMemberModal() {
+        console.log('📂 Ouverture du modal...');
+        const modal = document.getElementById('addMemberModal');
+        if (modal) {
+            modal.classList.add('active');
+            document.getElementById('userSearch').value = '';
+            document.getElementById('searchResultsList').innerHTML = '';
+            console.log('✅ Modal ouvert');
+        } else {
+            console.error('❌ Modal introuvable');
+        }
+    }
+
+    // Fermer le modal d'ajout de membre
+    function closeAddMemberModal() {
+        document.getElementById('addMemberModal').classList.remove('active');
+    }
+
+    // Rechercher des utilisateurs à ajouter
+    let addMemberSearchTimeout;
+    function searchUsersToAdd(query) {
+        clearTimeout(addMemberSearchTimeout);
+        
+        const resultsList = document.getElementById('searchResultsList');
+        
+        if (query.length < 2) {
+            resultsList.innerHTML = '';
+            return;
+        }
+        
+        resultsList.innerHTML = '<div class="search-loading"><i class="fas fa-spinner fa-spin"></i> Recherche...</div>';
+        
+        addMemberSearchTimeout = setTimeout(() => {
+            fetch(`{{ path('chatroom_search_users', {id: chatroom.id}) }}?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.users && data.users.length > 0) {
+                        resultsList.innerHTML = data.users.map(user => `
+                            <div class="search-result-item">
+                                <div class="search-result-avatar">${user.initials}</div>
+                                <div class="search-result-info">
+                                    <div class="search-result-name">${user.name}</div>
+                                    <div class="search-result-email">${user.email}</div>
+                                </div>
+                                <button class="add-user-btn" data-user-id="${user.id}" data-user-name="${user.name}">
+                                    <i class="fas fa-plus"></i> Ajouter
+                                </button>
+                            </div>
+                        `).join('');
+                        
+                        // Attacher les event listeners aux boutons "Ajouter"
+                        document.querySelectorAll('.add-user-btn').forEach(btn => {
+                            btn.addEventListener('click', function() {
+                                const userId = this.getAttribute('data-user-id');
+                                const userName = this.getAttribute('data-user-name');
+                                addUserToChatroom(userId, userName, this);
+                            });
+                        });
+                    } else {
+                        resultsList.innerHTML = '<div class="search-no-results"><i class="fas fa-user-slash"></i> Aucun utilisateur trouvé</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    resultsList.innerHTML = '<div class="search-no-results"><i class="fas fa-exclamation-triangle"></i> Erreur lors de la recherche</div>';
+                });
+        }, 300);
+    }
+
+    // Ajouter un utilisateur au chatroom
+    function addUserToChatroom(userId, userName, button) {
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Ajout...';
+        
+        fetch(`{{ path('chatroom_add_member', {id: chatroom.id, userId: '__USER_ID__'}) }}`.replace('__USER_ID__', userId), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                button.innerHTML = '<i class="fas fa-check"></i> Ajouté';
+                button.style.background = '#28a745';
+                
+                // Afficher un message de succès
+                alert(`✅ ${userName} a été ajouté au chatroom !`);
+                
+                // Recharger la page après 1 seconde pour voir le nouveau membre
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-plus"></i> Ajouter';
+                alert('❌ ' + (data.error || 'Erreur lors de l\'ajout'));
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            button.disabled = false;
+            button.innerHTML = '<i class="fas fa-plus"></i> Ajouter';
+            alert('❌ Erreur lors de l\'ajout du membre');
+        });
+    }
+
+    // Copier le lien d'invitation
+    function copyInviteLink(event) {
+        const input = document.getElementById('inviteLink');
+        const button = document.getElementById('copyLinkBtn');
+        
+        input.select();
+        input.setSelectionRange(0, 99999); // Pour mobile
+        
+        navigator.clipboard.writeText(input.value).then(() => {
+            // Feedback visuel
+            const originalHTML = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-check"></i> Copié !';
+            button.classList.add('copied');
+            
+            setTimeout(() => {
+                button.innerHTML = originalHTML;
+                button.classList.remove('copied');
+            }, 2000);
+        }).catch(err => {
+            console.error('Erreur lors de la copie:', err);
+            alert('Impossible de copier le lien. Veuillez le copier manuellement.');
+        });
+    }
+
+    // Fermer le modal en cliquant en dehors
+    document.addEventListener('click', function(event) {
+        const modal = document.getElementById('addMemberModal');
+        if (event.target === modal) {
+            closeAddMemberModal();
+        }
+    });
+
+    // Fermer le modal avec la touche Échap
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeAddMemberModal();
         }
     });
 </script>

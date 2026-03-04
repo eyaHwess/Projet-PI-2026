@@ -375,6 +375,9 @@ window.translateMessage = async function(messageId, targetLang) {
         
         const flag = flagEmoji[targetLang] || '🌐';
         
+        // Afficher le provider avec un badge de couleur
+        const providerBadge = provider ? '<span class="translation-provider">via ' + provider + '</span>' : '';
+        
         console.log('✅ Traduction reçue:', translation);
         console.log('📊 Cached:', data.cached, 'Provider:', data.provider);
 
@@ -383,7 +386,7 @@ window.translateMessage = async function(messageId, targetLang) {
             '<div class="translated-text-inner">' +
                 '<span class="translation-flag">' + flag + '</span>' +
                 '<span class="translation-content">' +
-                    '<strong class="translation-lang">' + langLabel + cached + '</strong>' +
+                    '<strong class="translation-lang">' + langLabel + cached + ' ' + providerBadge + '</strong>' +
                     '<span class="translation-text">' + translation + '</span>' +
                 '</span>' +
                 '<button class="btn-close-translation" onclick="closeTranslation(' + messageId + ')" title="Fermer la traduction">' +
