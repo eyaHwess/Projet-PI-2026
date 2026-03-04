@@ -8,8 +8,6 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
-use App\Enum\PostStatus;
-use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: PostRepository::class)]
 #[Gedmo\SoftDeleteable(fieldName: 'deletedAt', timeAware: false)]
@@ -23,9 +21,7 @@ class Post
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Title is required")]
     #[Assert\Length(
-        min: 3,
         max: 255,
-        minMessage: "Title must be at least {{ limit }} characters long",
         maxMessage: "Title cannot be longer than {{ limit }} characters"
     )]
     private ?string $title = null;
@@ -36,12 +32,6 @@ class Post
 
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank(message: "Content is required")]
-    #[Assert\Length(
-        min: 5,
-        max: 50000,
-        minMessage: "Content must be at least {{ limit }} characters long",
-        maxMessage: "Content cannot be longer than {{ limit }} characters"
-    )]
     private ?string $content = null;
 
     #[Gedmo\Timestampable(on: 'create')]

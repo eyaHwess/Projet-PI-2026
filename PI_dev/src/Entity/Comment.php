@@ -18,13 +18,7 @@ class Comment
     private ?int $id = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Assert\NotBlank(message: 'Comment content is required.')]
-    #[Assert\Length(
-        min: 2,
-        max: 2000,
-        minMessage: 'Comment must be at least {{ limit }} characters long.',
-        maxMessage: 'Comment cannot be longer than {{ limit }} characters.'
-    )]
+    #[Assert\NotBlank(message: "Comment content is required")]
     private ?string $content = null;
 
     #[ORM\Column]

@@ -67,11 +67,11 @@ final class Version20260211212841 extends AbstractMigration
         $this->addSql('ALTER TABLE post_like DROP CONSTRAINT FK_653627B8979F103A');
         $this->addSql('DROP TABLE chatroom');
         $this->addSql('DROP TABLE comment');
-        $this->addSql('DROP TABLE goal');
         $this->addSql('DROP TABLE goal_participation');
         $this->addSql('DROP TABLE message');
-        $this->addSql('DROP TABLE post');
         $this->addSql('DROP TABLE post_like');
+        $this->addSql('DROP TABLE post');
+        $this->addSql('DROP TABLE goal');
         $this->addSql('DROP TABLE "user"');
         $this->addSql('DROP TABLE messenger_messages');
     }
