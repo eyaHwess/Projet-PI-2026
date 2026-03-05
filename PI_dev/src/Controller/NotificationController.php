@@ -164,6 +164,7 @@ class NotificationController extends AbstractController
             'source'    => 'coaching',
             'postId'    => null,
             'commentId' => null,
+            'goalId'    => $n->getGoalId(),
         ], $coachingItems);
 
         // Realtime / social notifications (source: realtime)

@@ -5,7 +5,6 @@ namespace App\Repository;
 use App\Entity\Chatroom;
 use App\Entity\Message;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -35,23 +34,19 @@ class MessageRepository extends ServiceEntityRepository
     }
 
     /**
-     * Récupère les derniers messages d'un chatroom (Doctrine Paginator pour éviter setMaxResults + fetch join).
+     * Récupère les derniers messages d'un chatroom (pour la page chatroom, limite pour la perf).
      */
-    public function findRecentMessages(Chatroom $chatroom, int $limit = 50): array
+    public function findRecentMessages(Chatroom $chatroom, int $limit = 80): array
     {
-        $query = $this->createQueryBuilder('m')
+        return $this->createQueryBuilder('m')
             ->where('m.chatroom = :chatroom')
             ->setParameter('chatroom', $chatroom)
             ->leftJoin('m.author', 'u')
             ->addSelect('u')
             ->orderBy('m.createdAt', 'DESC')
-            ->getQuery();
-
-        $query->setMaxResults($limit);
-        $query->setFirstResult(0);
-        $paginator = new Paginator($query, true);
-
-        return iterator_to_array($paginator);
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
     }
 
 //    /**

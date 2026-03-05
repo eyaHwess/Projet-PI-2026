@@ -190,39 +190,31 @@
         <div data-user-id="{{ app.user.id }}" style="display: none;"></div>
         
         <script>
-            console.log('🚀 Script chargé');
-            
             // Variable globale pour l'état du dropdown
             window.notificationDropdownOpen = false;
             
-            // Fonction globale accessible depuis onclick
+            // Fonction globale accessible depuis onclick — ouverture instantanée, chargement en arrière-plan
             window.toggleNotifications = function(e) {
-                console.log('🖱️ CLIC DÉTECTÉ via onclick!');
                 if (e) {
                     e.preventDefault();
                     e.stopPropagation();
                 }
-                
                 const dropdown = document.getElementById('notificationDropdown');
-                if (!dropdown) {
-                    console.error('❌ Dropdown non trouvé');
-                    return;
-                }
-                
+                if (!dropdown) return;
+
                 window.notificationDropdownOpen = !window.notificationDropdownOpen;
-                console.log('État:', window.notificationDropdownOpen ? 'OUVERT' : 'FERMÉ');
-                
                 if (window.notificationDropdownOpen) {
                     dropdown.classList.add('show');
                     dropdown.style.display = 'block';
-                    console.log('✅ Dropdown affiché');
-                    if (typeof loadNotifications === 'function') {
-                        loadNotifications();
+                    // Afficher tout de suite le cache si on en a, puis recharger en arrière-plan
+                    if (window._lastNotificationListHTML) {
+                        notificationList.innerHTML = window._lastNotificationListHTML;
+                        rebindNotificationItemClicks();
                     }
+                    if (typeof loadNotifications === 'function') loadNotifications();
                 } else {
                     dropdown.classList.remove('show');
                     dropdown.style.display = 'none';
-                    console.log('✅ Dropdown masqué');
                 }
             };
             
@@ -234,7 +226,6 @@
             }
             
             function initNotifications() {
-                console.log('🔔 Initialisation des notifications');
                 
                 const notificationBtn = document.getElementById('notificationBtn');
                 const notificationDropdown = document.getElementById('notificationDropdown');
@@ -242,32 +233,13 @@
                 const notificationList = document.getElementById('notificationList');
                 const markAllReadBtn = document.getElementById('markAllRead');
                 
-                // Vérification des éléments
-                console.log('Éléments trouvés:', {
-                    btn: !!notificationBtn,
-                    dropdown: !!notificationDropdown,
-                    count: !!notificationCount,
-                    list: !!notificationList
-                });
-                
-                if (!notificationBtn) {
-                    console.error('❌ Bouton de notification non trouvé');
-                    return;
-                }
-                
-                if (!notificationDropdown) {
-                    console.error('❌ Dropdown de notification non trouvé');
-                    return;
-                }
-                
-                console.log('✅ Tous les éléments sont présents');
-                
+                if (!notificationBtn || !notificationDropdown) return;
+
                 // Fermer en cliquant ailleurs
                 document.addEventListener('click', function(e) {
                     if (window.notificationDropdownOpen && 
                         !notificationDropdown.contains(e.target) && 
                         !notificationBtn.contains(e.target)) {
-                        console.log('📁 Fermeture (clic extérieur)');
                         window.notificationDropdownOpen = false;
                         notificationDropdown.classList.remove('show');
                         notificationDropdown.style.display = 'none';
@@ -312,16 +284,38 @@
                     }
                 }
 
-                // Load and render the dropdown list (unified)
+                function rebindNotificationItemClicks() {
+                    notificationList.querySelectorAll('.notification-item').forEach(item => {
+                        item.addEventListener('click', function() {
+                            const type = this.dataset.notifType || '';
+                            const goalId = this.dataset.goalId || '';
+                            if (type === 'goal_invitation' && goalId) {
+                                window.showGoalInvitationModal(goalId, this.dataset.notifMessage || 'Invitation à rejoindre un goal.');
+                                markAsReadOnly(this.dataset.notifId, this.dataset.notifSource);
+                                window.notificationDropdownOpen = false;
+                                const dd = document.getElementById('notificationDropdown');
+                                if (dd) { dd.classList.remove('show'); dd.style.display = 'none'; }
+                                loadNotificationCount();
+                                return;
+                            }
+                            markAsReadAndRedirect(this.dataset.notifId, this.dataset.notifSource, this.dataset.postId || null, this.dataset.commentId || null);
+                        });
+                    });
+                }
+
+                // Load and render the dropdown list (unified) — ne bloque pas l’ouverture du dropdown
                 window.loadNotifications = async function() {
                     try {
-                        notificationList.innerHTML = '<div class="p-4 text-center text-gray-500 text-sm"><i class="bi bi-hourglass-split"></i> Chargement...</div>';
+                        if (!window._lastNotificationListHTML) {
+                            notificationList.innerHTML = '<div class="p-4 text-center text-gray-500 text-sm"><i class="bi bi-hourglass-split"></i> Chargement...</div>';
+                        }
                         const res = await fetch('{{ path('notification_unified_fetch') }}');
                         if (!res.ok) throw new Error('HTTP ' + res.status);
                         const data = await res.json();
 
                         if (!data.notifications || data.notifications.length === 0) {
                             notificationList.innerHTML = '<div class="p-4 text-center text-gray-500 text-sm"><i class="bi bi-bell-slash"></i> Aucune notification</div>';
+                            window._lastNotificationListHTML = notificationList.innerHTML;
                             return;
                         }
 
@@ -343,6 +337,9 @@
                             return `<div class="notification-item ${notif.isRead ? '' : 'unread'} cursor-pointer"
                                          data-notif-id="${notif.id}"
                                          data-notif-source="${notif.source}"
+                                         data-notif-type="${notif.type || ''}"
+                                         data-goal-id="${notif.goalId || ''}"
+                                         data-notif-message="${(notif.message || '').replace(/"/g, '&quot;')}"
                                          data-post-id="${notif.postId || ''}"
                                          data-comment-id="${notif.commentId || ''}">
                                         <div class="flex gap-3">
@@ -361,31 +358,27 @@
                                     </div>`;
                         }).join('');
 
-                        // Bind click handlers
-                        notificationList.querySelectorAll('.notification-item').forEach(item => {
-                            item.addEventListener('click', function() {
-                                markAsReadAndRedirect(
-                                    this.dataset.notifId,
-                                    this.dataset.notifSource,
-                                    this.dataset.postId || null,
-                                    this.dataset.commentId || null
-                                );
-                            });
-                        });
+                        window._lastNotificationListHTML = notificationList.innerHTML;
+                        rebindNotificationItemClicks();
                     } catch (err) {
                         console.error('Erreur chargement notifs:', err);
                         notificationList.innerHTML = '<div class="p-4 text-center text-red-500 text-sm"><i class="bi bi-exclamation-triangle"></i> Erreur de chargement</div>';
                     }
                 };
 
+                async function markAsReadOnly(id, source) {
+                    try {
+                        const url = source === 'realtime' ? `/rt-notifications/${id}/mark-read` : `/notification/${id}/mark-read`;
+                        await fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' } });
+                    } catch(e) {}
+                }
+
                 // Mark as read then navigate to profile with section + anchor
                 async function markAsReadAndRedirect(id, source, postId, commentId) {
                     try {
-                        // Choose correct mark-read endpoint based on source
                         const url = source === 'realtime'
                             ? `/rt-notifications/${id}/mark-read`
                             : `/notification/${id}/mark-read`;
-
                         await fetch(url, {
                             method: 'POST',
                             headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' }
@@ -410,6 +403,53 @@
                         window.location.href = profileBase + '?section=my-posts';
                     }
                 }
+
+                // Modal invitation goal : accepter / refuser
+                window.showGoalInvitationModal = function(goalId, message) {
+                    const overlay = document.getElementById('goalInvitationModalOverlay');
+                    const msgEl = document.getElementById('goalInvitationModalMessage');
+                    const acceptBtn = document.getElementById('goalInvitationModalAccept');
+                    const rejectBtn = document.getElementById('goalInvitationModalReject');
+                    if (!overlay || !msgEl) return;
+                    msgEl.textContent = message || 'Vous avez été invité à rejoindre un goal.';
+                    overlay.style.display = 'flex';
+                    const acceptUrl = '{{ path('app_goal_accept_invitation', { goalId: 0 }) }}'.replace('/0/', '/' + goalId + '/');
+                    const rejectUrl = '{{ path('app_goal_reject_invitation', { goalId: 0 }) }}'.replace('/0/', '/' + goalId + '/');
+                    acceptBtn.onclick = function() {
+                        acceptBtn.disabled = true;
+                        fetch(acceptUrl, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                            .then(r => r.json())
+                            .then(data => {
+                                overlay.style.display = 'none';
+                                if (data.success) {
+                                    alert(data.message);
+                                    const chatUrl = '{{ path('message_chatroom', { goalId: 0 }) }}'.replace('/0', '/' + goalId);
+                                    window.location.href = chatUrl;
+                                } else {
+                                    alert(data.error || data.message || 'Erreur');
+                                    acceptBtn.disabled = false;
+                                }
+                            })
+                            .catch(() => { acceptBtn.disabled = false; overlay.style.display = 'none'; });
+                    };
+                    rejectBtn.onclick = function() {
+                        rejectBtn.disabled = true;
+                        fetch(rejectUrl, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                            .then(r => r.json())
+                            .then(data => {
+                                overlay.style.display = 'none';
+                                rejectBtn.disabled = false;
+                                loadNotificationCount();
+                                if (data.success && data.message) alert(data.message);
+                                if (data.success) window.location.href = '{{ path('app_user_profile') }}?section=goal-invitations';
+                            })
+                            .catch(() => { rejectBtn.disabled = false; overlay.style.display = 'none'; });
+                    };
+                };
+                window.closeGoalInvitationModal = function() {
+                    const overlay = document.getElementById('goalInvitationModalOverlay');
+                    if (overlay) overlay.style.display = 'none';
+                };
 
                 // Mark ALL as read (unified endpoint)
                 if (markAllReadBtn) {
@@ -495,10 +535,21 @@
                 // Check reminders on page load, then every 60s
                 processActivityReminders();
                 setInterval(processActivityReminders, 60000);
-                console.log('✅ Initialisation terminée');
             }
         </script>
         {% endif %}
         {% endblock %}
+
+        <!-- Modal Invitation goal (accepter / refuser) -->
+        <div id="goalInvitationModalOverlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10001; align-items: center; justify-content: center;" onclick="if (event.target === this) window.closeGoalInvitationModal();">
+            <div class="bg-white rounded-xl shadow-xl max-w-md w-full mx-4 p-6" onclick="event.stopPropagation();">
+                <h3 class="text-lg font-semibold text-gray-800 mb-2"><i class="bi bi-bullseye text-orange-500 mr-2"></i>Invitation au goal</h3>
+                <p id="goalInvitationModalMessage" class="text-gray-600 text-sm mb-4">Vous avez été invité à rejoindre un goal.</p>
+                <div class="flex gap-3 justify-end">
+                    <button type="button" id="goalInvitationModalReject" class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">Refuser</button>
+                    <button type="button" id="goalInvitationModalAccept" class="px-4 py-2 rounded-lg bg-orange-500 text-white hover:bg-orange-600">Accepter</button>
+                </div>
+            </div>
+        </div>
     </body>
 </html>

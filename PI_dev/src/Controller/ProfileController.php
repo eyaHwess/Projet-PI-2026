@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Enum\PostStatus;
 use App\Repository\GoalParticipationRepository;
+use App\Repository\PostRepository;
 use App\Service\AiProfileGenerator;
 use App\Service\LoginHistoryService;
 use App\Service\Post\SavedPostService;
@@ -21,6 +22,7 @@ class ProfileController extends AbstractController
         private AiProfileGenerator $aiProfileGenerator,
         private SavedPostService $savedPostService,
         private GoalParticipationRepository $goalParticipationRepo,
+        private PostRepository $postRepository,
     ) {
     }
 
@@ -81,25 +83,17 @@ class ProfileController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
 
-        $allPosts = $user->getPosts();
-
-        $publishedPosts = array_values($allPosts->filter(
-            fn ($post) => $post->getStatus() === PostStatus::PUBLISHED->value
-        )->toArray());
-
-        $draftPosts = array_values($allPosts->filter(
-            fn ($post) => $post->getStatus() === PostStatus::DRAFT->value
-        )->toArray());
-
-        $scheduledPosts = array_values($allPosts->filter(
-            fn ($post) => $post->getStatus() === PostStatus::SCHEDULED->value
-        )->toArray());
+        // Charger les posts par statut avec limite (évite de charger toute la collection)
+        $publishedPosts = $this->postRepository->findByCreatedByAndStatus($user, PostStatus::PUBLISHED->value, 50);
+        $draftPosts = $this->postRepository->findByCreatedByAndStatus($user, PostStatus::DRAFT->value, 30);
+        $scheduledPosts = $this->postRepository->findByCreatedByAndStatus($user, PostStatus::SCHEDULED->value, 30);
 
         $savedPostEntities = $this->savedPostService->getSavedPostsByUser($user);
         // getSavedPostsByUser returns SavedPost[] — extract the Post from each
         $savedPosts = array_map(fn ($sp) => $sp->getPost(), $savedPostEntities);
 
         $myChatrooms = $this->goalParticipationRepo->findApprovedByUser($user);
+        $goalInvitations = $this->goalParticipationRepo->findAllByUser($user);
 
         $recentLogins = $loginHistoryService->getRecentLogins($user, 5);
         $suspiciousLoginsCount = $loginHistoryService->countSuspiciousLogins($user);
@@ -111,6 +105,7 @@ class ProfileController extends AbstractController
             'scheduledPosts'       => $scheduledPosts,
             'savedPosts'           => $savedPosts,
             'myChatrooms'          => $myChatrooms,
+            'goalInvitations'      => $goalInvitations,
             'recentLogins'         => $recentLogins,
             'suspiciousLoginsCount' => $suspiciousLoginsCount,
             'hasOnboarded'         => $user->isOnboarded(),

@@ -15,13 +15,19 @@ class AppUserChecker implements UserCheckerInterface
             return;
         }
 
-        // Compte créé via Google sans mot de passe : bloquer le login email/mot de passe
-        // mais laisser passer si l'utilisateur se connecte via Google (googleId présent)
-        if (($user->getPassword() === null || $user->getPassword() === '') && !$user->getGoogleId()) {
+        // Compte sans mot de passe : bloquer le login email/mot de passe
+        $hasNoPassword = $user->getPassword() === null || $user->getPassword() === '';
+        if (!$hasNoPassword) {
+            return;
+        }
+        if ($user->getGoogleId()) {
             throw new CustomUserMessageAuthenticationException(
                 'Ce compte utilise la connexion Google. Utilisez le bouton « Se connecter avec Google » ci-dessous.'
             );
         }
+        throw new CustomUserMessageAuthenticationException(
+            'Aucun mot de passe n\'est défini pour ce compte. Utilisez « Mot de passe oublié » ou contactez l\'administrateur.'
+        );
     }
 
     public function checkPostAuth(UserInterface $user): void

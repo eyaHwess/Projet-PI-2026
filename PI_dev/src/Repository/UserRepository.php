@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Goal;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
@@ -269,4 +270,25 @@ class UserRepository extends ServiceEntityRepository
     //            ->getOneOrNullResult()
     //        ;
     //    }
+
+    /**
+     * Utilisateurs qui ne sont pas encore dans le goal (pour invitation au chatroom).
+     * @return User[]
+     */
+    public function findUsersNotInGoal(Goal $goal, User $excludeUser, int $limit = 50): array
+    {
+        $memberIds = [];
+        foreach ($goal->getGoalParticipations() as $p) {
+            $memberIds[] = $p->getUser()->getId();
+        }
+        $qb = $this->createQueryBuilder('u')
+            ->orderBy('u.lastName', 'ASC')
+            ->addOrderBy('u.firstName', 'ASC')
+            ->setMaxResults($limit);
+        if ($memberIds !== []) {
+            $qb->andWhere('u.id NOT IN (:ids)')->setParameter('ids', $memberIds);
+        }
+        $qb->andWhere('u.id != :exclude')->setParameter('exclude', $excludeUser->getId());
+        return $qb->getQuery()->getResult();
+    }
 }

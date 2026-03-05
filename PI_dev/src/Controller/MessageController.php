@@ -469,12 +469,11 @@ final class MessageController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        $goal = $goalRepository->find($goalId);
-        
+        $goal = $goalRepository->findWithParticipationsForChatroom($goalId);
         if (!$goal) {
             throw $this->createNotFoundException('Goal not found');
         }
-        
+
         $chatroom = $goal->getChatroom();
         
         if (!$chatroom) {
@@ -523,9 +522,14 @@ final class MessageController extends AbstractController
         
         // Use modern template
         $template = 'chatroom/chatroom_modern.html.twig';
-        
-        // Mark all messages as read when user opens chatroom
-        foreach ($chatroom->getMessages() as $message) {
+
+        // Charger seulement les derniers messages (évite de charger des milliers de messages)
+        $messageRepo = $em->getRepository(Message::class);
+        $recentMessages = $messageRepo->findRecentMessages($chatroom, 80);
+        $messages = array_reverse($recentMessages); // ordre chronologique pour l’affichage
+
+        // Marquer comme lus uniquement ces derniers messages (pas toute l’historique)
+        foreach ($recentMessages as $message) {
             if ($message->getAuthor()->getId() !== $user->getId()) {
                 if (!$readReceiptRepo->hasUserReadMessage($message, $user)) {
                     $receipt = new \App\Entity\MessageReadReceipt();
@@ -537,7 +541,7 @@ final class MessageController extends AbstractController
             }
         }
         $em->flush();
-        
+
         $message = new Message();
 
         $form = $this->createForm(\App\Form\MessageType::class, $message);
@@ -708,11 +712,21 @@ final class MessageController extends AbstractController
             }
         }
 
+        // Liste des utilisateurs invitables (hors goal) pour les modérateurs
+        $availableUsersToInvite = [];
+        if ($currentUserParticipation && $currentUserParticipation->canModerate()) {
+            $userRepo = $em->getRepository(\App\Entity\User::class);
+            if ($userRepo instanceof \App\Repository\UserRepository) {
+                $availableUsersToInvite = $userRepo->findUsersNotInGoal($goal, $user, 50);
+            }
+        }
+
         // For AJAX requests, return only the messages HTML
         if ($request->isXmlHttpRequest()) {
             return $this->render($template, [
                 'chatroom' => $chatroom,
                 'goal' => $goal,
+                'messages' => $messages,
                 'form' => $form->createView(),
                 'readReceiptRepo' => $readReceiptRepo,
                 'translationLanguages' => $translator->getSupportedLanguages(),
@@ -722,10 +736,12 @@ final class MessageController extends AbstractController
         return $this->render($template, [
             'chatroom' => $chatroom,
             'goal' => $goal,
+            'messages' => $messages,
             'form' => $form->createView(),
             'readReceiptRepo' => $readReceiptRepo,
             'currentUserParticipation' => $currentUserParticipation,
             'isMember' => true,
+            'availableUsersToInvite' => $availableUsersToInvite,
             'translationLanguages' => $translator->getSupportedLanguages(),
         ]);
     }

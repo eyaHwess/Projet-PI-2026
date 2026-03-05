@@ -33,4 +33,21 @@ class GoalParticipationRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Toutes les participations de l'utilisateur (invitations reçues + déjà membres).
+     * @return GoalParticipation[]
+     */
+    public function findAllByUser(User $user, int $maxResults = 50): array
+    {
+        return $this->createQueryBuilder('gp')
+            ->join('gp.goal', 'g')
+            ->addSelect('g')
+            ->where('gp.user = :user')
+            ->setParameter('user', $user)
+            ->orderBy('gp.createdAt', 'DESC')
+            ->setMaxResults($maxResults)
+            ->getQuery()
+            ->getResult();
+    }
 }

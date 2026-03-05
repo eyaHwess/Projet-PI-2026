@@ -208,4 +208,22 @@ class GoalRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Goal avec participations et users chargés en une requête (pour la page chatroom, évite N+1).
+     */
+    public function findWithParticipationsForChatroom(int $id): ?Goal
+    {
+        return $this->createQueryBuilder('g')
+            ->leftJoin('g.chatroom', 'c')
+            ->addSelect('c')
+            ->leftJoin('g.goalParticipations', 'gp')
+            ->addSelect('gp')
+            ->leftJoin('gp.user', 'u')
+            ->addSelect('u')
+            ->where('g.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

@@ -472,6 +472,11 @@
                             Chatrooms
                             <span class="profile-tab-badge">{{ myChatrooms|length }}</span>
                         </button>
+                        <button class="profile-tab-btn" role="tab" data-tab="goal-invitations">
+                            <i class="bi bi-bullseye"></i>
+                            Invitations reçues
+                            <span class="profile-tab-badge">{{ goalInvitations|length }}</span>
+                        </button>
                     </div>
 
                     {# Tab: My Posts #}
@@ -653,6 +658,61 @@
                                 </div>
                                 <p class="text-slate-600 font-medium">Aucune chatroom</p>
                                 <p class="text-sm text-slate-500 mt-1">Rejoignez un objectif communautaire pour accéder à sa chatroom.</p>
+                                <a href="{{ path('app_goal_community') }}" class="profile-cta mt-5">
+                                    <i class="bi bi-people"></i> Voir la communauté
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {# Tab: Invitations reçues (demandes / invitations au goal) #}
+                    <div class="profile-tab-panel" id="tab-goal-invitations">
+                        {% if goalInvitations|length > 0 %}
+                            <div style="display:flex;flex-direction:column;gap:0.65rem;">
+                                {% for participation in goalInvitations %}
+                                    {% set goal = participation.goal %}
+                                    <div class="chatroom-card flex items-center justify-between gap-3 flex-wrap" style="border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 0.75rem 1rem;">
+                                        <div class="flex items-center gap-3 min-w-0 flex-1">
+                                            <div class="chatroom-icon" style="width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%); display: flex; align-items: center; justify-content: center; color: white;">
+                                                <i class="bi bi-bullseye"></i>
+                                            </div>
+                                            <div class="min-w-0">
+                                                <div class="font-semibold text-slate-800 text-sm">{{ goal.title }}</div>
+                                                <div class="text-xs text-slate-500 mt-0.5">
+                                                    {% if participation.isPending %}
+                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">En attente</span>
+                                                        <span>· Invitation reçue le {{ participation.createdAt|date('d/m/Y') }}</span>
+                                                    {% else %}
+                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Acceptée</span>
+                                                        <span>· Membre depuis le {{ participation.createdAt|date('d/m/Y') }}</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-2 flex-shrink-0">
+                                            {% if participation.isPending %}
+                                                <form method="post" action="{{ path('app_goal_reject_invitation', { goalId: goal.id }) }}" class="inline" onsubmit="return confirm('Refuser cette invitation ?');">
+                                                    <button type="submit" class="px-3 py-1.5 rounded-lg border border-slate-300 text-slate-600 text-sm hover:bg-slate-50">Refuser</button>
+                                                </form>
+                                                <form method="post" action="{{ path('app_goal_accept_invitation', { goalId: goal.id }) }}" class="inline">
+                                                    <button type="submit" class="px-3 py-1.5 rounded-lg bg-orange-500 text-white text-sm hover:bg-orange-600">Accepter</button>
+                                                </form>
+                                            {% else %}
+                                                <a href="{{ path('message_chatroom', { goalId: goal.id }) }}" class="profile-cta-sm">
+                                                    <i class="bi bi-chat-dots"></i> Ouvrir le chat
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="profile-empty">
+                                <div class="w-14 h-14 rounded-2xl bg-white/80 flex items-center justify-center mx-auto mb-4 shadow-sm">
+                                    <i class="bi bi-bullseye text-2xl text-violet-400"></i>
+                                </div>
+                                <p class="text-slate-600 font-medium">Aucune invitation</p>
+                                <p class="text-sm text-slate-500 mt-1">Les invitations à rejoindre un goal apparaîtront ici (en attente ou acceptées).</p>
                                 <a href="{{ path('app_goal_community') }}" class="profile-cta mt-5">
                                     <i class="bi bi-people"></i> Voir la communauté
                                 </a>

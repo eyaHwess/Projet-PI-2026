@@ -283,6 +283,13 @@
             color: #be123c;
         }
         .btn-goal-del:hover { background: #FFB3D9; color: white; transform: translateY(-1px); }
+        .btn-goal-fav {
+            background: #fef3e2;
+            color: #b45309;
+        }
+        .btn-goal-fav:hover { background: #fde68a; color: #92400e; transform: translateY(-1px); }
+        .btn-goal-fav.favorited { background: #fecaca; color: #b91c1c; }
+        .btn-goal-fav.favorited:hover { background: #fca5a5; color: white; }
         .filters-card {
             background: white;
             border: 2px solid #E8F6F9;
@@ -727,6 +734,13 @@
                         <span><i class="bi bi-list-ul"></i> {{ goal.routines|length }} routine(s)</span>
                     </div>
                     <div class="goal-actions-dash">
+                        <button type="button" class="btn-goal-sm btn-goal-fav {{ goal.isFavorite ? 'favorited' : '' }}" title="{{ goal.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris' }}"
+                                data-goal-id="{{ goal.id }}"
+                                data-toggle-url="{{ path('app_goal_toggle_favorite', {id: goal.id}) }}"
+                                data-is-favorite="{{ goal.isFavorite ? 'true' : 'false' }}"
+                                onclick="event.stopPropagation(); toggleGoalFavorite(this)">
+                            <i class="bi bi-heart{{ goal.isFavorite ? '-fill' : '' }}"></i> Favori
+                        </button>
                         <button type="button" class="btn-goal-sm btn-goal-edit" onclick="event.stopPropagation(); window.location.href='{{ path('app_goal_edit', {id: goal.id}) }}'">
                             <i class="bi bi-pencil"></i> Modifier
                         </button>
@@ -811,6 +825,27 @@
                 if (data.success) { alert(data.message); location.reload(); }
                 else { alert(data.message || 'Erreur'); }
             }).catch(function() { alert('Erreur réseau'); });
+        }
+        function toggleGoalFavorite(btn) {
+            var url = btn.getAttribute('data-toggle-url');
+            if (!url) return;
+            btn.disabled = true;
+            fetch(url, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' }
+            }).then(function(r) { return r.json(); }).then(function(data) {
+                if (data.success) {
+                    var isFav = data.isFavorite === true;
+                    btn.setAttribute('data-is-favorite', isFav ? 'true' : 'false');
+                    btn.classList.toggle('favorited', isFav);
+                    btn.title = isFav ? 'Retirer des favoris' : 'Ajouter aux favoris';
+                    var icon = btn.querySelector('i.bi');
+                    if (icon) {
+                        icon.classList.toggle('bi-heart', !isFav);
+                        icon.classList.toggle('bi-heart-fill', isFav);
+                    }
+                }
+            }).catch(function() { }).finally(function() { btn.disabled = false; });
         }
     </script>
 {% endblock %}

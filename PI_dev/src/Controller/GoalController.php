@@ -16,6 +16,7 @@ use App\Repository\SuggestionRepository;
 use App\Repository\UserRepository;
 use App\Service\AiAssistantService;
 use App\Service\ChartService;
+use App\Service\NotificationService;
 use App\Service\StatusManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
@@ -51,6 +52,7 @@ class GoalController extends AbstractController
         private AiAssistantService $aiAssistantService,
         private ChartService $chartService,
         private GoalHistoryLogger $goalHistoryLogger,
+        private NotificationService $notificationService,
     ) {
     }
 
@@ -557,6 +559,106 @@ class GoalController extends AbstractController
         $this->entityManager->flush();
 
         return $this->jsonOrFlash($request, true, "Demande de $userName refusée", 200, 'message_chatroom', ['goalId' => $goalId]);
+    }
+
+    /** Inviter un utilisateur à rejoindre le goal (chatroom). Envoie une demande d’invitation. */
+    #[Route('/{goalId}/invite/{userId}', name: 'invite', methods: ['POST'], requirements: ['goalId' => '\d+', 'userId' => '\d+'])]
+    public function invite(int $goalId, int $userId, Request $request): Response
+    {
+        $user = $this->getCurrentUser();
+        $goal = $this->entityManager->getRepository(Goal::class)->find($goalId);
+
+        if (!$goal) {
+            return $this->jsonOrFlash($request, false, 'Goal introuvable', 404, 'message_chatroom', ['goalId' => $goalId]);
+        }
+        if (!$goal->canUserRemoveMembers($user)) {
+            return $this->jsonOrFlash($request, false, 'Permission refusée', 403, 'message_chatroom', ['goalId' => $goalId]);
+        }
+
+        $invitedUser = $this->entityManager->getRepository(User::class)->find($userId);
+        if (!$invitedUser) {
+            return $this->jsonOrFlash($request, false, 'Utilisateur introuvable', 404, 'message_chatroom', ['goalId' => $goalId]);
+        }
+
+        $existing = $this->entityManager->getRepository(GoalParticipation::class)
+            ->findOneBy(['goal' => $goal, 'user' => $invitedUser]);
+
+        if ($existing) {
+            if ($existing->isApproved()) {
+                return $this->jsonOrFlash($request, false, 'Cet utilisateur est déjà membre du goal', 400, 'message_chatroom', ['goalId' => $goalId]);
+            }
+            return $this->jsonOrFlash($request, false, 'Une invitation a déjà été envoyée à cet utilisateur', 400, 'message_chatroom', ['goalId' => $goalId]);
+        }
+
+        $participation = new GoalParticipation();
+        $participation->setGoal($goal);
+        $participation->setUser($invitedUser);
+        $participation->setCreatedAt(new \DateTime());
+        $participation->setRole(GoalParticipation::ROLE_MEMBER);
+        $participation->setStatus(GoalParticipation::STATUS_PENDING);
+        $this->entityManager->persist($participation);
+        $this->entityManager->flush();
+
+        $inviterName = $user->getFirstName() . ' ' . $user->getLastName();
+        $goalTitle = $goal->getTitle();
+        $this->notificationService->createAndPublish(
+            $invitedUser,
+            'goal_invitation',
+            $inviterName . ' vous a invité à rejoindre le goal « ' . $goalTitle . ' ». Vous pouvez accepter ou refuser ci-dessous.',
+            null,
+            $goal->getId()
+        );
+
+        $invitedName = $invitedUser->getFirstName() . ' ' . $invitedUser->getLastName();
+        return $this->jsonOrFlash($request, true, 'Invitation envoyée à ' . $invitedName, 200, 'message_chatroom', ['goalId' => $goalId]);
+    }
+
+    /** Accepter une invitation au goal (utilisateur invité). */
+    #[Route('/{goalId}/accept-invitation', name: 'accept_invitation', methods: ['POST'], requirements: ['goalId' => '\d+'])]
+    public function acceptInvitation(int $goalId, Request $request): Response
+    {
+        $user = $this->getCurrentUser();
+        $goal = $this->entityManager->getRepository(Goal::class)->find($goalId);
+
+        if (!$goal) {
+            return $this->jsonOrFlash($request, false, 'Goal introuvable', 404, 'app_user_profile');
+        }
+
+        $participation = $this->entityManager->getRepository(GoalParticipation::class)
+            ->findOneBy(['goal' => $goal, 'user' => $user]);
+
+        if (!$participation || !$participation->isPending()) {
+            return $this->jsonOrFlash($request, false, 'Aucune invitation en attente pour ce goal', 404, 'app_user_profile');
+        }
+
+        $participation->setStatus(GoalParticipation::STATUS_APPROVED);
+        $this->entityManager->flush();
+
+        return $this->jsonOrFlash($request, true, 'Vous avez rejoint le goal « ' . $goal->getTitle() . ' ».', 200, 'message_chatroom', ['goalId' => $goalId]);
+    }
+
+    /** Refuser une invitation au goal (utilisateur invité). */
+    #[Route('/{goalId}/reject-invitation', name: 'reject_invitation', methods: ['POST'], requirements: ['goalId' => '\d+'])]
+    public function rejectInvitation(int $goalId, Request $request): Response
+    {
+        $user = $this->getCurrentUser();
+        $goal = $this->entityManager->getRepository(Goal::class)->find($goalId);
+
+        if (!$goal) {
+            return $this->jsonOrFlash($request, false, 'Goal introuvable', 404, 'app_user_profile');
+        }
+
+        $participation = $this->entityManager->getRepository(GoalParticipation::class)
+            ->findOneBy(['goal' => $goal, 'user' => $user]);
+
+        if (!$participation || !$participation->isPending()) {
+            return $this->jsonOrFlash($request, false, 'Aucune invitation en attente pour ce goal', 404, 'app_user_profile');
+        }
+
+        $this->entityManager->remove($participation);
+        $this->entityManager->flush();
+
+        return $this->jsonOrFlash($request, true, 'Invitation refusée.', 200, 'app_user_profile');
     }
 
     // ── Redirect legacy chatroom route ──

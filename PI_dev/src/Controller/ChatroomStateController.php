@@ -18,7 +18,7 @@ class ChatroomStateController extends AbstractController
     ) {}
 
     #[Route('/{id}/lock', name: 'chatroom_lock', methods: ['POST'])]
-    public function lock(Chatroom $chatroom, WorkflowInterface $chatroomStateMachine): Response
+    public function lock(Chatroom $chatroom, WorkflowInterface $chatroomStateMachineStateMachine): Response
     {
         $user = $this->getUser();
         
@@ -37,13 +37,13 @@ class ChatroomStateController extends AbstractController
         }
 
         // Vérifier si la transition est possible
-        if (!$chatroomStateMachine->can($chatroom, 'lock')) {
+        if (!$chatroomStateMachineStateMachine->can($chatroom, 'lock')) {
             $this->addFlash('error', 'Impossible de verrouiller ce chatroom dans son état actuel');
             return $this->redirectToRoute('message_chatroom', ['goalId' => $goal->getId()]);
         }
 
         // Appliquer la transition
-        $chatroomStateMachine->apply($chatroom, 'lock');
+        $chatroomStateMachineStateMachine->apply($chatroom, 'lock');
         $this->entityManager->flush();
 
         $this->addFlash('success', '🔒 Chatroom verrouillé. Les membres ne peuvent plus envoyer de messages.');
@@ -51,7 +51,7 @@ class ChatroomStateController extends AbstractController
     }
 
     #[Route('/{id}/unlock', name: 'chatroom_unlock', methods: ['POST'])]
-    public function unlock(Chatroom $chatroom, WorkflowInterface $chatroomStateMachine): Response
+    public function unlock(Chatroom $chatroom, WorkflowInterface $chatroomStateMachineStateMachine): Response
     {
         $user = $this->getUser();
         
@@ -68,12 +68,12 @@ class ChatroomStateController extends AbstractController
             return $this->redirectToRoute('message_chatroom', ['goalId' => $goal->getId()]);
         }
 
-        if (!$chatroomStateMachine->can($chatroom, 'unlock')) {
+        if (!$chatroomStateMachineStateMachine->can($chatroom, 'unlock')) {
             $this->addFlash('error', 'Impossible de déverrouiller ce chatroom dans son état actuel');
             return $this->redirectToRoute('message_chatroom', ['goalId' => $goal->getId()]);
         }
 
-        $chatroomStateMachine->apply($chatroom, 'unlock');
+        $chatroomStateMachineStateMachine->apply($chatroom, 'unlock');
         $this->entityManager->flush();
 
         $this->addFlash('success', '🟢 Chatroom déverrouillé. Les membres peuvent à nouveau envoyer des messages.');
@@ -81,7 +81,7 @@ class ChatroomStateController extends AbstractController
     }
 
     #[Route('/{id}/archive', name: 'chatroom_archive', methods: ['POST'])]
-    public function archive(Chatroom $chatroom, WorkflowInterface $chatroomStateMachine): Response
+    public function archive(Chatroom $chatroom, WorkflowInterface $chatroomStateMachineStateMachine): Response
     {
         $user = $this->getUser();
         
@@ -98,12 +98,12 @@ class ChatroomStateController extends AbstractController
             return $this->redirectToRoute('message_chatroom', ['goalId' => $goal->getId()]);
         }
 
-        if (!$chatroomStateMachine->can($chatroom, 'archive')) {
+        if (!$chatroomStateMachineStateMachine->can($chatroom, 'archive')) {
             $this->addFlash('error', 'Impossible d\'archiver ce chatroom dans son état actuel');
             return $this->redirectToRoute('message_chatroom', ['goalId' => $goal->getId()]);
         }
 
-        $chatroomStateMachine->apply($chatroom, 'archive');
+        $chatroomStateMachineStateMachine->apply($chatroom, 'archive');
         $this->entityManager->flush();
 
         $this->addFlash('success', '📦 Chatroom archivé. Le chatroom est maintenant en lecture seule.');
@@ -111,7 +111,7 @@ class ChatroomStateController extends AbstractController
     }
 
     #[Route('/{id}/delete', name: 'chatroom_delete', methods: ['POST'])]
-    public function delete(Chatroom $chatroom, WorkflowInterface $chatroomStateMachine): Response
+    public function delete(Chatroom $chatroom, WorkflowInterface $chatroomStateMachineStateMachine): Response
     {
         $user = $this->getUser();
         
@@ -129,12 +129,12 @@ class ChatroomStateController extends AbstractController
             return $this->redirectToRoute('message_chatroom', ['goalId' => $goal->getId()]);
         }
 
-        if (!$chatroomStateMachine->can($chatroom, 'delete')) {
+        if (!$chatroomStateMachineStateMachine->can($chatroom, 'delete')) {
             $this->addFlash('error', 'Impossible de supprimer ce chatroom dans son état actuel');
             return $this->redirectToRoute('message_chatroom', ['goalId' => $goal->getId()]);
         }
 
-        $chatroomStateMachine->apply($chatroom, 'delete');
+        $chatroomStateMachineStateMachine->apply($chatroom, 'delete');
         $this->entityManager->flush();
 
         $this->addFlash('success', '🔴 Chatroom supprimé (soft delete). Le chatroom n\'est plus accessible.');
@@ -142,7 +142,7 @@ class ChatroomStateController extends AbstractController
     }
 
     #[Route('/{id}/restore', name: 'chatroom_restore', methods: ['POST'])]
-    public function restore(Chatroom $chatroom, WorkflowInterface $chatroomStateMachine): Response
+    public function restore(Chatroom $chatroom, WorkflowInterface $chatroomStateMachineStateMachine): Response
     {
         $user = $this->getUser();
         
@@ -159,12 +159,12 @@ class ChatroomStateController extends AbstractController
             return $this->redirectToRoute('app_goal_show', ['id' => $goal->getId()]);
         }
 
-        if (!$chatroomStateMachine->can($chatroom, 'restore')) {
+        if (!$chatroomStateMachineStateMachine->can($chatroom, 'restore')) {
             $this->addFlash('error', 'Impossible de restaurer ce chatroom');
             return $this->redirectToRoute('app_goal_show', ['id' => $goal->getId()]);
         }
 
-        $chatroomStateMachine->apply($chatroom, 'restore');
+        $chatroomStateMachineStateMachine->apply($chatroom, 'restore');
         $this->entityManager->flush();
 
         $this->addFlash('success', '🟢 Chatroom restauré. Le chatroom est à nouveau actif.');

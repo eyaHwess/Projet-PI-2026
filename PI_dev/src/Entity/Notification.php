@@ -34,6 +34,10 @@ class Notification
     #[ORM\Column(type: 'datetime_immutable')]
     private ?\DateTimeImmutable $createdAt = null;
 
+    /** Goal concerné (ex: pour type goal_invitation). */
+    #[ORM\Column(nullable: true)]
+    private ?int $goalId = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -107,6 +111,17 @@ class Notification
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+        return $this;
+    }
+
+    public function getGoalId(): ?int
+    {
+        return $this->goalId;
+    }
+
+    public function setGoalId(?int $goalId): static
+    {
+        $this->goalId = $goalId;
         return $this;
     }
 }

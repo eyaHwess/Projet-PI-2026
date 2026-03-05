@@ -19,12 +19,14 @@ class NotificationService
 
     /**
      * Créer et publier une notification
+     * @param int|null $goalId Pour type goal_invitation, id du goal concerné
      */
     public function createAndPublish(
         User $user,
         string $type,
         string $message,
-        $relatedEntity = null
+        $relatedEntity = null,
+        ?int $goalId = null
     ): Notification {
         // Créer la notification
         $notification = new Notification();
@@ -34,6 +36,9 @@ class NotificationService
         
         if ($relatedEntity instanceof \App\Entity\CoachingRequest) {
             $notification->setCoachingRequest($relatedEntity);
+        }
+        if ($goalId !== null) {
+            $notification->setGoalId($goalId);
         }
         
         $this->entityManager->persist($notification);

@@ -3079,9 +3079,15 @@
                 <a href="{{ path('message_private_chatrooms_list', {goalId: goal.id}) }}" class="header-btn" title="Voir les sous-groupes privés">
                     <i class="fas fa-users"></i>
                 </a>
-                <a href="{{ path('message_private_chatroom_create', {goalId: goal.id}) }}" class="header-btn" title="Créer un sous-groupe privé">
-                    <i class="fas fa-user-plus"></i>
-                </a>
+                {% if userParticipation and userParticipation.canModerate() %}
+                    <button type="button" class="header-btn" onclick="toggleInviteModal()" title="Inviter un membre au chatroom">
+                        <i class="fas fa-user-plus"></i>
+                    </button>
+                {% else %}
+                    <a href="{{ path('message_private_chatroom_create', {goalId: goal.id}) }}" class="header-btn" title="Créer un sous-groupe privé">
+                        <i class="fas fa-user-plus"></i>
+                    </a>
+                {% endif %}
                 <button class="header-btn" onclick="toggleSearchBar()" title="Rechercher dans les messages">
                     <i class="fas fa-search"></i>
                 </button>
@@ -3176,10 +3182,11 @@
             <div class="search-results" id="searchResults"></div>
         </div>
 
-        <!-- Messages -->
+        <!-- Messages (liste limitée pour la perf : variable messages passée par le contrôleur) -->
+        {% set msgList = messages is defined ? messages : chatroom.messages %}
         <div class="messages-container" id="messagesContainer">
             {# Message épinglé en haut #}
-            {% set pinnedMessage = chatroom.messages|filter(m => m.isPinned)|first %}
+            {% set pinnedMessage = msgList|filter(m => m.isPinned)|first %}
             {% if pinnedMessage %}
                 <div class="pinned-message-banner">
                     <div class="pinned-message-icon">
@@ -3199,8 +3206,8 @@
                 </div>
             {% endif %}
 
-            {% if chatroom.messages|length > 0 %}
-                {% for message in chatroom.messages %}
+            {% if msgList|length > 0 %}
+                {% for message in msgList %}
                     <div class="message-group">
                         <div class="message {% if app.user and message.author.id == app.user.id %}own{% endif %} {% if message.isPinned %}pinned{% endif %} {% if message.isHidden %}moderated-hidden{% endif %}" data-message-id="{{ message.id }}">
                             <div class="message-avatar">
@@ -3726,12 +3733,12 @@
                     Photos
                 </div>
                 <span class="section-count">
-                    {% set photoCount = chatroom.messages|filter(m => m.attachmentType == 'image' or m.imageName)|length %}
+                    {% set photoCount = msgList|filter(m => m.attachmentType == 'image' or m.imageName)|length %}
                     {{ photoCount }}
                 </span>
             </div>
             <div class="section-content">
-                {% for message in chatroom.messages|filter(m => m.attachmentType == 'image' or m.imageName)|slice(0, 6) %}
+                {% for message in msgList|filter(m => m.attachmentType == 'image' or m.imageName)|slice(0, 6) %}
                     <div class="media-item" onclick="openImagePreview('{{ message.imageName ? '/uploads/messages/' ~ message.imageName : message.attachmentPath }}')">
                         <img src="{{ message.imageName ? '/uploads/messages/' ~ message.imageName : message.attachmentPath }}" alt="Photo">
                         <div class="media-overlay">
@@ -3741,6 +3748,43 @@
                 {% endfor %}
             </div>
         </div>
+
+        <!-- Pending Requests (only for moderators: accept/reject = "add member" to chatroom) -->
+        {% if currentUserParticipation is defined and currentUserParticipation and currentUserParticipation.canModerate() %}
+            {% set pendingRequests = goal.getPendingRequests() %}
+            {% if pendingRequests|length > 0 %}
+                <div class="group-info-section">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <i class="fas fa-user-clock"></i>
+                            Demandes en attente
+                        </div>
+                        <span class="section-count">{{ pendingRequests|length }}</span>
+                    </div>
+                    <div class="section-content">
+                        {% for participation in pendingRequests %}
+                            <div class="member-item pending-request-item" id="pending-request-{{ participation.user.id }}" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e4e6eb;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div class="member-avatar">{{ participation.user.firstName|first }}{{ participation.user.lastName|first }}</div>
+                                    <div>
+                                        <div class="member-name">{{ participation.user.firstName }} {{ participation.user.lastName }}</div>
+                                        <div style="font-size: 11px; color: #65676b;">{{ participation.createdAt|date('d/m/Y H:i') }}</div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 6px;">
+                                    <button type="button" class="workflow-btn workflow-btn-unlock" style="padding: 6px 10px;" onclick="approveRequest({{ participation.user.id }})" title="Accepter">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button type="button" class="workflow-btn workflow-btn-delete" style="padding: 6px 10px;" onclick="rejectRequest({{ participation.user.id }})" title="Refuser">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        {% endif %}
 
         <!-- Members Section -->
         <div class="group-info-section">
@@ -3773,6 +3817,39 @@
                     </div>
                 {% endfor %}
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Inviter un membre au chatroom -->
+<div class="invite-modal-overlay" id="inviteModalOverlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;">
+    <div class="invite-modal" style="background: #fff; border-radius: 12px; max-width: 420px; width: 90%; max-height: 80vh; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+        <div style="padding: 20px; border-bottom: 1px solid #e4e6eb; display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0; font-size: 18px; font-weight: 600;"><i class="fas fa-user-plus"></i> Inviter un membre</h3>
+            <button type="button" onclick="toggleInviteModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #65676b;">&times;</button>
+        </div>
+        <div style="padding: 16px; overflow-y: auto; max-height: 60vh;">
+            {% set usersToInvite = availableUsersToInvite is defined ? availableUsersToInvite : [] %}
+            {% if usersToInvite|length == 0 %}
+                <p style="color: #65676b; margin: 0;">Aucun utilisateur à inviter pour le moment (tous les membres sont déjà dans le goal ou liste limitée).</p>
+            {% else %}
+                <ul style="list-style: none; margin: 0; padding: 0;">
+                    {% for u in usersToInvite %}
+                        <li class="invite-user-item" data-user-id="{{ u.id }}" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f0f2f5;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div class="member-avatar" style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 14px;">{{ u.firstName|first }}{{ u.lastName|first }}</div>
+                                <div>
+                                    <div class="member-name" style="font-weight: 600; color: #050505;">{{ u.firstName }} {{ u.lastName }}</div>
+                                    <div style="font-size: 12px; color: #65676b;">{{ u.email }}</div>
+                                </div>
+                            </div>
+                            <button type="button" class="invite-btn-user workflow-btn workflow-btn-unlock" data-user-id="{{ u.id }}" onclick="sendInvite({{ u.id }})" style="padding: 8px 14px;">
+                                <i class="fas fa-paper-plane"></i> Inviter
+                            </button>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -3967,6 +4044,87 @@
             alert('Erreur lors de la suppression du message');
         }
     }
+
+    // Approve join request (add member to chatroom)
+    async function approveRequest(userId) {
+        if (!confirm('Accepter cette demande d\'accès ?')) return;
+        try {
+            const response = await fetch(`/goals/${window.GOAL_ID}/approve-request/${userId}`, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const result = await response.json();
+            if (result.success) {
+                alert(result.message);
+                location.reload();
+            } else {
+                alert('Erreur: ' + (result.error || result.message || 'Inconnue'));
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Une erreur est survenue');
+        }
+    }
+
+    // Reject join request
+    async function rejectRequest(userId) {
+        if (!confirm('Refuser cette demande d\'accès ?')) return;
+        try {
+            const response = await fetch(`/goals/${window.GOAL_ID}/reject-request/${userId}`, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const result = await response.json();
+            if (result.success) {
+                alert(result.message);
+                location.reload();
+            } else {
+                alert('Erreur: ' + (result.error || result.message || 'Inconnue'));
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Une erreur est survenue');
+        }
+    }
+
+    // Modal Inviter un membre
+    function toggleInviteModal() {
+        const overlay = document.getElementById('inviteModalOverlay');
+        if (!overlay) return;
+        if (overlay.style.display === 'flex') {
+            overlay.style.display = 'none';
+        } else {
+            overlay.style.display = 'flex';
+        }
+    }
+
+    async function sendInvite(userId) {
+        const btn = document.querySelector('.invite-btn-user[data-user-id="' + userId + '"]');
+        if (btn) btn.disabled = true;
+        try {
+            const response = await fetch(`/goals/${window.GOAL_ID}/invite/${userId}`, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const result = await response.json();
+            if (result.success) {
+                const row = document.querySelector('.invite-user-item[data-user-id="' + userId + '"]');
+                if (row) row.remove();
+                if (typeof alert !== 'undefined') alert(result.message);
+            } else {
+                if (btn) btn.disabled = false;
+                alert('Erreur: ' + (result.error || result.message || 'Inconnue'));
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            if (btn) btn.disabled = false;
+            alert('Une erreur est survenue');
+        }
+    }
+
+    document.getElementById('inviteModalOverlay')?.addEventListener('click', function(e) {
+        if (e.target === this) toggleInviteModal();
+    });
 
     // Close modal on Escape key
     document.addEventListener('keydown', function(e) {
