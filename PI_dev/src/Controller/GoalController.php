@@ -31,6 +31,15 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_USER')]
 class GoalController extends AbstractController
 {
+    private function getCurrentUser(): User
+    {
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
+        return $user;
+    }
+
     public function __construct(
         private ChatroomRepository $chatroomRepository,
         private EntityManagerInterface $entityManager,
@@ -50,25 +59,13 @@ class GoalController extends AbstractController
     #[Route('/', name: 'index', methods: ['GET'])]
     public function index(Request $request, PaginatorInterface $paginator): Response
     {
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
         $sortBy = $request->query->get('sort', 'createdAt');
         $sortOrder = $request->query->get('order', 'DESC');
         $filterStatus = $request->query->get('status', 'all');
         $searchQuery = $request->query->get('search', '');
 
-        $queryBuilder = $this->goalRepository->createQueryBuilder('g')
-            ->andWhere('g.user = :user')
-            ->setParameter('user', $user);
-
-        if (!empty($searchQuery)) {
-            $queryBuilder->andWhere('g.title LIKE :search OR g.description LIKE :search')
-                ->setParameter('search', '%' . $searchQuery . '%');
-        }
-
-        if ($filterStatus !== 'all') {
-            $queryBuilder->andWhere('g.status = :status')
-                ->setParameter('status', $filterStatus);
-        }
+        $queryBuilder = $this->goalRepository->getQueryBuilderForUserIndex($user, $searchQuery, $filterStatus);
 
         $validSortFields = ['createdAt', 'startDate', 'endDate', 'title', 'priority', 'deadline'];
         if ($sortBy !== 'urgency' && in_array($sortBy, $validSortFields)) {
@@ -83,17 +80,14 @@ class GoalController extends AbstractController
             4
         );
 
-        foreach ($pagination as $goal) {
-            $this->statusManager->updateGoalStatuses($goal);
-        }
+        $this->goalRepository->hydrateRoutinesAndActivitiesForGoals($pagination);
 
-        $overviewChart = $this->chartService->createUserOverviewChart($this->getUser());
-
-        $allUserGoals = $this->goalRepository->findBy(['user' => $this->getUser()]);
-        $allActiveCount    = count(array_filter($allUserGoals, fn ($g) => $g->getStatus() === 'active'));
-        $allCompletedCount = count(array_filter($allUserGoals, fn ($g) => $g->getStatus() === 'completed'));
-        $allPausedCount    = count(array_filter($allUserGoals, fn ($g) => $g->getStatus() === 'paused'));
-        $allFailedCount    = count(array_filter($allUserGoals, fn ($g) => $g->getStatus() === 'failed'));
+        $countsByStatus = $this->goalRepository->countByUserAndStatus($user);
+        $overviewChart = $this->chartService->createUserOverviewChartFromCounts($countsByStatus);
+        $allActiveCount    = $countsByStatus['active'];
+        $allCompletedCount = $countsByStatus['completed'];
+        $allPausedCount    = $countsByStatus['paused'];
+        $allFailedCount    = $countsByStatus['failed'];
 
         return $this->render('goal/index_modern.html.twig', [
             'pagination' => $pagination,
@@ -133,7 +127,7 @@ class GoalController extends AbstractController
             || str_contains($request->headers->get('Accept', ''), 'application/json');
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $user = $this->getUser();
+            $user = $this->getCurrentUser();
             $goal->setUser($user);
 
             // Auto-create a chatroom for this goal
@@ -188,7 +182,7 @@ class GoalController extends AbstractController
     #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(Goal $goal): Response
     {
-        if ($goal->getUser() !== $this->getUser()) {
+        if ($goal->getUser() !== $this->getCurrentUser()) {
             throw $this->createAccessDeniedException('Cet objectif ne vous appartient pas.');
         }
 
@@ -267,7 +261,7 @@ class GoalController extends AbstractController
     #[Route('/{id}/edit', name: 'edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, Goal $goal): JsonResponse|Response
     {
-        if ($goal->getUser() !== $this->getUser() && !$goal->canUserModifyGoal($this->getUser())) {
+        if ($goal->getUser() !== $this->getCurrentUser() && !$goal->canUserModifyGoal($this->getCurrentUser())) {
             throw $this->createAccessDeniedException('Vous n\'avez pas la permission de modifier ce goal.');
         }
 
@@ -284,7 +278,7 @@ class GoalController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $user = $this->getUser();
+            $user = $this->getCurrentUser();
 
             // Historique : statut modifié
             $newStatus = $goal->getStatus();
@@ -338,7 +332,7 @@ class GoalController extends AbstractController
     #[Route('/{id}/duplicate', name: 'duplicate', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function duplicate(Request $request, Goal $goal): JsonResponse
     {
-        if ($goal->getUser() !== $this->getUser()) {
+        if ($goal->getUser() !== $this->getCurrentUser()) {
             return new JsonResponse(['success' => false, 'message' => 'Accès refusé.'], 403);
         }
         if ($this->isCsrfTokenValid('duplicate' . $goal->getId(), $request->request->get('_token'))) {
@@ -348,7 +342,7 @@ class GoalController extends AbstractController
             $dup->setStartDate(clone $goal->getStartDate());
             $dup->setEndDate(clone $goal->getEndDate());
             $dup->setStatus('active');
-            $dup->setUser($this->getUser());
+            $dup->setUser($this->getCurrentUser());
             $dup->setPriority($goal->getPriority());
             if ($goal->getDeadline()) {
                 $dup->setDeadline(clone $goal->getDeadline());
@@ -370,7 +364,7 @@ class GoalController extends AbstractController
     #[Route('/{id}', name: 'delete', methods: ['POST'], requirements: ['id' => '\d+'])]
     public function delete(Request $request, Goal $goal): JsonResponse
     {
-        if ($goal->getUser() !== $this->getUser() && !$goal->canUserDeleteGoal($this->getUser())) {
+        if ($goal->getUser() !== $this->getCurrentUser() && !$goal->canUserDeleteGoal($this->getCurrentUser())) {
             return new JsonResponse(['success' => false, 'message' => 'Accès refusé.'], 403);
         }
         if ($this->isCsrfTokenValid('delete' . $goal->getId(), $request->request->get('_token'))) {
@@ -386,7 +380,7 @@ class GoalController extends AbstractController
     #[Route('/{id}/join', name: 'join', requirements: ['id' => '\d+'])]
     public function join(Goal $goal): Response
     {
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
 
         $existing = $this->entityManager->getRepository(GoalParticipation::class)
             ->findOneBy(['goal' => $goal, 'user' => $user]);
@@ -417,7 +411,7 @@ class GoalController extends AbstractController
     #[Route('/{id}/leave', name: 'leave', requirements: ['id' => '\d+'])]
     public function leave(Goal $goal): Response
     {
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
 
         $participation = $this->entityManager->getRepository(GoalParticipation::class)
             ->findOneBy(['goal' => $goal, 'user' => $user]);
@@ -436,7 +430,7 @@ class GoalController extends AbstractController
     #[Route('/{goalId}/remove-member/{userId}', name: 'remove_member', methods: ['POST'], requirements: ['goalId' => '\d+', 'userId' => '\d+'])]
     public function removeMember(int $goalId, int $userId, Request $request): Response
     {
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
         $goal = $this->entityManager->getRepository(Goal::class)->find($goalId);
 
         if (!$goal) {
@@ -476,7 +470,7 @@ class GoalController extends AbstractController
     #[Route('/{goalId}/promote-member/{userId}', name: 'promote_member', methods: ['POST'], requirements: ['goalId' => '\d+', 'userId' => '\d+'])]
     public function promoteMember(int $goalId, int $userId, Request $request): JsonResponse
     {
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
         $goal = $this->entityManager->getRepository(Goal::class)->find($goalId);
 
         if (!$goal) return new JsonResponse(['success' => false, 'error' => 'Goal introuvable'], 404);
@@ -512,7 +506,7 @@ class GoalController extends AbstractController
     #[Route('/{goalId}/approve-request/{userId}', name: 'approve_request', methods: ['POST'], requirements: ['goalId' => '\d+', 'userId' => '\d+'])]
     public function approveRequest(int $goalId, int $userId, Request $request): Response
     {
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
         $goal = $this->entityManager->getRepository(Goal::class)->find($goalId);
 
         if (!$goal) return $this->jsonOrFlash($request, false, 'Goal introuvable', 404, 'app_goal_community');
@@ -540,7 +534,7 @@ class GoalController extends AbstractController
     #[Route('/{goalId}/reject-request/{userId}', name: 'reject_request', methods: ['POST'], requirements: ['goalId' => '\d+', 'userId' => '\d+'])]
     public function rejectRequest(int $goalId, int $userId, Request $request): Response
     {
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
         $goal = $this->entityManager->getRepository(Goal::class)->find($goalId);
 
         if (!$goal) return $this->jsonOrFlash($request, false, 'Goal introuvable', 404, 'app_goal_community');
@@ -577,8 +571,8 @@ class GoalController extends AbstractController
 
     private function getAiSuggestionsForNewGoal(Request $request): array
     {
-        $user = $this->getUser();
-        $allGoals = $this->goalRepository->findBy(['user' => $user], ['createdAt' => 'DESC']);
+        $user = $this->getCurrentUser();
+        $allGoals = $this->goalRepository->findByUser($user, 100);
         $totalGoals = \count($allGoals);
         $completedGoals = \count(array_filter($allGoals, fn (Goal $g) => $g->getStatus() === 'completed'));
         $now = new \DateTimeImmutable('today');
@@ -601,7 +595,7 @@ class GoalController extends AbstractController
             'user_goals' => $userGoalsForAi,
         ];
 
-        $locale = $user instanceof User && method_exists($user, 'getPreferredLanguage')
+        $locale = method_exists($user, 'getPreferredLanguage')
             ? ($user->getPreferredLanguage() ?? 'fr')
             : ($request->getLocale() ?: 'fr');
 

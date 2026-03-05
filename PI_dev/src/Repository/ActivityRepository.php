@@ -17,22 +17,23 @@ class ActivityRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return Activity[] Returns an array of Activity objects
+     * @return Activity[] Returns an array of Activity objects (limité pour éviter ORDER_BY_WITHOUT_LIMIT).
      */
-    public function findByRoutine($routineId): array
+    public function findByRoutine($routineId, int $maxResults = 500): array
     {
         return $this->createQueryBuilder('a')
             ->andWhere('a.routine = :routineId')
             ->setParameter('routineId', $routineId)
             ->orderBy('a.startTime', 'ASC')
+            ->setMaxResults($maxResults)
             ->getQuery()
             ->getResult();
     }
 
     /**
-     * @return Activity[] Activities whose reminder is due (reminderAt <= $now)
+     * @return Activity[] Activities whose reminder is due (reminderAt <= $now).
      */
-    public function findUpcomingReminders(\DateTimeInterface $date): array
+    public function findUpcomingReminders(\DateTimeInterface $date, int $maxResults = 200): array
     {
         return $this->createQueryBuilder('a')
             ->andWhere('a.hasReminder = :hasReminder')
@@ -41,6 +42,7 @@ class ActivityRepository extends ServiceEntityRepository
             ->setParameter('hasReminder', true)
             ->setParameter('date', $date)
             ->setParameter('completed', 'completed')
+            ->setMaxResults($maxResults)
             ->getQuery()
             ->getResult();
     }

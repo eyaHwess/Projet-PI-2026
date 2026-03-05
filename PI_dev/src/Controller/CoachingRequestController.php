@@ -255,14 +255,6 @@ class CoachingRequestController extends AbstractController
     {
         $currentUser = $this->getCurrentUser();
 
-        // Vérifier que l'utilisateur est authentifié
-        if (!$currentUser) {
-            return new JsonResponse([
-                'success' => false,
-                'message' => 'Vous devez être connecté pour faire une demande.',
-            ], 401);
-        }
-
         // Récupérer les données du formulaire
         $coachId = $request->request->get('coaching_request')['coach'] ?? null;
         $goal = $request->request->get('coaching_request')['goal'] ?? null;

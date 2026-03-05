@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Message;
 use App\Entity\MessageReaction;
+use App\Entity\User;
 use App\Repository\MessageReactionRepository;
 use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -29,13 +30,16 @@ final class MessageController extends AbstractController
     public function delete(Message $message, Request $request): Response
     {
         $user = $this->getUser();
-        
+
         if (!$user) {
             if ($request->isXmlHttpRequest()) {
                 return new JsonResponse(['success' => false, 'error' => 'Vous devez être connecté'], 401);
             }
             $this->addFlash('error', 'Vous devez être connecté pour supprimer un message.');
             return $this->redirectToRoute('app_login');
+        }
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
         }
 
         // Check if user is the author OR has moderation rights
@@ -158,6 +162,9 @@ final class MessageController extends AbstractController
             $this->addFlash('error', 'Vous devez être connecté.');
             return $this->redirectToRoute('app_login');
         }
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
 
         // TODO: Implement soft delete for user
         // For now, just return success and hide on client side
@@ -188,6 +195,9 @@ final class MessageController extends AbstractController
             }
             $this->addFlash('error', 'Vous devez être connecté pour modifier un message.');
             return $this->redirectToRoute('app_login');
+        }
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
         }
 
         // Only author can edit
@@ -233,9 +243,12 @@ final class MessageController extends AbstractController
     public function react(Message $message, string $type, MessageReactionRepository $reactionRepo): JsonResponse
     {
         $user = $this->getUser();
-        
+
         if (!$user) {
             return new JsonResponse(['error' => 'Vous devez être connecté'], 401);
+        }
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
         }
 
         // Validate reaction type
@@ -261,7 +274,7 @@ final class MessageController extends AbstractController
             $reaction->setMessage($message);
             $reaction->setUser($user);
             $reaction->setReactionType($type);
-            $reaction->setCreatedAt(new \DateTime());
+            $reaction->setCreatedAt(new \DateTimeImmutable());
             $this->entityManager->persist($reaction);
             $action = 'added';
         }
@@ -277,7 +290,6 @@ final class MessageController extends AbstractController
                     'clap'  => 'clapped for',
                     'fire'  => 'reacted 🔥 to',
                     'heart' => 'loved',
-                    default => 'reacted to',
                 };
                 $preview = $message->getContent()
                     ? (mb_strlen($message->getContent()) > 40
@@ -317,6 +329,9 @@ final class MessageController extends AbstractController
         if (!$user) {
             $this->addFlash('error', 'Vous devez être connecté');
             return $this->redirectToRoute('app_login');
+        }
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
         }
 
         $chatroom = $message->getChatroom();
@@ -360,6 +375,9 @@ final class MessageController extends AbstractController
             $this->addFlash('error', 'Vous devez être connecté');
             return $this->redirectToRoute('app_login');
         }
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
 
         $goal = $message->getChatroom()->getGoal();
 
@@ -393,6 +411,9 @@ final class MessageController extends AbstractController
         if (!$user) {
             $this->addFlash('error', 'Vous devez être connecté');
             return $this->redirectToRoute('app_login');
+        }
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
         }
 
         $goal = $message->getChatroom()->getGoal();
@@ -443,6 +464,9 @@ final class MessageController extends AbstractController
         if (!$user) {
             $this->addFlash('error', 'Vous devez être connecté pour accéder au chatroom.');
             return $this->redirectToRoute('app_login');
+        }
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
         }
 
         $goal = $goalRepository->find($goalId);
@@ -722,6 +746,9 @@ final class MessageController extends AbstractController
         if (!$user) {
             return new JsonResponse(['error' => 'Vous devez être connecté'], 401);
         }
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
 
         $goal = $goalRepository->find($goalId);
         
@@ -747,6 +774,9 @@ final class MessageController extends AbstractController
 
         $lastMessageId = $request->query->get('lastMessageId', 0);
         $user = $this->getUser();
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
 
         // Get messages after lastMessageId
         $messages = $chatroom->getMessages()->filter(function($message) use ($lastMessageId) {
@@ -763,7 +793,7 @@ final class MessageController extends AbstractController
                 'authorInitials' => substr($message->getAuthor()->getFirstName(), 0, 1) . substr($message->getAuthor()->getLastName(), 0, 1),
                 'createdAt' => $message->getCreatedAt()->format('g:i A'),
                 'createdAtDate' => $message->getCreatedAt()->format('M d'),
-                'isOwn' => $user && $message->getAuthor()->getId() === $user->getId(),
+                'isOwn' => $message->getAuthor()->getId() === $user->getId(),
                 'isEdited' => $message->getIsEdited(),
                 'isPinned' => $message->getIsPinned(),
                 'hasAttachment' => $message->hasAttachment(),
@@ -794,12 +824,12 @@ final class MessageController extends AbstractController
                     'fire' => $message->getReactionCount('fire'),
                     'heart' => $message->getReactionCount('heart'),
                 ],
-                'userReactions' => $user ? [
+                'userReactions' => [
                     'like' => $message->hasUserReacted($user, 'like'),
                     'clap' => $message->hasUserReacted($user, 'clap'),
                     'fire' => $message->hasUserReacted($user, 'fire'),
                     'heart' => $message->hasUserReacted($user, 'heart'),
-                ] : null,
+                ],
                 'readCount' => $readReceiptRepo->getReadCount($message),
             ];
         }
@@ -825,6 +855,9 @@ final class MessageController extends AbstractController
             
             if (!$user) {
                 return new JsonResponse(['error' => 'Vous devez être connecté'], 401);
+            }
+            if (!$user instanceof User) {
+                throw $this->createAccessDeniedException();
             }
 
             $goal = $goalRepository->find($goalId);
@@ -912,6 +945,9 @@ final class MessageController extends AbstractController
             $this->addFlash('error', 'Vous devez être connecté');
             return $this->redirectToRoute('app_login');
         }
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
 
         $goal = $goalRepository->find($goalId);
         if (!$goal) {
@@ -950,6 +986,9 @@ final class MessageController extends AbstractController
         if (!$user) {
             $this->addFlash('error', 'Vous devez être connecté');
             return $this->redirectToRoute('app_login');
+        }
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
         }
 
         $goal = $goalRepository->find($goalId);
@@ -1014,6 +1053,9 @@ final class MessageController extends AbstractController
         if (!$user) {
             $this->addFlash('error', 'Vous devez être connecté');
             return $this->redirectToRoute('app_login');
+        }
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
         }
 
         $privateChatroom = $privateChatroomRepository->find($id);
@@ -1098,6 +1140,9 @@ final class MessageController extends AbstractController
 
         if (!$user) {
             return new JsonResponse(['error' => 'Vous devez être connecté'], 401);
+        }
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
         }
 
         $goal = $goalRepository->find($goalId);
@@ -1197,6 +1242,9 @@ final class MessageController extends AbstractController
         
         if (!$user) {
             return new JsonResponse(['error' => 'Non authentifié'], 401);
+        }
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
         }
 
         // Don't mark own messages as read

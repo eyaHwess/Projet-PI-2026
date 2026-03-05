@@ -1,0 +1,25 @@
+includes:
+    - ../phpstan-base.neon
+
+parameters:
+    paths:
+        - ../src/Entity/Chatroom.php
+        - ../src/Entity/PrivateChatroom.php
+        - ../src/Entity/Message.php
+        - ../src/Entity/MessageReport.php
+        - ../src/Entity/MessageReaction.php
+        - ../src/Entity/MessageReadReceipt.php
+        - ../src/Entity/MessageTranslation.php
+        - ../src/Controller/ChatroomController.php
+        - ../src/Controller/ChatroomStateController.php
+        - ../src/Controller/MessageController.php
+        - ../src/Controller/MessageReactionController.php
+        - ../src/Repository/ChatroomRepository.php
+        - ../src/Repository/PrivateChatroomRepository.php
+        - ../src/Repository/MessageRepository.php
+        - ../src/Repository/MessageReportRepository.php
+        - ../src/Repository/MessageReactionRepository.php
+        - ../src/Repository/MessageReadReceiptRepository.php
+        - ../src/Repository/MessageTranslationRepository.php
+        - ../src/Form/MessageType.php
+        - ../src/Form/MessageReportType.php

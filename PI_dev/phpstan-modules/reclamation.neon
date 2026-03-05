@@ -1,0 +1,12 @@
+includes:
+    - ../phpstan-base.neon
+
+parameters:
+    paths:
+        - ../src/Entity/Reclamation.php
+        - ../src/Controller/ReclamationController.php
+        - ../src/Repository/ReclamationRepository.php
+        - ../src/Service/ReclamationNotificationService.php
+        - ../src/Form/ReclamationType.php
+        - ../src/Enum/ReclamationStatusEnum.php
+        - ../src/Enum/ReclamationTypeEnum.php

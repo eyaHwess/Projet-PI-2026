@@ -58,11 +58,13 @@ class AdminResponseController extends AbstractController
                         ->setParameter('search', '%' . $search . '%');
         }
 
-        // Paginate the results
+        $query = $queryBuilder->getQuery();
+        $query->setMaxResults(10);
+
         $pagination = $paginator->paginate(
-            $queryBuilder->getQuery(),
+            $query,
             $request->query->getInt('page', 1),
-            10 // Items per page
+            10
         );
 
         return $this->render('admin_response/index.html.twig', [

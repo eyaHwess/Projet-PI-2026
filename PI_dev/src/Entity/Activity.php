@@ -357,7 +357,7 @@ class Activity
      */
     public function getTimeEfficiency(): ?float
     {
-        if (!$this->plannedDurationMinutes || $this->plannedDurationMinutes === 0) {
+        if (!$this->plannedDurationMinutes) {
             return null;
         }
 

@@ -5,6 +5,8 @@ namespace App\Repository;
 use App\Entity\Session;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Query;
+use Doctrine\ORM\Tools\Pagination\Paginator as DoctrinePaginator;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -18,12 +20,58 @@ class SessionRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return Session[]
+     * Query for session index: INNER JOIN coachingRequest (NOT NULL), eager load cr, user, coach.
+     * Use with paginator so LIMIT is applied correctly.
      */
-    public function findActiveForUser(User $user): array
+    public function getQueryForUserIndex(User $user): Query
     {
         return $this->createQueryBuilder('s')
-            ->join('s.coachingRequest', 'cr')
+            ->innerJoin('s.coachingRequest', 'cr')
+            ->addSelect('cr')
+            ->leftJoin('cr.user', 'cu')
+            ->leftJoin('cr.coach', 'cc')
+            ->addSelect('cu', 'cc')
+            ->where('cr.user = :user OR cr.coach = :user')
+            ->setParameter('user', $user)
+            ->orderBy('s.updatedAt', 'DESC')
+            ->getQuery();
+    }
+
+    /**
+     * Paginated sessions for index (Doctrine Paginator to avoid SETMAXRESULTS_WITH_COLLECTION_JOIN and ORDER_BY_WITHOUT_LIMIT).
+     *
+     * @return array{items: Session[], total: int}
+     */
+    public function getPaginatedForUserIndex(User $user, int $page, int $perPage): array
+    {
+        $qb = $this->createQueryBuilder('s')
+            ->innerJoin('s.coachingRequest', 'cr')
+            ->addSelect('cr')
+            ->leftJoin('cr.user', 'cu')
+            ->leftJoin('cr.coach', 'cc')
+            ->addSelect('cu', 'cc')
+            ->where('cr.user = :user OR cr.coach = :user')
+            ->setParameter('user', $user)
+            ->orderBy('s.updatedAt', 'DESC');
+
+        $query = $qb->getQuery()
+            ->setFirstResult(($page - 1) * $perPage)
+            ->setMaxResults($perPage);
+
+        $paginator = new DoctrinePaginator($query, true);
+        $items = iterator_to_array($paginator);
+        $total = $paginator->count();
+
+        return ['items' => $items, 'total' => $total];
+    }
+
+    /**
+     * @return Session[]
+     */
+    public function findActiveForUser(User $user, int $maxResults = 100): array
+    {
+        return $this->createQueryBuilder('s')
+            ->innerJoin('s.coachingRequest', 'cr')
             ->where('cr.user = :user')
             ->andWhere('s.status IN (:statuses)')
             ->setParameter('user', $user)
@@ -34,6 +82,7 @@ class SessionRepository extends ServiceEntityRepository
                 Session::STATUS_CONFIRMED,
             ])
             ->orderBy('s.createdAt', 'DESC')
+            ->setMaxResults($maxResults)
             ->getQuery()
             ->getResult();
     }
@@ -41,10 +90,10 @@ class SessionRepository extends ServiceEntityRepository
     /**
      * @return Session[]
      */
-    public function findActiveForCoach(User $coach): array
+    public function findActiveForCoach(User $coach, int $maxResults = 100): array
     {
         return $this->createQueryBuilder('s')
-            ->join('s.coachingRequest', 'cr')
+            ->innerJoin('s.coachingRequest', 'cr')
             ->where('cr.coach = :coach')
             ->andWhere('s.status IN (:statuses)')
             ->setParameter('coach', $coach)
@@ -55,6 +104,7 @@ class SessionRepository extends ServiceEntityRepository
                 Session::STATUS_CONFIRMED,
             ])
             ->orderBy('s.createdAt', 'DESC')
+            ->setMaxResults($maxResults)
             ->getQuery()
             ->getResult();
     }
@@ -64,14 +114,15 @@ class SessionRepository extends ServiceEntityRepository
      *
      * @return Session[]
      */
-    public function findAllForUser(User $user): array
+    public function findAllForUser(User $user, int $maxResults = 100): array
     {
         return $this->createQueryBuilder('s')
-            ->join('s.coachingRequest', 'cr')
+            ->innerJoin('s.coachingRequest', 'cr')
             ->where('cr.user = :user')
             ->orWhere('cr.coach = :user')
             ->setParameter('user', $user)
             ->orderBy('s.createdAt', 'DESC')
+            ->setMaxResults($maxResults)
             ->getQuery()
             ->getResult();
     }
@@ -81,13 +132,14 @@ class SessionRepository extends ServiceEntityRepository
      *
      * @return Session[]
      */
-    public function findForCoach(User $coach): array
+    public function findForCoach(User $coach, int $maxResults = 100): array
     {
         return $this->createQueryBuilder('s')
-            ->join('s.coachingRequest', 'cr')
+            ->innerJoin('s.coachingRequest', 'cr')
             ->where('cr.coach = :coach')
             ->setParameter('coach', $coach)
             ->orderBy('s.createdAt', 'DESC')
+            ->setMaxResults($maxResults)
             ->getQuery()
             ->getResult();
     }
@@ -99,7 +151,7 @@ class SessionRepository extends ServiceEntityRepository
     {
         return (int) $this->createQueryBuilder('s')
             ->select('COUNT(s.id)')
-            ->join('s.coachingRequest', 'cr')
+            ->innerJoin('s.coachingRequest', 'cr')
             ->where('cr.coach = :coach')
             ->setParameter('coach', $coach)
             ->getQuery()
@@ -116,7 +168,7 @@ class SessionRepository extends ServiceEntityRepository
 
         return (int) $this->createQueryBuilder('s')
             ->select('COUNT(s.id)')
-            ->join('s.coachingRequest', 'cr')
+            ->innerJoin('s.coachingRequest', 'cr')
             ->where('cr.coach = :coach')
             ->andWhere(
                 '(s.scheduledAt IS NOT NULL AND s.scheduledAt >= :todayStart AND s.scheduledAt <= :todayEnd)'

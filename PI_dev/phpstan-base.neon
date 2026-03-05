@@ -1,0 +1,17 @@
+# Base config for module-specific runs (no paths — each module sets its own paths)
+parameters:
+    level: 5
+    reportUnmatchedIgnoredErrors: false
+    excludePaths:
+        - src/Kernel.php
+    symfony:
+        containerXmlPath: var/cache/dev/App_KernelDevDebugContainer.xml
+    ignoreErrors:
+        # Session::getFlashBag() exists at runtime; PHPStan stub may not reflect it
+        - '#Call to an undefined method Symfony\\Component\\HttpFoundation\\Session\\SessionInterface::getFlashBag\(\)#'
+        # Doctrine: property nullable in PHP vs NOT NULL in DB (can be tightened later)
+        - identifier: doctrine.columnType
+        - identifier: doctrine.associationType
+        # Reclamation::setUser(?User) accepts null (line 514 in User.php)
+        - identifier: argument.type
+          path: src/Entity/User.php

@@ -1,0 +1,30 @@
+includes:
+    - ../phpstan-base.neon
+
+parameters:
+    paths:
+        - ../src/Entity/Session.php
+        - ../src/Entity/CoachingRequest.php
+        - ../src/Entity/TimeSlot.php
+        - ../src/Entity/Review.php
+        - ../src/Entity/Response.php
+        - ../src/Controller/SessionController.php
+        - ../src/Controller/SessionCrudController.php
+        - ../src/Controller/CoachingRequestController.php
+        - ../src/Controller/TimeSlotController.php
+        - ../src/Controller/CoachController.php
+        - ../src/Controller/ReviewController.php
+        - ../src/Controller/DemoSessionController.php
+        - ../src/Controller/DemoCoachRequestController.php
+        - ../src/Repository/SessionRepository.php
+        - ../src/Repository/CoachingRequestRepository.php
+        - ../src/Repository/TimeSlotRepository.php
+        - ../src/Repository/ReviewRepository.php
+        - ../src/Repository/ResponseRepository.php
+        - ../src/Form/SessionType.php
+        - ../src/Form/SessionScheduleType.php
+        - ../src/Form/SessionCoachScheduleType.php
+        - ../src/Form/CoachingRequestType.php
+        - ../src/Form/CoachType.php
+    ignoreErrors:
+        - identifier: property.onlyWritten

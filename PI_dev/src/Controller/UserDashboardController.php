@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Repository\GoalRepository;
 use App\Repository\RoutineRepository;
 use App\Repository\SessionRepository;
@@ -22,6 +23,9 @@ class UserDashboardController extends AbstractController
         LoginHistoryService $loginHistoryService
     ): Response {
         $user = $this->getUser();
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
 
         $goalsCount = $goalRepository->count(['user' => $user]);
         $routinesCount = $routineRepository->countByUser($user);

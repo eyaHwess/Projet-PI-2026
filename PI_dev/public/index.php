@@ -2,6 +2,7 @@
 
 // Doit être appelé en tout premier (avant tout require) pour éviter le timeout 30s sous PHP-CGI
 set_time_limit(300);
+ini_set('memory_limit', '512M');
 
 use App\Kernel;
 

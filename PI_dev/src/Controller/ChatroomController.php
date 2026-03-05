@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Chatroom;
 use App\Entity\GoalParticipation;
 use App\Entity\Message;
+use App\Entity\User;
 use App\Form\MessageType;
 use App\Repository\MessageReadReceiptRepository;
 use App\Service\ModerationService;
@@ -57,7 +58,7 @@ class ChatroomController extends AbstractController
 
         // Vérifier que l'utilisateur est connecté
         $user = $this->getUser();
-        if (!$user) {
+        if (!$user instanceof User) {
             $this->addFlash('error', 'Vous devez être connecté pour accéder au chatroom.');
             return $this->redirectToRoute('app_login');
         }
@@ -115,7 +116,7 @@ class ChatroomController extends AbstractController
             $message->setContent($content);
             $message->setAuthor($user);
             $message->setChatroom($chatroom);
-            $message->setCreatedAt(new \DateTime());
+            $message->setCreatedAt(new \DateTimeImmutable());
 
             // Handle file upload: try form field first, then raw request files
             $attachmentFile = $form->get('attachment')->getData();

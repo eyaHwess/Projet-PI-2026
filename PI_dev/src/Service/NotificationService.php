@@ -208,6 +208,32 @@ class NotificationService
     }
 
     /**
+     * Notifier l'utilisateur que sa demande de coaching a été envoyée
+     */
+    public function notifyUserRequestSent(\App\Entity\CoachingRequest $coachingRequest): void
+    {
+        $coach = $coachingRequest->getCoach();
+        $user = $coachingRequest->getUser();
+
+        if (!$user) {
+            return;
+        }
+
+        $message = sprintf(
+            'Votre demande de coaching a été envoyée à %s %s. Vous recevrez une réponse prochainement.',
+            $coach->getFirstName(),
+            $coach->getLastName()
+        );
+
+        $this->createAndPublish(
+            $user,
+            'request_sent',
+            $message,
+            $coachingRequest
+        );
+    }
+
+    /**
      * Notifier le coach qu'il a reçu une nouvelle demande
      */
     public function notifyCoachNewRequest(\App\Entity\CoachingRequest $coachingRequest): void

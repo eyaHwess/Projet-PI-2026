@@ -20,7 +20,7 @@ class GoalParticipationRepository extends ServiceEntityRepository
     /**
      * @return GoalParticipation[]
      */
-    public function findApprovedByUser(User $user): array
+    public function findApprovedByUser(User $user, int $maxResults = 100): array
     {
         return $this->createQueryBuilder('gp')
             ->join('gp.goal', 'g')
@@ -29,6 +29,7 @@ class GoalParticipationRepository extends ServiceEntityRepository
             ->setParameter('user', $user)
             ->setParameter('status', GoalParticipation::STATUS_APPROVED)
             ->orderBy('gp.createdAt', 'DESC')
+            ->setMaxResults($maxResults)
             ->getQuery()
             ->getResult();
     }

@@ -63,7 +63,7 @@ class RoutineController extends AbstractController
             $queryBuilder->orderBy('r.createdAt', 'DESC');
         }
 
-        $routines = $queryBuilder->getQuery()->getResult();
+        $routines = $queryBuilder->setMaxResults(500)->getQuery()->getResult();
 
         return $this->render('routine/index.html.twig', [
             'goal' => $goal,
@@ -145,7 +145,7 @@ class RoutineController extends AbstractController
             // Requête GET AJAX - retourner le formulaire en HTML
             return $this->render('routine/_form.html.twig', [
                 'form' => $form,
-                'routine' => $routine ?? new Routine(),
+                'routine' => $routine,
                 'goal' => $goal,
             ]);
         }

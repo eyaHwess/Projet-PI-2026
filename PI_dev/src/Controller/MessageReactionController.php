@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Message;
 use App\Entity\MessageReaction;
+use App\Entity\User;
 use App\Repository\MessageReactionRepository;
 use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -28,7 +29,7 @@ class MessageReactionController extends AbstractController
     ): JsonResponse {
         $user = $this->getUser();
         
-        if (!$user) {
+        if (!$user instanceof User) {
             return new JsonResponse(['error' => 'Vous devez être connecté'], 401);
         }
 
@@ -121,7 +122,7 @@ class MessageReactionController extends AbstractController
         $user = $this->getUser();
         
         $counts = $reactionRepository->getReactionCounts($message);
-        $userReactions = $user ? $reactionRepository->getUserReactions($message, $user) : [];
+        $userReactions = $user instanceof User ? $reactionRepository->getUserReactions($message, $user) : [];
 
         return new JsonResponse([
             'counts' => $counts,

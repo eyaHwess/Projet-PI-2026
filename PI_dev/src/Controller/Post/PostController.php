@@ -1,6 +1,7 @@
 <?php
 namespace App\Controller\Post;
 
+use App\Entity\User;
 use App\Service\Post\PostService;
 use App\Service\Post\PostLikeService;
 use App\Service\Post\CommentService;
@@ -20,6 +21,15 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class PostController extends AbstractController
 {
+    private function getCurrentUser(): User
+    {
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
+        return $user;
+    }
+
     #[Route('/post/new', name: 'post_new', methods: ['GET'])]
     public function new(): Response
     {
@@ -36,7 +46,7 @@ class PostController extends AbstractController
     ): Response {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
         $title = $request->request->get('title');
         $content = $request->request->get('content');
 
@@ -72,7 +82,7 @@ class PostController extends AbstractController
     ): Response {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
 
         $title = $request->request->get('title');
         $content = $request->request->get('content');
@@ -106,7 +116,7 @@ class PostController extends AbstractController
     ): Response {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
 
         $title = $request->request->get('title');
         $content = $request->request->get('content');
@@ -122,7 +132,7 @@ class PostController extends AbstractController
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
         
         try {
             $postService->deletePost($id, $user);
@@ -139,7 +149,7 @@ class PostController extends AbstractController
     ): Response {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
 
         $postService->deletePost($id, $user);
 
@@ -172,39 +182,36 @@ class PostController extends AbstractController
             ->setParameter('status', PostStatus::PUBLISHED->value);
         
         // Get current user
-        $currentUser = $this->getUser();
+        $currentUser = $this->getCurrentUser();
         
-        // Apply tag filter if provided
+        // Apply tag filter (sous-requête pour éviter setMaxResults + collection join)
         if ($tagSlug) {
             $tag = $tagRepository->findBySlug($tagSlug);
             if ($tag) {
-                $queryBuilder->innerJoin('p.tags', 't')
-                    ->andWhere('t.id = :tagId')
+                $queryBuilder->andWhere('p IN (SELECT post FROM App\Entity\Tag t JOIN t.posts post WHERE t.id = :tagId)')
                     ->setParameter('tagId', $tag->getId());
             }
         }
-        
+
         // Apply filters
-        if ($filterBy === 'my_posts' && $currentUser) {
+        if ($filterBy === 'my_posts') {
             $queryBuilder->andWhere('p.createdBy = :user')
                 ->setParameter('user', $currentUser);
         }
         // Note: 'following' filter would require a Follow/Friend system
-        
-        // Apply sorting
+
+        // Apply sorting (sous-requêtes pour éviter setMaxResults + collection join)
         switch ($sortBy) {
             case 'oldest':
                 $queryBuilder->orderBy('p.createdAt', 'ASC');
                 break;
             case 'most_liked':
-                $queryBuilder->leftJoin('p.postLikes', 'pl')
-                    ->groupBy('p.id')
-                    ->orderBy('COUNT(pl.id)', 'DESC');
+                $queryBuilder->addSelect('(SELECT COUNT(pl.id) FROM App\Entity\PostLike pl WHERE pl.post = p) AS HIDDEN likes_count')
+                    ->orderBy('likes_count', 'DESC');
                 break;
             case 'most_commented':
-                $queryBuilder->leftJoin('p.comments', 'c')
-                    ->groupBy('p.id')
-                    ->orderBy('COUNT(c.id)', 'DESC');
+                $queryBuilder->addSelect('(SELECT COUNT(c.id) FROM App\Entity\Comment c WHERE c.post = p) AS HIDDEN comments_count')
+                    ->orderBy('comments_count', 'DESC');
                 break;
             case 'newest':
             default:
@@ -268,15 +275,16 @@ class PostController extends AbstractController
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
         
-        $currentUser = $this->getUser();
+        $currentUser = $this->getCurrentUser();
         
-        // Get only draft posts for current user
+        // Get only draft posts for current user (limité pour éviter ORDER_BY_WITHOUT_LIMIT)
         $drafts = $postRepository->createQueryBuilder('p')
             ->where('p.status = :status')
             ->andWhere('p.createdBy = :user')
             ->setParameter('status', PostStatus::DRAFT->value)
             ->setParameter('user', $currentUser)
             ->orderBy('p.createdAt', 'DESC')
+            ->setMaxResults(100)
             ->getQuery()
             ->getResult();
 
@@ -291,7 +299,7 @@ class PostController extends AbstractController
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
         
-        $currentUser = $this->getUser();
+        $currentUser = $this->getCurrentUser();
         
         $post = $postRepository->find($id);
         
@@ -317,15 +325,16 @@ class PostController extends AbstractController
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
         
-        $currentUser = $this->getUser();
+        $currentUser = $this->getCurrentUser();
         
-        // Get only scheduled posts for current user
+        // Get only scheduled posts for current user (limité pour éviter ORDER_BY_WITHOUT_LIMIT)
         $scheduled = $postRepository->createQueryBuilder('p')
             ->where('p.status = :status')
             ->andWhere('p.createdBy = :user')
             ->setParameter('status', PostStatus::SCHEDULED->value)
             ->setParameter('user', $currentUser)
             ->orderBy('p.scheduledAt', 'ASC')
+            ->setMaxResults(100)
             ->getQuery()
             ->getResult();
 
@@ -340,7 +349,7 @@ class PostController extends AbstractController
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
         
-        $currentUser = $this->getUser();
+        $currentUser = $this->getCurrentUser();
         
         $post = $postRepository->find($id);
         
@@ -372,7 +381,7 @@ class PostController extends AbstractController
     ): Response {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
         $title = $request->request->get('title');
         $content = $request->request->get('content');
         $status = $request->request->get('status', PostStatus::PUBLISHED->value);
@@ -409,7 +418,7 @@ class PostController extends AbstractController
         $post = $postService->createPost($title, $content, $user, $status, [], $scheduledAt);
         
         // Generate tags automatically (only for published posts)
-        if ($post && $status === PostStatus::PUBLISHED->value) {
+        if ($status === PostStatus::PUBLISHED->value) {
             $taggingManager->generateTagsForPost($post);
         }
         
@@ -465,7 +474,7 @@ class PostController extends AbstractController
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
         $result = $postLikeService->toggleLike($id, $user);
 
         // Return JSON response for AJAX
@@ -477,7 +486,7 @@ class PostController extends AbstractController
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
         $result = $savedPostService->toggleSave($id, $user);
 
         return $this->json($result);
@@ -492,7 +501,7 @@ class PostController extends AbstractController
     ): Response {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
         $content = $request->request->get('content');
         $parentCommentId = $request->request->get('parent_comment_id');
 
@@ -535,7 +544,7 @@ class PostController extends AbstractController
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
         $result = $commentLikeService->toggleLike($id, $user);
 
         return $this->json($result);
@@ -561,7 +570,7 @@ class PostController extends AbstractController
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
         $content = $request->request->get('content');
 
         // Moderate comment content
@@ -588,7 +597,7 @@ class PostController extends AbstractController
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
 
         try {
             $commentService->deleteComment($id, $user);

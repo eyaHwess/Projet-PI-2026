@@ -1,0 +1,30 @@
+includes:
+    - ../phpstan-base.neon
+
+parameters:
+    paths:
+        - ../src/Entity/Post.php
+        - ../src/Entity/Comment.php
+        - ../src/Entity/PostLike.php
+        - ../src/Entity/CommentLike.php
+        - ../src/Entity/Tag.php
+        - ../src/Entity/SavedPost.php
+        - ../src/Controller/Post
+        - ../src/Service/Post
+        - ../src/Service/PostNotificationService.php
+        - ../src/Service/Analytics/PostAnalyticsService.php
+        - ../src/Repository/PostRepository.php
+        - ../src/Repository/CommentRepository.php
+        - ../src/Repository/PostLikeRepository.php
+        - ../src/Repository/CommentLikeRepository.php
+        - ../src/Repository/TagRepository.php
+        - ../src/Repository/SavedPostRepository.php
+        - ../src/Event/Post
+        - ../src/EventListener/PostTaggingListener.php
+        - ../src/Enum/PostStatus.php
+    treatPhpDocTypesAsCertain: false
+    ignoreErrors:
+        - identifier: greater.alwaysTrue
+        - identifier: booleanAnd.leftAlwaysTrue
+        - identifier: booleanAnd.rightAlwaysTrue
+        - identifier: instanceof.alwaysTrue

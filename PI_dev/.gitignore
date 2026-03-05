@@ -23,3 +23,7 @@
 ###> uploaded files ###
 /public/uploads/
 ###< uploaded files ###
+
+###> phpstan/phpstan ###
+phpstan.neon
+###< phpstan/phpstan ###

@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Reclamation;
 use App\Entity\Response as ReclamationResponse;
+use App\Entity\User;
 use App\Form\ReclamationType;
 use App\Repository\ReclamationRepository;
 use App\Enum\ReclamationStatusEnum;
@@ -30,15 +31,18 @@ class ReclamationController extends AbstractController
     throw $this->createAccessDeniedException();
 }
 
-        $queryBuilder = $repository->createQueryBuilder('r')
+        $query = $repository->createQueryBuilder('r')
             ->where('r.user = :user')
             ->setParameter('user', $this->getUser())
-            ->orderBy('r.createdAt', 'DESC');
+            ->orderBy('r.createdAt', 'DESC')
+            ->getQuery();
+
+        $query->setMaxResults(5);
 
         $pagination = $paginator->paginate(
-            $queryBuilder->getQuery(),
+            $query,
             $request->query->getInt('page', 1),
-            5 // Items per page for user view
+            5
         );
 
         return $this->render('reclamation/index.html.twig', [
@@ -90,7 +94,11 @@ class ReclamationController extends AbstractController
             }
 
             // Link to logged user
-            $reclamation->setUser($this->getUser());
+            $user = $this->getUser();
+            if (!$user instanceof User) {
+                throw $this->createAccessDeniedException();
+            }
+            $reclamation->setUser($user);
             $reclamation->setStatus(ReclamationStatusEnum::PENDING);
 
             $em->persist($reclamation);

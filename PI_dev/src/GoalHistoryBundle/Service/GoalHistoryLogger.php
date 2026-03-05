@@ -61,7 +61,7 @@ class GoalHistoryLogger
               ->setMetadata($metadata);
 
         $this->entityManager->persist($entry);
-        $this->entityManager->flush();
+        // Flush délégué à l'appelant pour éviter "Flush In Loop" (ex: GoalController::edit appelle log() plusieurs fois).
 
         $this->logger?->info('[GoalHistory] {action} on goal #{id}', [
             'action'    => $action,

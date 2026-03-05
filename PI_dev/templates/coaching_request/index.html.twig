@@ -3,461 +3,278 @@
 {% block title %}Dashboard Coach{% endblock %}
 
 {% block stylesheets %}
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
     <style>
-        :root {
-            --c-primary:   #6366f1;
-            --c-primary-d: #4f46e5;
-            --c-success:   #10b981;
-            --c-warning:   #f59e0b;
-            --c-danger:    #ef4444;
-            --c-info:      #3b82f6;
-            --c-bg:        #f1f5f9;
-            --c-card:      #ffffff;
-            --c-border:    #e2e8f0;
-            --c-text:      #1e293b;
-            --c-muted:     #64748b;
-        }
-
-        body { background: var(--c-bg); font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-
-        /* ── Hero banner ── */
+        /* Coach dashboard – aligned with DayFlow (Tailwind + orange) */
         .coach-hero {
-            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 55%, #1e3a5f 100%);
-            padding: 3.5rem 0 2rem;
+            background: linear-gradient(135deg, #ea580c 0%, #c2410c 40%, #9a3412 100%);
             position: relative;
             overflow: hidden;
         }
         .coach-hero::before {
             content: '';
             position: absolute;
-            top: -80px; right: -80px;
-            width: 360px; height: 360px;
-            background: radial-gradient(circle, rgba(99,102,241,.22) 0%, transparent 70%);
+            top: -100px; right: -100px;
+            width: 320px; height: 320px;
+            background: radial-gradient(circle, rgba(255,255,255,.12) 0%, transparent 70%);
             border-radius: 50%;
         }
         .coach-hero::after {
             content: '';
             position: absolute;
-            bottom: -60px; left: 5%;
+            bottom: -80px; left: -60px;
             width: 280px; height: 280px;
-            background: radial-gradient(circle, rgba(16,185,129,.12) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(254,215,170,.2) 0%, transparent 65%);
             border-radius: 50%;
         }
-        .coach-hero .hero-badge {
-            display: inline-flex; align-items: center; gap: .5rem;
-            background: rgba(255,255,255,.1);
-            border: 1px solid rgba(255,255,255,.18);
-            color: rgba(255,255,255,.85);
-            padding: .35rem 1rem;
-            border-radius: 50px;
-            font-size: .78rem; font-weight: 600; letter-spacing: .05em;
-            text-transform: uppercase; backdrop-filter: blur(8px);
-            margin-bottom: 1rem;
+        .stat-card {
+            transition: transform .2s ease, box-shadow .2s ease;
         }
-        .coach-hero h1 { color: #fff; font-size: 2rem; font-weight: 800; letter-spacing: -.03em; }
-        .coach-hero p  { color: rgba(255,255,255,.6); }
-
-        /* ── Stat cards ── */
-        .stat-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin-top: -2.5rem; position: relative; z-index: 10; }
-        @media(max-width:640px){ .stat-grid{ grid-template-columns: 1fr 1fr; } }
-        .stat-item {
-            background: var(--c-card);
-            border-radius: 1rem;
-            padding: 1.4rem 1.2rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,.07);
-            border: 1px solid var(--c-border);
-            display: flex; align-items: center; gap: 1rem;
-            transition: transform .2s, box-shadow .2s;
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0,0,0,.08);
         }
-        .stat-item:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0,0,0,.1); }
-        .stat-icon {
-            width: 3rem; height: 3rem; border-radius: .75rem;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.3rem; flex-shrink: 0;
+        .req-card-coach {
+            transition: box-shadow .2s ease, transform .2s ease;
         }
-        .stat-icon.warn  { background: #fef3c7; color: var(--c-warning); }
-        .stat-icon.succ  { background: #d1fae5; color: var(--c-success); }
-        .stat-icon.info  { background: #dbeafe; color: var(--c-info); }
-        .stat-num  { font-size: 1.8rem; font-weight: 800; color: var(--c-text); line-height: 1; }
-        .stat-label{ font-size: .75rem; color: var(--c-muted); font-weight: 500; margin-top: .2rem; }
-
-        /* ── Section headings ── */
-        .section-label {
-            display: flex; align-items: center; gap: .6rem;
-            font-weight: 700; font-size: 1rem; color: var(--c-text);
-            margin-bottom: 1rem;
+        .req-card-coach:hover {
+            box-shadow: 0 8px 32px rgba(0,0,0,.06);
+            transform: translateY(-2px);
         }
-        .section-label .dot {
-            width: .55rem; height: .55rem; border-radius: 50%; flex-shrink: 0;
-        }
-        .section-label .cnt {
-            margin-left: .3rem;
-            background: var(--c-primary);
-            color: #fff; font-size: .72rem; font-weight: 700;
-            padding: .1rem .55rem; border-radius: 50px;
-        }
-
-        /* ── Filter card ── */
-        .filter-card {
-            background: var(--c-card);
-            border: 1px solid var(--c-border);
-            border-radius: 1rem;
-            padding: 1.25rem 1.5rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,.04);
-        }
-        .filter-card .form-control,
-        .filter-card .form-select {
-            border-radius: .6rem; border-color: var(--c-border);
-            font-size: .87rem;
-        }
-        .filter-card .form-control:focus,
-        .filter-card .form-select:focus {
-            border-color: var(--c-primary);
-            box-shadow: 0 0 0 3px rgba(99,102,241,.15);
-        }
-        .btn-primary-grad {
-            background: linear-gradient(135deg, var(--c-primary), var(--c-primary-d));
-            border: none; color: #fff; font-weight: 600; border-radius: .6rem;
-            padding: .5rem 1.25rem;
-            transition: opacity .2s, transform .2s;
-        }
-        .btn-primary-grad:hover { opacity: .9; transform: translateY(-1px); color: #fff; }
-
-        /* ── Request cards ── */
-        .req-card {
-            background: var(--c-card);
-            border: 1px solid var(--c-border);
-            border-radius: 1rem;
-            padding: 1.4rem 1.5rem;
-            margin-bottom: .85rem;
-            transition: box-shadow .2s, transform .2s;
-            position: relative;
-            overflow: hidden;
-        }
-        .req-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,.08); transform: translateY(-2px); }
-        .req-card.is-pending::before {
-            content: '';
-            position: absolute; left: 0; top: 0; bottom: 0;
-            width: 4px;
-            background: linear-gradient(180deg, var(--c-warning), #f97316);
-            border-radius: 4px 0 0 4px;
-        }
-        .req-card.is-accepted::before {
-            content: '';
-            position: absolute; left: 0; top: 0; bottom: 0;
-            width: 4px;
-            background: linear-gradient(180deg, var(--c-success), #059669);
-            border-radius: 4px 0 0 4px;
-        }
-        .req-card.is-declined::before {
-            content: '';
-            position: absolute; left: 0; top: 0; bottom: 0;
-            width: 4px;
-            background: linear-gradient(180deg, var(--c-danger), #dc2626);
-            border-radius: 4px 0 0 4px;
-        }
-
-        /* user avatar */
-        .req-avatar {
-            width: 2.8rem; height: 2.8rem; border-radius: 50%;
-            background: linear-gradient(135deg, var(--c-primary), var(--c-primary-d));
-            color: #fff; font-weight: 700; font-size: 1rem;
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
-        }
-        .req-name { font-weight: 700; color: var(--c-text); font-size: .97rem; }
-        .req-email { font-size: .8rem; color: var(--c-muted); }
-        .req-date  { font-size: .78rem; color: var(--c-muted); }
-
-        .req-message {
-            background: #f8fafc;
-            border: 1px solid var(--c-border);
-            border-radius: .6rem;
-            padding: .75rem 1rem;
-            font-size: .87rem; color: #475569;
-            margin-top: .75rem;
-            position: relative;
-        }
-        .req-message::before {
+        .req-card-coach.border-l-pending { border-left: 4px solid #f59e0b; }
+        .req-card-coach.border-l-accepted { border-left: 4px solid #10b981; }
+        .req-card-coach.border-l-declined { border-left: 4px solid #ef4444; }
+        .req-message-box::before {
             content: '\201C';
-            font-size: 2rem; line-height: 1;
-            color: var(--c-primary); opacity: .3;
-            position: absolute; top: .3rem; left: .6rem;
+            font-size: 2rem;
+            line-height: 1;
+            color: #ea580c;
+            opacity: .35;
+            position: absolute;
+            top: .25rem;
+            left: .5rem;
         }
-
-        .wait-chip {
-            display: inline-flex; align-items: center; gap: .3rem;
-            background: #fff7ed;
-            color: #c2410c; font-size: .72rem; font-weight: 600;
-            padding: .2rem .65rem; border-radius: 50px;
-            border: 1px solid #fed7aa;
-        }
-        .wait-chip.urgent { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
-
-        /* badge pills */
-        .pill {
-            display: inline-flex; align-items: center; gap: .3rem;
-            padding: .2rem .7rem; border-radius: 50px;
-            font-size: .72rem; font-weight: 600;
-        }
-        .pill-pending  { background: #fef3c7; color: #92400e; }
-        .pill-accepted { background: #d1fae5; color: #065f46; }
-        .pill-declined { background: #fee2e2; color: #991b1b; }
-        .pill-planned  { background: #dbeafe; color: #1e40af; }
-        .pill-completed{ background: #f3f4f6; color: #374151; }
-        .pill-urgent   { background: #fee2e2; color: #991b1b; }
-        .pill-normal   { background: #dbeafe; color: #1e40af; }
-        .pill-medium   { background: #f3f4f6; color: #374151; }
-
-        /* action buttons */
-        .btn-accept  { background: #d1fae5; color: #065f46; border: none; border-radius: .6rem; padding: .45rem 1rem; font-weight: 600; font-size: .85rem; transition: background .2s, transform .2s; }
-        .btn-accept:hover  { background: #a7f3d0; transform: translateY(-1px); }
-        .btn-decline { background: #fee2e2; color: #991b1b; border: none; border-radius: .6rem; padding: .45rem 1rem; font-weight: 600; font-size: .85rem; transition: background .2s, transform .2s; }
-        .btn-decline:hover { background: #fecaca; transform: translateY(-1px); }
-        .btn-requeue { background: #fef3c7; color: #92400e; border: none; border-radius: .6rem; padding: .45rem 1rem; font-weight: 600; font-size: .85rem; transition: background .2s, transform .2s; }
-        .btn-requeue:hover { background: #fde68a; transform: translateY(-1px); }
-        .btn-schedule{ background: linear-gradient(135deg,var(--c-primary),var(--c-primary-d)); color: #fff; border: none; border-radius: .6rem; padding: .45rem 1rem; font-weight: 600; font-size: .85rem; transition: opacity .2s, transform .2s; }
-        .btn-schedule:hover { opacity: .88; transform: translateY(-1px); color:#fff; }
-
-        /* empty state */
-        .empty-box {
-            background: var(--c-card); border: 2px dashed var(--c-border);
-            border-radius: 1rem; padding: 4rem 2rem; text-align: center;
-        }
-        .empty-icon {
-            width: 5rem; height: 5rem; background: linear-gradient(135deg,#ede9fe,#c7d2fe);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 2.2rem; color: var(--c-primary); margin: 0 auto 1.25rem;
-        }
-
-        /* back link */
-        .back-link {
-            display: inline-flex; align-items: center; gap: .4rem;
-            font-size: .85rem; font-weight: 500; color: rgba(255,255,255,.7);
-            text-decoration: none; transition: color .2s;
-        }
-        .back-link:hover { color: #fff; }
     </style>
 {% endblock %}
 
 {% block body %}
 
-    {# ── Hero ── #}
-    <div class="coach-hero">
-        <div class="container position-relative" style="z-index:2">
-            <a href="{{ path('user_dashboard') }}" class="back-link mb-3 d-inline-flex">
-                <i class="bi bi-arrow-left"></i> Tableau de bord
+    {# Hero #}
+    <div class="coach-hero pt-8 pb-10 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <a href="{{ path('user_dashboard') }}" class="inline-flex items-center gap-2 text-sm font-medium text-white/80 hover:text-white transition mb-4">
+                <i class="bi bi-arrow-left"></i>
+                Tableau de bord
             </a>
-            <div class="hero-badge">
-                <i class="bi bi-person-workspace"></i> Coach Dashboard
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-white/90 text-xs font-semibold uppercase tracking-wide backdrop-blur-sm mb-4">
+                <i class="bi bi-person-workspace"></i>
+                Coach Dashboard
             </div>
-            <h1>Demandes de coaching</h1>
-            <p class="mb-0">Gérez les demandes reçues et planifiez vos sessions.</p>
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Demandes de coaching</h1>
+            <p class="mt-2 text-white/70 max-w-xl">Gérez les demandes reçues et planifiez vos sessions.</p>
         </div>
     </div>
 
-    <div class="container pb-5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
 
-        {# ── Stats ── #}
-        <div class="stat-grid mb-5">
-            <div class="stat-item">
-                <div class="stat-icon warn"><i class="bi bi-clock-history"></i></div>
+        {# Stats #}
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 -mt-8 relative z-10">
+            <div class="stat-card bg-white rounded-2xl p-5 shadow-lg border border-gray-100 flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+                    <i class="bi bi-clock-history text-amber-600 text-xl"></i>
+                </div>
                 <div>
-                    <div class="stat-num">{{ stats.pending }}</div>
-                    <div class="stat-label">En attente</div>
+                    <div class="text-2xl font-extrabold text-gray-900">{{ stats.pending }}</div>
+                    <div class="text-sm font-medium text-gray-500">En attente</div>
                 </div>
             </div>
-            <div class="stat-item">
-                <div class="stat-icon succ"><i class="bi bi-check-circle-fill"></i></div>
+            <div class="stat-card bg-white rounded-2xl p-5 shadow-lg border border-gray-100 flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                    <i class="bi bi-check-circle-fill text-emerald-600 text-xl"></i>
+                </div>
                 <div>
-                    <div class="stat-num">{{ stats.accepted }}</div>
-                    <div class="stat-label">Acceptées</div>
+                    <div class="text-2xl font-extrabold text-gray-900">{{ stats.accepted }}</div>
+                    <div class="text-sm font-medium text-gray-500">Acceptées</div>
                 </div>
             </div>
-            <div class="stat-item">
-                <div class="stat-icon info"><i class="bi bi-calendar-day"></i></div>
+            <div class="stat-card bg-white rounded-2xl p-5 shadow-lg border border-gray-100 flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center flex-shrink-0">
+                    <i class="bi bi-calendar-day text-orange-600 text-xl"></i>
+                </div>
                 <div>
-                    <div class="stat-num">{{ stats.sessions_today }}</div>
-                    <div class="stat-label">Sessions aujourd'hui</div>
+                    <div class="text-2xl font-extrabold text-gray-900">{{ stats.sessions_today }}</div>
+                    <div class="text-sm font-medium text-gray-500">Sessions aujourd'hui</div>
                 </div>
             </div>
         </div>
 
-        {# ── Filters ── #}
-        <div class="filter-card">
-            <div class="d-flex align-items-center gap-2 mb-3">
-                <i class="bi bi-funnel-fill" style="color:var(--c-primary)"></i>
-                <span style="font-weight:700;font-size:.95rem;color:var(--c-text)">Filtres</span>
+        {# Filters #}
+        <div class="mt-8 bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+            <div class="flex items-center gap-2 mb-4">
+                <i class="bi bi-funnel-fill text-orange-500"></i>
+                <span class="font-bold text-gray-900">Filtres</span>
             </div>
-            <form method="get" action="{{ path('app_coaching_request_index') }}" class="row g-2 align-items-end" id="filter-form">
-                <div class="col-12 col-md-4">
-                    <label class="form-label small fw-semibold text-muted mb-1">Recherche</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
-                        <input type="text" name="search" class="form-control border-start-0" placeholder="Nom, email, message…" value="{{ filters.search|default('') }}">
+            <form method="get" action="{{ path('app_coaching_request_index') }}" class="space-y-4" id="filter-form">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
+                    <div class="lg:col-span-2">
+                        <label class="block text-sm font-semibold text-gray-500 mb-1">Recherche</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"><i class="bi bi-search"></i></span>
+                            <input type="text" name="search" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition text-sm" placeholder="Nom, email, message…" value="{{ filters.search|default('') }}">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-500 mb-1">Statut</label>
+                        <select name="status" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition text-sm bg-white">
+                            <option value="">Tous</option>
+                            <option value="pending"   {{ filters.status|default('') == 'pending'   ? 'selected' : '' }}>En attente</option>
+                            <option value="accepted"  {{ filters.status|default('') == 'accepted'  ? 'selected' : '' }}>Acceptée</option>
+                            <option value="declined"  {{ filters.status|default('') == 'declined'  ? 'selected' : '' }}>Refusée</option>
+                            <option value="planned"   {{ filters.status|default('') == 'planned'   ? 'selected' : '' }}>Planifiée</option>
+                            <option value="completed" {{ filters.status|default('') == 'completed' ? 'selected' : '' }}>Terminée</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-500 mb-1">Priorité</label>
+                        <select name="priority" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition text-sm bg-white">
+                            <option value="">Toutes</option>
+                            <option value="urgent" {{ filters.priority|default('') == 'urgent' ? 'selected' : '' }}>Urgent</option>
+                            <option value="normal" {{ filters.priority|default('') == 'normal' ? 'selected' : '' }}>Normal</option>
+                            <option value="medium" {{ filters.priority|default('') == 'medium' ? 'selected' : '' }}>Faible</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-500 mb-1">Du</label>
+                        <input type="date" name="date_from" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition text-sm" value="{{ filters.date_from|default('') }}">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-500 mb-1">Au</label>
+                        <input type="date" name="date_to" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition text-sm" value="{{ filters.date_to|default('') }}">
                     </div>
                 </div>
-                <div class="col-6 col-md-2">
-                    <label class="form-label small fw-semibold text-muted mb-1">Statut</label>
-                    <select name="status" class="form-select">
-                        <option value="">Tous</option>
-                        <option value="pending"   {{ filters.status|default('') == 'pending'   ? 'selected' : '' }}>En attente</option>
-                        <option value="accepted"  {{ filters.status|default('') == 'accepted'  ? 'selected' : '' }}>Acceptée</option>
-                        <option value="declined"  {{ filters.status|default('') == 'declined'  ? 'selected' : '' }}>Refusée</option>
-                        <option value="planned"   {{ filters.status|default('') == 'planned'   ? 'selected' : '' }}>Planifiée</option>
-                        <option value="completed" {{ filters.status|default('') == 'completed' ? 'selected' : '' }}>Terminée</option>
-                    </select>
-                </div>
-                <div class="col-6 col-md-2">
-                    <label class="form-label small fw-semibold text-muted mb-1">Priorité</label>
-                    <select name="priority" class="form-select">
-                        <option value="">Toutes</option>
-                        <option value="urgent" {{ filters.priority|default('') == 'urgent' ? 'selected' : '' }}>Urgent</option>
-                        <option value="normal" {{ filters.priority|default('') == 'normal' ? 'selected' : '' }}>Normal</option>
-                        <option value="medium" {{ filters.priority|default('') == 'medium' ? 'selected' : '' }}>Faible</option>
-                    </select>
-                </div>
-                <div class="col-6 col-md-2">
-                    <label class="form-label small fw-semibold text-muted mb-1">Du</label>
-                    <input type="date" name="date_from" class="form-control" value="{{ filters.date_from|default('') }}">
-                </div>
-                <div class="col-6 col-md-2">
-                    <label class="form-label small fw-semibold text-muted mb-1">Au</label>
-                    <input type="date" name="date_to" class="form-control" value="{{ filters.date_to|default('') }}">
-                </div>
-                <div class="col-12 d-flex gap-2 flex-wrap align-items-center">
-                    <button type="submit" class="btn-primary-grad">
-                        <i class="bi bi-funnel me-1"></i>Appliquer
+                <div class="flex flex-wrap items-center gap-3">
+                    <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold text-sm shadow-md hover:shadow-lg transition">
+                        <i class="bi bi-funnel"></i>
+                        Appliquer
                     </button>
-                    <a href="{{ path('app_coaching_request_index') }}" class="btn btn-outline-secondary btn-sm rounded-pill">
-                        <i class="bi bi-x-circle me-1"></i>Réinitialiser
+                    <a href="{{ path('app_coaching_request_index') }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-gray-300 text-gray-600 hover:bg-gray-50 text-sm font-medium transition">
+                        <i class="bi bi-x-circle"></i>
+                        Réinitialiser
                     </a>
                     {% if filters.search or filters.status or filters.date_from or filters.date_to or filters.priority %}
-                        <span class="text-muted small ms-1">{{ allRequests|length }} résultat(s)</span>
+                        <span class="text-gray-500 text-sm">{{ allRequests|length }} résultat(s)</span>
                     {% endif %}
                 </div>
             </form>
         </div>
 
-        {# ── Pending requests ── #}
+        {# Pending requests #}
         {% if pendingRequests|length > 0 %}
-            <div class="section-label mb-3">
-                <span class="dot" style="background:var(--c-warning)"></span>
-                En attente
-                <span class="cnt">{{ pendingRequests|length }}</span>
+            <div class="flex items-center gap-2 mt-10 mb-3">
+                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                <span class="font-bold text-gray-900">En attente</span>
+                <span class="ml-1 px-2.5 py-0.5 rounded-full bg-orange-500 text-white text-xs font-bold">{{ pendingRequests|length }}</span>
             </div>
 
             {% for req in pendingRequests %}
                 {% set waitSec = "now"|date("U") - req.createdAt|date("U") %}
-                <div class="req-card is-pending">
-                    <div class="d-flex gap-3 align-items-start">
-                        {# avatar #}
-                        <div class="req-avatar">
+                <div class="req-card-coach border-l-pending bg-white rounded-2xl border border-gray-200 shadow-sm p-5 mb-4">
+                    <div class="flex flex-col sm:flex-row gap-4 sm:gap-5">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
                             {{ req.user.firstName ? req.user.firstName|first|upper : req.user.email|first|upper }}
                         </div>
-                        {# info #}
-                        <div class="flex-grow-1 min-w-0">
-                            <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-                                <span class="req-name">{{ req.user.firstName }} {{ req.user.lastName }}</span>
-                                <span class="pill pill-pending"><i class="bi bi-clock-history"></i> En attente</span>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex flex-wrap items-center gap-2 mb-2">
+                                <span class="font-bold text-gray-900">{{ req.user.firstName }} {{ req.user.lastName }}</span>
+                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-xs font-semibold"><i class="bi bi-clock-history"></i> En attente</span>
                                 {% if req.priority == 'urgent' %}
-                                    <span class="pill pill-urgent"><i class="bi bi-exclamation-triangle-fill"></i> Urgent</span>
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-red-100 text-red-700 text-xs font-semibold"><i class="bi bi-exclamation-triangle-fill"></i> Urgent</span>
                                 {% elseif req.priority == 'medium' %}
-                                    <span class="pill pill-medium">Faible</span>
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-600 text-xs font-semibold">Faible</span>
                                 {% else %}
-                                    <span class="pill pill-normal">Normal</span>
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold">Normal</span>
                                 {% endif %}
                                 {% if waitSec >= 172800 %}
-                                    <span class="wait-chip urgent"><i class="bi bi-alarm-fill"></i> &gt; 48h</span>
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-50 text-red-600 border border-red-200 text-xs font-semibold"><i class="bi bi-alarm-fill"></i> &gt; 48h</span>
                                 {% endif %}
                             </div>
-                            <div class="d-flex flex-wrap gap-3 mb-1">
-                                <span class="req-email"><i class="bi bi-envelope me-1"></i>{{ req.user.email }}</span>
-                                <span class="req-date"><i class="bi bi-calendar3 me-1"></i>{{ req.createdAt|date('d/m/Y à H:i') }}</span>
-                                <span class="wait-chip">
+                            <div class="flex flex-wrap gap-4 text-sm text-gray-500 mb-3">
+                                <span><i class="bi bi-envelope me-1"></i>{{ req.user.email }}</span>
+                                <span><i class="bi bi-calendar3 me-1"></i>{{ req.createdAt|date('d/m/Y à H:i') }}</span>
+                                <span class="inline-flex items-center gap-1 text-amber-700">
                                     <i class="bi bi-hourglass-split"></i>
                                     {% if waitSec >= 86400 %}{{ (waitSec / 86400)|round(0, 'floor') }}j
                                     {% elseif waitSec >= 3600 %}{{ (waitSec / 3600)|round(0, 'floor') }}h
                                     {% else %}{{ (waitSec / 60)|round(0, 'floor') }}min{% endif %}
                                 </span>
                             </div>
-                            <div class="req-message">{{ req.message }}</div>
+                            <div class="req-message-box relative bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 pl-8 text-sm text-gray-600">{{ req.message }}</div>
                         </div>
-                        {# actions #}
-                        <div class="d-flex flex-column gap-2 flex-shrink-0">
-                            <form action="{{ path('app_coaching_request_accept', {id: req.id}) }}" method="post" class="d-inline accept-form">
+                        <div class="flex sm:flex-col gap-2 flex-shrink-0">
+                            <form action="{{ path('app_coaching_request_accept', {id: req.id}) }}" method="post" class="accept-form inline">
                                 <input type="hidden" name="_token" value="{{ csrf_token('accept-request' ~ req.id) }}">
-                                <button type="submit" class="btn-accept w-100">
-                                    <i class="bi bi-check-lg me-1"></i>Accepter
+                                <button type="submit" class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-100 text-emerald-700 hover:bg-emerald-200 font-semibold text-sm transition">
+                                    <i class="bi bi-check-lg"></i> Accepter
                                 </button>
                             </form>
-                            <form action="{{ path('app_coaching_request_decline', {id: req.id}) }}" method="post" class="d-inline decline-form">
+                            <form action="{{ path('app_coaching_request_decline', {id: req.id}) }}" method="post" class="decline-form inline">
                                 <input type="hidden" name="_token" value="{{ csrf_token('decline-request' ~ req.id) }}">
-                                <button type="submit" class="btn-decline w-100">
-                                    <i class="bi bi-x-lg me-1"></i>Refuser
+                                <button type="submit" class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-red-100 text-red-700 hover:bg-red-200 font-semibold text-sm transition">
+                                    <i class="bi bi-x-lg"></i> Refuser
                                 </button>
                             </form>
                         </div>
                     </div>
                 </div>
             {% endfor %}
-
-            <div class="mb-4"></div>
+            <div class="mb-2"></div>
         {% endif %}
 
-        {# ── All requests ── #}
-        <div class="section-label mb-3">
-            <span class="dot" style="background:var(--c-primary)"></span>
-            Toutes les demandes
-            <span class="cnt">{{ allRequests|length }}</span>
+        {# All requests #}
+        <div class="flex items-center gap-2 mt-8 mb-3">
+            <span class="w-2 h-2 rounded-full bg-orange-500"></span>
+            <span class="font-bold text-gray-900">Toutes les demandes</span>
+            <span class="ml-1 px-2.5 py-0.5 rounded-full bg-orange-500 text-white text-xs font-bold">{{ allRequests|length }}</span>
         </div>
 
         {% if allRequests|length > 0 %}
             {% for req in allRequests %}
                 {% set waitSec = "now"|date("U") - req.createdAt|date("U") %}
-                {% set statusClass = req.status == 'pending' ? 'is-pending' : (req.status == 'accepted' ? 'is-accepted' : 'is-declined') %}
-                <div class="req-card {{ statusClass }}">
-                    <div class="d-flex gap-3 align-items-start">
-                        {# avatar #}
-                        <div class="req-avatar">
+                {% set borderClass = req.status == 'pending' ? 'border-l-pending' : (req.status == 'accepted' ? 'border-l-accepted' : 'border-l-declined') %}
+                <div class="req-card-coach {{ borderClass }} bg-white rounded-2xl border border-gray-200 shadow-sm p-5 mb-4">
+                    <div class="flex flex-col sm:flex-row gap-4 sm:gap-5">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
                             {{ req.user.firstName ? req.user.firstName|first|upper : req.user.email|first|upper }}
                         </div>
-                        {# info #}
-                        <div class="flex-grow-1 min-w-0">
-                            <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-                                <span class="req-name">{{ req.user.firstName }} {{ req.user.lastName }}</span>
-                                {# status pill #}
+                        <div class="flex-1 min-w-0">
+                            <div class="flex flex-wrap items-center gap-2 mb-2">
+                                <span class="font-bold text-gray-900">{{ req.user.firstName }} {{ req.user.lastName }}</span>
                                 {% if req.status == 'pending' %}
-                                    <span class="pill pill-pending"><i class="bi bi-clock-history"></i> En attente</span>
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-xs font-semibold"><i class="bi bi-clock-history"></i> En attente</span>
                                 {% elseif req.status == 'declined' %}
-                                    <span class="pill pill-declined"><i class="bi bi-x-circle"></i> Refusée</span>
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-red-100 text-red-700 text-xs font-semibold"><i class="bi bi-x-circle"></i> Refusée</span>
                                 {% elseif req.session and req.session.status == 'completed' %}
-                                    <span class="pill pill-completed"><i class="bi bi-check-circle"></i> Terminée</span>
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-600 text-xs font-semibold"><i class="bi bi-check-circle"></i> Terminée</span>
                                 {% elseif req.session %}
-                                    <span class="pill pill-planned"><i class="bi bi-calendar-check"></i> Planifiée</span>
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold"><i class="bi bi-calendar-check"></i> Planifiée</span>
                                 {% else %}
-                                    <span class="pill pill-accepted"><i class="bi bi-check-lg"></i> Acceptée</span>
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold"><i class="bi bi-check-lg"></i> Acceptée</span>
                                 {% endif %}
-                                {# priority #}
                                 {% if req.priority == 'urgent' %}
-                                    <span class="pill pill-urgent"><i class="bi bi-exclamation-triangle-fill"></i> Urgent</span>
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-red-100 text-red-700 text-xs font-semibold"><i class="bi bi-exclamation-triangle-fill"></i> Urgent</span>
                                 {% elseif req.priority == 'medium' %}
-                                    <span class="pill pill-medium">Faible</span>
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-600 text-xs font-semibold">Faible</span>
                                 {% else %}
-                                    <span class="pill pill-normal">Normal</span>
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold">Normal</span>
                                 {% endif %}
                                 {% if req.status == 'pending' and waitSec >= 172800 %}
-                                    <span class="wait-chip urgent"><i class="bi bi-alarm-fill"></i> &gt; 48h</span>
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-50 text-red-600 border border-red-200 text-xs font-semibold"><i class="bi bi-alarm-fill"></i> &gt; 48h</span>
                                 {% endif %}
                             </div>
-                            <div class="d-flex flex-wrap gap-3 mb-1">
-                                <span class="req-email"><i class="bi bi-envelope me-1"></i>{{ req.user.email }}</span>
-                                <span class="req-date"><i class="bi bi-calendar3 me-1"></i>{{ req.createdAt|date('d/m/Y à H:i') }}</span>
+                            <div class="flex flex-wrap gap-4 text-sm text-gray-500 mb-3">
+                                <span><i class="bi bi-envelope me-1"></i>{{ req.user.email }}</span>
+                                <span><i class="bi bi-calendar3 me-1"></i>{{ req.createdAt|date('d/m/Y à H:i') }}</span>
                                 {% if req.status == 'pending' %}
-                                    <span class="wait-chip">
+                                    <span class="inline-flex items-center gap-1 text-amber-700">
                                         <i class="bi bi-hourglass-split"></i>
                                         {% if waitSec >= 86400 %}{{ (waitSec / 86400)|round(0, 'floor') }}j
                                         {% elseif waitSec >= 3600 %}{{ (waitSec / 3600)|round(0, 'floor') }}h
@@ -465,30 +282,27 @@
                                     </span>
                                 {% endif %}
                             </div>
-                            <div class="req-message">{{ req.message }}</div>
+                            <div class="req-message-box relative bg-gray-50 border border-gray-200 rounded-xl py-3 px-4 pl-8 text-sm text-gray-600">{{ req.message }}</div>
                         </div>
-                        {# actions #}
-                        <div class="d-flex flex-column gap-2 flex-shrink-0">
+                        <div class="flex sm:flex-col gap-2 flex-shrink-0">
                             {% if req.status == 'pending' %}
                                 <form action="{{ path('app_coaching_request_accept', {id: req.id}) }}" method="post" class="accept-form">
                                     <input type="hidden" name="_token" value="{{ csrf_token('accept-request' ~ req.id) }}">
-                                    <button type="submit" class="btn-accept"><i class="bi bi-check-lg"></i></button>
+                                    <button type="submit" class="inline-flex items-center justify-center px-3 py-2.5 rounded-xl bg-emerald-100 text-emerald-700 hover:bg-emerald-200 font-semibold text-sm transition"><i class="bi bi-check-lg"></i></button>
                                 </form>
                                 <form action="{{ path('app_coaching_request_decline', {id: req.id}) }}" method="post" class="decline-form">
                                     <input type="hidden" name="_token" value="{{ csrf_token('decline-request' ~ req.id) }}">
-                                    <button type="submit" class="btn-decline"><i class="bi bi-x-lg"></i></button>
+                                    <button type="submit" class="inline-flex items-center justify-center px-3 py-2.5 rounded-xl bg-red-100 text-red-700 hover:bg-red-200 font-semibold text-sm transition"><i class="bi bi-x-lg"></i></button>
                                 </form>
                             {% else %}
                                 {% if req.status == 'accepted' and req.session %}
-                                    <a href="{{ path('app_session_schedule', {id: req.session.id}) }}" class="btn-schedule">
-                                        <i class="bi bi-calendar-event me-1"></i>Planifier
+                                    <a href="{{ path('app_session_schedule', {id: req.session.id}) }}" class="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold text-sm shadow-md transition">
+                                        <i class="bi bi-calendar-event"></i> Planifier
                                     </a>
                                 {% endif %}
                                 <form action="{{ path('app_coaching_request_pending', {id: req.id}) }}" method="post" class="pending-form">
                                     <input type="hidden" name="_token" value="{{ csrf_token('pending-request' ~ req.id) }}">
-                                    <button type="submit" class="btn-requeue w-100">
-                                        <i class="bi bi-arrow-counterclockwise"></i>
-                                    </button>
+                                    <button type="submit" class="inline-flex items-center justify-center px-3 py-2.5 rounded-xl bg-amber-100 text-amber-700 hover:bg-amber-200 font-semibold text-sm transition" title="Remettre en attente"><i class="bi bi-arrow-counterclockwise"></i></button>
                                 </form>
                             {% endif %}
                         </div>
@@ -496,10 +310,12 @@
                 </div>
             {% endfor %}
         {% else %}
-            <div class="empty-box">
-                <div class="empty-icon"><i class="bi bi-inbox"></i></div>
-                <h4 class="fw-bold mb-2" style="color:var(--c-text)">Aucune demande pour le moment</h4>
-                <p class="text-muted mb-0">Les demandes de coaching apparaîtront ici lorsque des utilisateurs vous contacteront.</p>
+            <div class="bg-white border-2 border-dashed border-gray-200 rounded-2xl py-16 px-8 text-center">
+                <div class="w-20 h-20 rounded-full bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center text-orange-500 text-4xl mx-auto mb-5">
+                    <i class="bi bi-inbox"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Aucune demande pour le moment</h3>
+                <p class="text-gray-500">Les demandes de coaching apparaîtront ici lorsque des utilisateurs vous contacteront.</p>
             </div>
         {% endif %}
 
@@ -507,16 +323,15 @@
 {% endblock %}
 
 {% block javascripts %}
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.querySelectorAll('.accept-form, .decline-form, .pending-form').forEach(form => {
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 const btn = this.querySelector('button[type="submit"]');
                 const html = btn ? btn.innerHTML : '';
-                if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>'; }
+                if (btn) { btn.disabled = true; btn.innerHTML = '<span class="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></span>'; }
                 try {
-                    const res  = await fetch(this.action, { method: 'POST', body: new FormData(this), headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                    const res = await fetch(this.action, { method: 'POST', body: new FormData(this), headers: { 'X-Requested-With': 'XMLHttpRequest' } });
                     const data = await res.json();
                     if (data.success && data.redirect) window.location.href = data.redirect;
                     else if (data.success) location.reload();

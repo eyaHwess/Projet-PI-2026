@@ -32,14 +32,15 @@ class RoutineRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return Routine[] Returns an array of Routine objects
+     * @return Routine[] Returns an array of Routine objects (limité pour éviter ORDER_BY_WITHOUT_LIMIT).
      */
-    public function findByGoal($goalId): array
+    public function findByGoal($goalId, int $maxResults = 100): array
     {
         return $this->createQueryBuilder('r')
             ->andWhere('r.goal = :goalId')
             ->setParameter('goalId', $goalId)
             ->orderBy('r.createdAt', 'DESC')
+            ->setMaxResults($maxResults)
             ->getQuery()
             ->getResult();
     }

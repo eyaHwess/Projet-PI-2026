@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Form\ChangePasswordFormType;
 use App\Service\EmailService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -23,6 +24,9 @@ class ChangePasswordController extends AbstractController
         EmailService $emailService
     ): Response {
         $user = $this->getUser();
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
         $form = $this->createForm(ChangePasswordFormType::class);
         $form->handleRequest($request);
 

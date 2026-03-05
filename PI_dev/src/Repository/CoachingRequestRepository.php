@@ -21,15 +21,16 @@ class CoachingRequestRepository extends ServiceEntityRepository
     /**
      * @return CoachingRequest[]
      */
-    public function findPendingForCoach(User $coach): array
+    public function findPendingForCoach(User $coach, int $maxResults = 200): array
     {
         return $this->createQueryBuilder('cr')
             ->where('cr.coach = :coach')
             ->andWhere('cr.status = :status')
             ->setParameter('coach', $coach)
             ->setParameter('status', CoachingRequest::STATUS_PENDING)
-            ->orderBy('cr.priority', 'DESC') // urgent avant standard
+            ->orderBy('cr.priority', 'DESC')
             ->addOrderBy('cr.createdAt', 'DESC')
+            ->setMaxResults($maxResults)
             ->getQuery()
             ->getResult();
     }
@@ -37,13 +38,14 @@ class CoachingRequestRepository extends ServiceEntityRepository
     /**
      * @return CoachingRequest[]
      */
-    public function findAllForCoach(User $coach): array
+    public function findAllForCoach(User $coach, int $maxResults = 500): array
     {
         return $this->createQueryBuilder('cr')
             ->where('cr.coach = :coach')
             ->setParameter('coach', $coach)
-            ->orderBy('cr.priority', 'DESC') // urgent avant standard
+            ->orderBy('cr.priority', 'DESC')
             ->addOrderBy('cr.createdAt', 'DESC')
+            ->setMaxResults($maxResults)
             ->getQuery()
             ->getResult();
     }
@@ -213,7 +215,7 @@ class CoachingRequestRepository extends ServiceEntityRepository
      *
      * @return CoachingRequest[]
      */
-    public function findAcceptedWithoutSessionForCoach(User $coach): array
+    public function findAcceptedWithoutSessionForCoach(User $coach, int $maxResults = 100): array
     {
         return $this->createQueryBuilder('cr')
             ->leftJoin('cr.session', 's')
@@ -223,6 +225,7 @@ class CoachingRequestRepository extends ServiceEntityRepository
             ->setParameter('coach', $coach)
             ->setParameter('status', CoachingRequest::STATUS_ACCEPTED)
             ->orderBy('cr.createdAt', 'DESC')
+            ->setMaxResults($maxResults)
             ->getQuery()
             ->getResult();
     }

@@ -575,28 +575,23 @@ final class AdminController extends AbstractController
                ->setParameter('userEmail', '%' . mb_strtolower($userEmail) . '%');
         }
         
-        // Apply tag filter
+        // Apply tag filter (sous-requête pour éviter setMaxResults + collection join)
         if ($tagSlug !== '') {
-            $qb->leftJoin('p.tags', 't')
-               ->andWhere('t.slug = :tagSlug')
+            $qb->andWhere('p IN (SELECT post FROM App\Entity\Tag t JOIN t.posts post WHERE t.slug = :tagSlug)')
                ->setParameter('tagSlug', $tagSlug);
         }
-        
-        // Apply sorting
+
+        // Apply sorting (sous-requêtes pour éviter setMaxResults + collection join)
         switch ($sortBy) {
             case 'oldest':
                 $qb->orderBy('p.createdAt', 'ASC');
                 break;
             case 'most_liked':
-                $qb->leftJoin('p.postLikes', 'pl')
-                   ->addSelect('COUNT(pl.id) as HIDDEN likes_count')
-                   ->groupBy('p.id')
+                $qb->addSelect('(SELECT COUNT(pl.id) FROM App\Entity\PostLike pl WHERE pl.post = p) AS HIDDEN likes_count')
                    ->orderBy('likes_count', 'DESC');
                 break;
             case 'most_commented':
-                $qb->leftJoin('p.comments', 'c')
-                   ->addSelect('COUNT(c.id) as HIDDEN comments_count')
-                   ->groupBy('p.id')
+                $qb->addSelect('(SELECT COUNT(c.id) FROM App\Entity\Comment c WHERE c.post = p) AS HIDDEN comments_count')
                    ->orderBy('comments_count', 'DESC');
                 break;
             case 'newest':

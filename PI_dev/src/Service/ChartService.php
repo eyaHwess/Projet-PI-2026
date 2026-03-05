@@ -330,25 +330,27 @@ class ChartService
     }
 
     /**
-     * User Overview Dashboard Chart - Multiple goals status
+     * User Overview Dashboard Chart - Multiple goals status (utilise countByUserAndStatus, 1 requête).
      */
     public function createUserOverviewChart(User $user): Chart
     {
-        $goals = $this->goalRepository->findBy(['user' => $user]);
+        $counts = $this->goalRepository->countByUserAndStatus($user);
+        return $this->createUserOverviewChartFromCounts($counts);
+    }
 
+    /**
+     * Graphique overview à partir des comptages par statut (sans requête supplémentaire).
+     *
+     * @param array{active: int, completed: int, paused: int, failed: int} $counts
+     */
+    public function createUserOverviewChartFromCounts(array $counts): Chart
+    {
         $statusCounts = [
-            'active' => 0,
-            'completed' => 0,
-            'paused' => 0,
-            'failed' => 0,
+            'active' => $counts['active'] ?? 0,
+            'completed' => $counts['completed'] ?? 0,
+            'paused' => $counts['paused'] ?? 0,
+            'failed' => $counts['failed'] ?? 0,
         ];
-
-        foreach ($goals as $goal) {
-            $status = $goal->getStatus();
-            if (isset($statusCounts[$status])) {
-                $statusCounts[$status]++;
-            }
-        }
 
         $chart = $this->chartBuilder->createChart(Chart::TYPE_DOUGHNUT);
         $chart->setData([

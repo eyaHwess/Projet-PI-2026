@@ -1,0 +1,25 @@
+includes:
+    - ../phpstan-base.neon
+
+parameters:
+    paths:
+        - ../src/Entity/Goal.php
+        - ../src/Entity/GoalParticipation.php
+        - ../src/Entity/Routine.php
+        - ../src/Entity/Activity.php
+        - ../src/Controller/GoalController.php
+        - ../src/Controller/RoutineController.php
+        - ../src/Controller/ActivityController.php
+        - ../src/Controller/FavoriteController.php
+        - ../src/Repository/GoalRepository.php
+        - ../src/Repository/GoalParticipationRepository.php
+        - ../src/Repository/RoutineRepository.php
+        - ../src/Repository/ActivityRepository.php
+        - ../src/Form/GoalType.php
+        - ../src/Form/RoutineType.php
+        - ../src/Form/ActivityType.php
+        - ../src/GoalHistoryBundle
+    ignoreErrors:
+        - identifier: property.onlyWritten
+        - identifier: function.alreadyNarrowedType
+        - identifier: instanceof.alwaysTrue

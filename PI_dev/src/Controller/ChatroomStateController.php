@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Chatroom;
+use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,7 +22,7 @@ class ChatroomStateController extends AbstractController
     {
         $user = $this->getUser();
         
-        if (!$user) {
+        if (!$user instanceof User) {
             $this->addFlash('error', 'Vous devez être connecté');
             return $this->redirectToRoute('app_login');
         }
@@ -54,7 +55,7 @@ class ChatroomStateController extends AbstractController
     {
         $user = $this->getUser();
         
-        if (!$user) {
+        if (!$user instanceof User) {
             $this->addFlash('error', 'Vous devez être connecté');
             return $this->redirectToRoute('app_login');
         }
@@ -84,7 +85,7 @@ class ChatroomStateController extends AbstractController
     {
         $user = $this->getUser();
         
-        if (!$user) {
+        if (!$user instanceof User) {
             $this->addFlash('error', 'Vous devez être connecté');
             return $this->redirectToRoute('app_login');
         }
@@ -114,7 +115,7 @@ class ChatroomStateController extends AbstractController
     {
         $user = $this->getUser();
         
-        if (!$user) {
+        if (!$user instanceof User) {
             $this->addFlash('error', 'Vous devez être connecté');
             return $this->redirectToRoute('app_login');
         }
@@ -145,7 +146,7 @@ class ChatroomStateController extends AbstractController
     {
         $user = $this->getUser();
         
-        if (!$user) {
+        if (!$user instanceof User) {
             $this->addFlash('error', 'Vous devez être connecté');
             return $this->redirectToRoute('app_login');
         }

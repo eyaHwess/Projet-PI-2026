@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Repository\UserPresenceRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -24,8 +25,7 @@ class UserPresenceController extends AbstractController
     public function heartbeat(): JsonResponse
     {
         $user = $this->getUser();
-        
-        if (!$user) {
+        if (!$user instanceof User) {
             return new JsonResponse(['error' => 'Non authentifié'], 401);
         }
 
@@ -41,8 +41,7 @@ class UserPresenceController extends AbstractController
     public function setTyping(int $chatroomId, Request $request): JsonResponse
     {
         $user = $this->getUser();
-        
-        if (!$user) {
+        if (!$user instanceof User) {
             return new JsonResponse(['error' => 'Non authentifié'], 401);
         }
 
@@ -59,8 +58,7 @@ class UserPresenceController extends AbstractController
     public function getTypingUsers(int $chatroomId): JsonResponse
     {
         $user = $this->getUser();
-        
-        if (!$user) {
+        if (!$user instanceof User) {
             return new JsonResponse(['error' => 'Non authentifié'], 401);
         }
 

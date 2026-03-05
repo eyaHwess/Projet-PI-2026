@@ -133,7 +133,7 @@ class ActivityController extends AbstractController
             // Requête GET AJAX - retourner le formulaire en HTML
             return $this->render('activity/_form.html.twig', [
                 'form' => $form,
-                'activity' => $activity ?? new Activity(),
+                'activity' => $activity,
                 'routine' => $routine,
             ]);
         }

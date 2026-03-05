@@ -44,7 +44,11 @@ class PostTaggingListener
      */
     public function postUpdate(Post $post, LifecycleEventArgs $event): void
     {
-        $unitOfWork = $event->getObjectManager()->getUnitOfWork();
+        $em = $event->getObjectManager();
+        $unitOfWork = $em instanceof \Doctrine\ORM\EntityManagerInterface ? $em->getUnitOfWork() : null;
+        if ($unitOfWork === null) {
+            return;
+        }
         $changeSet = $unitOfWork->getEntityChangeSet($post);
 
         // Only generate tags if status changed to "published"

@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Form\SessionCoachScheduleType;
 use App\Form\SessionScheduleType;
 use App\Form\SessionType;
+use App\Pagination\SessionPagination;
 use App\Repository\SessionRepository;
 use App\Repository\UserRepository;
 use App\Service\DemoUserContext;
@@ -17,7 +18,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
-use Knp\Component\Pager\PaginatorInterface;
 
 #[Route('/sessions', name: 'app_session_')]
 class SessionController extends AbstractController
@@ -51,28 +51,26 @@ class SessionController extends AbstractController
 
     private function getCurrentUser(): User
     {
-        $user = $this->demoUserContext->getCurrentUser($this->getUser());
-        return $user ?? $this->getOrCreateDefaultUser();
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            return $this->getOrCreateDefaultUser();
+        }
+        return $this->demoUserContext->getCurrentUser($user) ?? $this->getOrCreateDefaultUser();
     }
 
    #[Route('', name: 'index', methods: ['GET'])]
-public function index(Request $request, PaginatorInterface $paginator): Response
+public function index(Request $request): Response
 {
     $currentUser = $this->getCurrentUser();
+    $page = $request->query->getInt('page', 1);
+    $perPage = 10;
 
-    // On récupère la requête de tes sessions
-    $query = $this->sessionRepository->createQueryBuilder('s')
-        ->join('s.coachingRequest', 'cr')
-        ->where('cr.user = :user OR cr.coach = :user')
-        ->setParameter('user', $currentUser)
-        ->orderBy('s.updatedAt', 'DESC')
-        ->getQuery();
-
-    // Pagination : 5 éléments par page
-    $sessions = $paginator->paginate(
-        $query,
-        $request->query->getInt('page', 1),
-        1
+    $result = $this->sessionRepository->getPaginatedForUserIndex($currentUser, $page, $perPage);
+    $sessions = new SessionPagination(
+        $result['items'],
+        $result['total'],
+        $page,
+        $perPage
     );
 
     return $this->render('session/index.html.twig', [

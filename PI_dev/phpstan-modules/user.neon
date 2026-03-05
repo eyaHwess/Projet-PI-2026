@@ -1,0 +1,30 @@
+includes:
+    - ../phpstan-base.neon
+
+parameters:
+    paths:
+        - ../src/Entity/User.php
+        - ../src/Entity/UserPresence.php
+        - ../src/Entity/UserLoginHistory.php
+        - ../src/Entity/ResetPasswordRequest.php
+        - ../src/Entity/FcmToken.php
+        - ../src/Repository/UserRepository.php
+        - ../src/Repository/UserPresenceRepository.php
+        - ../src/Repository/UserLoginHistoryRepository.php
+        - ../src/Repository/ResetPasswordRequestRepository.php
+        - ../src/Controller/UserController.php
+        - ../src/Controller/UserDashboardController.php
+        - ../src/Controller/UserPresenceController.php
+        - ../src/Controller/RegistrationController.php
+        - ../src/Controller/SecurityController.php
+        - ../src/Controller/ResetPasswordController.php
+        - ../src/Controller/ChangePasswordController.php
+        - ../src/Controller/LoginHistoryController.php
+        - ../src/Controller/LocaleController.php
+        - ../src/Form/UserType.php
+        - ../src/Form/ChangePasswordFormType.php
+        - ../src/Enum/UserRole.php
+        - ../src/Enum/UserStatus.php
+        - ../src/EventSubscriber/UserLocaleOnLoginSubscriber.php
+        - ../src/EventListener/UserActivityListener.php
+        - ../src/Security

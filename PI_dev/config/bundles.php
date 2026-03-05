@@ -22,4 +22,5 @@ return [
     Symfony\Bundle\MercureBundle\MercureBundle::class => ['all' => true],
     App\NotificationBundle\NotificationBundle::class  => ['all' => true],
     App\GoalHistoryBundle\GoalHistoryBundle::class    => ['all' => true],
+    AhmedBhs\DoctrineDoctor\DoctrineDoctorBundle::class => ['dev' => true, 'test' => true],
 ];
